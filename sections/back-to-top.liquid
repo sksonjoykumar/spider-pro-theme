@@ -1,0 +1,592 @@
+{% render 'sp-section-color-scheme', section: section %}
+{{ 'sp-back-to-top.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'sp-back-to-top.js' | asset_url }}" defer></script>
+
+{%- if section.settings.enable_back_to_top -%}
+  {%- liquid
+    assign position_class = 'sp-back-to-top--position-' | append: section.settings.position
+    assign style_class = 'sp-back-to-top--style-' | append: section.settings.button_style
+    assign shape_class = 'sp-back-to-top--shape-' | append: section.settings.button_shape
+    assign shadow_class = 'sp-back-to-top--shadow-' | append: section.settings.shadow
+    assign appearance_class = 'sp-back-to-top--appearance-' | append: section.settings.appearance_animation
+    assign hover_class = 'sp-back-to-top--hover-' | append: section.settings.hover_animation
+  -%}
+
+  <sp-back-to-top
+    id="SpBackToTop-{{ section.id }}"
+    class="sp-back-to-top {{ position_class }} {{ style_class }} {{ shape_class }} {{ shadow_class }} {{ hover_class }} {{ appearance_class }}{% if section.settings.completed_fill %} sp-back-to-top--complete-fill{% endif %}{% if section.settings.progress_direction == "counterclockwise" %} sp-back-to-top--ring-counterclockwise{% endif %}{% if section.settings.mirror_rtl %} sp-back-to-top--mirror-rtl{% endif %}{% if section.settings.hide_mobile %} sp-back-to-top--hide-mobile{% endif %}{% if section.settings.hide_tablet %} sp-back-to-top--hide-tablet{% endif %}{% if section.settings.hide_desktop %} sp-back-to-top--hide-desktop{% endif %}"
+    data-section-id="{{ section.id }}"
+    data-threshold="{{ section.settings.show_after }}"
+    data-always-show="{{ section.settings.always_show }}"
+    data-progress-enabled="{{ section.settings.enable_progress_ring }}"
+    data-avoid-toolbar="{{ section.settings.avoid_mobile_toolbar }}"
+    data-avoid-sticky-atc="{{ section.settings.avoid_sticky_atc }}"
+    data-hide-blocking-ui="{{ section.settings.hide_while_blocking_ui }}"
+    data-editor-preview="{{ section.settings.editor_preview }}"
+    style="
+      --sp-back-to-top-size-desktop: {{ section.settings.size_desktop }}px;
+      --sp-back-to-top-size-mobile: {{ section.settings.size_mobile }}px;
+      --sp-back-to-top-icon-desktop: {{ section.settings.icon_size_desktop }}px;
+      --sp-back-to-top-icon-mobile: {{ section.settings.icon_size_mobile }}px;
+      --sp-back-to-top-side-desktop: {{ section.settings.side_offset_desktop }}px;
+      --sp-back-to-top-side-tablet: {{ section.settings.side_offset_tablet }}px;
+      --sp-back-to-top-side-mobile: {{ section.settings.side_offset_mobile }}px;
+      --sp-back-to-top-bottom-desktop: {{ section.settings.bottom_offset_desktop }}px;
+      --sp-back-to-top-bottom-mobile: {{ section.settings.bottom_offset_mobile }}px;
+      --sp-back-to-top-custom-radius: {{ section.settings.custom_radius }}px;
+      --sp-back-to-top-hover-lift: {{ section.settings.hover_lift }};
+      --sp-back-to-top-hover-duration: {{ section.settings.hover_duration }}ms;
+      --sp-back-to-top-show-duration: {{ section.settings.show_duration }}ms;
+      {% if section.settings.follow_global_colors %}
+      --sp-back-to-top-bg: var(--sp-color-card, #FFFFFF);
+      --sp-back-to-top-icon-color: var(--sp-color-heading, var(--sp-color-primary, #171717));
+      --sp-back-to-top-border: var(--sp-color-border, #E4E4E7);
+      --sp-back-to-top-hover-bg: var(--sp-color-accent, #415DFF);
+      --sp-back-to-top-hover-icon: #FFFFFF;
+      --sp-back-to-top-hover-border: var(--sp-color-accent, #415DFF);
+      {% else %}
+      --sp-back-to-top-bg: {{ section.settings.background_color }};
+      --sp-back-to-top-icon-color: {{ section.settings.icon_color }};
+      --sp-back-to-top-border: {{ section.settings.border_color }};
+      --sp-back-to-top-hover-bg: {{ section.settings.hover_background_color }};
+      --sp-back-to-top-hover-icon: {{ section.settings.hover_icon_color }};
+      --sp-back-to-top-hover-border: {{ section.settings.hover_border_color }};
+      {% endif %}
+      --sp-back-to-top-border-width: {{ section.settings.border_width }}px;
+      {% if section.settings.follow_global_colors %}
+      --sp-back-to-top-track: var(--sp-color-border, #E4E4E7);
+      --sp-back-to-top-active: var(--sp-color-accent, #415DFF);
+      {% else %}
+      --sp-back-to-top-track: {{ section.settings.progress_track_color }};
+      --sp-back-to-top-active: {{ section.settings.progress_active_color }};
+      {% endif %}
+      --sp-back-to-top-ring-width: {{ section.settings.progress_ring_width }}px;
+    "
+  >
+    <button
+      type="button"
+      class="sp-back-to-top__button"
+      aria-label="{{ section.settings.accessible_label | default: 'Back to top' | escape }}"
+      aria-hidden="true"
+      tabindex="-1"
+      data-sp-back-to-top-button
+    >
+      <span class="sp-back-to-top__surface" aria-hidden="true"></span>
+      {%- if section.settings.enable_progress_ring -%}
+        <span class="sp-back-to-top__progress" aria-hidden="true"></span>
+      {%- endif -%}
+      <span class="sp-back-to-top__icon" aria-hidden="true">
+        {% render 'sp-back-to-top-icon', icon: section.settings.icon_design %}
+      </span>
+    </button>
+  </sp-back-to-top>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Back to Top",
+  "tag": "section",
+  "class": "sp-system-section sp-system-section--back-to-top",
+  "limit": 1,
+  "enabled_on": {
+    "groups": [
+      "custom.system"
+    ]
+  },
+  "settings": [
+    {
+      "type": "header",
+      "content": "Global design system"
+    },
+    {
+      "type": "color_scheme",
+      "id": "sp_color_scheme",
+      "label": "Color scheme",
+      "default": "scheme-1",
+      "info": "Shared Spider color panel. Edit schemes once in Theme settings → Spider Color Schemes."
+    },
+    {
+      "type": "header",
+      "content": "General"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_back_to_top",
+      "label": "Enable back to top",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "accessible_label",
+      "label": "Accessible button label",
+      "default": "Back to top"
+    },
+    {
+      "type": "range",
+      "id": "show_after",
+      "label": "Show after scrolling",
+      "min": 0,
+      "max": 2000,
+      "step": 50,
+      "unit": "px",
+      "default": 200
+    },
+    {
+      "type": "checkbox",
+      "id": "always_show",
+      "label": "Always display button",
+      "default": false
+    },
+    {
+      "type": "header",
+      "content": "Position"
+    },
+    {
+      "type": "select",
+      "id": "position",
+      "label": "Position",
+      "options": [
+        {
+          "value": "right",
+          "label": "Bottom right"
+        },
+        {
+          "value": "left",
+          "label": "Bottom left"
+        }
+      ],
+      "default": "right"
+    },
+    {
+      "type": "checkbox",
+      "id": "mirror_rtl",
+      "label": "Mirror position in RTL",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "side_offset_desktop",
+      "label": "Desktop side offset",
+      "min": 8,
+      "max": 80,
+      "step": 2,
+      "unit": "px",
+      "default": 32
+    },
+    {
+      "type": "range",
+      "id": "side_offset_tablet",
+      "label": "Tablet side offset",
+      "min": 8,
+      "max": 60,
+      "step": 2,
+      "unit": "px",
+      "default": 20
+    },
+    {
+      "type": "range",
+      "id": "side_offset_mobile",
+      "label": "Mobile side offset",
+      "min": 8,
+      "max": 40,
+      "step": 1,
+      "unit": "px",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "bottom_offset_desktop",
+      "label": "Desktop bottom offset",
+      "min": 8,
+      "max": 120,
+      "step": 2,
+      "unit": "px",
+      "default": 32
+    },
+    {
+      "type": "range",
+      "id": "bottom_offset_mobile",
+      "label": "Mobile bottom offset",
+      "min": 8,
+      "max": 120,
+      "step": 2,
+      "unit": "px",
+      "default": 16
+    },
+    {
+      "type": "header",
+      "content": "Size"
+    },
+    {
+      "type": "range",
+      "id": "size_desktop",
+      "label": "Desktop visual size",
+      "min": 32,
+      "max": 64,
+      "step": 2,
+      "unit": "px",
+      "default": 56
+    },
+    {
+      "type": "range",
+      "id": "size_mobile",
+      "label": "Mobile visual size",
+      "min": 28,
+      "max": 56,
+      "step": 2,
+      "unit": "px",
+      "default": 48
+    },
+    {
+      "type": "range",
+      "id": "icon_size_desktop",
+      "label": "Desktop icon size",
+      "min": 8,
+      "max": 24,
+      "step": 1,
+      "unit": "px",
+      "default": 22
+    },
+    {
+      "type": "range",
+      "id": "icon_size_mobile",
+      "label": "Mobile icon size",
+      "min": 8,
+      "max": 22,
+      "step": 1,
+      "unit": "px",
+      "default": 20
+    },
+    {
+      "type": "header",
+      "content": "Style"
+    },
+    {
+      "type": "select",
+      "id": "button_style",
+      "label": "Style",
+      "options": [
+        {
+          "value": "simple",
+          "label": "Simple"
+        },
+        {
+          "value": "progress",
+          "label": "Progress ring"
+        },
+        {
+          "value": "outline",
+          "label": "Outline"
+        }
+      ],
+      "default": "progress"
+    },
+    {
+      "type": "select",
+      "id": "button_shape",
+      "label": "Shape",
+      "options": [
+        {
+          "value": "square",
+          "label": "Square"
+        },
+        {
+          "value": "rounded",
+          "label": "Rounded"
+        },
+        {
+          "value": "circle",
+          "label": "Circle"
+        },
+        {
+          "value": "custom",
+          "label": "Custom"
+        }
+      ],
+      "default": "circle"
+    },
+    {
+      "type": "select",
+      "id": "appearance_animation",
+      "label": "Show/hide animation",
+      "options": [
+        {
+          "value": "fade-rise",
+          "label": "Fade and rise"
+        },
+        {
+          "value": "fade",
+          "label": "Fade only"
+        },
+        {
+          "value": "none",
+          "label": "None"
+        }
+      ],
+      "default": "fade-rise"
+    },
+    {
+      "type": "range",
+      "id": "custom_radius",
+      "label": "Custom radius",
+      "min": 0,
+      "max": 50,
+      "step": 1,
+      "unit": "px",
+      "default": 12
+    },
+    {
+      "type": "select",
+      "id": "icon_design",
+      "label": "Icon",
+      "options": [
+        {
+          "value": "chevron",
+          "label": "Chevron up"
+        },
+        {
+          "value": "arrow",
+          "label": "Arrow up"
+        }
+      ],
+      "default": "chevron"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Button background",
+      "default": "#ffffff"
+    },
+    {
+      "type": "checkbox",
+      "id": "follow_global_colors",
+      "label": "Use Spider global colors",
+      "info": "When enabled, theme color scheme controls icon, background, border, hover and progress colors. Disable to use the custom colors below.",
+      "default": true
+    },
+    {
+      "type": "color",
+      "id": "icon_color",
+      "label": "Icon color",
+      "default": "#171717"
+    },
+    {
+      "type": "color",
+      "id": "border_color",
+      "label": "Border color",
+      "default": "#E4E4E7"
+    },
+    {
+      "type": "range",
+      "id": "border_width",
+      "label": "Border width",
+      "min": 0,
+      "max": 4,
+      "step": 1,
+      "unit": "px",
+      "default": 1
+    },
+    {
+      "type": "color",
+      "id": "hover_background_color",
+      "label": "Hover background",
+      "default": "#415DFF"
+    },
+    {
+      "type": "color",
+      "id": "hover_icon_color",
+      "label": "Hover icon color",
+      "default": "#FFFFFF"
+    },
+    {
+      "type": "color",
+      "id": "hover_border_color",
+      "label": "Hover border color",
+      "default": "#415DFF"
+    },
+    {
+      "type": "select",
+      "id": "shadow",
+      "label": "Shadow",
+      "options": [
+        {
+          "value": "none",
+          "label": "None"
+        },
+        {
+          "value": "soft",
+          "label": "Soft"
+        },
+        {
+          "value": "medium",
+          "label": "Medium"
+        },
+        {
+          "value": "strong",
+          "label": "Strong"
+        }
+      ],
+      "default": "soft"
+    },
+    {
+      "type": "select",
+      "id": "hover_animation",
+      "label": "Hover animation",
+      "options": [
+        {
+          "value": "none",
+          "label": "None"
+        },
+        {
+          "value": "move-up",
+          "label": "Arrow move up"
+        },
+        {
+          "value": "scale",
+          "label": "Scale"
+        }
+      ],
+      "default": "move-up"
+    },
+    {
+      "type": "range",
+      "id": "hover_lift",
+      "label": "Hover icon lift",
+      "min": 0,
+      "max": 4,
+      "step": 1,
+      "unit": "px",
+      "default": 1
+    },
+    {
+      "type": "range",
+      "id": "hover_duration",
+      "label": "Hover transition",
+      "min": 100,
+      "max": 400,
+      "step": 25,
+      "unit": "ms",
+      "default": 225
+    },
+    {
+      "type": "range",
+      "id": "show_duration",
+      "label": "Show/hide transition",
+      "min": 150,
+      "max": 450,
+      "step": 25,
+      "unit": "ms",
+      "default": 300
+    },
+    {
+      "type": "header",
+      "content": "Progress"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_progress_ring",
+      "label": "Enable progress ring",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "progress_direction",
+      "label": "Ring direction",
+      "options": [
+        {
+          "value": "clockwise",
+          "label": "Clockwise"
+        },
+        {
+          "value": "counterclockwise",
+          "label": "Counterclockwise"
+        }
+      ],
+      "default": "clockwise"
+    },
+    {
+      "type": "color",
+      "id": "progress_track_color",
+      "label": "Progress track color",
+      "default": "#E4E4E7"
+    },
+    {
+      "type": "color",
+      "id": "progress_active_color",
+      "label": "Progress active color",
+      "default": "#415DFF"
+    },
+    {
+      "type": "range",
+      "id": "progress_ring_width",
+      "label": "Progress ring width",
+      "min": 1,
+      "max": 6,
+      "step": 1,
+      "unit": "px",
+      "default": 3
+    },
+    {
+      "type": "checkbox",
+      "id": "completed_fill",
+      "label": "Fill button when scrolling reaches end",
+      "default": false
+    },
+    {
+      "type": "header",
+      "content": "Responsive"
+    },
+    {
+      "type": "checkbox",
+      "id": "hide_mobile",
+      "label": "Hide on mobile (≤ 749px)",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "hide_tablet",
+      "label": "Hide on tablet (750–989px)",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "hide_desktop",
+      "label": "Hide on desktop (≥ 990px)",
+      "default": false
+    },
+    {
+      "type": "header",
+      "content": "Advanced"
+    },
+    {
+      "type": "checkbox",
+      "id": "avoid_mobile_toolbar",
+      "label": "Automatically avoid Mobile Toolbar",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "avoid_sticky_atc",
+      "label": "Automatically avoid Sticky Add To Cart",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "hide_while_blocking_ui",
+      "label": "Hide while drawer or popup is open",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "editor_preview",
+      "label": "Preview Back To Top in Theme Editor",
+      "default": true
+    }
+  ],
+  "presets": [
+    {
+      "name": "Back to top"
+    }
+  ]
+}
+{% endschema %}

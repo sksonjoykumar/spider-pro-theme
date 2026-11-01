@@ -1,0 +1,43 @@
+{%- liquid
+  assign featured_image = product.featured_media.preview_image | default: product.featured_image
+  assign ratio_value = section.settings.product_ratio
+  assign media_style = ''
+  if ratio_value == 'adapt' and featured_image != blank
+    assign media_style = '--sp-exit-card-ratio:' | append: featured_image.aspect_ratio | append: ';'
+  endif
+  assign form_id = 'SpExitProductForm-' | append: section.id | append: '-' | append: product.id
+  assign image_alt = featured_image.alt | default: product.title
+-%}
+
+<article class="sp-exit-popup-card" data-product-id="{{ product.id }}">
+  <a class="sp-exit-popup-card__media" href="{{ product.url }}" style="{{ media_style }}">
+    {%- if featured_image != blank -%}
+      {{ featured_image | image_url: width: 640 | image_tag:
+        loading: 'lazy',
+        widths: '96,144,192,240,300,360,480,640',
+        sizes: '(max-width: 749px) 88vw, 320px',
+        class: 'sp-exit-popup-card__image',
+        alt: image_alt
+      }}
+    {%- else -%}
+      {% render 'placeholder-image', name: 'product-1', class: 'sp-exit-popup-card__placeholder' %}
+    {%- endif -%}
+  </a>
+  <div class="sp-exit-popup-card__info">
+    {%- if section.settings.show_vendor and product.vendor != blank -%}
+      <small class="sp-exit-popup-card__vendor">{{ product.vendor | escape }}</small>
+    {%- endif -%}
+    <h3 class="sp-exit-popup-card__title"><a href="{{ product.url }}">{{ product.title | escape }}</a></h3>
+    {% render 'product-price', product: product %}
+    {%- if section.settings.enable_quick_add and product.available -%}
+      {%- if product.has_only_default_variant -%}
+        {% form 'product', product, id: form_id, class: 'sp-exit-popup-card__form', data-product-card-form: '' %}
+          <input type="hidden" name="id" value="{{ product.selected_or_first_available_variant.id }}">
+          <button class="sp-exit-popup-card__action" type="submit">Add to cart</button>
+        {% endform %}
+      {%- else -%}
+        <a class="sp-exit-popup-card__action" href="{{ product.url }}">Choose options</a>
+      {%- endif -%}
+    {%- endif -%}
+  </div>
+</article>

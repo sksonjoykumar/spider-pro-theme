@@ -1,0 +1,118 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "main": {
+      "type": "main-contact",
+      "blocks": {
+        "help_card_U83aVH": {
+          "type": "help_card",
+          "settings": {
+            "icon": "truck",
+            "heading": "Shipping & Returns",
+            "text": "Learn about our shipping options and return policy.",
+            "link_label": "Learn More",
+            "link": ""
+          }
+        },
+        "shipping_returns": {
+          "type": "help_card",
+          "settings": {
+            "icon": "truck",
+            "heading": "Shipping & Returns",
+            "text": "Learn about our shipping options and return policy.",
+            "link_label": "Learn More",
+            "link": "/policies/shipping-policy"
+          }
+        },
+        "order_tracking": {
+          "type": "help_card",
+          "settings": {
+            "icon": "box",
+            "heading": "Order Tracking",
+            "text": "Track your order and view shipping status.",
+            "link_label": "Track Now",
+            "link": "/account"
+          }
+        },
+        "product_questions": {
+          "type": "help_card",
+          "settings": {
+            "icon": "chat",
+            "heading": "Product Questions",
+            "text": "Get answers about our products and features.",
+            "link_label": "Get Help",
+            "link": ""
+          }
+        }
+      },
+      "block_order": [
+        "help_card_U83aVH",
+        "shipping_returns",
+        "order_tracking",
+        "product_questions"
+      ],
+      "settings": {
+        "sp_color_scheme": "scheme-1",
+        "heading": "Contact Us",
+        "intro_text": "Have a question, need help with an order, or just want to say hello?\nOur team is here and ready to help.",
+        "form_heading": "Send Us a Message",
+        "form_description": "Fill out the form below and we’ll get back to you as soon as possible.",
+        "show_name": true,
+        "show_subject": true,
+        "show_order_number": true,
+        "show_phone": false,
+        "submit_label": "Send Message",
+        "response_note": "We typically respond within 24 hours.",
+        "success_message": "Thanks for contacting us. We’ll get back to you as soon as possible.",
+        "show_email_card": true,
+        "email_card_heading": "Email Support",
+        "email_card_text": "Our friendly team is here to help.",
+        "support_email": "",
+        "email_response_time": "We typically reply within 24 hours.",
+        "show_hours_card": true,
+        "hours_card_heading": "Business Hours",
+        "hours_card_text": "We’re here to help during our business hours.",
+        "business_hours": "Monday – Friday\n9:00 AM – 6:00 PM",
+        "hours_response_time": "We typically reply within 24 hours.",
+        "show_social_card": true,
+        "social_card_heading": "Follow Us",
+        "social_card_text": "Follow us on social media for updates, news, and more.",
+        "help_heading": "How Can We Help?",
+        "enable_support_cta": true,
+        "support_cta_heading": "Still need help?",
+        "support_cta_text": "Our support team is ready to assist you with anything you need.",
+        "support_cta_label": "Talk to Support",
+        "support_cta_link": "",
+        "enable_location": true,
+        "location_map_embed_url": "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d52896766.19705064!2d-161.60498239771434!3d35.98212291849991!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x54eab584e432360b%3A0x1c3bb99243deb742!2sUnited%20States!5e0!3m2!1sen!2sbd!4v1788070167134!5m2!1sen!2sbd",
+        "location_image_alt": "Map showing our office location",
+        "location_link": "",
+        "location_heading": "Visit Our Office",
+        "location_description": "",
+        "location_address": "",
+        "location_phone": "",
+        "location_email": "",
+        "location_website": "",
+        "location_hours": ""
+      }
+    },
+    "apps": {
+      "type": "apps",
+      "settings": {
+        "sp_color_scheme": ""
+      }
+    }
+  },
+  "order": [
+    "main",
+    "apps"
+  ]
+}

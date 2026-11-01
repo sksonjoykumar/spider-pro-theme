@@ -1,0 +1,24 @@
+{{ 'sp-customer-account.css' | asset_url | stylesheet_tag }}<script src="{{ 'sp-customer-account.js' | asset_url }}" defer></script>{% render 'sp-section-color-scheme', section: section %}
+<section class="sp-section sp-account-page sp-account-auth"><div class="sp-container sp-container--narrow"><div class="sp-account-auth__panel sp-account-auth__panel--standalone"><div class="sp-account-auth__heading"><span class="sp-account-kicker">{{ 'customer.spider.account_security' | t }}</span><h1 class="sp-heading sp-heading--h2">{{ 'customer.password.activate_title' | t }}</h1><p>{{ 'customer.spider.activate_intro' | t }}</p></div>{% form 'activate_customer_password' %}{% if form.errors %}<div class="sp-account-alert sp-account-alert--error" role="alert">{{ form.errors | default_errors }}</div>{% endif %}{% render 'sp-account-form-field', id: 'ActivatePassword', name: 'customer[password]', type: 'password', label: 'customer.login_page.password', autocomplete: 'new-password', required: true %}{% render 'sp-account-form-field', id: 'ActivatePasswordConfirmation', name: 'customer[password_confirmation]', type: 'password', label: 'customer.spider.confirm_password', autocomplete: 'new-password', required: true %}<div class="sp-account-form-actions"><button class="sp-button sp-button--primary" type="submit">{{ 'customer.password.activate_submit' | t }}</button><button class="sp-button sp-button--outline" type="submit" name="decline">{{ 'customer.spider.decline_invitation' | t }}</button></div>{% endform %}</div></div></section>
+{% schema %}{"name":"Main activate account","settings":[{"type":"color_scheme","id":"sp_color_scheme","label":"Color scheme","default":"scheme-1"}]}{% endschema %}
+{% comment %}
+
+This file has been rewritten to preserve the original behavior.
+
+---
+Changes:
+- from: "{% render 'sp-account-form-field', id: 'ActivatePassword', name: 'customer[password]',
+    type: 'password', label: 'customer.login_page.password' | t, autocomplete: 'new-password',
+    required: true %}"
+  to: "{% render 'sp-account-form-field', id: 'ActivatePassword', name: 'customer[password]',
+    type: 'password', label: 'customer.login_page.password', autocomplete: 'new-password',
+    required: true %}"
+  position: 808..999
+- from: "{% render 'sp-account-form-field', id: 'ActivatePasswordConfirmation', name:
+    'customer[password_confirmation]', type: 'password', label: 'customer.spider.confirm_password'
+    | t, autocomplete: 'new-password', required: true %}"
+  to: "{% render 'sp-account-form-field', id: 'ActivatePasswordConfirmation', name:
+    'customer[password_confirmation]', type: 'password', label: 'customer.spider.confirm_password',
+    autocomplete: 'new-password', required: true %}"
+  position: 999..1219
+{% endcomment %}

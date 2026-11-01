@@ -1,0 +1,207 @@
+{% comment %}
+  Spider Premium Header — search/account/cart/contact actions.
+  Params: section (required), contact_block (optional), mobile (optional)
+{% endcomment %}
+{% assign sp_mobile_actions = mobile | default: false %}
+{% assign sp_instance = instance | default: 'desktop' %}
+{% assign sp_label_mode = section.settings.desktop_action_labels | default: 'tooltip' %}
+{% if sp_mobile_actions %}
+  {% assign sp_label_mode = section.settings.mobile_action_labels | default: 'icons' %}{% endif %}
+
+<div class="sp-header__actions" data-label-mode="{{ sp_label_mode }}">
+  {% if section.settings.show_search %}
+    {% if section.settings.search_style == 'expanded' and sp_mobile_actions == false %}
+      <form
+        class="sp-header__search-form"
+        action="{{ routes.search_url }}"
+        method="get"
+        role="search"
+        data-predictive-search>
+        <label class="visually-hidden" for="SpHeaderSearch-{{ section.id }}-{{ sp_instance }}">Search</label>
+        <div class="sp-header__search-field">
+          <input
+            id="SpHeaderSearch-{{ section.id }}-{{ sp_instance }}"
+            type="search"
+            name="q"
+            value="{{ search.terms | escape }}"
+            placeholder="Search"
+            autocomplete="off"
+            aria-controls="SpHeaderSearchResults-{{ section.id }}-{{ sp_instance }}">
+          <input
+            type="hidden"
+            name="options[prefix]"
+            value="last">
+          <button
+            class="sp-header__action"
+            type="submit"
+            aria-label="Search">
+            {% render 'icon'
+              , name: 'search' %}<span class="sp-header__action-label">Search</span>
+          </button>
+        </div>
+        <div
+          id="SpHeaderSearchResults-{{ section.id }}-{{ sp_instance }}"
+          class="sp-header__predictive"
+          data-predictive-results
+          aria-live="polite"></div>
+      </form>
+    {% elsif section.settings.search_style == 'drawer' %}
+      <button
+        class="sp-header__action sp-header__search-trigger"
+        type="button"
+        data-sp-search-drawer-toggle
+        aria-expanded="false"
+        aria-controls="SpGlobalSearchModal"
+        aria-label="Search">
+        {% render 'icon'
+          , name: 'search' %}<span class="sp-header__search-prompt">{{ section.settings.sp_reference_search_placeholder | default: 'Search for products...' | escape }}</span><span class="sp-header__action-label">Search</span>
+      </button>
+      <noscript>
+        <a
+          class="sp-header__action"
+          href="{{ routes.search_url }}"
+          aria-label="Search">{% render 'icon'
+  , name: 'search' %}<span class="sp-header__action-label">Search</span>
+        </a>
+      </noscript>
+    {% elsif section.settings.search_style == 'icon' %}
+      <button
+        class="sp-header__action"
+        type="button"
+        data-sp-search-toggle
+        aria-expanded="false"
+        aria-controls="SpHeaderSearchPanel-{{ section.id }}-{{ sp_instance }}"
+        aria-label="Search">
+        {% render 'icon'
+          , name: 'search' %}<span class="sp-header__action-label">Search</span>
+      </button>
+      <noscript>
+        <a
+          class="sp-header__action"
+          href="{{ routes.search_url }}"
+          aria-label="Search">{% render 'icon'
+  , name: 'search' %}<span class="sp-header__action-label">Search</span>
+        </a>
+      </noscript>
+    {% endif %}
+  {% endif %}
+
+  {% if contact_block and sp_mobile_actions == false %}
+    <details
+      class="sp-header-contact"
+      data-sp-contact
+      data-open-mode="{{ contact_block.settings.desktop_open | default: 'click' }}"
+      {{ contact_block.shopify_attributes }}>
+      <summary class="sp-header__action" aria-label="Contact information">
+        <span class="sp-header-contact__icon" aria-hidden="true">☎</span>
+        <span class="sp-header__action-label">{{ contact_block.settings.heading | default: 'Contact' | escape }}</span>
+      </summary>
+      <div class="sp-header-contact__panel">
+        {% if contact_block.settings.heading != blank %}
+          <strong>{{ contact_block.settings.heading | escape }}</strong>
+        {% endif %}
+        {% if contact_block.settings.phone != blank %}
+          <a href="tel:{{ contact_block.settings.phone | replace: ' ', '' | escape }}">{{ contact_block.settings.phone | escape }}</a>
+        {% endif %}
+        {% if contact_block.settings.supporting_text != blank %}
+          <p>{{ contact_block.settings.supporting_text | escape }}</p>
+        {% endif %}
+        {% if contact_block.settings.email != blank %}
+          <a href="mailto:{{ contact_block.settings.email | escape }}">{{ contact_block.settings.email | escape }}</a>
+        {% endif %}
+        {% if contact_block.settings.address != blank %}
+          <p>{{ contact_block.settings.address | escape }}</p>
+        {% endif %}
+        {% if contact_block.settings.support_link != blank %}
+          <a href="{{ contact_block.settings.support_link }}">{{ contact_block.settings.support_label | default: 'Support' | escape }}</a>
+        {% endif %}
+      </div>
+    </details>
+  {% endif %}
+
+  {% if section.settings.mobile_wishlist_url != blank %}
+    {% render 'sp-header-wishlist', section: section, context: 'action' %}
+  {% endif %}
+
+  {% if section.settings.show_account and shop.customer_accounts_enabled %}
+    <a
+      class="sp-header__action{% unless section.settings.mobile_show_account %}{% if sp_mobile_actions %} sp-header__action--mobile-hidden{% endif %}{% endunless %}"
+      href="{% if customer %}{{ routes.account_url }}{% else %}{{ routes.account_login_url }}{% endif %}"
+      aria-label="Account">
+      {% render 'icon'
+        , name: 'account' %}<span class="sp-header__action-label">
+        {% if customer %}Account{% else %}Sign in{% endif %}
+      </span>
+    </a>
+  {% endif %}
+
+  {% if section.settings.show_cart %}
+    <a
+      class="sp-header__action sp-header__cart"
+      href="{{ routes.cart_url }}"
+      {% if settings.header_cart_drawer and settings.cart_type == 'drawer' %}
+      data-drawer-open="CartDrawer"
+      aria-controls="CartDrawer"
+      aria-expanded="false"
+      {% endif %}
+      aria-label="Cart, {{ cart.item_count }} items">
+      {% render 'icon'
+        , name: 'cart' %}
+      <span class="sp-header__action-label">Cart</span>
+      <span
+        class="sp-header__cart-count"
+        data-cart-count
+        aria-live="polite">
+        {% if section.settings.cart_count_cap and cart.item_count > 99 %}99+
+        {% else %}
+          {{ cart.item_count }}{% endif %}
+      </span>
+    </a>
+  {% endif %}
+</div>
+
+{% if section.settings.show_search and section.settings.search_style == 'icon' %}
+  <div
+    id="SpHeaderSearchPanel-{{ section.id }}-{{ sp_instance }}"
+    class="sp-header__search-panel"
+    data-sp-search-panel
+    hidden>
+    <form
+      class="sp-header__search-panel-form"
+      action="{{ routes.search_url }}"
+      method="get"
+      role="search"
+      data-predictive-search>
+      <label class="visually-hidden" for="SpHeaderSearchDrawer-{{ section.id }}-{{ sp_instance }}">Search</label>
+      <div class="sp-header__search-field">
+        <input
+          id="SpHeaderSearchDrawer-{{ section.id }}-{{ sp_instance }}"
+          type="search"
+          name="q"
+          placeholder="Search"
+          autocomplete="off"
+          aria-controls="SpHeaderSearchDrawerResults-{{ section.id }}-{{ sp_instance }}">
+        <input
+          type="hidden"
+          name="options[prefix]"
+          value="last">
+        <button
+          class="sp-header__action"
+          type="submit"
+          aria-label="Submit search">{% render 'icon'
+, name: 'search' %}</button>
+        <button
+          class="sp-header__action"
+          type="button"
+          data-sp-search-close
+          aria-label="Close search">{% render 'icon'
+, name: 'close' %}</button>
+      </div>
+      <div
+        id="SpHeaderSearchDrawerResults-{{ section.id }}-{{ sp_instance }}"
+        class="sp-header__predictive"
+        data-predictive-results
+        aria-live="polite"></div>
+    </form>
+  </div>
+{% endif %}

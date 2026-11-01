@@ -1,0 +1,71 @@
+{%- liquid
+  assign footer_type = block.settings.footer_type | default: 'none'
+  assign progress = 0
+  if total_count > 0
+    assign progress = loaded_count | times: 100 | divided_by: total_count
+  endif
+  assign view_url = block.settings.view_all_url
+  if view_url == blank and collection != blank
+    assign view_url = collection.url
+  endif
+  assign has_more = false
+  if paginate.next and loaded_count < total_count
+    assign has_more = true
+  endif
+-%}
+
+{%- if footer_type != 'none' -%}
+  <div
+    class="sp-collections-grid-tabs-footer sp-collections-grid-tabs-footer--{{ block.settings.footer_alignment }}"
+    style="--sp-collections-grid-tabs-footer-distance: {{ block.settings.footer_distance }}px; --sp-collections-grid-tabs-footer-button-radius: {{ block.settings.footer_button_radius }}px;"
+    data-sp-collections-grid-tabs-footer
+  >
+    {%- if block.settings.show_progress and footer_type == 'load_more' -%}
+      <div class="sp-collections-grid-tabs-progress" data-sp-collections-grid-tabs-progress>
+        <span class="sp-collections-grid-tabs-progress__label">Showing <strong data-sp-collections-grid-tabs-loaded>{{ loaded_count }}</strong> of <strong data-sp-collections-grid-tabs-total>{{ total_count }}</strong> products</span>
+        <span class="sp-collections-grid-tabs-progress__track" aria-hidden="true"><span data-sp-collections-grid-tabs-progress-bar style="width:{{ progress }}%"></span></span>
+      </div>
+    {%- endif -%}
+
+    {%- case footer_type -%}
+      {%- when 'load_more' -%}
+        {%- if has_more -%}
+          <button
+            class="sp-button sp-collections-grid-tabs-load-more sp-collections-grid-tabs-load-more--{{ block.settings.footer_button_style }} sp-collections-grid-tabs-load-more--{{ block.settings.footer_button_size }}"
+            type="button"
+            data-sp-collections-grid-tabs-load-more
+            data-next-url="{{ paginate.next.url }}"
+            data-block-id="{{ block.id }}"
+            data-page-param="{{ paginate.page_param }}"
+            aria-busy="false"
+          >
+            <span data-sp-collections-grid-tabs-load-more-text>{{ block.settings.load_more_label | escape }}</span>
+            <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h11M11 6l4 4-4 4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <noscript><a class="sp-button sp-button--secondary" href="{{ paginate.next.url }}" rel="next">Next products</a></noscript>
+        {%- endif -%}
+      {%- when 'view_all' -%}
+        {%- if view_url != blank -%}
+          <a class="sp-button sp-collections-grid-tabs-load-more sp-collections-grid-tabs-load-more--{{ block.settings.footer_button_style }} sp-collections-grid-tabs-load-more--{{ block.settings.footer_button_size }}" href="{{ view_url }}">
+            {{ block.settings.view_all_label | escape }}
+          </a>
+        {%- endif -%}
+      {%- when 'pages' -%}
+        {%- if paginate.pages > 1 -%}
+          <nav class="sp-collections-grid-tabs-pages" aria-label="Product pages">
+            {%- if paginate.previous -%}<a href="{{ paginate.previous.url }}" rel="prev" aria-label="Previous page">←</a>{%- endif -%}
+            {%- for part in paginate.parts -%}
+              {%- if part.is_link -%}
+                <a href="{{ part.url }}">{{ part.title }}</a>
+              {%- else -%}
+                <span{% if part.title == paginate.current_page %} aria-current="page"{% endif %}>{{ part.title }}</span>
+              {%- endif -%}
+            {%- endfor -%}
+            {%- if paginate.next -%}<a href="{{ paginate.next.url }}" rel="next" aria-label="Next page">→</a>{%- endif -%}
+          </nav>
+        {%- endif -%}
+    {%- endcase -%}
+
+    <p class="sp-collections-grid-tabs-footer__status" data-sp-collections-grid-tabs-status aria-live="polite" aria-atomic="true"></p>
+  </div>
+{%- endif -%}

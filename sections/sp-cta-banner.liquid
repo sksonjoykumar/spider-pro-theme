@@ -1,0 +1,112 @@
+{% if section.settings.enable_section %}
+  {% render 'sp-section-color-scheme', section: section %}
+  {{ 'sp-content-sections.css' | asset_url | stylesheet_tag }}
+
+  <section
+    class="sp-cta-banner-section"
+    data-section-id="{{ section.id }}"
+    aria-labelledby="SpCtaBannerTitle-{{ section.id }}"
+  >
+    <div class="sp-container">
+      <div class="sp-cta-banner">
+        <div class="sp-cta-banner__icon">
+          {% render 'sp-content-icon', name: section.settings.icon %}
+        </div>
+        <div class="sp-cta-banner__content">
+          <h2 id="SpCtaBannerTitle-{{ section.id }}" class="sp-cta-banner__title">
+            {{ section.settings.heading | escape }}
+          </h2>
+          {% if section.settings.text != blank %}
+            <p class="sp-cta-banner__text">{{ section.settings.text | escape }}</p>
+          {% endif %}
+        </div>
+        {% if section.settings.button_label != blank and section.settings.button_link != blank %}
+          <div class="sp-cta-banner__actions">
+            {% render 'button', label: section.settings.button_label, href: section.settings.button_link, style: 'primary' %}
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </section>
+{% endif %}
+
+{% schema %}
+{
+  "name": "CTA banner",
+  "disabled_on": {
+    "groups": [
+      "header",
+      "footer",
+      "custom.system"
+    ]
+  },
+  "settings": [
+    {
+      "type": "header",
+      "content": "Global design system"
+    },
+    {
+      "type": "color_scheme",
+      "id": "sp_color_scheme",
+      "label": "Color scheme",
+      "default": "scheme-2",
+      "info": "Uses the shared Spider color panel from Theme settings."
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_section",
+      "label": "Show section",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "icon",
+      "label": "Icon",
+      "default": "chat",
+      "options": [
+        {
+          "value": "chat",
+          "label": "Chat"
+        },
+        {
+          "value": "headset",
+          "label": "Support"
+        },
+        {
+          "value": "heart",
+          "label": "Heart"
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Need a little help?"
+    },
+    {
+      "type": "textarea",
+      "id": "text",
+      "label": "Text",
+      "default": "Our team is ready to help with your questions."
+    },
+    {
+      "type": "text",
+      "id": "button_label",
+      "label": "Button label",
+      "default": "Contact Us"
+    },
+    {
+      "type": "url",
+      "id": "button_link",
+      "label": "Button link"
+    }
+  ],
+  "presets": [
+    {
+      "name": "CTA banner",
+      "category": "04. Content"
+    }
+  ]
+}
+{% endschema %}

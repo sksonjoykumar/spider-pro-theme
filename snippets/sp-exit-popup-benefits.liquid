@@ -1,0 +1,37 @@
+{%- liquid
+  assign benefits_count = 0
+  for benefit in section.blocks
+    if benefit.type == 'benefit'
+      assign benefits_count = benefits_count | plus: 1
+    endif
+  endfor
+-%}
+{%- if benefits_count > 0 -%}
+  <div class="sp-exit-popup__benefits" aria-label="Store benefits" style="--sp-exit-benefit-count:{{ benefits_count }}; --sp-exit-benefit-columns-m:{{ section.settings.reference_benefit_columns_mobile }}; --sp-exit-benefit-icon-color:{{ section.settings.benefit_icon_color }}; --sp-exit-benefit-icon-bg:{{ section.settings.benefit_icon_background }};">
+  {%- for benefit in section.blocks -%}
+    {%- if benefit.type == 'benefit' -%}
+      <div class="sp-exit-popup__benefit{% if benefit.settings.hide_mobile %} sp-exit-popup__benefit--mobile-hidden{% endif %}" {{ benefit.shopify_attributes }}>
+        {%- if benefit.settings.url != blank -%}<a class="sp-exit-popup__benefit-link" href="{{ benefit.settings.url }}">{%- endif -%}
+        <span class="sp-exit-popup__benefit-icon" aria-hidden="true">
+          {%- if benefit.settings.custom_icon != blank -%}
+            {{ benefit.settings.custom_icon | image_url: width: 88 | image_tag: loading: 'lazy', widths: '44, 88', class: 'sp-exit-popup__benefit-image', alt: '' }}
+          {%- else -%}
+            <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+              {%- case benefit.settings.icon -%}
+                {%- when 'truck' -%}<path d="M3 5h11v12H3zM14 9h4l3 3v5h-7z"/><circle cx="7.5" cy="18" r="2"/><circle cx="17.5" cy="18" r="2"/>
+                {%- when 'gift' -%}<rect x="3" y="9" width="18" height="12" rx="1"/><path d="M2 6h20v4H2zM12 6v15M12 6C4-1 2 8 12 6ZM12 6c8-7 10 2 0 0Z"/>
+                {%- when 'tag' -%}<path d="M3 12 12 3h8l1 1v8l-9 9z"/><circle cx="16.5" cy="7.5" r="1.4"/>
+                {%- when 'shield' -%}<path d="M12 2 21 6v6c0 5-4 8-9 10-5-2-9-5-9-10V6z"/><path d="m8.5 12 2.5 2.5 4.5-5"/>
+                {%- when 'star' -%}<path d="m12 2 3.1 6.4 7.1 1-5.1 5 .9 7.1-6-3.3-6 3.3 1-7.1-5.2-5 7.1-1z"/>
+              {%- endcase -%}
+            </svg>
+          {%- endif -%}
+        </span>
+        {%- if benefit.settings.title != blank -%}<strong class="sp-exit-popup__benefit-title">{{ benefit.settings.title | escape }}</strong>{%- endif -%}
+        {%- if benefit.settings.description != blank -%}<span class="sp-exit-popup__benefit-desc">{{ benefit.settings.description | escape }}</span>{%- endif -%}
+        {%- if benefit.settings.url != blank -%}</a>{%- endif -%}
+      </div>
+    {%- endif -%}
+  {%- endfor -%}
+  </div>
+{%- endif -%}

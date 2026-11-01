@@ -1,0 +1,198 @@
+{%- if block.settings.label != blank and block.settings.link != blank -%}
+  <a
+    id="SpiderSlideCustomButton-{{ block.id }}"
+    class="sp-slide-custom-button sp-slide-custom-button--{{ block.settings.effect }}{% if block.settings.hide_mobile %} sp-slide-block--hide-mobile{% endif %}"
+    href="{{ block.settings.link }}"
+    {% if block.settings.open_new_tab %}target="_blank" rel="noopener noreferrer"{% endif %}
+    data-sp-slide-anim
+    {{ block.shopify_attributes }}
+    style="--sp-cbtn-text: {{ block.settings.text_color }}; --sp-cbtn-bg: {{ block.settings.background }}; --sp-cbtn-border: {{ block.settings.border }}; --sp-cbtn-hover-text: {{ block.settings.hover_text }}; --sp-cbtn-hover-bg: {{ block.settings.hover_background }}; --sp-cbtn-hover-border: {{ block.settings.hover_border }}; --sp-cbtn-size-d: {{ block.settings.desktop_size }}px; --sp-cbtn-size-m: {{ block.settings.mobile_size }}px; --sp-cbtn-weight: {{ block.settings.weight }}; --sp-cbtn-letter: {{ block.settings.letter_spacing }}px; --sp-cbtn-min-h: {{ block.settings.min_height }}px; --sp-cbtn-px: {{ block.settings.horizontal_padding }}px; --sp-cbtn-radius: {{ block.settings.radius }}px;"
+  ><span>{{ block.settings.label }}</span>{% if block.settings.show_arrow %}<span aria-hidden="true">→</span>{% endif %}</a>
+{%- endif -%}
+{% schema %}
+{
+  "name": "Slide Custom Button",
+  "tag": null,
+  "settings": [
+    {
+      "type": "text",
+      "id": "label",
+      "label": "Label",
+      "default": "Explore"
+    },
+    {
+      "type": "url",
+      "id": "link",
+      "label": "Link"
+    },
+    {
+      "type": "checkbox",
+      "id": "open_new_tab",
+      "label": "Open in new tab",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "show_arrow",
+      "label": "Show arrow",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "effect",
+      "label": "Hover effect",
+      "default": "fade",
+      "options": [
+        {
+          "value": "none",
+          "label": "None"
+        },
+        {
+          "value": "fade",
+          "label": "Fade"
+        },
+        {
+          "value": "sweep_right",
+          "label": "Sweep right"
+        },
+        {
+          "value": "sweep_left",
+          "label": "Sweep left"
+        },
+        {
+          "value": "sweep_up",
+          "label": "Sweep up"
+        },
+        {
+          "value": "sweep_down",
+          "label": "Sweep down"
+        },
+        {
+          "value": "outline",
+          "label": "Outline"
+        },
+        {
+          "value": "shadow",
+          "label": "Shadow"
+        }
+      ]
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "background",
+      "label": "Background",
+      "default": "#111111"
+    },
+    {
+      "type": "color",
+      "id": "border",
+      "label": "Border",
+      "default": "#111111"
+    },
+    {
+      "type": "color",
+      "id": "hover_text",
+      "label": "Hover text",
+      "default": "#111111"
+    },
+    {
+      "type": "color",
+      "id": "hover_background",
+      "label": "Hover background",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "hover_border",
+      "label": "Hover border",
+      "default": "#111111"
+    },
+    {
+      "type": "range",
+      "id": "desktop_size",
+      "label": "Desktop font size",
+      "min": 10,
+      "max": 40,
+      "step": 1,
+      "unit": "px",
+      "default": 14
+    },
+    {
+      "type": "range",
+      "id": "mobile_size",
+      "label": "Mobile font size",
+      "min": 10,
+      "max": 32,
+      "step": 1,
+      "unit": "px",
+      "default": 14
+    },
+    {
+      "type": "range",
+      "id": "weight",
+      "label": "Weight",
+      "min": 100,
+      "max": 900,
+      "step": 100,
+      "default": 600
+    },
+    {
+      "type": "range",
+      "id": "letter_spacing",
+      "label": "Letter spacing",
+      "min": -1,
+      "max": 6,
+      "step": 0.5,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "min_height",
+      "label": "Min height",
+      "min": 36,
+      "max": 80,
+      "step": 2,
+      "unit": "px",
+      "default": 46
+    },
+    {
+      "type": "range",
+      "id": "horizontal_padding",
+      "label": "Horizontal padding",
+      "min": 8,
+      "max": 70,
+      "step": 2,
+      "unit": "px",
+      "default": 28
+    },
+    {
+      "type": "range",
+      "id": "radius",
+      "label": "Border radius",
+      "min": 0,
+      "max": 50,
+      "step": 1,
+      "unit": "px",
+      "default": 8
+    },
+    {
+      "type": "checkbox",
+      "id": "hide_mobile",
+      "label": "Hide on mobile",
+      "default": false
+    }
+  ],
+  "presets": [
+    {
+      "name": "Slide Custom Button"
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,86 @@
+{% comment %}
+  Shopify-native Search filters. The filter definitions come from Search & Discovery / Shopify,
+  never from the section schema.
+{% endcomment %}
+<form class="sp-search-facets" action="{{ routes.search_url }}" method="get" data-search-facets-form>
+  <input type="hidden" name="q" value="{{ search.terms | escape }}">
+  <input type="hidden" name="type" value="{{ current_type_value | escape }}">
+  <input type="hidden" name="options[prefix]" value="last">
+  {% assign current_sort = search.sort_by | default: search.default_sort_by %}
+  {% if current_sort != blank %}<input type="hidden" name="sort_by" value="{{ current_sort | escape }}">{% endif %}
+
+  <div class="sp-search-facets__groups">
+    {% for filter in search.filters %}
+      {% assign has_filter_state = false %}
+      {% if filter.active_values.size > 0 or filter.min_value.value or filter.max_value.value %}{% assign has_filter_state = true %}{% endif %}
+      <details class="sp-search-facet"{% if has_filter_state %} open{% endif %}>
+        <summary class="sp-search-facet__summary">
+          <span>{{ filter.label | escape }}</span>
+          {% if filter.active_values.size > 0 %}<span class="sp-search-facet__count">{{ filter.active_values.size }}</span>{% endif %}
+        </summary>
+        <div class="sp-search-facet__body">
+          {% case filter.type %}
+            {% when 'boolean', 'list' %}
+              <div class="sp-search-facet__values{% if filter.presentation == 'swatch' %} sp-search-facet__values--swatch{% endif %}">
+                {% for value in filter.values %}
+                  <label class="sp-search-filter-value{% if value.active %} is-active{% endif %}{% if value.count == 0 and value.active == false %} is-disabled{% endif %}">
+                    <input
+                      type="checkbox"
+                      name="{{ value.param_name }}"
+                      value="{{ value.value | escape }}"
+                      {% if value.active %}checked{% endif %}
+                      {% if value.count == 0 and value.active == false %}disabled{% endif %}
+                      data-search-filter-input
+                    >
+                    {% if filter.presentation == 'swatch' and value.swatch != blank %}
+                      <span
+                        class="sp-search-filter-value__swatch"
+                        aria-hidden="true"
+                        {% if value.swatch.color != blank %}style="--sp-search-filter-swatch: {{ value.swatch.color }};"{% elsif value.swatch.image != blank %}style="--sp-search-filter-swatch-image: url('{{ value.swatch.image | image_url: width: 80 }}');"{% endif %}
+                      ></span>
+                    {% elsif filter.presentation == 'image' and value.image != blank %}
+                      <span class="sp-search-filter-value__image" aria-hidden="true">{{ value.image | image_url: width: 80 | image_tag: loading: 'lazy', widths: '40,80', sizes: '32px', alt: '' }}</span>
+                    {% endif %}
+                    <span class="sp-search-filter-value__label">{{ value.label | escape }}</span>
+                    <span class="sp-search-filter-value__count">{{ value.count }}</span>
+                  </label>
+                {% endfor %}
+              </div>
+            {% when 'price_range' %}
+              <div class="sp-search-price-range">
+                <label>
+                  <span>{{ 'products.facets.from' | t }}</span>
+                  <input
+                    type="number"
+                    name="{{ filter.min_value.param_name }}"
+                    value="{% if filter.min_value.value %}{{ filter.min_value.value | money_without_currency | replace: ',', '' | strip }}{% endif %}"
+                    min="0"
+                    max="{{ filter.range_max | money_without_currency | replace: ',', '' | strip }}"
+                    inputmode="decimal"
+                    data-search-filter-input
+                  >
+                </label>
+                <label>
+                  <span>{{ 'products.facets.to' | t }}</span>
+                  <input
+                    type="number"
+                    name="{{ filter.max_value.param_name }}"
+                    value="{% if filter.max_value.value %}{{ filter.max_value.value | money_without_currency | replace: ',', '' | strip }}{% endif %}"
+                    min="0"
+                    max="{{ filter.range_max | money_without_currency | replace: ',', '' | strip }}"
+                    inputmode="decimal"
+                    data-search-filter-input
+                  >
+                </label>
+              </div>
+          {% endcase %}
+        </div>
+      </details>
+    {% endfor %}
+  </div>
+
+  <div class="sp-search-facets__actions">
+    <button class="sp-button sp-button--primary" type="submit">{{ 'collections.filtering.apply_filters' | t }}</button>
+    <a class="sp-button sp-button--secondary" href="{{ clear_url }}" data-search-filter-link>{{ 'collections.filtering.clear_all' | t }}</a>
+  </div>
+</form>

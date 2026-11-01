@@ -1,0 +1,392 @@
+{% render 'sp-section-color-scheme', section: section %}
+{{ 'sp-featured-collection.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'sp-featured-collection.js' | asset_url }}" defer></script>
+
+{%- liquid
+  assign sp_layout = section.settings.section_layout | default: 'container'
+  assign sp_outer_class = 'sp-featured-collection sp-product-section'
+  assign sp_inner_class = 'sp-featured-collection__inner'
+
+  case sp_layout
+    when 'container'
+      assign sp_outer_class = sp_outer_class | append: ' sp-featured-collection--container'
+      assign sp_inner_class = sp_inner_class | append: ' sp-container'
+    when 'wrapper_container'
+      assign sp_outer_class = sp_outer_class | append: ' sp-featured-collection--wrapper'
+      assign sp_inner_class = sp_inner_class | append: ' sp-container'
+    when 'full_width'
+      assign sp_outer_class = sp_outer_class | append: ' sp-featured-collection--full'
+  endcase
+
+  assign sp_bg_alpha = section.settings.background_opacity | divided_by: 100.0
+-%}
+
+<sp-featured-collection
+  id="SpiderFeaturedCollection-{{ section.id }}"
+  class="{{ sp_outer_class }}"
+  data-sp-product-section
+  data-section-id="{{ section.id }}"
+  data-design-mode="{{ request.design_mode }}"
+  data-parallax="{{ section.settings.background_parallax }}"
+  data-money-format="{{ shop.money_with_currency_format | escape }}"
+  data-currency="{{ cart.currency.iso_code | default: shop.currency | escape }}"
+  data-compare-max="{{ section.settings.compare_max }}"
+  data-buy-now="{{ section.settings.enable_buy_now }}"
+  data-debug="{{ section.settings.debug_mode }}"
+  data-swatch-color-map-json="{{ section.settings.swatch_color_map | default: '' | json | escape }}"
+  style="
+    --sp-featured-bg-opacity: {{ sp_bg_alpha }};
+    --sp-featured-mt-d: {{ section.settings.margin_top_desktop }}px;
+    --sp-featured-mb-d: {{ section.settings.margin_bottom_desktop }}px;
+    --sp-featured-mt-t: {{ section.settings.margin_top_tablet }}px;
+    --sp-featured-mb-t: {{ section.settings.margin_bottom_tablet }}px;
+    --sp-featured-mt-m: {{ section.settings.margin_top_mobile }}px;
+    --sp-featured-mb-m: {{ section.settings.margin_bottom_mobile }}px;
+    --sp-featured-pt-d: {{ section.settings.padding_top_desktop }}px;
+    --sp-featured-pb-d: {{ section.settings.padding_bottom_desktop }}px;
+    --sp-featured-pt-t: {{ section.settings.padding_top_tablet }}px;
+    --sp-featured-pb-t: {{ section.settings.padding_bottom_tablet }}px;
+    --sp-featured-pt-m: {{ section.settings.padding_top_mobile }}px;
+    --sp-featured-pb-m: {{ section.settings.padding_bottom_mobile }}px;
+    --sp-featured-full-pad-d: {{ section.settings.full_padding_desktop }}px;
+    --sp-featured-full-pad-t: {{ section.settings.full_padding_tablet }}px;
+    --sp-featured-full-pad-m: {{ section.settings.full_padding_mobile }}px;
+  "
+>
+  <div class="sp-featured-collection__surface" aria-hidden="true">
+    <span class="sp-featured-collection__color-layer"></span>
+    {%- if section.settings.background_image != blank -%}
+      {%- assign bg = section.settings.background_image -%}
+      {{ bg
+        | image_url: width: 2000
+        | image_tag:
+          class: 'sp-featured-collection__background-image',
+          widths: '480, 640, 800, 1000, 1200, 1440, 1600, 1800, 2000',
+          sizes: '100vw',
+          loading: 'lazy',
+          alt: ''
+      }}
+    {%- endif -%}
+  </div>
+
+  <div class="{{ sp_inner_class }}">
+    {% content_for 'block', type: 'sp-featured-section-heading', id: 'sp-featured-heading' %}
+    <div class="sp-featured-collection__display">
+      {% content_for 'blocks' %}
+    </div>
+  </div>
+</sp-featured-collection>
+
+{% schema %}
+{
+  "name": "Featured Collection",
+  "tag": "section",
+  "class": "sp-section sp-section-featured-collection",
+  "max_blocks": 1,
+  "disabled_on": {
+    "groups": [
+      "header",
+      "footer",
+      "custom.system"
+    ]
+  },
+  "blocks": [
+    {
+      "type": "sp-featured-product-grid"
+    },
+    {
+      "type": "sp-featured-product-carousel"
+    }
+  ],
+  "settings": [
+    {
+      "type": "header",
+      "content": "Global design system"
+    },
+    {
+      "type": "color_scheme",
+      "id": "sp_color_scheme",
+      "label": "Color scheme",
+      "default": "scheme-2",
+      "info": "Shared Spider color panel. Edit schemes once in Theme settings → Spider Color Schemes."
+    },
+    {
+      "type": "header",
+      "content": "Section layout"
+    },
+    {
+      "type": "select",
+      "id": "section_layout",
+      "label": "Width",
+      "default": "container",
+      "options": [
+        {
+          "value": "container",
+          "label": "Container"
+        },
+        {
+          "value": "wrapper_container",
+          "label": "Full background / contained content"
+        },
+        {
+          "value": "full_width",
+          "label": "Full width"
+        }
+      ]
+    },
+    {
+      "type": "range",
+      "id": "background_opacity",
+      "label": "Background opacity",
+      "min": 0,
+      "max": 100,
+      "step": 5,
+      "unit": "%",
+      "default": 100
+    },
+    {
+      "type": "image_picker",
+      "id": "background_image",
+      "label": "Background image"
+    },
+    {
+      "type": "checkbox",
+      "id": "background_parallax",
+      "label": "Background parallax",
+      "default": false
+    },
+    {
+      "type": "header",
+      "content": "Commerce interactions"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_buy_now",
+      "label": "Enable Buy it now in product dialogs",
+      "default": true,
+      "info": "Uses the selected variant and redirects to checkout after a successful cart add. Verify on a duplicate Shopify theme before publishing."
+    },
+    {
+      "type": "range",
+      "id": "compare_max",
+      "label": "Maximum compared products",
+      "min": 2,
+      "max": 4,
+      "step": 1,
+      "default": 4
+    },
+    {
+      "type": "checkbox",
+      "id": "debug_mode",
+      "label": "Developer debug logging",
+      "default": false,
+      "info": "Logs Featured Collection Load More and commerce integration diagnostics in the browser console. Keep OFF on normal storefronts."
+    },
+    {
+      "type": "header",
+      "content": "Product swatch colors"
+    },
+    {
+      "type": "textarea",
+      "id": "swatch_color_map",
+      "label": "Custom swatch color map",
+      "info": "Optional. Use comma-separated, semicolon-separated, or one color per line. Example: Black: #000000, Pink: #F4A6B7, Periwinkle: #CCCCFF. Only real product Color/Colour option values are shown."
+    },
+    {
+      "type": "header",
+      "content": "Full-width inner padding"
+    },
+    {
+      "type": "range",
+      "id": "full_padding_desktop",
+      "label": "Desktop",
+      "min": 0,
+      "max": 80,
+      "step": 4,
+      "unit": "px",
+      "default": 32
+    },
+    {
+      "type": "range",
+      "id": "full_padding_tablet",
+      "label": "Tablet",
+      "min": 0,
+      "max": 60,
+      "step": 4,
+      "unit": "px",
+      "default": 24
+    },
+    {
+      "type": "range",
+      "id": "full_padding_mobile",
+      "label": "Mobile",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "default": 16
+    },
+    {
+      "type": "header",
+      "content": "Desktop spacing"
+    },
+    {
+      "type": "range",
+      "id": "margin_top_desktop",
+      "label": "Margin top",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "margin_bottom_desktop",
+      "label": "Margin bottom",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "default": 48
+    },
+    {
+      "type": "range",
+      "id": "padding_top_desktop",
+      "label": "Padding top",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom_desktop",
+      "label": "Padding bottom",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "header",
+      "content": "Tablet spacing"
+    },
+    {
+      "type": "range",
+      "id": "margin_top_tablet",
+      "label": "Margin top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "margin_bottom_tablet",
+      "label": "Margin bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "default": 40
+    },
+    {
+      "type": "range",
+      "id": "padding_top_tablet",
+      "label": "Padding top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom_tablet",
+      "label": "Padding bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "header",
+      "content": "Mobile spacing"
+    },
+    {
+      "type": "range",
+      "id": "margin_top_mobile",
+      "label": "Margin top",
+      "min": 0,
+      "max": 80,
+      "step": 2,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "margin_bottom_mobile",
+      "label": "Margin bottom",
+      "min": 0,
+      "max": 80,
+      "step": 2,
+      "unit": "px",
+      "default": 30
+    },
+    {
+      "type": "range",
+      "id": "padding_top_mobile",
+      "label": "Padding top",
+      "min": 0,
+      "max": 80,
+      "step": 2,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom_mobile",
+      "label": "Padding bottom",
+      "min": 0,
+      "max": 80,
+      "step": 2,
+      "unit": "px",
+      "default": 0
+    }
+  ],
+  "presets": [
+    {
+      "name": "Featured Collection",
+      "category": "03. Collections",
+      "blocks": [
+        {
+          "type": "sp-featured-product-grid",
+          "settings": {
+            "columns_desktop": "4",
+            "columns_tablet": "3",
+            "columns_mobile": "1",
+            "product_style": "01"
+          }
+        },
+        {
+          "type": "sp-featured-section-heading",
+          "static": true,
+          "id": "sp-featured-heading",
+          "settings": {
+            "heading": "BEST SELLER",
+            "subheading": "<p><em>Top sale in this week</em></p>",
+            "design": "2",
+            "alignment": "center",
+            "margin_bottom": 30
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

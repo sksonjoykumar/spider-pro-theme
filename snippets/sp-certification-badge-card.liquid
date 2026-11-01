@@ -1,0 +1,132 @@
+{%- liquid
+  assign b = block.settings
+  assign has_info = false
+  if b.detailed_description != blank or b.issuer_name != blank or b.certificate_number != blank or b.scope != blank or b.verification_url != blank or b.certificate_file_url != blank or b.applicability_note != blank
+    assign has_info = true
+  endif
+  assign current_status = b.verification_status
+  if not_applicable
+    assign current_status = 'not_shown'
+  endif
+  assign today = 'now' | date: '%Y-%m-%d'
+  assign expiry_date = b.expiry_date | strip
+  assign valid_expiry = false
+  if expiry_date.size == 10
+    assign expiry_display = expiry_date | date: '%Y-%m-%d'
+    if expiry_display == expiry_date
+      assign valid_expiry = true
+    endif
+  endif
+  if valid_expiry and expiry_date < today
+    assign current_status = 'expired'
+  endif
+  if expiry_date != blank and valid_expiry == false and current_status == 'verified'
+    assign current_status = 'not_shown'
+  endif
+  if b.badge_type == 'self_declared_standard' and current_status == 'verified'
+    assign current_status = 'self_declared'
+  endif
+  if current_status == 'verified'
+    if b.issuer_name == blank or b.verification_url == blank and b.certificate_file_url == blank
+      assign current_status = 'not_shown'
+    endif
+  endif
+  assign type_title = ''
+  case b.badge_type
+    when 'third_party_certification'
+      assign type_title = 'Third-party certification'
+    when 'self_declared_standard'
+      assign type_title = 'Self-declared standard'
+    when 'product_claim'
+      assign type_title = 'Product claim'
+    when 'quality_test'
+      assign type_title = 'Quality test'
+    when 'warranty'
+      assign type_title = 'Warranty'
+    when 'policy'
+      assign type_title = 'Store policy'
+    when 'membership'
+      assign type_title = 'Membership'
+    else
+      assign type_title = 'Other standard'
+  endcase
+  assign render_icon_area = true
+  if b.badge_type == 'third_party_certification' and b.certification_logo == blank and request.design_mode == false
+    assign render_icon_area = false
+  endif
+  assign status_title = ''
+  case current_status
+    when 'verified'
+      assign status_title = 'Verified (merchant-provided evidence)'
+    when 'pending'
+      assign status_title = 'Pending verification'
+    when 'expired'
+      assign status_title = 'Expired'
+    when 'self_declared'
+      assign status_title = 'Self-declared'
+    when 'custom'
+      assign status_title = 'Details provided by merchant'
+  endcase
+-%}
+<li class="sp-cpb__item{% if not_applicable %} sp-cpb__item--inapplicable{% endif %}{% if is_featured %} sp-cpb__item--featured{% endif %}{% if b.highlight_badge %} sp-cpb__item--highlight{% endif %}{% if demo %} sp-cpb__item--demo{% endif %}" data-sp-cpb-card data-sp-cpb-category="{{ b.category | escape }}" data-sp-cpb-block-id="{{ block.id }}" {{ block.shopify_attributes }}>
+  <article class="sp-cpb__card">
+    {%- if render_icon_area -%}
+    <div class="sp-cpb__media" aria-hidden="{% if b.certification_logo != blank %}false{% else %}true{% endif %}">
+      {%- if b.certification_logo != blank -%}
+        {%- assign logo_alt = b.certification_logo_alt | default: b.title -%}
+        {{ b.certification_logo | image_url: width: 480 | image_tag: widths: '96,144,192,288,480', sizes: '(max-width:749px) 60px, 112px', loading: 'lazy', alt: logo_alt, class: 'sp-cpb__logo' }}
+      {%- elsif b.custom_icon != blank -%}
+        {{ b.custom_icon | image_url: width: 320 | image_tag: widths: '80,128,192,320', sizes: '110px', loading: 'lazy', alt: '', class: 'sp-cpb__logo' }}
+      {%- else -%}
+        {%- case b.icon -%}
+          {%- when 'recycle' -%}
+            <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m27 10 7-6 8 17-9-1m1 1L27 10l-10 17M47 25l11 2-9 13-4-9m4 9H31m-5 10-6 9-13-12 10-2m-10 2 10-18m6 18h24"/></svg>
+          {%- when 'paw' -%}
+            <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M30 49C22 51 18 45 21 40c3-6 7-9 11-9s8 3 11 9c3 5-1 11-9 9l-2-1-2 1Z"/><ellipse cx="17" cy="26" rx="4" ry="6" transform="rotate(-20 17 26)"/><ellipse cx="28" cy="20" rx="4" ry="6"/><ellipse cx="40" cy="20" rx="4" ry="6"/><ellipse cx="50" cy="28" rx="4" ry="6" transform="rotate(20 50 28)"/><path d="M10 12c7-7 16-7 22-1 6-6 15-6 22 1"/></svg>
+          {%- when 'package' -%}
+            <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 23 23 12 23-12-23-12L9 23Zm0 0v26l23 12 23-12V23M32 35v26M28 16c-2-8 1-13 10-14M32 11c6-4 11-4 17-1"/></svg>
+          {%- when 'award' -%}
+            <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="32" cy="23" r="17"/><path d="m24 38-6 22 14-6 14 6-6-22M32 13l3 6 7 1-5 5 1 7-6-4-6 4 1-7-5-5 7-1 3-6Z"/></svg>
+          {%- else -%}
+            {% render 'sp-content-icon', name: b.icon, class: 'sp-cpb__generic-icon' %}
+        {%- endcase -%}
+      {%- endif -%}
+    </div>
+    {%- endif -%}
+    <div class="sp-cpb__card-body">
+      {%- if not_applicable -%}<span class="sp-cpb__not-applicable">Not applicable to this product</span>{%- endif -%}
+      {%- if demo -%}<span class="sp-cpb__demo-note">Preview only · Not published</span>{%- endif -%}
+      {%- if section.settings.show_badge_type -%}<p class="sp-cpb__type">{{ type_title | escape }}</p>{%- endif -%}
+      <h3 class="sp-cpb__card-title">{{ b.title | escape }}</h3>
+      {%- if b.short_description != blank -%}<p class="sp-cpb__card-copy">{{ b.short_description | escape }}</p>{%- endif -%}
+      {%- if section.settings.show_verification_status and status_title != blank and not_applicable == false -%}<p class="sp-cpb__status sp-cpb__status--{{ current_status }}">{{ status_title | escape }}</p>{%- endif -%}
+      {%- if section.settings.show_verification_icon and current_status == 'verified' and not_applicable == false -%}<span class="sp-cpb__verified-marker" aria-hidden="true">✓</span>{%- endif -%}
+      {%- if section.settings.show_issuer and b.issuer_name != blank -%}<p class="sp-cpb__meta">Issuer: {{ b.issuer_name | escape }}</p>{%- endif -%}
+      {%- if section.settings.show_scope and b.scope != blank -%}<p class="sp-cpb__meta">Scope: {{ b.scope | escape }}</p>{%- endif -%}
+      {%- if section.settings.show_certificate_number and b.certificate_number != blank -%}<p class="sp-cpb__meta">Certificate: {{ b.certificate_number | escape }}</p>{%- endif -%}
+      {%- if section.settings.show_dates -%}{%- if b.issue_date != blank -%}<p class="sp-cpb__meta">Issued: {{ b.issue_date | escape }}</p>{%- endif -%}{%- if b.expiry_date != blank -%}<p class="sp-cpb__meta">Expires: {{ b.expiry_date | escape }}</p>{%- endif -%}{%- endif -%}
+      {%- if section.settings.show_learn_more -%}
+        {%- if section.settings.details_behavior == 'direct_link' -%}
+          {%- if b.link_url != blank and b.link_label != blank -%}<a class="sp-cpb__learn" href="{{ b.link_url }}"{% if b.open_in_new_tab %} target="_blank" rel="noopener noreferrer"{% endif %}>{{ b.link_label | escape }} <span aria-hidden="true">→</span></a>{%- endif -%}
+        {%- elsif has_info -%}
+          {%- if section.settings.details_behavior == 'modal' or section.settings.details_behavior == 'drawer' -%}<button type="button" hidden class="sp-cpb__learn sp-cpb__enhanced-link" data-sp-cpb-open aria-haspopup="dialog" aria-label="Learn more about {{ b.title | escape }}">{{ b.link_label | default: 'Learn more' | escape }} <span aria-hidden="true">→</span></button>{%- endif -%}
+          <details class="sp-cpb__details" data-sp-cpb-details><summary class="sp-cpb__learn">{{ b.link_label | default: 'Learn more' | escape }} <span aria-hidden="true">→</span></summary>
+            <div class="sp-cpb__details-content" data-sp-cpb-details-content>
+              {%- if b.detailed_description != blank -%}<div class="rte">{{ b.detailed_description }}</div>{%- endif -%}
+              <dl>
+                {%- if b.issuer_name != blank -%}<dt>Issuer</dt><dd>{{ b.issuer_name | escape }}</dd>{%- endif -%}
+                {%- if b.scope != blank -%}<dt>Scope</dt><dd>{{ b.scope | escape }}</dd>{%- endif -%}
+                {%- if b.certificate_number != blank -%}<dt>Certificate</dt><dd>{{ b.certificate_number | escape }}</dd>{%- endif -%}
+                {%- if b.issue_date != blank -%}<dt>Issued</dt><dd>{{ b.issue_date | escape }}</dd>{%- endif -%}
+                {%- if b.expiry_date != blank -%}<dt>Expires</dt><dd>{{ b.expiry_date | escape }}</dd>{%- endif -%}
+              </dl>
+              {%- if b.applicability_note != blank -%}<p>{{ b.applicability_note | escape }}</p>{%- endif -%}
+              {%- if b.verification_url != blank -%}<p><a href="{{ b.verification_url }}" target="_blank" rel="noopener noreferrer">{{ section.settings.verification_link_label | escape }} — {{ b.title | escape }}{% if section.settings.show_external_link_indicator %} ↗{% endif %}</a></p>{%- endif -%}
+              {%- if b.certificate_file_url != blank -%}<p><a href="{{ b.certificate_file_url }}" target="_blank" rel="noopener noreferrer">{{ section.settings.certificate_download_label | escape }} — {{ b.title | escape }}{% if section.settings.show_external_link_indicator %} ↗{% endif %}</a></p>{%- endif -%}
+            </div>
+          </details>
+        {%- endif -%}
+      {%- endif -%}
+    </div>
+  </article>
+</li>

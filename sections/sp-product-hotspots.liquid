@@ -1,0 +1,732 @@
+{%- liquid
+  assign desktop_image = section.settings.desktop_image
+  assign mobile_image = section.settings.mobile_image
+  assign has_image = false
+  if desktop_image != blank
+    assign has_image = true
+  endif
+
+  assign hotspot_count = 0
+  for block in section.blocks
+    if block.type == 'product_hotspot' and block.settings.product != blank
+      assign hotspot_count = hotspot_count | plus: 1
+    endif
+  endfor
+
+  assign container_class = 'sp-container'
+  if section.settings.section_width == 'wide'
+    assign container_class = 'sp-container sp-container--wide'
+  endif
+
+  assign layout_ratio = section.settings.desktop_layout_ratio | default: '62_38'
+  assign content_gap = section.settings.content_gap | default: 32
+  assign layout_gap = section.settings.layout_gap | default: 16
+
+  assign image_alt = section.settings.image_alt
+  if image_alt == blank and desktop_image != blank
+    assign image_alt = desktop_image.alt
+  endif
+  if image_alt == blank
+    assign image_alt = section.settings.heading
+  endif
+
+  assign desktop_ratio = '16 / 9'
+  assign mobile_ratio = desktop_ratio
+
+  if section.settings.image_presentation == 'adapt'
+    if desktop_image != blank
+      assign desktop_ratio = desktop_image.aspect_ratio
+    endif
+
+    if mobile_image != blank
+      assign mobile_ratio = mobile_image.aspect_ratio
+    else
+      assign mobile_ratio = desktop_ratio
+    endif
+  else
+    case section.settings.fixed_ratio
+      when '4_3'
+        assign desktop_ratio = '4 / 3'
+        assign mobile_ratio = '4 / 3'
+      when '1_1'
+        assign desktop_ratio = '1 / 1'
+        assign mobile_ratio = '1 / 1'
+      when '4_5'
+        assign desktop_ratio = '4 / 5'
+        assign mobile_ratio = '4 / 5'
+      else
+        assign desktop_ratio = '16 / 9'
+        assign mobile_ratio = '16 / 9'
+    endcase
+  endif
+-%}
+
+{%- if has_image or request.design_mode -%}
+  {% render 'sp-section-color-scheme', section: section %}
+  {{ 'sp-product-hotspots.css' | asset_url | stylesheet_tag }}
+  <script src="{{ 'sp-product-hotspots.js' | asset_url }}" defer="defer"></script>
+
+  <sp-product-hotspots
+    id="SpiderProductHotspots-{{ section.id }}"
+    class="sp-section sp-product-hotspots{% if section.settings.enable_pulse %} sp-product-hotspots--pulse{% endif %}{% if section.settings.enable_custom_spacing %} sp-product-hotspots--custom-spacing{% endif %}"
+    style="
+      --sp-hotspots-content-gap: {{ content_gap }}px;
+      --sp-hotspots-grid-gap: {{ layout_gap }}px;
+      {% if section.settings.enable_custom_spacing %}
+        --sp-hotspots-padding-top: {{ section.settings.padding_top | default: 72 }}px;
+        --sp-hotspots-padding-bottom: {{ section.settings.padding_bottom | default: 72 }}px;
+        --sp-hotspots-padding-top-mobile: {{ section.settings.mobile_padding_top | default: 40 }}px;
+        --sp-hotspots-padding-bottom-mobile: {{ section.settings.mobile_padding_bottom | default: 40 }}px;
+      {% endif %}
+    "
+    data-section-id="{{ section.id }}"
+    data-sp-product-section
+    data-cart-add-url="{{ routes.cart_add_url }}"
+    data-money-format="{{ shop.money_with_currency_format | escape }}"
+    data-currency="{{ cart.currency.iso_code | default: shop.currency | escape }}"
+    data-cart-ajax-updates="{{ settings.cart_ajax_updates }}"
+    data-cart-open-after-add="{{ settings.cart_open_after_add }}"
+    data-cart-type="{{ settings.cart_type | default: 'drawer' | escape }}"
+    data-buy-now="false"
+  >
+    <div class="{{ container_class }} sp-product-hotspots__container">
+      {%- if section.settings.show_header -%}
+        <header class="sp-product-hotspots__header sp-product-hotspots__header--{{ section.settings.header_alignment }}">
+          {%- if section.settings.show_eyebrow and section.settings.eyebrow != blank -%}
+            <p class="sp-product-hotspots__eyebrow sp-text-small">
+              {{ section.settings.eyebrow | escape }}
+            </p>
+          {%- endif -%}
+
+          {%- if section.settings.heading != blank -%}
+            <h2 class="sp-product-hotspots__heading sp-heading--h2">
+              {{ section.settings.heading | escape }}
+            </h2>
+          {%- endif -%}
+
+          {%- if section.settings.description != blank -%}
+            <div class="sp-product-hotspots__description rte">
+              {{ section.settings.description }}
+            </div>
+          {%- endif -%}
+        </header>
+      {%- endif -%}
+
+      <div
+        class="sp-product-hotspots__layout sp-product-hotspots__layout--ratio-{{ layout_ratio }}{% if hotspot_count == 0 or section.settings.show_product_list == false %} sp-product-hotspots__layout--image-only{% endif %}"
+      >
+        <div
+          class="sp-product-hotspots__media"
+          data-image-presentation="{{ section.settings.image_presentation }}"
+          style="
+            --sp-hotspots-ratio-d: {{ desktop_ratio }};
+            --sp-hotspots-ratio-m: {{ mobile_ratio }};
+          "
+        >
+          {%- if desktop_image != blank -%}
+            <picture class="sp-product-hotspots__picture">
+              {%- if mobile_image != blank -%}
+                <source
+                  media="(max-width: 749px)"
+                  srcset="
+                    {{ mobile_image | image_url: width: 360 }} 360w,
+                    {{ mobile_image | image_url: width: 540 }} 540w,
+                    {{ mobile_image | image_url: width: 720 }} 720w,
+                    {{ mobile_image | image_url: width: 900 }} 900w
+                  "
+                  sizes="100vw"
+                >
+              {%- endif -%}
+
+              {{
+                desktop_image
+                | image_url: width: 1800
+                | image_tag:
+                  widths: '480, 640, 800, 1000, 1200, 1400, 1600, 1800',
+                  sizes: '(min-width: 990px) 62vw, 100vw',
+                  loading: 'lazy',
+                  alt: image_alt,
+                  class: 'sp-product-hotspots__image'
+              }}
+            </picture>
+
+            {%- assign hotspot_index = 0 -%}
+            {%- for block in section.blocks -%}
+              {%- if block.type == 'product_hotspot' and block.settings.product != blank -%}
+                {%- assign hotspot_index = hotspot_index | plus: 1 -%}
+
+                {%- assign mobile_x = block.settings.desktop_x -%}
+                {%- assign mobile_y = block.settings.desktop_y -%}
+                {%- if block.settings.use_mobile_position -%}
+                  {%- assign mobile_x = block.settings.mobile_x -%}
+                  {%- assign mobile_y = block.settings.mobile_y -%}
+                {%- endif -%}
+
+                <button
+                  class="sp-product-hotspots__hotspot{% if hotspot_index == 1 %} is-active{% endif %}"
+                  type="button"
+                  data-hotspot-button
+                  data-hotspot-index="{{ hotspot_index }}"
+                  data-block-id="{{ block.id }}"
+                  aria-label="{{ section.settings.hotspot_label | escape }} {{ block.settings.product.title | escape }}"
+                  aria-pressed="{% if hotspot_index == 1 %}true{% else %}false{% endif %}"
+                  style="
+                    --sp-hotspot-x-d: {{ block.settings.desktop_x }}%;
+                    --sp-hotspot-y-d: {{ block.settings.desktop_y }}%;
+                    --sp-hotspot-x-m: {{ mobile_x }}%;
+                    --sp-hotspot-y-m: {{ mobile_y }}%;
+                  "
+                  {{ block.shopify_attributes }}
+                >
+                  <span aria-hidden="true">{{ hotspot_index }}</span>
+                </button>
+              {%- endif -%}
+            {%- endfor -%}
+
+          {%- elsif request.design_mode -%}
+            <div class="sp-product-hotspots__image-placeholder" role="status">
+              {{ 'lifestyle-1' | placeholder_svg_tag: 'sp-product-hotspots__placeholder-svg placeholder-svg' }}
+              <div class="sp-product-hotspots__placeholder-copy">
+                <strong>Select a lifestyle image</strong>
+                <span>Add a desktop image, then position Product Hotspot blocks over the products.</span>
+              </div>
+            </div>
+          {%- endif -%}
+        </div>
+
+        {%- if section.settings.show_product_strip and hotspot_count > 0 -%}
+          <div class="sp-product-hotspots__strip-wrap">
+            <div
+              class="sp-product-hotspots__strip"
+              role="group"
+              aria-label="{{ section.settings.strip_label | escape }}"
+            >
+              {%- assign strip_index = 0 -%}
+              {%- for block in section.blocks -%}
+                {%- if block.type == 'product_hotspot' and block.settings.product != blank -%}
+                  {%- assign strip_index = strip_index | plus: 1 -%}
+                  {%- assign product = block.settings.product -%}
+                  {%- assign current_variant = product.selected_or_first_available_variant -%}
+
+                  <button
+                    class="sp-product-hotspots__strip-item{% if strip_index == 1 %} is-active{% endif %}"
+                    type="button"
+                    data-hotspot-trigger
+                    data-hotspot-index="{{ strip_index }}"
+                    data-block-id="{{ block.id }}"
+                    aria-label="{{ section.settings.strip_item_label | escape }} {{ product.title | escape }}"
+                    aria-pressed="{% if strip_index == 1 %}true{% else %}false{% endif %}"
+                  >
+                    <span class="sp-product-hotspots__strip-thumb">
+                      {%- if product.featured_image -%}
+                        {{
+                          product.featured_image
+                          | image_url: width: 180
+                          | image_tag:
+                            widths: '80, 120, 160, 180',
+                            sizes: '64px',
+                            loading: 'lazy',
+                            alt: product.featured_image.alt | default: product.title,
+                            class: 'sp-product-hotspots__strip-image'
+                        }}
+                      {%- else -%}
+                        {{ 'product-1' | placeholder_svg_tag: 'sp-product-hotspots__strip-placeholder placeholder-svg' }}
+                      {%- endif -%}
+                    </span>
+
+                    <span class="sp-product-hotspots__strip-copy">
+                      <span class="sp-product-hotspots__strip-title">
+                        <span class="sp-product-hotspots__strip-number">{{ strip_index }}</span>
+                        {{ product.title | escape }}
+                      </span>
+                      <span class="sp-product-hotspots__strip-price">
+                        {{ current_variant.price | money }}
+                      </span>
+                    </span>
+                  </button>
+                {%- endif -%}
+              {%- endfor -%}
+
+              {%- if section.settings.show_view_all and section.settings.view_all_label != blank and section.settings.view_all_link != blank -%}
+                <a class="sp-product-hotspots__strip-view-all" href="{{ section.settings.view_all_link }}">
+                  <span>{{ section.settings.view_all_label | escape }}</span>
+                  <span aria-hidden="true">→</span>
+                </a>
+              {%- endif -%}
+            </div>
+          </div>
+        {%- endif -%}
+
+        {%- if section.settings.show_product_list and hotspot_count > 0 -%}
+          <aside class="sp-product-hotspots__products" aria-label="{{ section.settings.product_list_label | escape }}">
+            <div class="sp-product-hotspots__product-list" role="list">
+              {%- assign product_index = 0 -%}
+              {%- for block in section.blocks -%}
+                {%- if block.type == 'product_hotspot' and block.settings.product != blank -%}
+                  {%- assign product_index = product_index | plus: 1 -%}
+
+                  {%- assign is_active = false -%}
+                  {%- if product_index == 1 -%}
+                    {%- assign is_active = true -%}
+                  {%- endif -%}
+
+                  {% render 'sp-product-hotspots-product',
+                    product: block.settings.product,
+                    index: product_index,
+                    block_id: block.id,
+                    section_id: section.id,
+                    active: is_active,
+                    show_vendor: section.settings.show_vendor,
+                    show_rating: section.settings.show_rating,
+                    add_to_cart_label: section.settings.add_to_cart_label,
+                    choose_options_label: section.settings.choose_options_label,
+                    sold_out_label: section.settings.sold_out_label
+                  %}
+                {%- endif -%}
+              {%- endfor -%}
+            </div>
+          </aside>
+        {%- elsif request.design_mode and hotspot_count == 0 -%}
+          <aside class="sp-product-hotspots__products">
+            <div class="sp-product-hotspots__empty-products" role="status">
+              <strong>Add product hotspots</strong>
+              <span>Select products in the hotspot blocks to connect them to the image.</span>
+            </div>
+          </aside>
+        {%- endif -%}
+      </div>
+
+      {%- if section.settings.show_view_all
+        and section.settings.view_all_label != blank
+        and section.settings.view_all_link != blank
+        and section.settings.show_product_strip == false
+      -%}
+        <div class="sp-product-hotspots__standalone-footer">
+          <a class="sp-button sp-button--secondary" href="{{ section.settings.view_all_link }}">
+            {{ section.settings.view_all_label | escape }}
+          </a>
+        </div>
+      {%- endif -%}
+    </div>
+  </sp-product-hotspots>
+{%- else -%}
+  <style>#shopify-section-{{ section.id }}{display:none!important}</style>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Product Hotspots",
+  "tag": "section",
+  "class": "sp-product-hotspots-section",
+  "max_blocks": 6,
+  "disabled_on": {
+    "groups": ["header", "footer", "custom.system"]
+  },
+  "settings": [
+    {
+      "type": "header",
+      "content": "General"
+    },
+    {
+      "type": "color_scheme",
+      "id": "sp_color_scheme",
+      "label": "Color scheme",
+      "default": "scheme-1"
+    },
+    {
+      "type": "select",
+      "id": "section_width",
+      "label": "Section width",
+      "default": "wide",
+      "options": [
+        { "value": "container", "label": "Contained" },
+        { "value": "wide", "label": "Wide" }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "desktop_layout_ratio",
+      "label": "Desktop image / product list ratio",
+      "default": "62_38",
+      "options": [
+        { "value": "55_45", "label": "55% image / 45% products" },
+        { "value": "60_40", "label": "60% image / 40% products" },
+        { "value": "62_38", "label": "62% image / 38% products" },
+        { "value": "65_35", "label": "65% image / 35% products" }
+      ]
+    },
+    {
+      "type": "header",
+      "content": "Layout & spacing"
+    },
+    {
+      "type": "range",
+      "id": "content_gap",
+      "label": "Header to content gap",
+      "min": 16,
+      "max": 56,
+      "step": 4,
+      "unit": "px",
+      "default": 32
+    },
+    {
+      "type": "range",
+      "id": "layout_gap",
+      "label": "Image, list and strip gap",
+      "min": 8,
+      "max": 32,
+      "step": 4,
+      "unit": "px",
+      "default": 16
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_custom_spacing",
+      "label": "Override global section spacing",
+      "default": false,
+      "info": "Off by default so Spider's global section spacing is inherited."
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "Desktop top padding",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "default": 72,
+      "visible_if": "{{ section.settings.enable_custom_spacing }}"
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "Desktop bottom padding",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "default": 72,
+      "visible_if": "{{ section.settings.enable_custom_spacing }}"
+    },
+    {
+      "type": "range",
+      "id": "mobile_padding_top",
+      "label": "Mobile top padding",
+      "min": 0,
+      "max": 80,
+      "step": 4,
+      "unit": "px",
+      "default": 40,
+      "visible_if": "{{ section.settings.enable_custom_spacing }}"
+    },
+    {
+      "type": "range",
+      "id": "mobile_padding_bottom",
+      "label": "Mobile bottom padding",
+      "min": 0,
+      "max": 80,
+      "step": 4,
+      "unit": "px",
+      "default": 40,
+      "visible_if": "{{ section.settings.enable_custom_spacing }}"
+    },
+    {
+      "type": "header",
+      "content": "Header"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_header",
+      "label": "Show section header",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_eyebrow",
+      "label": "Show eyebrow",
+      "default": true,
+      "visible_if": "{{ section.settings.show_header }}"
+    },
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Eyebrow",
+      "default": "Explore & Shop",
+      "visible_if": "{{ section.settings.show_header and section.settings.show_eyebrow }}"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Product Hotspots",
+      "visible_if": "{{ section.settings.show_header }}"
+    },
+    {
+      "type": "richtext",
+      "id": "description",
+      "label": "Description",
+      "default": "<p>Discover featured essentials by tapping the hotspots on the image. Explore product details and add your favourites to cart.</p>",
+      "visible_if": "{{ section.settings.show_header }}"
+    },
+    {
+      "type": "select",
+      "id": "header_alignment",
+      "label": "Alignment",
+      "default": "center",
+      "options": [
+        { "value": "left", "label": "Left" },
+        { "value": "center", "label": "Center" }
+      ],
+      "visible_if": "{{ section.settings.show_header }}"
+    },
+    {
+      "type": "header",
+      "content": "Image"
+    },
+    {
+      "type": "image_picker",
+      "id": "desktop_image",
+      "label": "Desktop image"
+    },
+    {
+      "type": "image_picker",
+      "id": "mobile_image",
+      "label": "Mobile image",
+      "info": "Optional. Recommended when the mobile crop differs from the desktop scene."
+    },
+    {
+      "type": "text",
+      "id": "image_alt",
+      "label": "Image ALT override",
+      "info": "Leave blank to use the image ALT text or section heading."
+    },
+    {
+      "type": "select",
+      "id": "image_presentation",
+      "label": "Image presentation",
+      "default": "adapt",
+      "options": [
+        { "value": "adapt", "label": "Adapt to image" },
+        { "value": "cover", "label": "Cover fixed ratio" }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "fixed_ratio",
+      "label": "Fixed image ratio",
+      "default": "16_9",
+      "visible_if": "{{ section.settings.image_presentation == 'cover' }}",
+      "options": [
+        { "value": "16_9", "label": "16:9" },
+        { "value": "4_3", "label": "4:3" },
+        { "value": "1_1", "label": "1:1" },
+        { "value": "4_5", "label": "4:5 portrait" }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": "Adapt to image is recommended for accurate hotspot positioning. Cover can crop the image, so hotspot positions may need adjustment."
+    },
+    {
+      "type": "header",
+      "content": "Product display"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_product_list",
+      "label": "Show product list",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_product_strip",
+      "label": "Show product strip",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_vendor",
+      "label": "Show vendor",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_rating",
+      "label": "Show rating",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "add_to_cart_label",
+      "label": "Add to cart label",
+      "default": "Add to cart"
+    },
+    {
+      "type": "text",
+      "id": "choose_options_label",
+      "label": "Choose options label",
+      "default": "Choose options"
+    },
+    {
+      "type": "text",
+      "id": "sold_out_label",
+      "label": "Sold out label",
+      "default": "Sold out"
+    },
+    {
+      "type": "text",
+      "id": "hotspot_label",
+      "label": "Hotspot accessible label",
+      "default": "View"
+    },
+    {
+      "type": "text",
+      "id": "product_list_label",
+      "label": "Product list accessible label",
+      "default": "Products featured in the image"
+    },
+    {
+      "type": "text",
+      "id": "strip_label",
+      "label": "Product strip accessible label",
+      "default": "Featured products"
+    },
+    {
+      "type": "text",
+      "id": "strip_item_label",
+      "label": "Product strip item accessible label",
+      "default": "Show"
+    },
+    {
+      "type": "header",
+      "content": "View all"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_view_all",
+      "label": "Show View All",
+      "default": false
+    },
+    {
+      "type": "text",
+      "id": "view_all_label",
+      "label": "Label",
+      "default": "View all products",
+      "visible_if": "{{ section.settings.show_view_all }}"
+    },
+    {
+      "type": "url",
+      "id": "view_all_link",
+      "label": "Link",
+      "visible_if": "{{ section.settings.show_view_all }}"
+    },
+    {
+      "type": "header",
+      "content": "Motion"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_pulse",
+      "label": "Enable subtle hotspot pulse",
+      "default": false
+    }
+  ],
+  "blocks": [
+    {
+      "type": "product_hotspot",
+      "name": "Product hotspot",
+      "settings": [
+        {
+          "type": "product",
+          "id": "product",
+          "label": "Product"
+        },
+        {
+          "type": "range",
+          "id": "desktop_x",
+          "label": "Desktop horizontal position",
+          "min": 4,
+          "max": 96,
+          "step": 1,
+          "unit": "%",
+          "default": 50
+        },
+        {
+          "type": "range",
+          "id": "desktop_y",
+          "label": "Desktop vertical position",
+          "min": 6,
+          "max": 94,
+          "step": 1,
+          "unit": "%",
+          "default": 50
+        },
+        {
+          "type": "checkbox",
+          "id": "use_mobile_position",
+          "label": "Use custom mobile position",
+          "default": false
+        },
+        {
+          "type": "range",
+          "id": "mobile_x",
+          "label": "Mobile horizontal position",
+          "min": 5,
+          "max": 95,
+          "step": 1,
+          "unit": "%",
+          "default": 50,
+          "visible_if": "{{ block.settings.use_mobile_position }}"
+        },
+        {
+          "type": "range",
+          "id": "mobile_y",
+          "label": "Mobile vertical position",
+          "min": 7,
+          "max": 93,
+          "step": 1,
+          "unit": "%",
+          "default": 50,
+          "visible_if": "{{ block.settings.use_mobile_position }}"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Product Hotspots",
+      "category": "02. Products",
+      "blocks": [
+        {
+          "type": "product_hotspot",
+          "settings": {
+            "desktop_x": 66,
+            "desktop_y": 52
+          }
+        },
+        {
+          "type": "product_hotspot",
+          "settings": {
+            "desktop_x": 22,
+            "desktop_y": 74
+          }
+        },
+        {
+          "type": "product_hotspot",
+          "settings": {
+            "desktop_x": 42,
+            "desktop_y": 42
+          }
+        },
+        {
+          "type": "product_hotspot",
+          "settings": {
+            "desktop_x": 88,
+            "desktop_y": 38
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

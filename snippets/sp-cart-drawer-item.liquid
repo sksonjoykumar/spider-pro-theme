@@ -1,0 +1,155 @@
+{%- liquid
+  assign quantity_min = item.variant.quantity_rule.min | default: 1
+  assign quantity_max = item.variant.quantity_rule.max
+  assign quantity_step = item.variant.quantity_rule.increment | default: 1
+  assign item_title = item.product.title | default: item.title
+  assign item_alt = item.image.alt | default: item_title
+  assign remove_label = 'Remove ' | append: item_title | append: ' from cart'
+-%}
+
+<div
+  class="sp-cart-drawer-item sp-cart-item"
+  data-sp-cart-drawer-item
+  data-cart-item
+  data-cart-line="{{ line }}"
+  data-line="{{ line }}"
+  data-key="{{ item.key | escape }}"
+>
+  <a class="sp-cart-drawer-item__media" href="{{ item.url }}" aria-label="{{ item_title | escape }}">
+    {%- if item.image != blank -%}
+      {{
+        item.image
+        | image_url: width: 320
+        | image_tag:
+          loading: 'lazy',
+          widths: '96, 120, 160, 240, 320',
+          sizes: '(max-width: 359px) 100px, 120px',
+          alt: item_alt,
+          class: 'sp-cart-drawer-item__image'
+      }}
+    {%- else -%}
+      <span class="sp-cart-drawer-item__image-placeholder" aria-hidden="true"></span>
+    {%- endif -%}
+  </a>
+
+  <div class="sp-cart-drawer-item__info">
+    <a class="sp-cart-drawer-item__title" href="{{ item.url }}">{{ item_title | escape }}</a>
+
+    {%- unless item.product.has_only_default_variant -%}
+      <div class="sp-cart-drawer-item__variant">{{ item.variant.title | escape }}</div>
+    {%- endunless -%}
+
+    <div class="sp-cart-drawer-item__price">
+      {%- if item.original_price > item.final_price -%}
+        <s>{{ item.original_price | money_with_currency }}</s>
+      {%- endif -%}
+      <span>{{ item.final_price | money_with_currency }}</span>
+    </div>
+
+    {%- if item.properties.size > 0 -%}
+      <ul class="sp-cart-drawer-item__properties" role="list">
+        {%- for property in item.properties -%}
+          {%- assign property_first_char = property.first | slice: 0 -%}
+          {%- if property.last != blank and property_first_char != '_' -%}
+            <li>
+              <span>{{ property.first | escape }}:</span>
+              {%- if property.last contains '/uploads/' -%}
+                <a href="{{ property.last }}" target="_blank" rel="noopener noreferrer">{{ property.last | split: '/' | last | escape }}</a>
+              {%- else -%}
+                <span>{{ property.last | escape }}</span>
+              {%- endif -%}
+            </li>
+          {%- endif -%}
+        {%- endfor -%}
+      </ul>
+    {%- endif -%}
+
+    {%- if item.line_level_discount_allocations.size > 0 -%}
+      <ul class="sp-cart-drawer-item__discounts" role="list">
+        {%- for discount in item.line_level_discount_allocations -%}
+          <li>
+            <span aria-hidden="true">−</span>
+            {{ discount.discount_application.title | escape }}
+          </li>
+        {%- endfor -%}
+      </ul>
+    {%- endif -%}
+
+    {%- if item.selling_plan_allocation != blank -%}
+      <div class="sp-cart-drawer-item__selling-plan">{{ item.selling_plan_allocation.selling_plan.name | escape }}</div>
+    {%- endif -%}
+
+    <div class="sp-cart-drawer-item__actions">
+      <div class="sp-cart-drawer-item__quantity" data-quantity-wrapper>
+        <button
+          class="sp-cart-drawer-item__quantity-button sp-cart-drawer-item__quantity-button--minus"
+          type="button"
+          name="minus"
+          data-sp-cart-drawer-quantity-button
+          data-cart-quantity-minus
+          data-quantity-minus
+          data-quantity-action="minus"
+          data-line="{{ line }}"
+          data-cart-line="{{ line }}"
+          data-key="{{ item.key | escape }}"
+          aria-label="Decrease quantity for {{ item_title | escape }}"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M5 12h14"/></svg>
+        </button>
+
+        <input
+          class="sp-cart-drawer-item__quantity-input"
+          type="number"
+          name="updates[]"
+          value="{{ item.quantity }}"
+          min="{{ quantity_min }}"
+          step="{{ quantity_step }}"
+          {%- if quantity_max != blank %} max="{{ quantity_max }}"{% endif -%}
+          inputmode="numeric"
+          data-sp-cart-drawer-quantity-input
+          data-cart-quantity
+          data-quantity-input
+          data-line="{{ line }}"
+          data-cart-line="{{ line }}"
+          data-index="{{ line }}"
+          data-key="{{ item.key | escape }}"
+          data-confirmed-quantity="{{ item.quantity }}"
+          aria-label="Quantity for {{ item_title | escape }}"
+        >
+
+        <button
+          class="sp-cart-drawer-item__quantity-button sp-cart-drawer-item__quantity-button--plus"
+          type="button"
+          name="plus"
+          data-sp-cart-drawer-quantity-button
+          data-cart-quantity-plus
+          data-quantity-plus
+          data-quantity-action="plus"
+          data-line="{{ line }}"
+          data-cart-line="{{ line }}"
+          data-key="{{ item.key | escape }}"
+          aria-label="Increase quantity for {{ item_title | escape }}"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 5v14M5 12h14"/></svg>
+        </button>
+      </div>
+
+
+    </div>
+  </div>
+      <a
+        class="sp-cart-drawer-item__remove"
+        href="{{ routes.cart_change_url }}?line={{ line }}&amp;quantity=0"
+        data-cart-remove
+        data-remove-item
+        data-line="{{ line }}"
+        data-cart-line="{{ line }}"
+        data-index="{{ line }}"
+        data-key="{{ item.key | escape }}"
+        aria-label="{{ remove_label | escape }}"
+      >
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <path d="M4 7h16M9 7V4h6v3M7 7l1 13h8l1-13M10 11v5M14 11v5"/>
+        </svg>
+      </a>
+</div>

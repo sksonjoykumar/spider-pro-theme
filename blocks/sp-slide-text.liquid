@@ -1,0 +1,116 @@
+{%- if block.settings.text != blank -%}
+  {%- liquid
+    assign sp_now_year = 'now' | date: '%Y'
+    capture sp_countdown_markup
+      echo '<span class="sp-slide-countdown" data-sp-countdown data-end="'
+      echo block.settings.countdown | escape
+      echo '" data-day-label="'
+      echo block.settings.countdown_day_label | escape
+      echo '"><span data-days>00</span> <span data-days-label>'
+      echo block.settings.countdown_day_label | escape
+      echo '</span> <span data-hours>00</span><span aria-hidden="true">:</span><span data-minutes>00</span><span aria-hidden="true">:</span><span data-seconds>00</span></span>'
+    endcapture
+    assign sp_text = block.settings.text | replace: '[year]', sp_now_year | replace: '[countdown]', sp_countdown_markup
+  -%}
+  <div
+    id="SpiderSlideText-{{ block.id }}"
+    class="sp-slide-text sp-rte{% if block.settings.hide_mobile %} sp-slide-block--hide-mobile{% endif %}"
+    data-sp-slide-anim
+    {{ block.shopify_attributes }}
+    style="--sp-block-size-d: {{ block.settings.desktop_size }}px; --sp-block-size-t: {{ block.settings.tablet_size }}px; --sp-block-size-m: {{ block.settings.mobile_size }}px; --sp-block-line-height: {{ block.settings.line_height }}; --sp-block-max-width: {{ block.settings.max_width }}px;{% if block.settings.color != blank %} --sp-block-color: {{ block.settings.color }};{% endif %}"
+  >{{ sp_text }}</div>
+{%- endif -%}
+{% schema %}
+{
+  "name": "Slide Text",
+  "tag": null,
+  "settings": [
+    {
+      "type": "richtext",
+      "id": "text",
+      "label": "Text",
+      "default": "<p>Share supporting content for this slide.</p>"
+    },
+    {
+      "type": "text",
+      "id": "countdown",
+      "label": "Countdown end date",
+      "default": "2027-12-30 15:00:00",
+      "info": "Used when the text contains [countdown]. Format: YYYY-MM-DD HH:MM:SS.",
+      "visible_if": "{{ block.settings.text contains '[countdown]' }}"
+    },
+    {
+      "type": "text",
+      "id": "countdown_day_label",
+      "label": "Countdown day label",
+      "default": "days",
+      "visible_if": "{{ block.settings.text contains '[countdown]' }}"
+    },
+    {
+      "type": "range",
+      "id": "desktop_size",
+      "label": "Desktop size",
+      "min": 12,
+      "max": 40,
+      "step": 1,
+      "unit": "px",
+      "default": 18
+    },
+    {
+      "type": "range",
+      "id": "tablet_size",
+      "label": "Tablet size",
+      "min": 12,
+      "max": 32,
+      "step": 1,
+      "unit": "px",
+      "default": 17
+    },
+    {
+      "type": "range",
+      "id": "mobile_size",
+      "label": "Mobile size",
+      "min": 12,
+      "max": 28,
+      "step": 1,
+      "unit": "px",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "line_height",
+      "label": "Line height",
+      "min": 1.0,
+      "max": 2.0,
+      "step": 0.1,
+      "default": 1.5
+    },
+    {
+      "type": "range",
+      "id": "max_width",
+      "label": "Max width",
+      "min": 200,
+      "max": 900,
+      "step": 20,
+      "unit": "px",
+      "default": 640
+    },
+    {
+      "type": "color",
+      "id": "color",
+      "label": "Color"
+    },
+    {
+      "type": "checkbox",
+      "id": "hide_mobile",
+      "label": "Hide on mobile",
+      "default": false
+    }
+  ],
+  "presets": [
+    {
+      "name": "Slide Text"
+    }
+  ]
+}
+{% endschema %}

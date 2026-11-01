@@ -1,0 +1,38 @@
+{% comment %}
+  Spider Search Form.
+  Required: section, search, enabled_types, input_id.
+  Optional: compact.
+{% endcomment %}
+{% liquid
+  assign sp_search_placeholder = section.settings.search_placeholder
+  if sp_search_placeholder == blank
+    assign sp_search_placeholder = 'search.placeholder' | t
+  endif
+%}
+<form class="sp-search-form{% if compact %} sp-search-form--compact{% endif %}" action="{{ routes.search_url }}" method="get" role="search" data-search-form>
+  <label class="visually-hidden" for="{{ input_id }}">{{ 'search.search' | t }}</label>
+  <div class="sp-search-form__field">
+    <div class="sp-search-form__input-wrap">
+      <svg class="sp-search-form__icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="10.9" cy="10.9" r="7.4"/><path d="m16.5 16.5 5.2 5.2"/></svg>
+      <input
+        id="{{ input_id }}"
+        class="sp-search-form__input"
+        type="search"
+        name="q"
+        value="{{ search.terms | escape }}"
+        placeholder="{{ sp_search_placeholder | escape }}"
+        autocomplete="off"
+        enterkeyhint="search"
+        required
+      >
+      {% unless section.settings.show_search_clear == false %}
+        <button type="button" class="sp-search-form__clear" aria-label="Clear search" data-search-clear>
+          <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5 5l14 14M19 5 5 19"/></svg>
+        </button>
+      {% endunless %}
+    </div>
+    <button class="sp-button sp-button--primary sp-search-form__submit" type="submit">{{ section.settings.search_button_label | default: 'Search' | escape }}</button>
+  </div>
+  <input type="hidden" name="type" value="{{ enabled_types }}">
+  <input type="hidden" name="options[prefix]" value="last">
+</form>

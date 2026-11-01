@@ -1,0 +1,32 @@
+{%- liquid
+  assign b = block.settings
+  assign linked = false
+  if b.link != blank
+    assign linked = true
+  endif
+-%}
+{%- if b.heading != blank or b.description != blank -%}
+<li class="sp-ba__benefit" {{ block.shopify_attributes }}>
+  {%- if linked -%}<a class="sp-ba__benefit-inner" href="{{ b.link }}"{% if b.open_in_new_tab %} target="_blank" rel="noopener noreferrer"{% endif %}>{%- else -%}<div class="sp-ba__benefit-inner">{%- endif -%}
+    {%- if b.custom_icon != blank -%}
+      {{ b.custom_icon | image_url: width: 100 | image_tag: widths: '48,72,100', sizes: '48px', alt: '', class: 'sp-ba__benefit-image', loading: 'lazy' }}
+    {%- elsif b.icon != 'none' -%}
+      <span class="sp-ba__benefit-icon" aria-hidden="true">
+      {%- case b.icon -%}
+        {%- when 'sparkle' -%}<svg viewBox="0 0 48 48" fill="none"><path d="M24 3c2.3 12 8 18.7 21 21-13 2.3-18.7 9-21 21C21.7 33 16 26.3 3 24 16 21.7 21.7 15 24 3Z" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/></svg>
+        {%- when 'drop' -%}<svg viewBox="0 0 48 48" fill="none"><path d="M24 3C19 13 8 24 8 31a16 16 0 0 0 32 0c0-7-11-18-16-28Z" stroke="currentColor" stroke-width="3"/></svg>
+        {%- when 'shield' -%}{% render 'icon', name: 'shield' %}
+        {%- when 'star' -%}{% render 'icon', name: 'star' %}
+        {%- when 'heart' -%}{% render 'icon', name: 'heart' %}
+        {%- when 'truck' -%}{% render 'icon', name: 'truck' %}
+        {%- when 'check' -%}<svg viewBox="0 0 48 48" fill="none"><path d="m9 24 10 10 20-21" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      {%- endcase -%}
+      </span>
+    {%- endif -%}
+    <span class="sp-ba__benefit-copy">
+      {%- if b.heading != blank -%}<strong>{{ b.heading | escape }}</strong>{%- endif -%}
+      {%- if b.description != blank -%}<span>{{ b.description | escape }}</span>{%- endif -%}
+    </span>
+  {%- if linked -%}</a>{%- else -%}</div>{%- endif -%}
+</li>
+{%- endif -%}

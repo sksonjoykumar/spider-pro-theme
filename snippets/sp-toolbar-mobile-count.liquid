@@ -1,0 +1,18 @@
+{%- liquid
+  assign sp_count = count | default: 0 | plus: 0
+  assign sp_display_count = sp_count
+  if section.settings.cap_count and sp_count > 99
+    assign sp_display_count = '99+'
+  endif
+  assign sp_hide = false
+  if force_hidden
+    assign sp_hide = true
+  elsif section.settings.hide_zero_count and sp_count == 0
+    assign sp_hide = true
+  endif
+-%}
+<span
+  class="sp-mobile-toolbar__count"
+  data-sp-toolbar-count="{{ type }}"
+  data-count="{{ sp_count }}"
+  {% if sp_hide %}hidden{% endif %}>{{ sp_display_count }}</span>

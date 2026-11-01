@@ -1,0 +1,71 @@
+{%- liquid
+  assign filter_layout = section.settings.desktop_filter_layout | default: 'sidebar-left'
+  assign show_filter_button_desktop = false
+  if filter_layout == 'drawer'
+    assign show_filter_button_desktop = true
+  endif
+-%}
+<div class="sp-collection-toolbar" data-sp-collection-toolbar>
+  <div class="sp-collection-toolbar__primary">
+    {% if section.settings.enable_filters and filter_layout != 'hidden' %}
+      <button
+        class="sp-button sp-button--secondary sp-collection-toolbar__filter-button{% if show_filter_button_desktop %} is-desktop-visible{% endif %}"
+        type="button"
+        data-sp-sidebar-toggle
+        aria-controls="SpCollectionFilters-{{ section.id }}"
+        aria-expanded="false"
+      >
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 18h16M4 12h16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="9" cy="6" r="2" fill="var(--sp-color-background)" stroke="currentColor" stroke-width="1.5"/><circle cx="15" cy="12" r="2" fill="var(--sp-color-background)" stroke="currentColor" stroke-width="1.5"/><circle cx="9" cy="18" r="2" fill="var(--sp-color-background)" stroke="currentColor" stroke-width="1.5"/></svg>
+        <span>Filter{% if active_count > 0 %} ({{ active_count }}){% endif %}</span>
+      </button>
+    {% endif %}
+
+    {% if section.settings.show_toolbar_count %}
+      <p class="sp-collection-toolbar__count" data-sp-toolbar-count aria-live="polite">{{ collection.products_count }} products</p>
+    {% endif %}
+  </div>
+
+  <div class="sp-collection-toolbar__secondary">
+    {% if section.settings.show_column_switcher %}
+      <div class="sp-collection-toolbar__grid-switcher" role="group" aria-label="Product display layout">
+        <button class="sp-collection-toolbar__grid-button sp-collection-toolbar__grid-button--list" type="button" data-sp-grid-view="list" aria-pressed="false" aria-label="List view" title="List view">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><rect x="3.5" y="5" width="5" height="5" rx=".6"/><rect x="3.5" y="14" width="5" height="5" rx=".6"/><path d="M12 7.5h8M12 16.5h8"/></svg>
+        </button>
+        {% for column in (2..6) %}
+          <button class="sp-collection-toolbar__grid-button{% if column == section.settings.columns_desktop %} is-active{% endif %}" type="button" data-sp-grid-columns="{{ column }}" aria-pressed="{% if column == section.settings.columns_desktop %}true{% else %}false{% endif %}" aria-label="{{ column }} products per row" title="{{ column }} columns">
+            {% if column == 2 %}
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="3" y="4" width="8" height="16" rx="1"/><rect x="13" y="4" width="8" height="16" rx="1"/></svg>
+            {% elsif column == 3 %}
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="2.5" y="4" width="5" height="16" rx="1"/><rect x="9.5" y="4" width="5" height="16" rx="1"/><rect x="16.5" y="4" width="5" height="16" rx="1"/></svg>
+            {% elsif column == 4 %}
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+            {% elsif column == 5 %}
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="2" y="4" width="3" height="16" rx=".5"/><rect x="6.5" y="4" width="3" height="16" rx=".5"/><rect x="11" y="4" width="3" height="16" rx=".5"/><rect x="15.5" y="4" width="3" height="16" rx=".5"/><rect x="20" y="4" width="2" height="16" rx=".4"/></svg>
+            {% else %}
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M1 4v16M5.5 4v16M10 4v16M14.5 4v16M19 4v16M23 4v16"/></svg>
+            {% endif %}
+          </button>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    {% if section.settings.enable_sorting %}
+      <form class="sp-collection-toolbar__sort" action="{{ collection.url }}" method="get" data-sp-collection-sort-form>
+        {% for filter in collection.filters %}
+          {% if filter.type == 'price_range' %}
+            {% if filter.min_value.value != blank %}<input type="hidden" name="{{ filter.min_value.param_name }}" value="{{ filter.min_value.value | money_without_currency | replace: ',', '' }}">{% endif %}
+            {% if filter.max_value.value != blank %}<input type="hidden" name="{{ filter.max_value.param_name }}" value="{{ filter.max_value.value | money_without_currency | replace: ',', '' }}">{% endif %}
+          {% else %}
+            {% for value in filter.active_values %}<input type="hidden" name="{{ value.param_name }}" value="{{ value.value | escape }}">{% endfor %}
+          {% endif %}
+        {% endfor %}
+        <label for="SortBy-{{ section.id }}">Sort by</label>
+        <select id="SortBy-{{ section.id }}" name="sort_by" data-sp-sort-by>
+          {% for option in collection.sort_options %}
+            <option value="{{ option.value | escape }}"{% if option.value == sort_by %} selected{% endif %}>{{ option.name | escape }}</option>
+          {% endfor %}
+        </select>
+      </form>
+    {% endif %}
+  </div>
+</div>

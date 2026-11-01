@@ -1,0 +1,114 @@
+{%- comment -%}
+  Spider Global Product Card options.
+  Liquid outputs real Shopify option values/native swatches only.
+  Custom/fallback color resolution is owned by sp-product-commerce.js so every consumer uses ONE resolver.
+{%- endcomment -%}
+{%- liquid
+  assign color_option = blank
+  assign color_option_index = -1
+  assign size_option = blank
+  assign size_option_index = -1
+  for option in product.options_with_values
+    assign option_name = option.name | downcase
+    if color_option == blank and option_name contains 'color'
+      assign color_option = option
+      assign color_option_index = forloop.index0
+    elsif color_option == blank and option_name contains 'colour'
+      assign color_option = option
+      assign color_option_index = forloop.index0
+    endif
+    if size_option == blank and option_name contains 'size'
+      assign size_option = option
+      assign size_option_index = forloop.index0
+    endif
+  endfor
+  assign swatch_limit = card_settings.swatch_limit | default: settings.card_swatch_limit | default: 5
+  assign selected_variant = product.selected_or_first_available_variant
+  assign color_shape = card_settings.color_swatch_shape | default: 'circle'
+  assign size_shape = card_settings.size_swatch_shape | default: settings.card_size_swatch_shape | default: 'square'
+  assign show_swatches = card_settings.show_swatches
+  assign show_sizes = card_settings.show_sizes
+  assign show_color_label = card_settings.show_color_swatch_label
+  assign show_size_label = card_settings.show_size_swatch_label
+  if card_settings == blank
+    assign show_swatches = settings.card_show_swatches
+    assign show_sizes = settings.card_show_size_swatches
+    assign show_color_label = false
+    assign show_size_label = false
+    assign color_shape = settings.swatch_shape | default: 'circle'
+    assign size_shape = settings.card_size_swatch_shape | default: 'square'
+  endif
+  if design == '5'
+    assign show_sizes = settings.sp_card_apparel_sizes
+  endif
+-%}
+
+{%- if show_swatches and color_option != blank and color_option.values.size > 0 -%}
+  {%- assign selected_color = selected_variant.options[color_option_index] -%}
+  <div class="sp-product-card__option-group sp-product-card__option-group--color" data-sp-card-option-group data-option-index="{{ color_option_index }}" data-option-name="{{ color_option.name | escape }}">
+    {%- if show_color_label -%}
+      <div class="sp-product-card__option-label">{{ card_settings.color_label | default: color_option.name | escape }}: <strong data-sp-card-option-label>{{ selected_color | escape }}</strong></div>
+    {%- endif -%}
+    <div class="sp-product-card__swatches sp-product-card__swatches--{{ color_shape }}" aria-label="{{ color_option.name | escape }} options">
+      {%- for option_value in color_option.values limit: swatch_limit -%}
+        {%- liquid
+          assign value_name = option_value.name | default: option_value
+          assign native_color = option_value.swatch.color
+          assign native_image = option_value.swatch.image
+          assign native_image_url = blank
+          if native_image != blank
+            assign native_image_url = native_image | image_url: width: 96
+          endif
+          assign is_selected = false
+          if value_name == selected_color
+            assign is_selected = true
+          endif
+        -%}
+        <button
+          class="sp-product-card__swatch sp-product-card__swatch--color{% if native_image_url != blank or native_color != blank %} has-color{% endif %}{% if is_selected %} is-selected{% endif %}"
+          type="button"
+          data-sp-product-card-option
+          data-option-index="{{ color_option_index }}"
+          data-option-value="{{ value_name | escape }}"
+          data-sp-swatch-value="{{ value_name | escape }}"
+          data-sp-swatch-native-color="{{ native_color | escape }}"
+          data-sp-swatch-native-image="{{ native_image_url | escape }}"
+          aria-label="{{ color_option.name | escape }}: {{ value_name | escape }}"
+          aria-pressed="{% if is_selected %}true{% else %}false{% endif %}"
+          title="{{ value_name | escape }}"
+          aria-disabled="false"
+        ><span class="sp-product-card__swatch-visual" aria-hidden="true"></span></button>
+      {%- endfor -%}
+      {%- assign remaining_colors = color_option.values.size | minus: swatch_limit -%}
+      {%- if remaining_colors > 0 -%}<span class="sp-product-card__option-more">+{{ remaining_colors }}</span>{%- endif -%}
+    </div>
+  </div>
+{%- endif -%}
+
+{%- if show_sizes and size_option != blank and size_option.values.size > 0 -%}
+  {%- assign selected_size = selected_variant.options[size_option_index] -%}
+  <div class="sp-product-card__option-group sp-product-card__option-group--size" data-sp-card-option-group data-option-index="{{ size_option_index }}" data-option-name="{{ size_option.name | escape }}">
+    {%- if show_size_label -%}
+      <div class="sp-product-card__option-label">{{ card_settings.size_label | default: size_option.name | escape }}: <strong data-sp-card-option-label>{{ selected_size | escape }}</strong></div>
+    {%- endif -%}
+    <div class="sp-product-card__size-swatches sp-product-card__size-swatches--{{ size_shape }}" aria-label="{{ size_option.name | escape }} options">
+      {%- for option_value in size_option.values limit: swatch_limit -%}
+        {%- assign value_name = option_value.name | default: option_value -%}
+        {%- assign is_selected = false -%}
+        {%- if value_name == selected_size -%}{%- assign is_selected = true -%}{%- endif -%}
+        <button
+          class="sp-product-card__size-swatch{% if is_selected %} is-selected{% endif %}"
+          type="button"
+          data-sp-product-card-option
+          data-option-index="{{ size_option_index }}"
+          data-option-value="{{ value_name | escape }}"
+          aria-label="{{ size_option.name | escape }}: {{ value_name | escape }}"
+          aria-pressed="{% if is_selected %}true{% else %}false{% endif %}"
+          {% if option_value.available == false %}disabled aria-disabled="true"{% endif %}
+        >{{ value_name | escape }}</button>
+      {%- endfor -%}
+      {%- assign remaining_sizes = size_option.values.size | minus: swatch_limit -%}
+      {%- if remaining_sizes > 0 -%}<span class="sp-product-card__option-more">+{{ remaining_sizes }}</span>{%- endif -%}
+    </div>
+  </div>
+{%- endif -%}

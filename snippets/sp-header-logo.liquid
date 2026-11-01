@@ -1,0 +1,42 @@
+{% comment %}
+  Spider Premium Header — responsive logo.
+  Params: section (required), mobile (boolean, optional)
+{% endcomment %}
+{% assign sp_is_mobile_logo = mobile | default: false %}
+{% assign sp_logo_image = section.settings.logo %}
+{% assign sp_logo_svg = section.settings.logo_svg %}
+{% assign sp_logo_width = section.settings.logo_width | default: 130 %}
+{% if section.settings.sp_use_global_header %}
+  {% if settings.sp_logo != blank %}{% assign sp_logo_image = settings.sp_logo %}{% assign sp_logo_svg = blank %}{% endif %}
+  {% assign sp_logo_width = settings.header_logo_width | default: 160 %}
+{% endif %}
+
+{% if sp_is_mobile_logo %}
+  {% assign sp_logo_width = section.settings.mobile_logo_width | default: 100 %}
+  {% if section.settings.sp_use_global_header %}
+    {% assign sp_logo_width = settings.header_logo_mobile | default: 120 %}
+    {% if settings.sp_logo_mobile != blank %}{% assign sp_logo_image = settings.sp_logo_mobile %}{% assign sp_logo_svg = blank %}
+    {% elsif settings.sp_logo != blank %}{% assign sp_logo_image = settings.sp_logo %}{% assign sp_logo_svg = blank %}{% endif %}
+  {% elsif section.settings.mobile_logo != blank %}
+    {% assign sp_logo_image = section.settings.mobile_logo %}
+    {% assign sp_logo_svg = section.settings.mobile_logo_svg %}
+  {% elsif section.settings.mobile_logo_svg != blank %}
+    {% assign sp_logo_image = blank %}
+    {% assign sp_logo_svg = section.settings.mobile_logo_svg %}
+  {% endif %}
+{% endif %}
+
+<a
+  class="sp-header__logo-link{% if section.settings.logo_zoom %} sp-header__logo-link--zoom{% endif %}"
+  href="{{ routes.root_url }}"
+  aria-label="{{ shop.name | escape }}">
+  {% if sp_logo_svg != blank %}
+    <span class="sp-header__logo-svg" style="--sp-header-current-logo-width: {{ sp_logo_width }}px;">{{ sp_logo_svg }}</span>
+  {% elsif sp_logo_image != blank %}
+    {% assign sp_img_width = sp_logo_width | times: 2 | at_most: 600 %}
+    {{ sp_logo_image | image_url: width: sp_img_width | image_tag: widths: '80, 120, 160, 200, 260, 320, 400, 520, 600', sizes: '(max-width: 989px) 42vw, 300px', loading: 'eager', fetchpriority: 'high', class: 'sp-header__logo-image', alt: shop.name
+    }}
+  {% else %}
+    <span class="sp-header__logo-text">{{ shop.name | escape }}</span>
+  {% endif %}
+</a>

@@ -1,0 +1,76 @@
+{%- comment -%}
+  Spider Premium Quick View v2 — global snippet, not a second section.
+  Existing data-sp-commerce-* hooks are retained for the original commerce controller.
+{%- endcomment -%}
+{%- if settings.sp_qv_enabled != false -%}
+<dialog
+  id="SpProductQuickView"
+  class="sp-commerce-qv sp-qv-v2"
+  data-sp-commerce-qv
+  aria-labelledby="SpProductQuickViewTitle"
+  style="--sp-qv-max:{{ settings.sp_qv_width | default: 1380 }}px;--sp-qv-radius:{{ settings.sp_qv_radius | default: 16 }}px;--sp-qv-backdrop-opacity:{{ settings.sp_qv_overlay | default: 50 | times: 0.01 }};--sp-qv-media-fit:{{ settings.sp_qv_image_fit | default: 'cover' }};--sp-qv-content-gap:{{ settings.sp_qv_gap | default: 42 }}px;--sp-qv-inset:{{ settings.sp_qv_padding | default: 30 }}px"
+  data-sp-qv-show-arrows="{{ settings.sp_qv_arrows | default: true, allow_false: true }}"
+  data-sp-qv-zoom="{{ settings.sp_qv_zoom | default: true, allow_false: true }}"
+  data-sp-qv-show-rating="{{ settings.sp_qv_rating | default: true, allow_false: true }}"
+  data-sp-qv-show-vendor="{{ settings.sp_qv_vendor | default: false, allow_false: true }}"
+  data-sp-qv-show-badge="{{ settings.sp_qv_badge | default: true, allow_false: true }}"
+  data-sp-qv-description="{{ settings.sp_qv_description | default: true, allow_false: true }}"
+  data-sp-qv-show-availability="{{ settings.sp_qv_availability | default: true, allow_false: true }}"
+  data-sp-qv-benefits="{{ settings.sp_qv_benefits | default: true, allow_false: true }}"
+  data-sp-qv-show-details="{{ settings.sp_qv_details | default: false, allow_false: true }}"
+  data-sp-qv-buy-now="{{ settings.sp_qv_buy_now | default: true, allow_false: true }}"
+  data-sp-qv-desc-length="{{ settings.sp_qv_description_length | default: 170 }}"
+>
+  <div class="sp-commerce-qv__shell">
+    {% render 'sp-commerce-close-button', label: 'Close quick view' %}
+    <div class="sp-commerce-qv__layout">
+      <div class="sp-commerce-qv__media-column">
+        <div class="sp-commerce-qv__media">
+          <img data-sp-commerce-image alt="" width="900" height="1000" loading="eager" decoding="async">
+          <button class="sp-commerce-qv__media-nav sp-commerce-qv__media-nav--prev" type="button" data-sp-commerce-media-prev aria-label="Previous product image"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m14.5 5-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          <button class="sp-commerce-qv__media-nav sp-commerce-qv__media-nav--next" type="button" data-sp-commerce-media-next aria-label="Next product image"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9.5 5 7 7-7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          <button class="sp-commerce-qv__expand" type="button" data-sp-qv-expand aria-label="Expand product image"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3H4v4m0-4 6 6m6 12h4v-4m0 4-6-6M4 16v4h4m-4 0 6-6M20 8V4h-4m4 0-6 6"/></svg></button>
+        </div>
+      </div>
+      <div class="sp-commerce-qv__content">
+        <div class="sp-qv-v2__intro">
+          <span class="sp-qv-v2__badge" data-sp-qv-badge hidden></span>
+          <p class="sp-commerce-qv__vendor" data-sp-commerce-vendor hidden></p>
+          <h2 id="SpProductQuickViewTitle" class="sp-commerce-qv__title" data-sp-commerce-title>Product</h2>
+          <div class="sp-qv-v2__rating" data-sp-qv-rating hidden><span class="sp-qv-v2__stars" aria-hidden="true">★★★★★</span><span data-sp-qv-rating-label></span></div>
+          <div class="sp-commerce-qv__price" data-sp-commerce-price></div>
+          <div class="sp-commerce-qv__description-wrap" data-sp-commerce-description-wrap hidden><p class="sp-commerce-qv__description" data-sp-commerce-description></p><button class="sp-commerce-qv__description-toggle" type="button" data-sp-commerce-description-toggle hidden>Read more</button></div>
+        </div>
+        <div class="sp-commerce-qv__options sp-commerce-dialog__options" data-sp-commerce-options></div>
+        <div class="sp-qv-v2__purchase">
+          <div class="sp-qv-v2__purchase-top">
+            <div class="sp-qv-v2__qty-group"><span class="sp-qv-v2__qty-label">Quantity</span><div class="sp-commerce-dialog__commerce-row"><div class="sp-commerce-dialog__quantity" role="group" aria-label="Quantity"><button type="button" data-sp-commerce-minus aria-label="Decrease quantity">−</button><input type="number" min="1" step="1" value="1" inputmode="numeric" data-sp-commerce-quantity aria-label="Quantity"><button type="button" data-sp-commerce-plus aria-label="Increase quantity">+</button></div></div></div>
+            <div class="sp-qv-v2__stock-wrap"><p class="sp-commerce-qv__availability" data-sp-commerce-availability></p>
+              {%- if settings.sp_qv_shipping_text != blank -%}<p class="sp-qv-v2__shipping">{{ settings.sp_qv_shipping_text | escape }}</p>{%- endif -%}
+            </div>
+          </div>
+          <p class="sp-commerce-dialog__status" data-sp-commerce-status aria-live="polite"></p>
+          <form class="sp-commerce-dialog__form" method="post" action="{{ routes.cart_add_url }}" enctype="multipart/form-data" data-product-card-form>
+            <input type="hidden" name="id" data-sp-commerce-variant>
+            <input type="hidden" name="quantity" value="1" data-sp-commerce-form-quantity>
+            <button class="sp-button sp-commerce-dialog__add" type="submit" data-sp-commerce-add>Add to cart</button>
+            <button class="sp-commerce-dialog__buy" type="button" data-sp-commerce-buy>Buy it now</button>
+          </form>
+          <a class="sp-commerce-qv__details" href="/" data-sp-commerce-link>View full product details</a>
+        </div>
+        <div class="sp-qv-v2__benefits" data-sp-qv-benefits-list>
+          <div class="sp-qv-v2__benefit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M3 5h12v12H3zM15 9h4l3 4v4h-7M6 18a2 2 0 1 0 4 0M17 18a2 2 0 1 0 4 0" stroke-linecap="round" stroke-linejoin="round"/></svg><div><strong>{{ settings.sp_qv_benefit_1_title | default: 'Easy returns' | escape }}</strong><small>{{ settings.sp_qv_benefit_1_text | default: 'See return policy' | escape }}</small></div></div>
+          <div class="sp-qv-v2__benefit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M12 2 4 5v7c0 5.5 3.6 8.4 8 10 4.4-1.6 8-4.5 8-10V5zM9 12l2 2 4-4" stroke-linejoin="round" stroke-linecap="round"/></svg><div><strong>{{ settings.sp_qv_benefit_2_title | default: 'Secure checkout' | escape }}</strong><small>{{ settings.sp_qv_benefit_2_text | default: 'Shop with confidence' | escape }}</small></div></div>
+          <div class="sp-qv-v2__benefit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="12" cy="9" r="6"/><path d="m8 14-2 8 6-3 6 3-2-8M9 9l2 2 4-4" stroke-linejoin="round" stroke-linecap="round"/></svg><div><strong>{{ settings.sp_qv_benefit_3_title | default: 'Customer support' | escape }}</strong><small>{{ settings.sp_qv_benefit_3_text | default: 'Here to help' | escape }}</small></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="sp-qv-v2__lightbox" data-sp-qv-lightbox hidden role="region" aria-label="Expanded product image">
+      <button class="sp-qv-v2__lightbox-close" type="button" data-sp-qv-zoom-close aria-label="Close expanded image">×</button>
+      <img alt="" data-sp-qv-zoom-image width="1400" height="1400">
+    </div>
+  </div>
+</dialog>
+{%- else -%}
+<style>[data-sp-product-quick-view]{display:none!important}</style>
+{%- endif -%}

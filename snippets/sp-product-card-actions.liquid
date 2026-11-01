@@ -1,0 +1,45 @@
+{%- liquid
+  assign action_design = design | default: card_settings.product_style | default: '2'
+  assign show_quick_view = card_settings.show_quick_view
+  assign show_quick_add = card_settings.show_quick_add
+  assign show_wishlist = card_settings.show_wishlist
+  assign show_compare = card_settings.show_compare
+  if card_settings == blank
+    assign show_quick_view = settings.card_quick_view
+    assign show_quick_add = settings.card_quick_add
+    assign show_wishlist = settings.card_wishlist
+    assign show_compare = settings.card_compare
+  endif
+  assign form_id = 'SpProductAction-' | append: section_id | append: '-' | append: instance_id | append: '-' | append: product.id | append: '-' | append: location
+  assign can_direct_add = false
+  if product.available and product.has_only_default_variant
+    assign can_direct_add = true
+  endif
+-%}
+<div class="sp-product-card__media-actions sp-product-card__media-actions--{{ location }}" aria-label="Product actions">
+  {%- unless secondary_only -%}
+    {%- if show_quick_view -%}
+      <button class="sp-product-card__icon-action sp-product-card__icon-action--view" type="button" data-sp-product-quick-view aria-controls="SpProductQuickView" aria-label="Quick view {{ product.title | escape }}">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 12s3.4-6 9.5-6 9.5 6 9.5 6-3.4 6-9.5 6-9.5-6-9.5-6Z" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="12" cy="12" r="2.6" fill="none" stroke="currentColor" stroke-width="1.5"/></svg><span class="sp-product-card__tooltip" role="tooltip">Quick view</span>
+      </button>
+    {%- elsif design != '7' -%}
+      <a class="sp-product-card__icon-action sp-product-card__icon-action--view" href="{{ product.url }}" aria-label="View {{ product.title | escape }}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 12s3.4-6 9.5-6 9.5 6 9.5 6-3.4 6-9.5 6-9.5-6-9.5-6Z" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="12" cy="12" r="2.6" fill="none" stroke="currentColor" stroke-width="1.5"/></svg><span class="sp-product-card__tooltip" role="tooltip">View product</span></a>
+    {%- endif -%}
+    {%- if show_quick_add and product.available and suppress_quick_add != true -%}
+      {%- if can_direct_add -%}
+        {% form 'product', product, id: form_id, class: 'sp-product-card__icon-form', data-product-card-form: '' %}
+          <input type="hidden" name="id" value="{{ product.selected_or_first_available_variant.id }}" data-sp-product-card-variant><input type="hidden" name="quantity" value="1">
+          <button class="sp-product-card__icon-action sp-product-card__icon-action--cart" type="submit" aria-label="Add {{ product.title | escape }} to cart"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 8h14l-1 11H6L5 8Z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M9 9V6a3 3 0 0 1 6 0v3" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg><span class="sp-product-card__tooltip" role="tooltip">Add to cart</span></button>
+        {% endform %}
+      {%- else -%}
+        <button class="sp-product-card__icon-action sp-product-card__icon-action--cart" type="button" data-sp-product-quick-add aria-controls="SpProductQuickAdd" aria-label="Choose options for {{ product.title | escape }}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 8h14l-1 11H6L5 8Z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M9 9V6a3 3 0 0 1 6 0v3" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg><span class="sp-product-card__tooltip" role="tooltip">Choose options</span></button>
+      {%- endif -%}
+    {%- endif -%}
+  {%- endunless -%}
+  {%- if show_wishlist -%}
+    <button class="sp-product-card__icon-action sp-product-card__icon-action--wishlist" type="button" data-sp-product-wishlist aria-label="{% if context == 'wishlist' %}Remove{% else %}Add{% endif %} {{ product.title | escape }} {% if context == 'wishlist' %}from{% else %}to{% endif %} wishlist" aria-pressed="{% if context == 'wishlist' %}true{% else %}false{% endif %}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.2 4.2 12.8A5.2 5.2 0 0 1 11.5 5.4L12 6l.5-.6a5.2 5.2 0 0 1 7.3 7.4L12 20.2Z" fill="none" stroke="currentColor" stroke-width="1.5"/></svg><span class="sp-product-card__tooltip" role="tooltip">{% if context == 'wishlist' %}Remove{% else %}Wishlist{% endif %}</span></button>
+  {%- endif -%}
+  {%- if show_compare -%}
+    <button class="sp-product-card__icon-action sp-product-card__icon-action--compare" type="button" data-sp-product-compare aria-label="Add {{ product.title | escape }} to compare" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5v14M17 5v14M4.5 7.5 7 5l2.5 2.5M14.5 16.5 17 19l2.5-2.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="sp-product-card__tooltip" role="tooltip">Compare</span></button>
+  {%- endif -%}
+</div>

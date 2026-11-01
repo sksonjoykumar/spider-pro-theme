@@ -1,0 +1,512 @@
+{%- liquid
+  assign sp_products = section.settings.products
+  assign sp_product_count = 0
+  if sp_products != blank
+    assign sp_product_count = sp_products.size
+  endif
+
+  assign sp_has_products = false
+  if sp_product_count > 0
+    assign sp_has_products = true
+  endif
+
+  assign sp_container_class = 'sp-container'
+  assign sp_container_width = settings.sp_container_width | default: 1280
+  if section.settings.section_width == 'wide'
+    assign sp_container_class = 'sp-container sp-container--wide'
+    assign sp_container_width = settings.sp_wide_width | default: 1600
+  endif
+
+  assign sp_gap_d = settings.product_grid_gap | default: 24
+  assign sp_gap_t = settings.product_grid_gap | default: 24
+  assign sp_gap_m = settings.mobile_grid_gap | default: 12
+
+  case section.settings.grid_gap
+    when 'compact'
+      assign sp_gap_d = 16
+      assign sp_gap_t = 14
+      assign sp_gap_m = 10
+    when 'standard'
+      assign sp_gap_d = 24
+      assign sp_gap_t = 20
+      assign sp_gap_m = 12
+    when 'spacious'
+      assign sp_gap_d = 32
+      assign sp_gap_t = 24
+      assign sp_gap_m = 16
+  endcase
+
+  assign sp_cols_d = section.settings.columns_desktop | plus: 0
+  assign sp_cols_t = section.settings.columns_tablet | plus: 0
+  assign sp_cols_m = section.settings.columns_mobile | plus: 0
+
+  assign sp_card_design = blank
+  if section.settings.card_style_override != blank and section.settings.card_style_override != 'global'
+    assign sp_card_design = section.settings.card_style_override
+  endif
+
+  case section.settings.media_sizing_mode
+    when 'adapt'
+      assign sp_media_ratio = 'auto'
+    when 'square'
+      assign sp_media_ratio = '1 / 1'
+    when 'landscape'
+      assign sp_media_ratio = '4 / 3'
+    when 'portrait'
+      assign sp_media_ratio = '4 / 5'
+    else
+      assign sp_media_ratio = '16 / 10'
+  endcase
+
+  assign sp_page_gutter_d = settings.sp_page_gutter_d | default: 32
+  assign sp_page_gutter_m = settings.sp_page_gutter_m | default: 20
+
+  assign sp_gap_total_d = sp_gap_d | times: sp_cols_d | minus: sp_gap_d
+  assign sp_gap_total_t = sp_gap_t | times: sp_cols_t | minus: sp_gap_t
+  assign sp_gap_total_m = sp_gap_m | times: sp_cols_m | minus: sp_gap_m
+
+  assign sp_gutter_total_d = sp_page_gutter_d | times: 2
+  assign sp_gutter_total_t = sp_page_gutter_d | times: 2
+  assign sp_gutter_total_m = sp_page_gutter_m | times: 2
+
+  capture sp_sizes
+    echo '(min-width: 990px) calc((min(100vw - ' | append: sp_gutter_total_d | append: 'px, ' | append: sp_container_width | append: 'px) - ' | append: sp_gap_total_d | append: 'px) / ' | append: sp_cols_d | append: '), '
+    echo '(min-width: 750px) calc((100vw - ' | append: sp_gutter_total_t | append: 'px - ' | append: sp_gap_total_t | append: 'px) / ' | append: sp_cols_t | append: '), '
+    echo 'calc((100vw - ' | append: sp_gutter_total_m | append: 'px - ' | append: sp_gap_total_m | append: 'px) / ' | append: sp_cols_m | append: ')'
+  endcapture
+-%}
+
+{%- if sp_has_products or request.design_mode -%}
+  {% render 'sp-section-color-scheme', section: section %}
+  {{ 'sp-product-grid.css' | asset_url | stylesheet_tag }}
+
+  <section
+    id="SpiderProductGrid-{{ section.id }}"
+    class="sp-curated-product-grid sp-product-display"
+    data-sp-product-section
+    data-section-id="{{ section.id }}"
+    data-desktop-columns="{{ section.settings.columns_desktop }}"
+    data-tablet-columns="{{ section.settings.columns_tablet }}"
+    data-mobile-columns="{{ section.settings.columns_mobile }}"
+    data-sp-show-quick-view="{{ section.settings.show_quick_view }}"
+    data-money-format="{{ shop.money_with_currency_format | escape }}"
+    data-currency="{{ cart.currency.iso_code | default: shop.currency | escape }}"
+    style="
+      --sp-curated-grid-cols-d: {{ section.settings.columns_desktop }};
+      --sp-curated-grid-cols-t: {{ section.settings.columns_tablet }};
+      --sp-curated-grid-cols-m: {{ section.settings.columns_mobile }};
+      --sp-curated-grid-gap-d: {{ sp_gap_d }}px;
+      --sp-curated-grid-gap-t: {{ sp_gap_t }}px;
+      --sp-curated-grid-gap-m: {{ sp_gap_m }}px;
+      --sp-curated-content-gap: {{ section.settings.content_gap }}px;
+      --sp-product-media-ratio: {{ sp_media_ratio }};
+    "
+  >
+    <div class="{{ sp_container_class }} sp-curated-product-grid__container">
+      {%- if section.settings.show_header -%}
+        <header class="sp-curated-product-grid__header sp-curated-product-grid__header--{{ section.settings.text_alignment }}">
+          {%- if section.settings.show_eyebrow and section.settings.eyebrow != blank -%}
+            <p class="sp-curated-product-grid__eyebrow sp-text-small">
+              {{ section.settings.eyebrow | escape }}
+            </p>
+          {%- endif -%}
+
+          {%- if section.settings.heading != blank -%}
+            <h2 class="sp-curated-product-grid__heading sp-heading sp-heading--h2">
+              {{ section.settings.heading | escape }}
+            </h2>
+          {%- endif -%}
+
+          {%- if section.settings.description != blank -%}
+            <div class="sp-curated-product-grid__description rte">
+              {{ section.settings.description }}
+            </div>
+          {%- endif -%}
+        </header>
+      {%- endif -%}
+
+      {%- if sp_has_products -%}
+        <div
+          class="sp-curated-product-grid__items sp-product-products"
+          role="list"
+          aria-label="{{ section.settings.heading | default: 'Products' | escape }}"
+        >
+          {%- for product in sp_products -%}
+            <div class="sp-curated-product-grid__item" role="listitem">
+              {% render 'sp-product-card',
+                product: product,
+                context: 'bestselling-grid',
+                section_id: section.id,
+                instance_id: section.id,
+                sizes: sp_sizes,
+                card_settings: section.settings,
+                design: sp_card_design,
+                product_index: forloop.index,
+                section_index: section.index
+              %}
+            </div>
+          {%- endfor -%}
+        </div>
+
+        {%- if section.settings.show_view_all and section.settings.view_all_link != blank -%}
+          <div class="sp-curated-product-grid__footer sp-curated-product-grid__footer--{{ section.settings.view_all_alignment }}">
+            <a class="sp-button sp-button--secondary" href="{{ section.settings.view_all_link }}">
+              {{ section.settings.view_all_label | escape }}
+            </a>
+          </div>
+        {%- endif -%}
+      {%- elsif request.design_mode -%}
+        <div class="sp-curated-product-grid__empty" role="status">
+          <div class="sp-curated-product-grid__empty-icon" aria-hidden="true">
+            {% render 'icon', name: 'cart' %}
+          </div>
+
+          <div class="sp-curated-product-grid__empty-copy">
+            <h3 class="sp-curated-product-grid__empty-title sp-heading--h4">
+              Select products to preview this grid
+            </h3>
+            <p class="sp-curated-product-grid__empty-text">
+              Choose products in the section settings. Their selected order will be preserved.
+            </p>
+          </div>
+        </div>
+      {%- endif -%}
+    </div>
+  </section>
+{%- else -%}
+  <style>#shopify-section-{{ section.id }}{display:none!important}</style>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Product Grid",
+  "tag": "section",
+  "class": "sp-section sp-section-product-grid",
+  "disabled_on": {
+    "groups": ["header", "footer", "custom.system"]
+  },
+  "settings": [
+    {
+      "type": "header",
+      "content": "General"
+    },
+    {
+      "type": "product_list",
+      "id": "products",
+      "label": "Products",
+      "limit": 24
+    },
+    {
+      "type": "color_scheme",
+      "id": "sp_color_scheme",
+      "label": "Color scheme",
+      "default": "scheme-1"
+    },
+    {
+      "type": "select",
+      "id": "section_width",
+      "label": "Section width",
+      "default": "wide",
+      "options": [
+        {
+          "value": "container",
+          "label": "Contained"
+        },
+        {
+          "value": "wide",
+          "label": "Wide"
+        }
+      ]
+    },
+    {
+      "type": "header",
+      "content": "Header"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_header",
+      "label": "Show section header",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_eyebrow",
+      "label": "Show eyebrow",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Eyebrow",
+      "default": "Curated for you"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Bestselling Picks"
+    },
+    {
+      "type": "richtext",
+      "id": "description",
+      "label": "Description",
+      "default": "<p>Explore a thoughtfully selected grid of everyday essentials.</p>"
+    },
+    {
+      "type": "select",
+      "id": "text_alignment",
+      "label": "Text alignment",
+      "default": "center",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        }
+      ]
+    },
+    {
+      "type": "header",
+      "content": "Grid"
+    },
+    {
+      "type": "select",
+      "id": "columns_desktop",
+      "label": "Desktop columns",
+      "default": "4",
+      "options": [
+        { "value": "2", "label": "2" },
+        { "value": "3", "label": "3" },
+        { "value": "4", "label": "4" },
+        { "value": "5", "label": "5" },
+        { "value": "6", "label": "6" }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "columns_tablet",
+      "label": "Tablet columns",
+      "default": "3",
+      "options": [
+        { "value": "2", "label": "2" },
+        { "value": "3", "label": "3" },
+        { "value": "4", "label": "4" }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "columns_mobile",
+      "label": "Mobile columns",
+      "default": "2",
+      "options": [
+        { "value": "1", "label": "1" },
+        { "value": "2", "label": "2" }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "grid_gap",
+      "label": "Grid gap",
+      "default": "global",
+      "options": [
+        {
+          "value": "global",
+          "label": "Use global product gap"
+        },
+        {
+          "value": "compact",
+          "label": "Compact"
+        },
+        {
+          "value": "standard",
+          "label": "Standard"
+        },
+        {
+          "value": "spacious",
+          "label": "Spacious"
+        }
+      ]
+    },
+    {
+      "type": "header",
+      "content": "Product card design"
+    },
+    {
+      "type": "select",
+      "id": "card_style_override",
+      "label": "Product card style",
+      "info": "Use the global Spider product-card style by default, or choose a local style for this grid only.",
+      "default": "global",
+      "options": [
+        { "value": "global", "label": "Use global Product Settings" },
+        { "value": "01", "label": "01 — Classic Premium" },
+        { "value": "02", "label": "02 — Modern Badges" },
+        { "value": "03", "label": "03 — Variant Preview" },
+        { "value": "04", "label": "04 — Image Overlay" },
+        { "value": "05", "label": "05 — Apparel Swatches" },
+        { "value": "06", "label": "06 — Stock Status" },
+        { "value": "07", "label": "07 — Minimal Luxury" },
+        { "value": "08", "label": "08 — Lifestyle Wide" }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "media_sizing_mode",
+      "label": "Product image ratio",
+      "default": "wide",
+      "options": [
+        { "value": "wide", "label": "Wide (16:10)" },
+        { "value": "landscape", "label": "Landscape (4:3)" },
+        { "value": "square", "label": "Square (1:1)" },
+        { "value": "portrait", "label": "Portrait (4:5)" },
+        { "value": "adapt", "label": "Adapt to image" }
+      ]
+    },
+    {
+      "type": "checkbox",
+      "id": "show_second_image",
+      "label": "Show second image on hover",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_vendor",
+      "label": "Show product vendor",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_rating",
+      "label": "Show product rating",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_wishlist",
+      "label": "Show wishlist button",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_quick_view",
+      "label": "Show quick view action on image",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "show_compare",
+      "label": "Show compare button",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "show_quick_add",
+      "label": "Show Add to cart / Choose options button",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_swatches",
+      "label": "Show color swatches",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "show_sizes",
+      "label": "Show size swatches when supported",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "swatch_limit",
+      "label": "Maximum swatches per product",
+      "default": 5,
+      "min": 3,
+      "max": 10,
+      "step": 1
+    },
+    {
+      "type": "select",
+      "id": "color_swatch_shape",
+      "label": "Color swatch shape",
+      "default": "circle",
+      "options": [
+        { "value": "circle", "label": "Circle" },
+        { "value": "square", "label": "Square" },
+        { "value": "rounded", "label": "Rounded" }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "size_swatch_shape",
+      "label": "Size swatch shape",
+      "default": "square",
+      "options": [
+        { "value": "square", "label": "Square" },
+        { "value": "rounded", "label": "Rounded" },
+        { "value": "pill", "label": "Pill" }
+      ]
+    },
+    {
+      "type": "range",
+      "id": "content_gap",
+      "label": "Header-to-grid spacing",
+      "default": 32,
+      "min": 16,
+      "max": 64,
+      "step": 4,
+      "unit": "px"
+    },
+    {
+      "type": "header",
+      "content": "View all"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_view_all",
+      "label": "Show View All",
+      "default": false
+    },
+    {
+      "type": "text",
+      "id": "view_all_label",
+      "label": "Label",
+      "default": "View all"
+    },
+    {
+      "type": "url",
+      "id": "view_all_link",
+      "label": "Link"
+    },
+    {
+      "type": "select",
+      "id": "view_all_alignment",
+      "label": "Alignment",
+      "default": "center",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Product Grid",
+      "category": "02. Products"
+    }
+  ]
+}
+{% endschema %}

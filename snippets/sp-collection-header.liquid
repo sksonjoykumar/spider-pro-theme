@@ -1,0 +1,50 @@
+{%- liquid
+  assign sp_style = section.settings.header_style | default: 'simple'
+  assign sp_show_image = false
+  if section.settings.show_collection_image and collection.image != blank
+    assign sp_show_image = true
+  endif
+  if sp_show_image == false and sp_style != 'simple'
+    assign sp_style = 'simple'
+  endif
+  assign sp_align = section.settings.header_alignment | default: 'left'
+-%}
+
+<header class="sp-collection-header sp-collection-header--{{ sp_style }} sp-collection-header--align-{{ sp_align }}">
+  {% if section.settings.show_breadcrumb %}
+    <nav class="sp-collection-header__breadcrumb" aria-label="Breadcrumb">
+      <a href="{{ routes.root_url }}">Home</a>
+      <span aria-hidden="true">/</span>
+      <span aria-current="page">{{ collection.title | escape }}</span>
+    </nav>
+  {% endif %}
+
+  {% if sp_style == 'image-banner' or sp_style == 'overlay' %}
+    <div class="sp-collection-header__banner">
+      {% render 'responsive-image', image: collection.image, class: 'sp-collection-header__banner-image', widths: '640,900,1200,1600,2000', sizes: '100vw', loading: 'eager', alt: collection.image.alt %}
+      <span class="sp-collection-header__banner-overlay" aria-hidden="true"></span>
+      <div class="sp-collection-header__banner-content">
+        {% if section.settings.show_title %}<h1 class="sp-collection-header__title">{{ collection.title | escape }}</h1>{% endif %}
+        {% if section.settings.show_product_count %}<p class="sp-collection-header__count">{{ product_count }} products</p>{% endif %}
+        {% if section.settings.show_description and section.settings.description_position == 'under-title' and collection.description != blank %}<div class="sp-collection-header__description rte">{{ collection.description }}</div>{% endif %}
+      </div>
+    </div>
+  {% elsif sp_style == 'image-content' %}
+    <div class="sp-collection-header__split">
+      <div class="sp-collection-header__split-media">
+        {% render 'responsive-image', image: collection.image, class: 'sp-collection-header__split-image', widths: '480,720,960,1200', sizes: '(min-width: 750px) 50vw, 100vw', loading: 'eager', alt: collection.image.alt %}
+      </div>
+      <div class="sp-collection-header__copy">
+        {% if section.settings.show_title %}<h1 class="sp-collection-header__title">{{ collection.title | escape }}</h1>{% endif %}
+        {% if section.settings.show_product_count %}<p class="sp-collection-header__count">{{ product_count }} products</p>{% endif %}
+        {% if section.settings.show_description and section.settings.description_position == 'under-title' and collection.description != blank %}<div class="sp-collection-header__description rte">{{ collection.description }}</div>{% endif %}
+      </div>
+    </div>
+  {% else %}
+    <div class="sp-collection-header__simple">
+      {% if section.settings.show_title %}<h1 class="sp-collection-header__title">{{ collection.title | escape }}</h1>{% endif %}
+      {% if section.settings.show_product_count %}<p class="sp-collection-header__count">{{ product_count }} products</p>{% endif %}
+      {% if section.settings.show_description and section.settings.description_position == 'under-title' and collection.description != blank %}<div class="sp-collection-header__description rte">{{ collection.description }}</div>{% endif %}
+    </div>
+  {% endif %}
+</header>

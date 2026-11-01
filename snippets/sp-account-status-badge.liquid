@@ -1,0 +1,3 @@
+{% comment %}Parameters: status, label, kind (financial|fulfillment|order){% endcomment %}
+{% assign badge_status = status | default: 'pending' | handleize %}
+<span class="sp-account-badge sp-account-badge--{{ badge_status }}" data-status-kind="{{ kind | escape }}">{{ label | default: status | escape }}</span>

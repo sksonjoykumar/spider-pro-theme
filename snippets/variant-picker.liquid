@@ -1,0 +1,124 @@
+{% comment %}
+  Exact-combination product option picker.
+  The combined variant select remains the no-JS submitted variant ID fallback.
+  Enhanced per-option UI is synchronized by sp-product-form.js.
+{% endcomment %}
+{% assign current_variant = product.selected_or_first_available_variant %}
+{% assign default_style = block.settings.default_style | default: 'auto' %}
+{% if default_style == 'buttons' %}{% assign default_style = 'button' %}{% endif %}
+{% assign color_style = block.settings.color_style | default: 'swatch' %}
+{% if color_style == 'buttons' %}{% assign color_style = 'button' %}{% endif %}
+{% assign size_style = block.settings.size_style | default: 'button' %}
+{% if size_style == 'buttons' %}{% assign size_style = 'button' %}{% endif %}
+{% assign show_swatch_names = block.settings.show_swatch_names | default: false %}
+{% assign swatch_size = block.settings.swatch_size | default: 'medium' %}
+{% assign swatch_shape = block.settings.swatch_shape | default: 'circle' %}
+{% assign show_swatch_tooltip = block.settings.show_swatch_tooltip %}
+{% if show_swatch_tooltip == nil %}{% assign show_swatch_tooltip = true %}{% endif %}
+
+{% unless product.has_only_default_variant %}
+  <div
+    class="sp-variant-picker"
+    data-variant-picker
+    data-default-style="{{ default_style }}"
+    data-color-style="{{ color_style }}"
+    data-size-style="{{ size_style }}"
+  >
+    <div class="sp-variant-picker__options" data-option-groups>
+      {% for option in product.options_with_values %}
+        {% assign option_index = forloop.index0 %}
+        {% assign selected_value = current_variant.options[option_index] %}
+        {% assign option_name_downcase = option.name | downcase %}
+        {% assign presentation = default_style %}
+        {% if option_name_downcase contains 'color' or option_name_downcase contains 'colour' %}
+          {% assign presentation = color_style %}
+        {% elsif option_name_downcase contains 'size' %}
+          {% assign presentation = size_style %}
+        {% elsif presentation == 'auto' %}
+          {% assign presentation = 'button' %}
+        {% endif %}
+
+        <fieldset
+          class="sp-product-option sp-product-option--{{ presentation }}"
+          data-option-group
+          data-option-index="{{ option_index }}"
+          data-option-name="{{ option.name | escape }}"
+          data-option-presentation="{{ presentation }}"
+        >
+          <legend class="sp-product-option__legend">
+            <span class="sp-product-option__label">{{ option.name | escape }}</span>
+            <span class="sp-product-option__selected" data-option-selected>{{ selected_value | escape }}</span>
+          </legend>
+
+          {% if presentation == 'dropdown' %}
+            <select
+              class="sp-product-option__select"
+              data-option-input
+              data-option-index="{{ option_index }}"
+              aria-label="{{ option.name | escape }}"
+            >
+              {% for value in option.values %}
+                <option value="{{ value | escape }}"{% if selected_value == value %} selected{% endif %}>{{ value }}</option>
+              {% endfor %}
+            </select>
+          {% else %}
+            <div class="sp-product-option__values" role="radiogroup" aria-label="{{ option.name | escape }}">
+              {% for value in option.values %}
+                {% assign input_id = 'Option-' | append: section.id | append: '-' | append: option.position | append: '-' | append: forloop.index %}
+                <div class="sp-product-option__value" data-option-value-wrap>
+                  <input
+                    hidden
+                    type="radio"
+                    id="{{ input_id }}"
+                    name="sp-option-{{ section.id }}-{{ option.position }}"
+                    value="{{ value | escape }}"
+                    data-option-input
+                    data-option-index="{{ option_index }}"
+                    tabindex="-1"
+                    {% if selected_value == value %}checked{% endif %}
+                  >
+                  <button
+                    type="button"
+                    class="sp-product-option__button{% if presentation == 'swatch' %} sp-product-option__swatch sp-product-option__swatch--size-{{ swatch_size }} sp-product-option__swatch--shape-{{ swatch_shape }}{% if show_swatch_names %} sp-product-option__swatch--show-name{% else %} sp-product-option__swatch--icon-only{% endif %}{% endif %}"
+                    data-option-button
+                    data-option-label
+                    data-option-target="{{ input_id }}"
+                    data-option-index="{{ option_index }}"
+                    data-option-value="{{ value | escape }}"
+                    role="radio"
+                    aria-checked="{% if selected_value == value %}true{% else %}false{% endif %}"
+                    aria-label="{{ option.name | escape }}: {{ value | escape }}"
+                    {% if presentation == 'swatch' and show_swatch_tooltip and show_swatch_names == false %}data-swatch-tooltip="{{ value | escape }}"{% endif %}
+                  >
+                    {% if presentation == 'swatch' %}
+                      <span class="sp-product-option__swatch-paint" data-swatch-paint aria-hidden="true"></span>
+                    {% endif %}
+                    {% if presentation != 'swatch' or show_swatch_names %}
+                      <span class="sp-product-option__button-text">{{ value }}</span>
+                    {% endif %}
+                  </button>
+                </div>
+              {% endfor %}
+            </div>
+          {% endif %}
+        </fieldset>
+      {% endfor %}
+    </div>
+
+    <div class="sp-field sp-variant-picker__fallback" data-variant-fallback>
+      <label for="Variant-{{ section.id }}">{{ 'products.product.product_variants' | t }}</label>
+      <select
+        id="Variant-{{ section.id }}"
+        name="id"
+        {% if product_form_id != blank %}form="{{ product_form_id }}"{% endif %}
+        data-variant-select
+      >
+        {% for variant in product.variants %}
+          <option value="{{ variant.id }}"{% if variant.id == current_variant.id %} selected{% endif %}>
+            {{ variant.title | escape }} — {{ variant.price | money }}{% unless variant.available %} — {{ 'products.product.sold_out' | t }}{% endunless %}
+          </option>
+        {% endfor %}
+      </select>
+    </div>
+  </div>
+{% endunless %}

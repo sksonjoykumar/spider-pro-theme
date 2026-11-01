@@ -1,0 +1,274 @@
+{{ 'sp-article-card.css' | asset_url | stylesheet_tag }}
+{{ 'sp-main-blog.css' | asset_url | stylesheet_tag }}
+{% render 'sp-section-color-scheme', section: section %}
+
+{% liquid
+  assign container_class = 'sp-container'
+  case section.settings.container_width
+    when 'narrow'
+      assign container_class = 'sp-container sp-container--narrow'
+    when 'wide'
+      assign container_class = 'sp-container sp-container--wide'
+    when 'full'
+      assign container_class = 'sp-main-blog__container--full'
+  endcase
+
+  assign title_class = 'sp-main-blog__title sp-heading--h1'
+  case section.settings.title_style
+    when 'h2'
+      assign title_class = 'sp-main-blog__title sp-heading--h2'
+    when 'h3'
+      assign title_class = 'sp-main-blog__title sp-heading--h3'
+    when 'custom'
+      assign title_class = 'sp-main-blog__title sp-main-blog__title--custom'
+  endcase
+
+  assign grid_gap = 'var(--sp-grid-gap, 24px)'
+  if section.settings.gap_source == 'custom'
+    assign grid_gap = section.settings.custom_gap | append: 'px'
+  endif
+%}
+
+<section
+  class="sp-main-blog"
+  data-main-blog
+  data-blog-section-id="{{ section.id }}"
+  data-pagination-type="{{ section.settings.pagination_type }}"
+  style="--sp-blog-cols-desktop: {{ section.settings.desktop_columns }}; --sp-blog-cols-tablet: {{ section.settings.tablet_columns }}; --sp-blog-cols-mobile: {{ section.settings.mobile_columns }}; --sp-blog-grid-gap: {{ grid_gap }};{% if section.settings.spacing_source == 'custom' %} --sp-blog-pad-top: {{ section.settings.padding_top }}px; --sp-blog-pad-bottom: {{ section.settings.padding_bottom }}px; --sp-blog-pad-top-mobile: {{ section.settings.padding_top_mobile }}px; --sp-blog-pad-bottom-mobile: {{ section.settings.padding_bottom_mobile }}px;{% endif %}{% if section.settings.header_style == 'banner' %} --sp-blog-banner-overlay: {{ section.settings.banner_overlay | divided_by: 100.0 }};{% endif %}"
+>
+  <div class="{{ container_class }}">
+    {% paginate blog.articles by section.settings.articles_per_page %}
+      {% liquid
+        assign has_articles = false
+        if paginate.items > 0
+          assign has_articles = true
+        endif
+
+        assign show_featured_here = false
+        assign featured_article = nil
+        if section.settings.show_featured and has_articles and paginate.current_page == 1
+          assign show_featured_here = true
+          if current_tags != blank
+            assign featured_article = blog.articles.first
+          elsif section.settings.featured_source == 'manual' and section.settings.featured_article != blank
+            assign featured_article = section.settings.featured_article
+          else
+            assign featured_article = blog.articles.first
+          endif
+          if featured_article == blank
+            assign show_featured_here = false
+          endif
+        endif
+      %}
+
+      {% unless section.settings.show_blog_title %}<h1 class="visually-hidden">{{ blog.title | escape }}</h1>{% endunless %}
+
+      {% if section.settings.show_blog_title or section.settings.show_description or section.settings.show_article_count %}
+        <header class="sp-main-blog__header sp-main-blog__header--{{ section.settings.header_alignment }}{% if section.settings.header_style == 'banner' and section.settings.banner_image != blank %} sp-main-blog__header--banner{% endif %}">
+          {% if section.settings.header_style == 'banner' and section.settings.banner_image != blank %}
+            <div class="sp-main-blog__banner-media" aria-hidden="true">
+              <picture>
+                {% if section.settings.banner_image_mobile != blank %}
+                  <source media="(max-width: 749px)" srcset="{{ section.settings.banner_image_mobile | image_url: width: 480 }} 480w, {{ section.settings.banner_image_mobile | image_url: width: 750 }} 750w, {{ section.settings.banner_image_mobile | image_url: width: 1000 }} 1000w">
+                {% endif %}
+                {{ section.settings.banner_image | image_url: width: 2200 | image_tag: widths: '750, 1000, 1400, 1800, 2200', sizes: '100vw', loading: 'eager', alt: '' }}
+              </picture>
+            </div>
+            <div class="sp-main-blog__banner-overlay" aria-hidden="true"></div>
+            <div class="sp-main-blog__banner-content">
+          {% endif %}
+
+          {% if section.settings.show_blog_title %}
+            <h1 class="{{ title_class }}">{{ blog.title | escape }}</h1>
+          {% endif %}
+          {% if section.settings.show_description and section.settings.description != blank %}
+            <div class="sp-main-blog__intro rte">{{ section.settings.description }}</div>
+          {% endif %}
+          {% if section.settings.show_article_count %}
+            <div class="sp-main-blog__count">{{ paginate.items }} {% if paginate.items == 1 %}article{% else %}articles{% endif %}</div>
+          {% endif %}
+
+          {% if section.settings.header_style == 'banner' and section.settings.banner_image != blank %}
+            </div>
+          {% endif %}
+        </header>
+      {% endif %}
+
+      {% if has_articles %}
+        {% if show_featured_here %}
+          <div class="sp-main-blog__featured">
+            {% render 'sp-article-card', article: featured_article, design: 'editorial', image_ratio: 'wide', image_fit: section.settings.image_fit, image_hover: section.settings.image_hover, show_date: section.settings.featured_show_date, show_author: section.settings.featured_show_author, show_tags: section.settings.featured_show_tag, show_excerpt: section.settings.featured_show_excerpt, show_read_more: true, read_more_label: section.settings.read_more_label, excerpt_words: 42, featured: true, article_sizes: '(min-width: 990px) 55vw, 100vw', article_loading: 'eager' %}
+          </div>
+        {% endif %}
+
+        {% if section.settings.show_tag_navigation and blog.all_tags.size > 0 %}
+          <nav class="sp-main-blog__tags sp-main-blog__tags--{{ section.settings.tag_style }}" aria-label="Blog topics">
+            <span class="sp-main-blog__tag-item{% if current_tags == blank %} is-active{% endif %}"{% if current_tags == blank %} aria-current="page"{% endif %}>
+              <a href="{{ blog.url }}">{{ section.settings.all_tags_label | escape }}</a>
+            </span>
+            {% for tag in blog.all_tags %}
+              {% assign tag_active = false %}
+              {% if current_tags contains tag %}{% assign tag_active = true %}{% endif %}
+              <span class="sp-main-blog__tag-item{% if tag_active %} is-active{% endif %}"{% if tag_active %} aria-current="page"{% endif %}>
+                {% if tag_active %}
+                  {{ tag | link_to_remove_tag: tag }}
+                {% else %}
+                  {{ tag | link_to_tag: tag }}
+                {% endif %}
+              </span>
+            {% endfor %}
+          </nav>
+        {% endif %}
+
+        {% liquid
+          assign grid_count = blog.articles.size
+          if show_featured_here
+            for grid_article in blog.articles
+              if grid_article.id == featured_article.id
+                assign grid_count = grid_count | minus: 1
+                break
+              endif
+            endfor
+          endif
+        %}
+
+        {% if grid_count > 0 %}
+          <div class="sp-main-blog__articles{% if section.settings.layout == 'list' %} sp-main-blog__articles--list{% endif %}" data-blog-article-grid>
+            {% for article in blog.articles %}
+              {% if show_featured_here and article.id == featured_article.id %}{% continue %}{% endif %}
+              {% liquid
+                assign article_loading = 'lazy'
+                if paginate.current_page == 1 and show_featured_here == false and forloop.index <= section.settings.desktop_columns
+                  assign article_loading = 'eager'
+                endif
+              %}
+              {% render 'sp-article-card', article: article, design: section.settings.card_design, image_ratio: section.settings.image_ratio, image_fit: section.settings.image_fit, image_hover: section.settings.image_hover, show_date: section.settings.show_date, show_author: section.settings.show_author, show_tags: section.settings.show_tags, show_excerpt: section.settings.show_excerpt, show_read_more: section.settings.show_read_more, read_more_label: section.settings.read_more_label, excerpt_words: section.settings.excerpt_words, featured: false, article_sizes: '(min-width: 990px) 33vw, (min-width: 750px) 50vw, 100vw', article_loading: article_loading %}
+            {% endfor %}
+          </div>
+        {% endif %}
+
+        {% if paginate.pages > 1 %}
+          {% if section.settings.pagination_type == 'load_more' %}
+            {% if paginate.next %}
+              <div class="sp-main-blog__load-more" data-blog-load-more-wrap>
+                {% if section.settings.load_more_label != blank %}{% assign load_more_text = section.settings.load_more_label %}{% else %}{% assign load_more_text = 'pagination.load_more' | t %}{% endif %}
+                <a class="sp-button sp-button--secondary" href="{{ paginate.next.url }}" rel="next" data-blog-load-more>{{ load_more_text }}</a>
+              </div>
+            {% endif %}
+          {% else %}
+            <nav class="sp-main-blog__pagination" aria-label="{{ 'general.pagination.label' | t }}">
+              {% if paginate.previous %}
+                <a href="{{ paginate.previous.url }}" rel="prev" aria-label="{{ 'general.pagination.previous' | t }}">←</a>
+              {% endif %}
+              {% for part in paginate.parts %}
+                {% if part.is_link %}
+                  <a href="{{ part.url }}">{{ part.title }}</a>
+                {% elsif part.title == paginate.current_page %}
+                  <span aria-current="page">{{ part.title }}</span>
+                {% else %}
+                  <span class="is-gap">{{ part.title }}</span>
+                {% endif %}
+              {% endfor %}
+              {% if paginate.next %}
+                <a href="{{ paginate.next.url }}" rel="next" aria-label="{{ 'general.pagination.next' | t }}">→</a>
+              {% endif %}
+            </nav>
+          {% endif %}
+        {% endif %}
+      {% else %}
+        <div class="sp-main-blog__empty">
+          <div class="sp-main-blog__empty-mark" aria-hidden="true">✦</div>
+          {% if section.settings.empty_heading != blank %}{% assign empty_heading_text = section.settings.empty_heading %}{% else %}{% assign empty_heading_text = 'sections.blog.no_articles' | t %}{% endif %}
+          <h2 class="sp-heading--h3">{{ empty_heading_text }}</h2>
+          {% if section.settings.empty_text != blank %}<p>{{ section.settings.empty_text }}</p>{% endif %}
+          <div class="sp-main-blog__empty-actions">
+            {% if current_tags != blank %}
+              {% render 'button', label: section.settings.view_all_label, href: blog.url, style: 'secondary' %}
+            {% elsif section.settings.show_empty_cta %}
+              {% assign empty_cta_url = section.settings.empty_cta_link | default: routes.root_url %}
+              {% render 'button', label: section.settings.empty_cta_label, href: empty_cta_url, style: 'primary' %}
+            {% endif %}
+          </div>
+        </div>
+      {% endif %}
+    {% endpaginate %}
+  </div>
+</section>
+
+{% if section.settings.pagination_type == 'load_more' %}
+  <script src="{{ 'sp-main-blog.js' | asset_url }}" defer></script>
+{% endif %}
+
+{% schema %}
+{
+  "name": "Main blog",
+  "settings": [
+    {"type":"header","content":"Blog header"},
+    {"type":"checkbox","id":"show_blog_title","label":"Show blog title","default":true},
+    {"type":"select","id":"title_style","label":"Title style","default":"h1","options":[{"value":"h1","label":"Global H1"},{"value":"h2","label":"Global H2"},{"value":"h3","label":"Global H3"},{"value":"custom","label":"Custom display"}]},
+    {"type":"checkbox","id":"show_description","label":"Show description","default":true},
+    {"type":"richtext","id":"description","label":"Description","default":"<p>Stories, updates and inspiration.</p>"},
+    {"type":"select","id":"header_alignment","label":"Header alignment","default":"left","options":[{"value":"left","label":"Left"},{"value":"center","label":"Center"},{"value":"right","label":"Right"}]},
+    {"type":"select","id":"header_style","label":"Header style","default":"simple","options":[{"value":"simple","label":"Simple"},{"value":"banner","label":"Image banner"}]},
+    {"type":"checkbox","id":"show_article_count","label":"Show article count","default":false},
+    {"type":"image_picker","id":"banner_image","label":"Banner image"},
+    {"type":"image_picker","id":"banner_image_mobile","label":"Mobile banner image"},
+    {"type":"range","id":"banner_overlay","label":"Banner overlay","min":0,"max":80,"step":5,"unit":"%","default":40},
+
+    {"type":"header","content":"Featured article"},
+    {"type":"checkbox","id":"show_featured","label":"Show featured article","default":true},
+    {"type":"select","id":"featured_source","label":"Featured source","default":"latest","options":[{"value":"latest","label":"Latest article"},{"value":"manual","label":"Manual article"}]},
+    {"type":"article","id":"featured_article","label":"Manual featured article"},
+    {"type":"checkbox","id":"featured_show_excerpt","label":"Show featured excerpt","default":true},
+    {"type":"checkbox","id":"featured_show_date","label":"Show featured date","default":true},
+    {"type":"checkbox","id":"featured_show_author","label":"Show featured author","default":false},
+    {"type":"checkbox","id":"featured_show_tag","label":"Show featured tag","default":true},
+
+    {"type":"header","content":"Tag navigation"},
+    {"type":"checkbox","id":"show_tag_navigation","label":"Show tag navigation","default":false},
+    {"type":"select","id":"tag_style","label":"Tag style","default":"underline","options":[{"value":"text","label":"Text links"},{"value":"pills","label":"Pills"},{"value":"underline","label":"Underline tabs"}]},
+    {"type":"text","id":"all_tags_label","label":"All label","default":"All"},
+
+    {"type":"header","content":"Article cards"},
+    {"type":"select","id":"card_design","label":"Article card design","default":"classic","options":[{"value":"classic","label":"Classic"},{"value":"minimal","label":"Minimal"},{"value":"overlay","label":"Overlay"},{"value":"editorial","label":"Editorial"}]},
+    {"type":"select","id":"image_ratio","label":"Image ratio","default":"landscape","options":[{"value":"adapt","label":"Adapt"},{"value":"square","label":"Square"},{"value":"landscape","label":"Landscape 4:3"},{"value":"wide","label":"Wide 16:9"},{"value":"portrait","label":"Portrait"}]},
+    {"type":"select","id":"image_fit","label":"Image fit","default":"cover","options":[{"value":"cover","label":"Cover"},{"value":"contain","label":"Contain"}]},
+    {"type":"select","id":"image_hover","label":"Image hover","default":"zoom","options":[{"value":"none","label":"None"},{"value":"zoom","label":"Subtle zoom"},{"value":"lift","label":"Lift"}]},
+    {"type":"checkbox","id":"show_date","label":"Show published date","default":true},
+    {"type":"checkbox","id":"show_author","label":"Show author","default":false},
+    {"type":"checkbox","id":"show_tags","label":"Show primary tag","default":true},
+    {"type":"checkbox","id":"show_excerpt","label":"Show excerpt","default":true},
+    {"type":"range","id":"excerpt_words","label":"Excerpt words","min":10,"max":60,"step":5,"default":30},
+    {"type":"checkbox","id":"show_read_more","label":"Show Read more","default":true},
+    {"type":"text","id":"read_more_label","label":"Read more label","default":"Read article"},
+
+    {"type":"header","content":"Layout and pagination"},
+    {"type":"select","id":"layout","label":"Layout","default":"grid","options":[{"value":"grid","label":"Grid"},{"value":"list","label":"List"}]},
+    {"type":"range","id":"desktop_columns","label":"Desktop columns","min":2,"max":4,"step":1,"default":3},
+    {"type":"range","id":"tablet_columns","label":"Tablet columns","min":1,"max":3,"step":1,"default":2},
+    {"type":"range","id":"mobile_columns","label":"Mobile columns","min":1,"max":3,"step":1,"default":1},
+    {"type":"range","id":"articles_per_page","label":"Articles per page","min":6,"max":24,"step":3,"default":12},
+    {"type":"select","id":"pagination_type","label":"Pagination type","default":"pagination","options":[{"value":"pagination","label":"Pagination"},{"value":"load_more","label":"Load more"}]},
+    {"type":"text","id":"load_more_label","label":"Load more label","default":"Load more"},
+
+    {"type":"header","content":"Empty blog"},
+    {"type":"text","id":"empty_heading","label":"Empty heading","default":"No articles yet"},
+    {"type":"textarea","id":"empty_text","label":"Empty message","default":"New stories and updates will appear here soon."},
+    {"type":"checkbox","id":"show_empty_cta","label":"Show empty-state button","default":true},
+    {"type":"text","id":"empty_cta_label","label":"Empty-state button label","default":"Continue shopping"},
+    {"type":"url","id":"empty_cta_link","label":"Empty-state button link"},
+    {"type":"text","id":"view_all_label","label":"View all articles label","default":"View all articles"},
+
+    {"type":"header","content":"Global design system"},
+    {"type":"color_scheme","id":"sp_color_scheme","label":"Color scheme","default":"scheme-2","info":"Uses Spider global color-scheme tokens."},
+    {"type":"select","id":"container_width","label":"Container width","default":"theme","options":[{"value":"theme","label":"Theme default"},{"value":"narrow","label":"Narrow"},{"value":"wide","label":"Wide"},{"value":"full","label":"Full width"}]},
+    {"type":"select","id":"gap_source","label":"Grid gap","default":"global","options":[{"value":"global","label":"Use global grid gap"},{"value":"custom","label":"Custom"}]},
+    {"type":"range","id":"custom_gap","label":"Custom grid gap","min":8,"max":64,"step":4,"unit":"px","default":24},
+    {"type":"select","id":"spacing_source","label":"Section spacing","default":"theme","options":[{"value":"theme","label":"Use theme default"},{"value":"custom","label":"Custom"}]},
+    {"type":"range","id":"padding_top","label":"Desktop top padding","min":0,"max":160,"step":8,"unit":"px","default":96},
+    {"type":"range","id":"padding_bottom","label":"Desktop bottom padding","min":0,"max":160,"step":8,"unit":"px","default":96},
+    {"type":"range","id":"padding_top_mobile","label":"Mobile top padding","min":0,"max":120,"step":8,"unit":"px","default":56},
+    {"type":"range","id":"padding_bottom_mobile","label":"Mobile bottom padding","min":0,"max":120,"step":8,"unit":"px","default":56}
+  ]
+}
+{% endschema %}

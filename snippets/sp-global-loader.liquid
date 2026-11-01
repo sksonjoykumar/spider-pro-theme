@@ -1,0 +1,59 @@
+{% comment %}
+  Spider global page loader. Rendered only when page transitions are enabled.
+  The visual overlay is hidden by default so storefront content remains accessible if JavaScript fails.
+{% endcomment %}
+{% liquid
+  assign loader_style = settings.sp_loader_style | default: 'spinner'
+  if loader_style == 'custom_logo' and settings.sp_loader_logo == blank
+    assign loader_style = 'spinner'
+  endif
+  assign loader_size = settings.sp_loader_size | default: 64
+  assign logo_size = settings.sp_loader_logo_size | default: 80
+  assign loader_color = settings.sp_loader_color | default: '#111111'
+  assign loader_background = settings.sp_loader_background | default: '#FFFFFF'
+  assign background_opacity = settings.sp_loader_background_opacity | default: 100 | divided_by: 100.0
+  assign transition_duration = settings.sp_page_transition_duration | default: 350
+  assign loader_delay = settings.sp_loader_delay | default: 100
+  assign loader_min_duration = settings.sp_loader_min_duration | default: 250
+  assign loading_label = 'accessibility.loading.loading_content' | t
+  if loading_label contains 'translation missing'
+    assign loading_label = 'Loading content'
+  endif
+%}
+<div
+  class="sp-global-loader"
+  data-sp-global-loader
+  data-loader-style="{{ loader_style | escape }}"
+  data-loader-delay="{{ loader_delay }}"
+  data-loader-min-duration="{{ loader_min_duration }}"
+  data-transition-duration="{{ transition_duration }}"
+  data-lock-scroll="{{ settings.sp_loader_lock_scroll }}"
+  data-design-mode="{{ request.design_mode }}"
+  data-design-preview="{{ settings.sp_loader_design_mode }}"
+  role="status"
+  aria-live="polite"
+  aria-hidden="true"
+  style="--sp-loader-size: {{ loader_size }}px; --sp-loader-logo-size: {{ logo_size }}px; --sp-loader-color: {{ loader_color }}; --sp-loader-background: {{ loader_background }}; --sp-loader-background-opacity: {{ background_opacity }}; --sp-page-transition-duration: {{ transition_duration }}ms;"
+>
+  <div class="sp-global-loader__inner">
+    {% case loader_style %}
+      {% when 'dots' %}
+        <span class="sp-global-loader__dots" aria-hidden="true">
+          <span class="sp-global-loader__dot"></span>
+          <span class="sp-global-loader__dot"></span>
+          <span class="sp-global-loader__dot"></span>
+        </span>
+      {% when 'pulse' %}
+        <span class="sp-global-loader__pulse" aria-hidden="true"></span>
+      {% when 'custom_logo' %}
+        {{ settings.sp_loader_logo | image_url: width: 400 | image_tag: class: 'sp-global-loader__logo', loading: 'eager', widths: '80, 120, 160, 200, 240, 320, 400', sizes: '200px', alt: '' }}
+      {% else %}
+        <span class="sp-global-loader__spinner" aria-hidden="true"></span>
+    {% endcase %}
+
+    {% if settings.sp_loader_show_text %}
+      <span class="sp-global-loader__text" aria-hidden="true">{{ settings.sp_loader_text | default: loading_label | escape }}</span>
+    {% endif %}
+    <span class="visually-hidden">{{ loading_label }}</span>
+  </div>
+</div>

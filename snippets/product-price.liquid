@@ -1,0 +1,22 @@
+{% comment %}Canonical product-page price. Parameters: product, variant, show_compare, show_savings, savings_mode.{% endcomment %}
+{% assign target = variant | default: product.selected_or_first_available_variant %}
+{% assign compare_visible = false %}
+{% if target.compare_at_price > target.price %}{% assign compare_visible = true %}{% endif %}
+<div class="sp-product-price" data-product-price>
+  <div class="sp-product-price__main">
+    {% if show_compare != false %}<s class="sp-product-price__compare" data-compare-price{% unless compare_visible %} hidden{% endunless %}>{% if compare_visible %}{{ target.compare_at_price | money }}{% endif %}</s>{% endif %}
+    <span class="sp-product-price__current" data-current-price>{{ target.price | money }}</span>
+    {% if show_savings and compare_visible %}
+      {% assign saving_amount = target.compare_at_price | minus: target.price %}
+      {% assign saving_percent = saving_amount | times: 100.0 | divided_by: target.compare_at_price | round %}
+      <span class="sp-product-price__saving" data-price-saving data-savings-mode="{{ savings_mode | default: 'percentage' }}">
+        {% if savings_mode == 'amount' %}Save {{ saving_amount | money }}{% elsif savings_mode == 'percentage_off' %}{{ saving_percent }}% OFF{% else %}Save {{ saving_percent }}%{% endif %}
+      </span>
+    {% elsif show_savings %}
+      <span class="sp-product-price__saving" data-price-saving data-savings-mode="{{ savings_mode | default: 'percentage' }}" hidden></span>
+    {% endif %}
+  </div>
+  <small class="sp-product-price__unit" data-unit-price>
+    {% if target.unit_price_measurement %}{{ target.unit_price | money }} / {% if target.unit_price_measurement.reference_value != 1 %}{{ target.unit_price_measurement.reference_value }}{% endif %}{{ target.unit_price_measurement.reference_unit }}{% endif %}
+  </small>
+</div>

@@ -1,0 +1,19 @@
+{% comment %}Parameters: icon, heading, text, button_label, button_href{% endcomment %}
+<div class="sp-account-empty">
+  <span class="sp-account-empty__icon" aria-hidden="true">{% render 'sp-account-icon', name: icon, default: 'package' %}</span>
+  <h3 class="sp-heading sp-heading--h4">{{ heading }}</h3>
+  {% if text != blank %}<p>{{ text }}</p>{% endif %}
+  {% if button_label != blank and button_href != blank %}
+    <a class="sp-button sp-button--primary" href="{{ button_href }}">{{ button_label }}</a>
+  {% endif %}
+</div>
+{% comment %}
+
+This file has been rewritten to preserve the original behavior.
+
+---
+Changes:
+- from: "{% render 'sp-account-icon', name: icon | default: 'package' %}"
+  to: "{% render 'sp-account-icon', name: icon, default: 'package' %}"
+  position: 179..241
+{% endcomment %}

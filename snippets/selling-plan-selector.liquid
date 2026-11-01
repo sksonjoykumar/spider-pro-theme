@@ -1,0 +1,14 @@
+{% comment %}Shopify selling plan selector. Parameters: product, form_id.{% endcomment %}
+{% if product.selling_plan_groups.size > 0 %}
+  <div class="sp-field sp-product-selling-plan">
+    <label for="SellingPlan-{{ section.id }}">{{ 'products.product.selling_plan' | t }}</label>
+    <select id="SellingPlan-{{ section.id }}" name="selling_plan"{% if form_id != blank %} form="{{ form_id }}"{% endif %} data-selling-plan>
+      <option value="">{{ 'products.product.one_time_purchase' | t }}</option>
+      {% for group in product.selling_plan_groups %}
+        <optgroup label="{{ group.name | escape }}">
+          {% for plan in group.selling_plans %}<option value="{{ plan.id }}">{{ plan.name | escape }}</option>{% endfor %}
+        </optgroup>
+      {% endfor %}
+    </select>
+  </div>
+{% endif %}

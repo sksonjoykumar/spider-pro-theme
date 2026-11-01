@@ -1,0 +1,70 @@
+{%- comment -%}
+  Spider section color-scheme bridge.
+  Every section owns only a scheme selection; the editable color values live in Theme settings.
+  The Shopify section wrapper becomes the token scope so existing and future Spider components inherit it.
+{%- endcomment -%}
+{%- liquid
+  assign sp_scheme = section.settings.sp_color_scheme
+  if sp_scheme != blank
+    assign sp_scheme_bg = sp_scheme.settings.background | default: settings.sp_background | default: '#FFFFFF'
+    assign sp_scheme_gradient = sp_scheme.settings.background_gradient
+    assign sp_scheme_heading = sp_scheme.settings.heading | default: settings.sp_heading | default: '#171717'
+    assign sp_scheme_text = sp_scheme.settings.text | default: settings.sp_text | default: '#3F3F46'
+    assign sp_scheme_muted = sp_scheme.settings.muted | default: settings.sp_muted | default: '#71717A'
+    assign sp_scheme_card = sp_scheme.settings.card | default: settings.sp_card_bg | default: '#FFFFFF'
+    assign sp_scheme_border = sp_scheme.settings.border | default: settings.sp_border | default: '#E4E4E7'
+    assign sp_scheme_accent = sp_scheme.settings.accent | default: settings.sp_accent | default: '#415DFF'
+    assign sp_scheme_btn = sp_scheme.settings.primary_button | default: settings.btn_primary_bg | default: '#171717'
+    assign sp_scheme_btn_text = sp_scheme.settings.primary_button_label | default: settings.btn_primary_text | default: '#FFFFFF'
+    assign sp_scheme_btn_hover = sp_scheme.settings.primary_button_hover | default: settings.btn_primary_hover_bg | default: '#2C2C2C'
+    assign sp_scheme_btn_hover_text = sp_scheme.settings.primary_button_hover_label | default: settings.btn_primary_hover_text | default: '#FFFFFF'
+    assign sp_scheme_btn_2 = sp_scheme.settings.secondary_button | default: settings.btn_second_bg | default: '#FFFFFF'
+    assign sp_scheme_btn_2_text = sp_scheme.settings.secondary_button_label | default: settings.btn_second_text | default: '#171717'
+    assign sp_scheme_btn_2_border = sp_scheme.settings.secondary_button_border | default: settings.btn_second_border | default: '#171717'
+    assign sp_scheme_focus = sp_scheme.settings.focus | default: settings.a11y_focus_color | default: '#2563EB'
+  endif
+-%}
+{%- if sp_scheme != blank -%}
+<style id="SpSectionScheme-{{ section.id }}" data-sp-section-scheme>
+  #shopify-section-{{ section.id }} {
+    --sp-section-bg: {{ sp_scheme_bg }};
+    --sp-section-bg-gradient: {% if sp_scheme_gradient != blank %}{{ sp_scheme_gradient }}{% else %}none{% endif %};
+    --sp-section-heading: {{ sp_scheme_heading }};
+    --sp-section-text: {{ sp_scheme_text }};
+    --sp-section-muted: {{ sp_scheme_muted }};
+    --sp-section-card: {{ sp_scheme_card }};
+    --sp-section-surface: {{ sp_scheme_card }};
+    --sp-section-border: {{ sp_scheme_border }};
+    --sp-section-accent: {{ sp_scheme_accent }};
+
+    /* Re-scope the global semantic tokens for components rendered inside this section. */
+    --sp-color-background: var(--sp-section-bg);
+    --sp-color-surface: var(--sp-section-card);
+    --sp-color-card: var(--sp-section-card);
+    --sp-color-heading: var(--sp-section-heading);
+    --sp-color-text: var(--sp-section-text);
+    --sp-color-muted: var(--sp-section-muted);
+    --sp-color-border: var(--sp-section-border);
+    --sp-color-accent: var(--sp-section-accent);
+    --sp-heading-color: var(--sp-section-heading);
+    --sp-sub-color: var(--sp-section-muted);
+    --sp-heading-accent: var(--sp-section-accent);
+
+    --sp-btn-primary-bg: {{ sp_scheme_btn }};
+    --sp-btn-primary-text: {{ sp_scheme_btn_text }};
+    --sp-btn-primary-border: {{ sp_scheme_btn }};
+    --sp-btn-primary-hover-bg: {{ sp_scheme_btn_hover }};
+    --sp-btn-primary-hover-text: {{ sp_scheme_btn_hover_text }};
+    --sp-btn-secondary-bg: {{ sp_scheme_btn_2 }};
+    --sp-btn-secondary-text: {{ sp_scheme_btn_2_text }};
+    --sp-btn-secondary-border: {{ sp_scheme_btn_2_border }};
+    --sp-btn-secondary-hover-bg: {{ sp_scheme_btn_2_text }};
+    --sp-btn-secondary-hover-text: {{ sp_scheme_btn_2 }};
+    --sp-focus-color: {{ sp_scheme_focus }};
+
+    color: var(--sp-section-text);
+    background-color: var(--sp-section-bg);
+    {% if sp_scheme_gradient != blank %}background-image: {{ sp_scheme_gradient }};{% endif %}
+  }
+</style>
+{%- endif -%}

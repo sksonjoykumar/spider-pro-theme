@@ -1,0 +1,34 @@
+<div class="sp-pf__copyright" {{ block.shopify_attributes }}>
+  <p>© {{ 'now' | date: '%Y' }} {{ shop.name | escape }}. {{ block.settings.copyright_suffix | escape }}</p>
+  {% if block.settings.legal_menu != blank %}
+    <nav aria-label="Legal and utility links"><ul role="list">{% for link in block.settings.legal_menu.links %}<li><a href="{{ link.url }}">{{ link.title | escape }}</a></li>{% endfor %}</ul></nav>
+  {% endif %}
+</div>
+{% schema %}
+{
+  "name": "Footer copyright",
+  "tag": null,
+  "settings": [
+    {
+      "type": "text",
+      "id": "copyright_suffix",
+      "label": "Copyright suffix",
+      "default": "All rights reserved."
+    },
+    {
+      "type": "link_list",
+      "id": "legal_menu",
+      "label": "Legal links menu"
+    },
+    {
+      "type": "paragraph",
+      "content": "Developer credit is rendered once by the parent Footer section, independent of the copyright block."
+    }
+  ],
+  "presets": [
+    {
+      "name": "Footer copyright"
+    }
+  ]
+}
+{% endschema %}

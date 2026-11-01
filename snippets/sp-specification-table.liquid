@@ -1,0 +1,58 @@
+{%- liquid
+  assign group_key = group.settings.group_key | handleize
+  assign heading_text = group.settings.group_heading | default: group.settings.group_label
+  if group_key == blank
+    assign group_key = group.id
+  endif
+  assign row_mode = 'table'
+  if section.settings.layout_style == 'style_4'
+    assign row_mode = 'cards'
+  elsif section.settings.layout_style == 'style_5'
+    assign row_mode = 'definition'
+  endif
+  capture group_rows
+    for item in section.blocks
+      if item.type == 'specification'
+        assign item_group_key = item.settings.group_key | handleize
+        if item_group_key == group_key
+          render 'sp-specification-row', block: item, spec_product: spec_product, mode: row_mode
+        endif
+      endif
+    endfor
+  endcapture
+  assign rendered_content = group_rows | strip
+-%}
+{%- if rendered_content != blank -%}
+  {%- case section.settings.layout_style -%}
+    {%- when 'style_3' -%}
+      <details class="sp-specs__accordion" data-sp-spec-group="{{ group.id }}" {% if group.settings.open_by_default or for_first and section.settings.first_group_open %}open{% endif %} {{ group.shopify_attributes }}>
+        <summary>{{ group.settings.group_label | escape }}<span aria-hidden="true" class="sp-specs__chevron">⌄</span></summary>
+        {% if group.settings.group_description != blank %}<div class="sp-specs__group-description sp-specs__group-description--accordion rte">{{ group.settings.group_description }}</div>{% endif %}
+        <div class="sp-specs__table-wrap"><table class="sp-specs__table"><caption class="sp-specs__sr-only">{{ heading_text | escape }}</caption><tbody>{{ group_rows }}</tbody></table></div>
+      </details>
+    {%- when 'style_4' -%}
+      <div class="sp-specs__group" data-sp-spec-group="{{ group.id }}" {{ group.shopify_attributes }}>
+        <h3 class="sp-specs__group-title">{{ heading_text | escape }}</h3>
+        {% if group.settings.group_description != blank %}<div class="sp-specs__group-description rte">{{ group.settings.group_description }}</div>{% endif %}
+        <div class="sp-specs__cards">{{ group_rows }}</div>
+      </div>
+    {%- when 'style_5' -%}
+      <div class="sp-specs__group" data-sp-spec-group="{{ group.id }}" {{ group.shopify_attributes }}>
+        <h3 class="sp-specs__group-title">{{ heading_text | escape }}</h3>
+        {% if group.settings.group_description != blank %}<div class="sp-specs__group-description rte">{{ group.settings.group_description }}</div>{% endif %}
+        <dl class="sp-specs__definitions">{{ group_rows }}</dl>
+      </div>
+    {%- else -%}
+      <div class="sp-specs__group sp-specs__tab-panel" id="SpSpecsPanel-{{ section.id }}-{{ group.id }}" data-sp-spec-group="{{ group.id }}" {% if section.settings.layout_style == 'style_1' %}role="tabpanel" aria-labelledby="SpSpecsTab-{{ section.id }}-{{ group.id }}" tabindex="0"{% endif %} {{ group.shopify_attributes }}>
+        {% if section.settings.layout_style == 'style_2' %}<h3 class="sp-specs__group-title">{{ heading_text | escape }}</h3>{% endif %}
+        {% if group.settings.group_description != blank %}<div class="sp-specs__group-description rte">{{ group.settings.group_description }}</div>{% endif %}
+        <div class="sp-specs__table-wrap">
+          <table class="sp-specs__table">
+            <caption class="sp-specs__sr-only">{{ heading_text | escape }}</caption>
+            {% if section.settings.show_table_header %}<thead><tr><th scope="col">{{ section.settings.label_column_heading | escape }}</th><th scope="col">{{ section.settings.value_column_heading | escape }}</th></tr></thead>{% endif %}
+            <tbody>{{ group_rows }}</tbody>
+          </table>
+        </div>
+      </div>
+  {%- endcase -%}
+{%- endif -%}

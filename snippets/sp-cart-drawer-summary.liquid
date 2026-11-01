@@ -1,0 +1,125 @@
+{%- assign checkout_form_id = 'SpCartDrawerCheckoutForm-' | append: section.id -%}
+<div class="sp-cart-drawer__bottom" data-sp-cart-summary>
+  {%- form 'cart', cart, id: checkout_form_id, class: 'sp-cart-drawer__summary-form' -%}
+    {%- for block in section.blocks -%}
+      {%- case block.type -%}
+        {%- when 'subtotal' -%}
+          <div class="sp-cart-drawer__summary-block sp-cart-drawer__summary-block--subtotal" data-sp-summary-type="subtotal" {{ block.shopify_attributes }}>
+            {%- if block.settings.show_discounts and cart.cart_level_discount_applications.size > 0 -%}
+              <ul class="sp-cart-drawer__summary-discounts" role="list" aria-label="Cart discounts">
+                {%- for discount_application in cart.cart_level_discount_applications -%}
+                  <li>
+                    <span>{{ discount_application.title | escape }}</span>
+                    <span>−{{ discount_application.total_allocated_amount | money_with_currency }}</span>
+                  </li>
+                {%- endfor -%}
+              </ul>
+            {%- endif -%}
+            <div class="sp-cart-drawer__subtotal">
+              <span>{{ block.settings.label | escape }} ({{ cart.item_count }} items)</span>
+              <strong data-cart-subtotal>{{ cart.total_price | money_with_currency }}</strong>
+            </div>
+          </div>
+
+        {%- when 'tax' -%}
+          {%- assign policy_url = block.settings.policy_url | default: shop.shipping_policy.url -%}
+          <div class="sp-cart-drawer__summary-block sp-cart-drawer__summary-block--tax sp-cart-drawer__policy" data-sp-summary-type="tax" {{ block.shopify_attributes }}>
+            <p>
+              {%- if cart.taxes_included -%}
+                Taxes included. Shipping calculated at checkout.
+              {%- else -%}
+                {{ block.settings.fallback_text | escape }}
+              {%- endif -%}
+            </p>
+            {%- if policy_url != blank -%}<a href="{{ policy_url }}">Shipping policy</a>{%- endif -%}
+          </div>
+
+        {%- when 'terms' -%}
+          {%- assign terms_id = 'SpCartTerms-' | append: section.id | append: '-' | append: block.id -%}
+          <div class="sp-cart-drawer__summary-block sp-cart-drawer__summary-block--terms sp-cart-drawer__terms" data-sp-summary-type="terms" {{ block.shopify_attributes }}>
+            <label class="sp-cart-drawer__checkbox" for="{{ terms_id }}">
+              <input id="{{ terms_id }}" type="checkbox" data-sp-cart-terms {% if block.settings.required %}required data-sp-cart-terms-required{% endif %}>
+              <span class="sp-cart-drawer__checkbox-box" aria-hidden="true">
+                <svg viewBox="0 0 16 16" aria-hidden="true"><path d="m3 8 3 3 7-7"/></svg>
+              </span>
+              <span>{{ block.settings.text | escape }}</span>
+            </label>
+            {%- if block.settings.terms_url != blank -%}<a class="sp-cart-drawer__terms-link" href="{{ block.settings.terms_url }}">View terms</a>{%- endif -%}
+            <p class="sp-cart-drawer__terms-error" role="alert" data-sp-cart-terms-error hidden>Please agree to the terms before checkout.</p>
+          </div>
+
+        {%- when 'view_cart' -%}
+          <div class="sp-cart-drawer__summary-block sp-cart-drawer__summary-block--view-cart" data-sp-summary-type="view_cart" {{ block.shopify_attributes }}>
+            <a
+              class="sp-cart-drawer__button sp-cart-drawer__button--view-cart sp-cart-drawer__button--{{ block.settings.style }}"
+              href="{{ routes.cart_url }}"
+              style="--sp-cart-icon-size: {{ block.settings.icon_size }}px; --sp-cart-icon-gap: {{ block.settings.icon_gap }}px;"
+            >
+              {%- if block.settings.icon != 'none' and block.settings.icon_position == 'before' -%}
+                <span class="sp-cart-drawer__button-icon" aria-hidden="true">{% if block.settings.icon == 'cart' %}<svg viewBox="0 0 24 24"><path d="M3 4h2l2 11h10l2-8H6M9 20a1 1 0 1 0 0-2 1 1 0 0 0 0 2Zm8 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z"/></svg>{% else %}<svg viewBox="0 0 24 24"><path d="M5 12h14m-5-5 5 5-5 5"/></svg>{% endif %}</span>
+              {%- endif -%}
+              <span>{{ block.settings.label | escape }}</span>
+              {%- if block.settings.icon != 'none' and block.settings.icon_position == 'after' -%}
+                <span class="sp-cart-drawer__button-icon" aria-hidden="true">{% if block.settings.icon == 'cart' %}<svg viewBox="0 0 24 24"><path d="M3 4h2l2 11h10l2-8H6M9 20a1 1 0 1 0 0-2 1 1 0 0 0 0 2Zm8 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z"/></svg>{% else %}<svg viewBox="0 0 24 24"><path d="M5 12h14m-5-5 5 5-5 5"/></svg>{% endif %}</span>
+              {%- endif -%}
+            </a>
+          </div>
+
+        {%- when 'checkout' -%}
+          <div class="sp-cart-drawer__summary-block sp-cart-drawer__summary-block--checkout" data-sp-summary-type="checkout" {{ block.shopify_attributes }}>
+            <button
+              type="submit"
+              name="checkout"
+              class="sp-cart-drawer__button sp-cart-drawer__button--checkout sp-cart-drawer__button--{{ block.settings.style }}"
+              data-sp-cart-checkout
+              style="--sp-cart-icon-size: {{ block.settings.icon_size }}px; --sp-cart-icon-gap: {{ block.settings.icon_gap }}px;"
+            >
+              {%- if block.settings.icon != 'none' and block.settings.icon_position == 'before' -%}
+                <span class="sp-cart-drawer__button-icon" aria-hidden="true">
+                  {%- case block.settings.icon -%}
+                    {%- when 'lock' -%}<svg viewBox="0 0 24 24"><rect x="5" y="10" width="14" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>
+                    {%- when 'shield' -%}<svg viewBox="0 0 24 24"><path d="M12 3 5 6v5c0 5 3 8 7 10 4-2 7-5 7-10V6l-7-3Z"/></svg>
+                    {%- else -%}<svg viewBox="0 0 24 24"><path d="M5 12h14m-5-5 5 5-5 5"/></svg>
+                  {%- endcase -%}
+                </span>
+              {%- endif -%}
+              <span>{{ block.settings.label | escape }}</span>
+              {%- if block.settings.icon != 'none' and block.settings.icon_position == 'after' -%}
+                <span class="sp-cart-drawer__button-icon" aria-hidden="true">
+                  {%- case block.settings.icon -%}
+                    {%- when 'lock' -%}<svg viewBox="0 0 24 24"><rect x="5" y="10" width="14" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>
+                    {%- when 'shield' -%}<svg viewBox="0 0 24 24"><path d="M12 3 5 6v5c0 5 3 8 7 10 4-2 7-5 7-10V6l-7-3Z"/></svg>
+                    {%- else -%}<svg viewBox="0 0 24 24"><path d="M5 12h14m-5-5 5 5-5 5"/></svg>
+                  {%- endcase -%}
+                </span>
+              {%- endif -%}
+            </button>
+          </div>
+
+        {%- when 'trust' -%}
+          {% render 'sp-cart-drawer-trust', block: block %}
+
+        {%- when 'payment_terms' -%}
+          <div class="sp-cart-drawer__summary-block sp-cart-drawer__summary-block--payment-terms sp-cart-drawer__payment-terms" data-sp-summary-type="payment_terms" {{ block.shopify_attributes }}>
+            {{ form | payment_terms }}
+          </div>
+
+        {%- when '@app' -%}
+          <div class="sp-cart-drawer__summary-block sp-cart-drawer__summary-block--app sp-cart-drawer__app-block" data-sp-summary-type="app" {{ block.shopify_attributes }}>{% render block %}</div>
+      {%- endcase -%}
+    {%- endfor -%}
+    {%- if section.settings.show_shipping_summary -%}
+      <div class="sp-cart-drawer__summary-block sp-cart-drawer__shipping-summary" data-sp-summary-type="shipping-estimate">
+        <span>Shipping <span class="sp-cart-drawer__shipping-help" title="Shipping rates are calculated at checkout" aria-label="Shipping rates are calculated at checkout">ⓘ</span></span>
+        <span>Calculated at checkout</span>
+      </div>
+    {%- endif -%}
+    {%- if section.settings.show_total_estimate -%}
+      <div class="sp-cart-drawer__summary-block sp-cart-drawer__estimated-total" data-sp-summary-type="estimated-total">
+        <strong>Estimated total</strong>
+        <strong>{{ cart.total_price | money_with_currency }}</strong>
+      </div>
+      <p class="sp-cart-drawer__estimate-note">Shipping and taxes, if applicable, calculated at checkout.</p>
+    {%- endif -%}
+  {%- endform -%}
+</div>

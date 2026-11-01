@@ -1,0 +1,156 @@
+{% comment %}
+  Featured Blog Posts card.
+  Accepts: article, block, section, featured, placeholder, sizes, loading.
+{% endcomment %}
+{%- liquid
+  assign sp_article = article
+  assign sp_block = block
+  assign sp_is_placeholder = placeholder | default: false
+  assign sp_image = blank
+  assign sp_title = blank
+  assign sp_excerpt = blank
+  assign sp_url = blank
+  assign sp_author = blank
+  assign sp_date = blank
+  assign sp_category = blank
+  assign sp_read_time = blank
+  assign sp_alt = blank
+
+  if sp_article != blank
+    assign sp_image = sp_article.image
+    assign sp_title = sp_article.title
+    assign sp_excerpt = sp_article.excerpt
+    if sp_excerpt == blank
+      assign sp_excerpt = sp_article.content
+    endif
+    assign sp_url = sp_article.url
+    assign sp_author = sp_article.author
+    assign sp_date = sp_article.published_at
+    assign sp_alt = sp_article.image.alt | default: sp_article.title
+  endif
+
+  if sp_block != blank
+    if sp_image == blank
+      assign sp_image = sp_block.settings.custom_image
+    endif
+    if sp_title == blank
+      assign sp_title = sp_block.settings.custom_title
+    endif
+    if sp_excerpt == blank
+      assign sp_excerpt = sp_block.settings.custom_excerpt
+    endif
+    if sp_url == blank
+      assign sp_url = sp_block.settings.custom_url
+    endif
+    if sp_author == blank
+      assign sp_author = sp_block.settings.custom_author
+    endif
+    if sp_date == blank
+      assign sp_date = sp_block.settings.custom_date
+    endif
+    if sp_block.settings.custom_image_alt != blank and sp_article.image == blank
+      assign sp_alt = sp_block.settings.custom_image_alt
+    endif
+    assign sp_read_time = sp_block.settings.custom_read_time
+  endif
+
+  case section.settings.category_source
+    when 'blog_title'
+      if sp_article != blank
+        assign sp_category = sp_article.blog.title
+      endif
+    when 'custom_category'
+      if sp_block != blank
+        assign sp_category = sp_block.settings.custom_category
+      endif
+    else
+      if sp_article != blank
+        assign sp_category = sp_article.tags.first
+      endif
+  endcase
+  if sp_category == blank and sp_block != blank
+    assign sp_category = sp_block.settings.custom_category
+  endif
+
+  if sp_read_time == blank and sp_article != blank
+    assign sp_words = sp_article.content | strip_html | split: ' ' | size
+    assign sp_speed = section.settings.reading_speed | default: 200
+    assign sp_read_numerator = sp_words | plus: sp_speed | minus: 1
+    assign sp_read_time = sp_read_numerator | divided_by: sp_speed
+    if sp_read_time < 1
+      assign sp_read_time = 1
+    endif
+  endif
+
+  if sp_is_placeholder
+    assign sp_title = 'Example article title'
+    assign sp_excerpt = 'Select a blog or add manual article blocks to populate this section.'
+    assign sp_category = 'Journal'
+    assign sp_read_time = 4
+  endif
+
+  assign sp_ratio = section.settings.image_ratio | default: 'landscape'
+  assign sp_fit = section.settings.image_fit | default: 'cover'
+  assign sp_title_tag = 'h3'
+-%}
+
+<article class="sp-featured-blog-card{% if featured %} sp-featured-blog-card--featured{% endif %}{% if sp_image == blank %} sp-featured-blog-card--no-image{% endif %}"{% if sp_article != blank %} data-sp-article-id="{{ sp_article.id }}"{% endif %}>
+  {%- if section.settings.show_image -%}
+    {%- if sp_image != blank -%}
+      {%- if sp_url != blank -%}<a class="sp-featured-blog-card__media sp-featured-blog-card__media--{{ sp_ratio }} sp-featured-blog-card__media--fit-{{ sp_fit }}" href="{{ sp_url }}" aria-label="{{ sp_title | escape }}">{%- else -%}<div class="sp-featured-blog-card__media sp-featured-blog-card__media--{{ sp_ratio }} sp-featured-blog-card__media--fit-{{ sp_fit }}">{%- endif -%}
+        {% render 'responsive-image', image: sp_image, class: 'sp-featured-blog-card__image', widths: '240, 320, 480, 640, 800, 1000, 1200, 1600', sizes: sizes, loading: loading, alt: sp_alt %}
+        {%- if section.settings.image_overlay > 0 -%}<span class="sp-featured-blog-card__overlay" aria-hidden="true"></span>{%- endif -%}
+      {%- if sp_url != blank -%}</a>{%- else -%}</div>{%- endif -%}
+    {%- elsif sp_is_placeholder and section.settings.show_placeholder_image -%}
+      <div class="sp-featured-blog-card__media sp-featured-blog-card__media--{{ sp_ratio }} sp-featured-blog-card__placeholder" aria-hidden="true">
+        {{ 'image' | placeholder_svg_tag }}
+      </div>
+    {%- endif -%}
+  {%- endif -%}
+
+  <div class="sp-featured-blog-card__content">
+    {%- if section.settings.show_category and sp_category != blank or section.settings.show_date or section.settings.show_author or section.settings.show_read_time and sp_read_time != blank -%}
+      <div class="sp-featured-blog-card__meta">
+        {%- assign sp_meta_output = false -%}
+        {%- if section.settings.show_category and sp_category != blank -%}
+          <span>{{ sp_category | escape }}</span>{%- assign sp_meta_output = true -%}
+        {%- endif -%}
+        {%- if section.settings.show_date and sp_date != blank -%}
+          {%- if sp_meta_output -%}<span aria-hidden="true">{{ section.settings.metadata_separator | escape }}</span>{%- endif -%}
+          {%- if sp_article != blank -%}<time datetime="{{ sp_article.published_at | date: '%Y-%m-%d' }}">{{ sp_date | date: section.settings.date_format }}</time>{%- else -%}<span>{{ sp_date | escape }}</span>{%- endif -%}
+          {%- assign sp_meta_output = true -%}
+        {%- endif -%}
+        {%- if section.settings.show_author and sp_author != blank -%}
+          {%- if sp_meta_output -%}<span aria-hidden="true">{{ section.settings.metadata_separator | escape }}</span>{%- endif -%}
+          <span>{{ sp_author | escape }}</span>{%- assign sp_meta_output = true -%}
+        {%- endif -%}
+        {%- if section.settings.show_read_time and sp_read_time != blank -%}
+          {%- if sp_meta_output -%}<span aria-hidden="true">{{ section.settings.metadata_separator | escape }}</span>{%- endif -%}
+          <span>{{ sp_read_time | escape }} min read</span>
+        {%- endif -%}
+      </div>
+    {%- endif -%}
+
+    <{{ sp_title_tag }} class="sp-featured-blog-card__title">
+      {%- if sp_url != blank -%}<a href="{{ sp_url }}">{{ sp_title | escape }}</a>{%- else -%}{{ sp_title | escape }}{%- endif -%}
+    </{{ sp_title_tag }}>
+
+    {%- if section.settings.show_excerpt and sp_excerpt != blank -%}
+      <p class="sp-featured-blog-card__excerpt">{{ sp_excerpt | strip_html | strip | truncatewords: section.settings.excerpt_length }}</p>
+    {%- endif -%}
+
+    {%- if section.settings.show_tags and sp_article != blank and sp_article.tags.size > 0 -%}
+      <ul class="sp-featured-blog-card__tags" aria-label="Tags">
+        {%- for sp_tag in sp_article.tags limit: section.settings.maximum_tags -%}<li>{{ sp_tag | escape }}</li>{%- endfor -%}
+      </ul>
+    {%- endif -%}
+
+    {%- if section.settings.show_article_link and sp_url != blank -%}
+      <a class="sp-featured-blog-card__link" href="{{ sp_url }}">
+        <span>{{ section.settings.article_link_label | escape }}</span>
+        <span class="visually-hidden">: {{ sp_title | escape }}</span>
+        <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 10h13M11 5l5 5-5 5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </a>
+    {%- endif -%}
+  </div>
+</article>

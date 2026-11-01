@@ -1,0 +1,20 @@
+{%- comment -%}
+  Spider Wishlist global loader — Wishlist service only.
+  Product Commerce is owned by {% render 'sp-product-system-global' %}.
+  Render this ONCE before the global product system.
+{%- endcomment -%}
+<script>
+  (() => {
+    const src = {{ 'sp-wishlist-core.js' | asset_url | json }};
+    const ready = () => Boolean(window.SpiderWishlist && typeof window.SpiderWishlist.getAll === 'function' && typeof window.SpiderWishlist.toggle === 'function');
+    if (ready()) return;
+    const href = new URL(src, document.baseURI).href;
+    if ([...document.scripts].some((script) => script.src === href)) return;
+    const script = document.createElement('script');
+    script.src = href;
+    script.async = false;
+    script.dataset.spWishlistCoreGlobal = '';
+    script.addEventListener('error', () => console.error('[Spider Wishlist] Unable to load global Wishlist core.'), { once: true });
+    document.head.append(script);
+  })();
+</script>

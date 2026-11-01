@@ -1,0 +1,90 @@
+{% comment %}Parameters: form, prefix, address{% endcomment %}
+<div class="sp-account-form-grid">
+  {% render 'sp-account-form-field', id: prefix, append: '-FirstName', name: 'address[first_name]', label: 'customer.addresses.first_name', value: form.first_name, autocomplete: 'given-name', required: true %}
+  {% render 'sp-account-form-field', id: prefix, append: '-LastName', name: 'address[last_name]', label: 'customer.addresses.last_name', value: form.last_name, autocomplete: 'family-name', required: true %}
+  {% render 'sp-account-form-field', id: prefix, append: '-Company', name: 'address[company]', label: 'customer.addresses.company', value: form.company, autocomplete: 'organization' %}
+  {% render 'sp-account-form-field', id: prefix, append: '-Phone', name: 'address[phone]', label: 'customer.addresses.phone', value: form.phone, autocomplete: 'tel', inputmode: 'tel' %}
+</div>
+{% render 'sp-account-form-field', id: prefix, append: '-Address1', name: 'address[address1]', label: 'customer.addresses.address1', value: form.address1, autocomplete: 'address-line1', required: true %}
+{% render 'sp-account-form-field', id: prefix, append: '-Address2', name: 'address[address2]', label: 'customer.spider.address2', value: form.address2, autocomplete: 'address-line2' %}
+<div class="sp-account-form-grid sp-account-form-grid--3">
+  {% render 'sp-account-form-field', id: prefix, append: '-City', name: 'address[city]', label: 'customer.addresses.city', value: form.city, autocomplete: 'address-level2', required: true %}
+  <div class="sp-account-field">
+    <label for="{{ prefix }}-Country">{{ 'customer.addresses.country' | t }} <span aria-hidden="true">*</span></label>
+    <select id="{{ prefix }}-Country" name="address[country]" data-country-select data-default="{{ form.country | escape }}" required>{{ all_country_option_tags }}</select>
+  </div>
+  <div class="sp-account-field" data-province-field>
+    <label for="{{ prefix }}-Province">{{ 'customer.spider.province' | t }}</label>
+    <select id="{{ prefix }}-Province" name="address[province]" data-province-select data-default="{{ form.province | escape }}"></select>
+  </div>
+</div>
+<div class="sp-account-form-grid">
+  {% render 'sp-account-form-field', id: prefix, append: '-Zip', name: 'address[zip]', label: 'customer.addresses.zip', value: form.zip, autocomplete: 'postal-code', required: true %}
+</div>
+<label class="sp-account-check">
+  <input type="checkbox" name="address[default]" value="1" {% if address == customer.default_address %}checked{% endif %}>
+  <span>{{ 'customer.addresses.default' | t }}</span>
+</label>
+{% comment %}
+
+This file has been rewritten to preserve the original behavior.
+
+---
+Changes:
+- from: "{% render 'sp-account-form-field', id: prefix | append: '-FirstName', name:
+    'address[first_name]', label: 'customer.addresses.first_name' | t, value: form.first_name,
+    autocomplete: 'given-name', required: true %}"
+  to: "{% render 'sp-account-form-field', id: prefix, append: '-FirstName', name:
+    'address[first_name]', label: 'customer.addresses.first_name', value: form.first_name,
+    autocomplete: 'given-name', required: true %}"
+  position: 102..309
+- from: "{% render 'sp-account-form-field', id: prefix | append: '-LastName', name:
+    'address[last_name]', label: 'customer.addresses.last_name' | t, value: form.last_name,
+    autocomplete: 'family-name', required: true %}"
+  to: "{% render 'sp-account-form-field', id: prefix, append: '-LastName', name: 'address[last_name]',
+    label: 'customer.addresses.last_name', value: form.last_name, autocomplete: 'family-name',
+    required: true %}"
+  position: 313..517
+- from: "{% render 'sp-account-form-field', id: prefix | append: '-Company', name:
+    'address[company]', label: 'customer.addresses.company' | t, value: form.company,
+    autocomplete: 'organization' %}"
+  to: "{% render 'sp-account-form-field', id: prefix, append: '-Company', name: 'address[company]',
+    label: 'customer.addresses.company', value: form.company, autocomplete: 'organization'
+    %}"
+  position: 521..703
+- from: "{% render 'sp-account-form-field', id: prefix | append: '-Phone', name: 'address[phone]',
+    label: 'customer.addresses.phone' | t, value: form.phone, autocomplete: 'tel',
+    inputmode: 'tel' %}"
+  to: "{% render 'sp-account-form-field', id: prefix, append: '-Phone', name: 'address[phone]',
+    label: 'customer.addresses.phone', value: form.phone, autocomplete: 'tel', inputmode:
+    'tel' %}"
+  position: 707..890
+- from: "{% render 'sp-account-form-field', id: prefix | append: '-Address1', name:
+    'address[address1]', label: 'customer.addresses.address1' | t, value: form.address1,
+    autocomplete: 'address-line1', required: true %}"
+  to: "{% render 'sp-account-form-field', id: prefix, append: '-Address1', name: 'address[address1]',
+    label: 'customer.addresses.address1', value: form.address1, autocomplete: 'address-line1',
+    required: true %}"
+  position: 900..1103
+- from: "{% render 'sp-account-form-field', id: prefix | append: '-Address2', name:
+    'address[address2]', label: 'customer.spider.address2' | t, value: form.address2,
+    autocomplete: 'address-line2' %}"
+  to: "{% render 'sp-account-form-field', id: prefix, append: '-Address2', name: 'address[address2]',
+    label: 'customer.spider.address2', value: form.address2, autocomplete: 'address-line2'
+    %}"
+  position: 1105..1289
+- from: "{% render 'sp-account-form-field', id: prefix | append: '-City', name: 'address[city]',
+    label: 'customer.addresses.city' | t, value: form.city, autocomplete: 'address-level2',
+    required: true %}"
+  to: "{% render 'sp-account-form-field', id: prefix, append: '-City', name: 'address[city]',
+    label: 'customer.addresses.city', value: form.city, autocomplete: 'address-level2',
+    required: true %}"
+  position: 1353..1541
+- from: "{% render 'sp-account-form-field', id: prefix | append: '-Zip', name: 'address[zip]',
+    label: 'customer.addresses.zip' | t, value: form.zip, autocomplete: 'postal-code',
+    required: true %}"
+  to: "{% render 'sp-account-form-field', id: prefix, append: '-Zip', name: 'address[zip]',
+    label: 'customer.addresses.zip', value: form.zip, autocomplete: 'postal-code',
+    required: true %}"
+  position: 2216..2397
+{% endcomment %}

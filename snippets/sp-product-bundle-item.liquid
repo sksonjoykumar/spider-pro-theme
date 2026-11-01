@@ -1,0 +1,103 @@
+{%- liquid
+  assign current_variant = product.selected_or_first_available_variant
+  assign image_alt = product.featured_image.alt | default: product.title
+-%}
+
+<article
+  class="sp-product-bundle__item"
+  role="listitem"
+  data-bundle-item
+  data-slot="{{ slot }}"
+  data-product-id="{{ product.id }}"
+  data-selected-variant-id="{{ current_variant.id }}"
+  data-selected-price="{{ current_variant.price }}"
+  data-selected-available="{{ current_variant.available }}"
+>
+  {%- if show_thumbnails -%}
+    <a class="sp-product-bundle__thumb" href="{{ product.url }}" aria-label="{{ product.title | escape }}">
+      {%- if product.featured_image -%}
+        {{
+          product.featured_image
+          | image_url: width: 180
+          | image_tag:
+            widths: '80, 120, 160, 180',
+            sizes: '80px',
+            loading: 'lazy',
+            alt: image_alt,
+            class: 'sp-product-bundle__thumb-image',
+            data-bundle-thumb: ''
+        }}
+      {%- else -%}
+        {{ 'product-1' | placeholder_svg_tag: 'sp-product-bundle__thumb-placeholder placeholder-svg' }}
+      {%- endif -%}
+    </a>
+  {%- endif -%}
+
+  <div class="sp-product-bundle__item-info">
+    <a class="sp-product-bundle__item-title" href="{{ product.url }}">{{ product.title | escape }}</a>
+
+    {%- if show_variants and product.has_only_default_variant == false -%}
+      <label class="sp-product-bundle__variant-label" for="BundleVariant-{{ section.id }}-{{ slot }}">
+        <span class="visually-hidden">{{ product.title | escape }} </span>Variant
+      </label>
+      <select
+        id="BundleVariant-{{ section.id }}-{{ slot }}"
+        class="sp-product-bundle__variant-select"
+        data-bundle-variant-select
+        aria-label="Choose a variant for {{ product.title | escape }}"
+      >
+        {%- for variant in product.variants -%}
+          <option
+            value="{{ variant.id }}"
+            data-price="{{ variant.price }}"
+            data-compare-price="{{ variant.compare_at_price | default: 0 }}"
+            data-available="{{ variant.available }}"
+            data-image="{% if variant.featured_image %}{{ variant.featured_image | image_url: width: 180 }}{% endif %}"
+            {% if variant.id == current_variant.id %}selected{% endif %}
+            {% unless variant.available %}disabled{% endunless %}
+          >
+            {{ variant.title | escape }}{% unless variant.available %} — Sold out{% endunless %}
+          </option>
+        {%- endfor -%}
+      </select>
+    {%- elsif product.has_only_default_variant == false -%}
+      <a class="sp-product-bundle__choose-options" href="{{ product.url }}">
+        Choose options
+      </a>
+    {%- endif -%}
+  </div>
+
+  {%- if show_individual_prices -%}
+    <div class="sp-product-bundle__item-price" aria-live="polite">
+      <span class="sp-product-bundle__price-current" data-bundle-price>
+        {{ current_variant.price | money }}
+      </span>
+      {%- if show_compare_prices -%}
+        <s
+          class="sp-product-bundle__price-compare"
+          data-bundle-compare
+          {% unless current_variant.compare_at_price > current_variant.price %}hidden{% endunless %}
+        >
+          {%- if current_variant.compare_at_price > current_variant.price -%}
+            {{ current_variant.compare_at_price | money }}
+          {%- endif -%}
+        </s>
+      {%- endif -%}
+    </div>
+  {%- endif -%}
+
+  <script type="application/json" data-bundle-variants-json>
+    [
+      {%- for variant in product.variants -%}
+        {
+          "id": {{ variant.id | json }},
+          "title": {{ variant.title | json }},
+          "price": {{ variant.price | json }},
+          "compare_at_price": {{ variant.compare_at_price | default: 0 | json }},
+          "available": {{ variant.available | json }},
+          "image": {% if variant.featured_image %}{{ variant.featured_image | image_url: width: 180 | json }}{% else %}null{% endif %}
+        }{% unless forloop.last %},{% endunless %}
+      {%- endfor -%}
+    ]
+  </script>
+</article>

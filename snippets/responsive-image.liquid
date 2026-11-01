@@ -1,0 +1,21 @@
+{% comment %}LiquidDoc: Renders a responsive Shopify image. Parameters: image required; widths, sizes, loading, class, alt optional.{% endcomment %}
+{% if image != blank %}
+  {% liquid
+    assign image_alt = alt | default: image.alt
+    assign image_widths = widths | default: '320, 480, 640, 800, 1000, 1200, 1600, 2000'
+    assign image_sizes = sizes | default: '100vw'
+    assign image_loading = loading
+    if image_loading == blank
+      if settings.perf_lazy_images
+        assign image_loading = 'lazy'
+      else
+        assign image_loading = 'eager'
+      endif
+    endif
+  %}
+  {% if settings.perf_responsive_images %}
+    {{ image | image_url: width: 2000 | image_tag: widths: image_widths, sizes: image_sizes, loading: image_loading, class: class, alt: image_alt }}
+  {% else %}
+    {{ image | image_url: width: 1600 | image_tag: loading: image_loading, class: class, alt: image_alt }}
+  {% endif %}
+{% endif %}

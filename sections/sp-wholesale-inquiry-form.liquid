@@ -1,0 +1,287 @@
+{% comment %}
+  Spider Wholesale Inquiry Form
+  Dedicated reference-matched inquiry section. Uses Spider global color, type,
+  button, form, spacing and shadow tokens; preserves the separate Wholesale / B2B CTA.
+{% endcomment %}
+{% render 'sp-section-color-scheme', section: section %}
+{{ 'sp-wholesale-inquiry-form.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'sp-wholesale-inquiry-form.js' | asset_url }}" defer></script>
+
+{%- liquid
+  assign s = section.settings
+  assign container_class = 'sp-container'
+  if s.container_width == 'wide'
+    assign container_class = 'sp-container sp-container--wide'
+  elsif s.container_width == 'full'
+    assign container_class = 'sp-wholesale-inquiry__container--full'
+  endif
+
+  assign privacy_url = s.privacy_policy_url
+  if privacy_url == blank and shop.policies.privacy_policy != blank
+    assign privacy_url = shop.policies.privacy_policy.url
+  endif
+
+  assign business_type_options = s.business_type_options | split: '|'
+  assign volume_options = s.volume_options | split: '|'
+  assign form_id = 'SpWholesaleInquiryForm-' | append: section.id
+-%}
+
+<section
+  class="sp-wholesale-inquiry"
+  data-sp-wholesale-inquiry
+  aria-labelledby="SpWholesaleInquiryTitle-{{ section.id }}"
+  style="--sp-wi-pad-top: {{ s.padding_top }}px; --sp-wi-pad-bottom: {{ s.padding_bottom }}px; --sp-wi-pad-mobile: {{ s.padding_mobile }}px; --sp-wi-column-gap: {{ s.column_gap }}px; --sp-wi-card-padding: {{ s.card_padding }}px; --sp-wi-card-radius: {{ s.card_radius }}px;"
+>
+  <div class="{{ container_class }} sp-wholesale-inquiry__container">
+    <div class="sp-wholesale-inquiry__layout">
+      <div class="sp-wholesale-inquiry__intro">
+        {% if s.eyebrow != blank %}
+          <p class="sp-wholesale-inquiry__eyebrow"><span>{{ s.eyebrow | escape }}</span><span class="sp-wholesale-inquiry__eyebrow-rule" aria-hidden="true"></span></p>
+        {% endif %}
+
+        <h2 class="sp-wholesale-inquiry__title" id="SpWholesaleInquiryTitle-{{ section.id }}">
+          {% if s.heading_before_highlight != blank %}{{ s.heading_before_highlight | escape }}{% endif %}
+          {% if s.heading_highlight != blank %}<span class="sp-wholesale-inquiry__title-highlight">{{ s.heading_highlight | escape }}</span>{% endif %}
+        </h2>
+
+        {% if s.description != blank %}
+          <p class="sp-wholesale-inquiry__description">{{ s.description | escape | newline_to_br }}</p>
+        {% endif %}
+
+        {% if section.blocks.size > 0 %}
+          <div class="sp-wholesale-inquiry__benefits" role="list">
+            {% for block in section.blocks %}
+              {% if block.type == 'benefit' %}
+                <article class="sp-wholesale-inquiry__benefit" role="listitem" {{ block.shopify_attributes }}>
+                  <span class="sp-wholesale-inquiry__benefit-icon" aria-hidden="true">
+                    {% if block.settings.custom_icon != blank %}
+                      {{ block.settings.custom_icon | image_url: width: 100 | image_tag: loading: 'lazy', widths: '50,100', sizes: '44px', alt: '' }}
+                    {% else %}
+                      {% case block.settings.icon %}
+                        {% when 'tag' %}
+                          {% render 'sp-wholesale-b2b-icon', name: 'tag', class: 'sp-wholesale-inquiry__icon-svg' %}
+                        {% when 'box' %}
+                          {% render 'sp-wholesale-b2b-icon', name: 'cube', class: 'sp-wholesale-inquiry__icon-svg' %}
+                        {% when 'support' %}
+                          <svg class="sp-wholesale-inquiry__icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" focusable="false"><path d="m3 11 3-3 4 1 2-2a2 2 0 0 1 3 0l5 5a2 2 0 0 1-3 3l-3-3"/><path d="m2 12 5 5a2 2 0 0 0 3-3l-2-2"/><path d="m8 9 5 5a2 2 0 0 0 3-3l-3-3"/><path d="m4 10-2 2v5l3 3 3-3"/><path d="m20 11 2 2v4l-3 3-3-3"/></svg>
+                        {% when 'chart' %}
+                          <svg class="sp-wholesale-inquiry__icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" focusable="false"><path d="M3 20h18"/><rect x="5" y="12" width="3.5" height="8" rx=".5"/><rect x="10.5" y="8" width="3.5" height="12" rx=".5"/><rect x="16" y="4" width="3.5" height="16" rx=".5"/></svg>
+                        {% else %}
+                          {% render 'sp-wholesale-b2b-icon', name: block.settings.icon, class: 'sp-wholesale-inquiry__icon-svg' %}
+                      {% endcase %}
+                    {% endif %}
+                  </span>
+                  <span class="sp-wholesale-inquiry__benefit-copy">
+                    {% if block.settings.heading != blank %}<strong>{{ block.settings.heading | escape }}</strong>{% endif %}
+                    {% if block.settings.description != blank %}<span>{{ block.settings.description | escape }}</span>{% endif %}
+                  </span>
+                </article>
+              {% endif %}
+            {% endfor %}
+          </div>
+        {% endif %}
+      </div>
+
+      <div class="sp-wholesale-inquiry__card">
+        <header class="sp-wholesale-inquiry__form-header">
+          {% if s.form_eyebrow != blank %}<p class="sp-wholesale-inquiry__form-eyebrow">{{ s.form_eyebrow | escape }}</p>{% endif %}
+          {% if s.form_heading != blank %}<h3 class="sp-wholesale-inquiry__form-title" id="SpWholesaleInquiryFormTitle-{{ section.id }}">{{ s.form_heading | escape }}</h3>{% endif %}
+          {% if s.form_description != blank %}<p class="sp-wholesale-inquiry__form-description">{{ s.form_description | escape | newline_to_br }}</p>{% endif %}
+        </header>
+
+        {%- form 'contact', id: form_id, class: 'sp-wholesale-inquiry__form' -%}
+          <input type="hidden" name="contact[subject]" value="Wholesale inquiry — {{ shop.name | escape }}">
+          <input type="hidden" name="contact[Inquiry type]" value="Wholesale / B2B">
+
+          {% if form.posted_successfully? %}
+            <div class="sp-wholesale-inquiry__message sp-wholesale-inquiry__message--success" role="status" tabindex="-1">
+              <strong>Thank you for your inquiry.</strong> Our team will get back to you with wholesale details.
+            </div>
+          {% endif %}
+
+          {% if form.errors %}
+            <div class="sp-wholesale-inquiry__message sp-wholesale-inquiry__message--error" role="alert">
+              <strong>We couldn't submit your inquiry.</strong> Please review the fields below and try again.
+              {{ form.errors | default_errors }}
+            </div>
+          {% endif %}
+
+          <div class="sp-wholesale-inquiry__field sp-wholesale-inquiry__field--half sp-field">
+            <label class="visually-hidden" for="SpWholesaleFirstName-{{ section.id }}">{{ s.first_name_label | escape }}{% if s.first_name_required %} (required){% endif %}</label>
+            <input id="SpWholesaleFirstName-{{ section.id }}" name="contact[First name]" type="text" autocomplete="given-name" placeholder="{{ s.first_name_placeholder | escape }}{% if s.first_name_required %} *{% endif %}" {% if s.first_name_required %}required{% endif %}>
+          </div>
+
+          <div class="sp-wholesale-inquiry__field sp-wholesale-inquiry__field--half sp-field">
+            <label class="visually-hidden" for="SpWholesaleLastName-{{ section.id }}">{{ s.last_name_label | escape }}{% if s.last_name_required %} (required){% endif %}</label>
+            <input id="SpWholesaleLastName-{{ section.id }}" name="contact[Last name]" type="text" autocomplete="family-name" placeholder="{{ s.last_name_placeholder | escape }}{% if s.last_name_required %} *{% endif %}" {% if s.last_name_required %}required{% endif %}>
+          </div>
+
+          <div class="sp-wholesale-inquiry__field sp-wholesale-inquiry__field--full sp-field">
+            <label class="visually-hidden" for="SpWholesaleBusinessName-{{ section.id }}">{{ s.business_name_label | escape }}{% if s.business_name_required %} (required){% endif %}</label>
+            <input id="SpWholesaleBusinessName-{{ section.id }}" name="contact[Business name]" type="text" autocomplete="organization" placeholder="{{ s.business_name_placeholder | escape }}{% if s.business_name_required %} *{% endif %}" {% if s.business_name_required %}required{% endif %}>
+          </div>
+
+          <div class="sp-wholesale-inquiry__field sp-wholesale-inquiry__field--half sp-field">
+            <label class="visually-hidden" for="SpWholesaleBusinessType-{{ section.id }}">{{ s.business_type_placeholder | escape }}{% if s.business_type_required %} (required){% endif %}</label>
+            <select id="SpWholesaleBusinessType-{{ section.id }}" name="contact[Business type]" {% if s.business_type_required %}required{% endif %}>
+              <option value="" disabled selected>{{ s.business_type_placeholder | escape }}{% if s.business_type_required %} *{% endif %}</option>
+              {% for option in business_type_options %}
+                {% assign option_label = option | strip %}
+                {% if option_label != blank %}<option value="{{ option_label | escape }}">{{ option_label | escape }}</option>{% endif %}
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="sp-wholesale-inquiry__field sp-wholesale-inquiry__field--half sp-field">
+            <label class="visually-hidden" for="SpWholesaleCountry-{{ section.id }}">{{ s.country_placeholder | escape }}{% if s.country_required %} (required){% endif %}</label>
+            <select id="SpWholesaleCountry-{{ section.id }}" name="contact[Country / Region]" autocomplete="country-name" {% if s.country_required %}required{% endif %}>
+              <option value="" disabled selected>{{ s.country_placeholder | escape }}{% if s.country_required %} *{% endif %}</option>
+              {{ all_country_option_tags }}
+            </select>
+          </div>
+
+          {% if s.show_website %}
+            <div class="sp-wholesale-inquiry__field sp-wholesale-inquiry__field--half sp-field">
+              <label class="visually-hidden" for="SpWholesaleWebsite-{{ section.id }}">{{ s.website_placeholder | escape }}</label>
+              <input id="SpWholesaleWebsite-{{ section.id }}" name="contact[Website]" type="url" autocomplete="url" placeholder="{{ s.website_placeholder | escape }}">
+            </div>
+          {% endif %}
+
+          <div class="sp-wholesale-inquiry__field sp-wholesale-inquiry__field--half{% unless s.show_website %} sp-wholesale-inquiry__field--full{% endunless %} sp-field">
+            <label class="visually-hidden" for="SpWholesaleOrderVolume-{{ section.id }}">{{ s.volume_placeholder | escape }}{% if s.volume_required %} (required){% endif %}</label>
+            <select id="SpWholesaleOrderVolume-{{ section.id }}" name="contact[Expected order volume]" {% if s.volume_required %}required{% endif %}>
+              <option value="" disabled selected>{{ s.volume_placeholder | escape }}{% if s.volume_required %} *{% endif %}</option>
+              {% for option in volume_options %}
+                {% assign option_label = option | strip %}
+                {% if option_label != blank %}<option value="{{ option_label | escape }}">{{ option_label | escape }}</option>{% endif %}
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="sp-wholesale-inquiry__field sp-wholesale-inquiry__field--full sp-field">
+            <label class="visually-hidden" for="SpWholesaleEmail-{{ section.id }}">{{ s.email_label | escape }} (required)</label>
+            <input id="SpWholesaleEmail-{{ section.id }}" name="contact[email]" type="email" autocomplete="email" placeholder="{{ s.email_placeholder | escape }} *" required value="{{ form.email | default: customer.email | escape }}" {% if form.errors contains 'email' %}aria-invalid="true"{% endif %}>
+          </div>
+
+          <div class="sp-wholesale-inquiry__field sp-wholesale-inquiry__field--full sp-field">
+            <label class="visually-hidden" for="SpWholesalePhone-{{ section.id }}">{{ s.phone_label | escape }}{% if s.phone_required %} (required){% endif %}</label>
+            <input id="SpWholesalePhone-{{ section.id }}" name="contact[Phone number]" type="tel" autocomplete="tel" placeholder="{{ s.phone_placeholder | escape }}{% if s.phone_required %} *{% endif %}" {% if s.phone_required %}required{% endif %} value="{{ customer.phone | escape }}">
+          </div>
+
+          <div class="sp-wholesale-inquiry__field sp-wholesale-inquiry__field--full sp-field">
+            <label class="visually-hidden" for="SpWholesaleRequirements-{{ section.id }}">{{ s.requirements_label | escape }}{% if s.requirements_required %} (required){% endif %}</label>
+            <textarea id="SpWholesaleRequirements-{{ section.id }}" name="contact[body]" rows="4" placeholder="{{ s.requirements_placeholder | escape }}{% if s.requirements_required %} *{% endif %}" {% if s.requirements_required %}required{% endif %}></textarea>
+          </div>
+
+          <button class="sp-button sp-button--primary sp-wholesale-inquiry__submit" type="submit" data-sp-wholesale-submit>
+            <span data-sp-submit-label>{{ s.submit_label | escape }}</span>
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          </button>
+        {%- endform -%}
+
+        {% assign privacy_notice_escaped = s.privacy_notice | escape %}
+        {% if privacy_url != blank %}
+          {% capture privacy_link %}<a href="{{ privacy_url | escape }}">Privacy Policy</a>{% endcapture %}
+        {% else %}
+          {% assign privacy_link = 'Privacy Policy' %}
+        {% endif %}
+        {% if s.privacy_notice != blank %}
+          <p class="sp-wholesale-inquiry__privacy">{{ privacy_notice_escaped | replace: 'Privacy Policy', privacy_link }}</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Wholesale Inquiry Form",
+  "tag": "section",
+  "class": "sp-wholesale-inquiry-section",
+  "disabled_on": {
+    "groups": ["header", "footer", "custom.system"]
+  },
+  "settings": [
+    { "type": "color_scheme", "id": "sp_color_scheme", "label": "Color scheme", "default": "scheme-1", "info": "Uses Spider's shared global color scheme." },
+    { "type": "select", "id": "container_width", "label": "Container width", "default": "wide", "options": [{ "value": "standard", "label": "Standard" }, { "value": "wide", "label": "Wide" }, { "value": "full", "label": "Full width" }] },
+    { "type": "range", "id": "padding_top", "label": "Desktop top padding", "default": 80, "min": 0, "max": 160, "step": 4, "unit": "px" },
+    { "type": "range", "id": "padding_bottom", "label": "Desktop bottom padding", "default": 80, "min": 0, "max": 160, "step": 4, "unit": "px" },
+    { "type": "range", "id": "padding_mobile", "label": "Mobile top/bottom padding", "default": 44, "min": 0, "max": 100, "step": 4, "unit": "px" },
+    { "type": "range", "id": "column_gap", "label": "Desktop column gap", "default": 64, "min": 24, "max": 120, "step": 4, "unit": "px" },
+    { "type": "range", "id": "card_padding", "label": "Form card padding", "default": 36, "min": 16, "max": 64, "step": 2, "unit": "px" },
+    { "type": "range", "id": "card_radius", "label": "Form card radius", "default": 12, "min": 4, "max": 28, "step": 2, "unit": "px" },
+
+    { "type": "header", "content": "Wholesale introduction" },
+    { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "WHOLESALE & B2B" },
+    { "type": "text", "id": "heading_before_highlight", "label": "Main heading (before accent)", "default": "Partner With Us for Greater" },
+    { "type": "text", "id": "heading_highlight", "label": "Main heading accent text", "default": "Possibilities." },
+    { "type": "textarea", "id": "description", "label": "Introduction description", "default": "Join our wholesale program and get access to premium products, competitive pricing, and dedicated support to help your business grow." },
+
+    { "type": "header", "content": "Inquiry form header" },
+    { "type": "text", "id": "form_eyebrow", "label": "Form eyebrow", "default": "WHOLESALE INQUIRY" },
+    { "type": "text", "id": "form_heading", "label": "Form heading", "default": "Get Started Today." },
+    { "type": "textarea", "id": "form_description", "label": "Form description", "default": "Tell us about your business and our team will get back to you with wholesale details." },
+    { "type": "text", "id": "submit_label", "label": "Submit button label", "default": "Submit Inquiry" },
+    { "type": "textarea", "id": "privacy_notice", "label": "Privacy notice", "default": "By submitting this form, you agree to our Privacy Policy. We’ll use your information only for wholesale inquiries." },
+    { "type": "url", "id": "privacy_policy_url", "label": "Privacy policy URL", "info": "If blank, the store's configured privacy policy URL is used." },
+
+    { "type": "header", "content": "Form options" },
+    { "type": "textarea", "id": "business_type_options", "label": "Business type options", "default": "Retailer|Distributor|Wholesaler|Online store|Brick-and-mortar store|Other", "info": "Separate options with a vertical bar ( | )." },
+    { "type": "textarea", "id": "volume_options", "label": "Expected order volume options", "default": "Under 50 units|50–250 units|251–1,000 units|1,001–5,000 units|5,000+ units", "info": "Separate options with a vertical bar ( | )." },
+    { "type": "checkbox", "id": "show_website", "label": "Show optional website field", "default": true },
+
+    { "type": "header", "content": "Field labels and placeholders" },
+    { "type": "text", "id": "first_name_label", "label": "First name accessible label", "default": "First name" },
+    { "type": "text", "id": "first_name_placeholder", "label": "First name placeholder", "default": "First name" },
+    { "type": "text", "id": "last_name_label", "label": "Last name accessible label", "default": "Last name" },
+    { "type": "text", "id": "last_name_placeholder", "label": "Last name placeholder", "default": "Last name" },
+    { "type": "text", "id": "business_name_label", "label": "Business name accessible label", "default": "Business name" },
+    { "type": "text", "id": "business_name_placeholder", "label": "Business name placeholder", "default": "Business name" },
+    { "type": "text", "id": "business_type_placeholder", "label": "Business type placeholder", "default": "Business type" },
+    { "type": "text", "id": "country_placeholder", "label": "Country placeholder", "default": "Country / Region" },
+    { "type": "text", "id": "website_placeholder", "label": "Website placeholder", "default": "Website (optional)" },
+    { "type": "text", "id": "volume_placeholder", "label": "Order volume placeholder", "default": "Expected order volume" },
+    { "type": "text", "id": "email_label", "label": "Email accessible label", "default": "Email address" },
+    { "type": "text", "id": "email_placeholder", "label": "Email placeholder", "default": "Email address" },
+    { "type": "text", "id": "phone_label", "label": "Phone accessible label", "default": "Phone number" },
+    { "type": "text", "id": "phone_placeholder", "label": "Phone placeholder", "default": "Phone number" },
+    { "type": "text", "id": "requirements_label", "label": "Requirements accessible label", "default": "Tell us about your business and requirements" },
+    { "type": "text", "id": "requirements_placeholder", "label": "Requirements placeholder", "default": "Tell us about your business and requirements" },
+
+    { "type": "header", "content": "Required fields" },
+    { "type": "checkbox", "id": "first_name_required", "label": "Require first name", "default": true },
+    { "type": "checkbox", "id": "last_name_required", "label": "Require last name", "default": true },
+    { "type": "checkbox", "id": "business_name_required", "label": "Require business name", "default": true },
+    { "type": "checkbox", "id": "business_type_required", "label": "Require business type", "default": true },
+    { "type": "checkbox", "id": "country_required", "label": "Require country / region", "default": true },
+    { "type": "checkbox", "id": "volume_required", "label": "Require expected order volume", "default": true },
+    { "type": "checkbox", "id": "phone_required", "label": "Require phone number", "default": true },
+    { "type": "checkbox", "id": "requirements_required", "label": "Require business requirements", "default": true }
+  ],
+  "blocks": [
+    {
+      "type": "benefit",
+      "name": "Benefit",
+      "settings": [
+        { "type": "text", "id": "heading", "label": "Heading", "default": "Competitive Pricing" },
+        { "type": "textarea", "id": "description", "label": "Description", "default": "Exclusive wholesale rates for approved partners." },
+        { "type": "select", "id": "icon", "label": "Icon", "default": "tag", "options": [{ "value": "tag", "label": "Price tag" }, { "value": "box", "label": "Product box" }, { "value": "support", "label": "Handshake / support" }, { "value": "chart", "label": "Analytics chart" }, { "value": "headset", "label": "Headset" }] },
+        { "type": "image_picker", "id": "custom_icon", "label": "Optional custom icon image" }
+      ]
+    }
+  ],
+  "max_blocks": 8,
+  "presets": [
+    {
+      "name": "Wholesale Inquiry Form",
+      "category": "07. Store & Support",
+      "blocks": [
+        { "type": "benefit", "settings": { "heading": "Competitive Pricing", "description": "Exclusive wholesale rates for approved partners.", "icon": "tag" } },
+        { "type": "benefit", "settings": { "heading": "Wide Product Range", "description": "Access our full catalog and new releases.", "icon": "box" } },
+        { "type": "benefit", "settings": { "heading": "Dedicated Support", "description": "A dedicated team to help your business grow.", "icon": "support" } },
+        { "type": "benefit", "settings": { "heading": "Marketing Resources", "description": "Product assets and promotional support.", "icon": "chart" } }
+      ]
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,23 @@
+{% comment %}Parameters: id, name, label, type, value, autocomplete, required, placeholder, error, inputmode{% endcomment %}
+<div class="sp-account-field{% if error != blank %} has-error{% endif %}">
+  <label for="{{ id }}">{{ label }}{% if required %}<span aria-hidden="true"> *</span>{% endif %}</label>
+  <div class="sp-account-field__control">
+    <input
+      id="{{ id }}"
+      type="{{ type | default: 'text' }}"
+      name="{{ name }}"
+      {% if value != blank %}value="{{ value | escape }}"{% endif %}
+      {% if autocomplete != blank %}autocomplete="{{ autocomplete }}"{% endif %}
+      {% if placeholder != blank %}placeholder="{{ placeholder | escape }}"{% endif %}
+      {% if inputmode != blank %}inputmode="{{ inputmode }}"{% endif %}
+      {% if required %}required aria-required="true"{% endif %}
+      {% if error != blank %}aria-invalid="true" aria-describedby="{{ id }}-error"{% endif %}
+    >
+    {% if type == 'password' %}
+      <button class="sp-account-password-toggle" type="button" data-password-toggle data-show-label="{{ 'customer.spider.show_password' | t | escape }}" data-hide-label="{{ 'customer.spider.hide_password' | t | escape }}" aria-label="{{ 'customer.spider.show_password' | t }}" aria-pressed="false">
+        {% render 'sp-account-icon', name: 'eye' %}
+      </button>
+    {% endif %}
+  </div>
+  {% if error != blank %}<p class="sp-account-field__error" id="{{ id }}-error">{{ error }}</p>{% endif %}
+</div>

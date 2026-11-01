@@ -1,0 +1,16 @@
+{% comment %}Active Shopify Search filters. URLs returned by Shopify preserve compatible query state and remove pagination.{% endcomment %}
+<div class="sp-search-active-filters" aria-label="{{ 'collections.filtering.active_filters' | t }}" data-search-active-filters>
+  {% for filter in search.filters %}
+    {% for value in filter.active_values %}
+      <a class="sp-search-active-filters__chip" href="{{ value.url_to_remove }}" data-search-filter-link aria-label="{{ 'collections.filtering.remove_filter' | t: filter: value.label | escape }}">
+        <span>{{ value.label | escape }}</span><span aria-hidden="true">×</span>
+      </a>
+    {% endfor %}
+    {% if filter.min_value.value or filter.max_value.value %}
+      <a class="sp-search-active-filters__chip" href="{{ filter.url_to_remove }}" data-search-filter-link aria-label="{{ 'collections.filtering.remove_filter' | t: filter: filter.label | escape }}">
+        <span>{{ filter.label | escape }}</span><span aria-hidden="true">×</span>
+      </a>
+    {% endif %}
+  {% endfor %}
+  <a class="sp-search-active-filters__clear" href="{{ clear_url }}" data-search-filter-link>{{ 'collections.filtering.clear_all' | t }}</a>
+</div>

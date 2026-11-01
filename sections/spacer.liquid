@@ -1,0 +1,41 @@
+{% render 'sp-section-color-scheme', section: section %}
+<div class="sp-spacer" style="--spacer:{{ section.settings.height }}px" aria-hidden="true" data-section-id="{{ section.id }}"></div>{% schema %}
+{
+  "name": "Spacer",
+  "disabled_on": {
+    "groups": [
+      "header",
+      "footer",
+      "custom.system"
+    ]
+  },
+  "settings": [
+    {
+      "type": "header",
+      "content": "Global design system"
+    },
+    {
+      "type": "color_scheme",
+      "id": "sp_color_scheme",
+      "label": "Color scheme",
+      "default": "scheme-1",
+      "info": "Shared Spider color panel. Edit schemes once in Theme settings → Spider Color Schemes."
+    },
+    {
+      "type": "range",
+      "id": "height",
+      "label": "Height",
+      "min": 8,
+      "max": 160,
+      "step": 8,
+      "default": 48,
+      "unit": "px"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Spacer"
+    }
+  ]
+}
+{% endschema %}

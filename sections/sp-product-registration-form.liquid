@@ -1,0 +1,274 @@
+{{ 'sp-product-registration-form.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'sp-product-registration-form.js' | asset_url }}" defer></script>
+{% render 'sp-section-color-scheme', section: section %}
+
+{%- liquid
+  assign sp = section.settings
+  assign sp_registration_id = 'sp-product-registration-' | append: section.id
+  assign sp_form_id = 'sp-product-registration-form-' | append: section.id
+  assign sp_container_class = 'sp-container'
+  if sp.container_width == 'wide'
+    assign sp_container_class = 'sp-container sp-container--wide'
+  endif
+  assign sp_place_options = sp.place_options | default: 'Official website|Authorized retailer|Retail store|Trade show|Other' | split: '|'
+-%}
+
+<section
+  id="{{ sp_registration_id }}"
+  class="sp-product-registration{% if sp.card_shadow %} sp-product-registration--shadow{% endif %}"
+  data-sp-product-registration
+  data-section-id="{{ section.id }}"
+  aria-labelledby="sp-product-registration-title-{{ section.id }}"
+  style="--sp-pr-top: {{ sp.padding_top }}px; --sp-pr-bottom: {{ sp.padding_bottom }}px; --sp-pr-top-m: {{ sp.padding_top_mobile }}px; --sp-pr-bottom-m: {{ sp.padding_bottom_mobile }}px; --sp-pr-column-gap: {{ sp.column_gap }}px; --sp-pr-card-pad: {{ sp.card_padding }}px; --sp-pr-card-pad-m: {{ sp.card_padding_mobile }}px; --sp-pr-card-radius: {{ sp.card_radius }}px; --sp-pr-benefit-gap: {{ sp.benefit_gap }}px; --sp-pr-icon-size: {{ sp.icon_size }}px;"
+>
+  <div class="{{ sp_container_class }} sp-product-registration__container">
+    <div class="sp-product-registration__layout">
+      <div class="sp-product-registration__intro">
+        {% if sp.eyebrow != blank %}
+          <div class="sp-product-registration__eyebrow-row">
+            <p class="sp-product-registration__eyebrow">{{ sp.eyebrow | escape }}</p>
+            {% if sp.show_eyebrow_divider %}<span class="sp-product-registration__eyebrow-divider" aria-hidden="true"></span>{% endif %}
+          </div>
+        {% endif %}
+
+        {% if sp.heading != blank %}
+          <h2 class="sp-product-registration__title" id="sp-product-registration-title-{{ section.id }}">
+            {%- if sp.highlighted_text != blank and sp.heading contains sp.highlighted_text -%}
+              {%- assign sp_heading_parts = sp.heading | split: sp.highlighted_text -%}
+              {{- sp_heading_parts[0] | escape -}}<span class="sp-product-registration__title-highlight">{{ sp.highlighted_text | escape }}</span>{{- sp_heading_parts[1] | escape -}}
+            {%- else -%}
+              {{- sp.heading | escape -}}
+            {%- endif -%}
+          </h2>
+        {% endif %}
+
+        {% if sp.description != blank %}
+          <div class="sp-product-registration__description">{{ sp.description | escape | newline_to_br }}</div>
+        {% endif %}
+
+        {% assign sp_has_benefits = false %}
+        {% for block in section.blocks %}
+          {% if block.type == 'benefit' and block.settings.heading != blank %}
+            {% assign sp_has_benefits = true %}
+            {% break %}
+          {% endif %}
+        {% endfor %}
+
+        {% if sp_has_benefits %}
+          <div class="sp-product-registration__benefits" role="list">
+            {% for block in section.blocks %}
+              {% if block.type == 'benefit' and block.settings.heading != blank %}
+                <article class="sp-product-registration__benefit" role="listitem" {{ block.shopify_attributes }}>
+                  <span class="sp-product-registration__benefit-icon" aria-hidden="true">
+                    {% case block.settings.icon %}
+                      {% when 'shield' %}
+                        {% render 'sp-content-icon', name: 'shield', class: 'sp-product-registration__icon-svg' %}
+                      {% when 'wrench' %}
+                        <svg class="sp-product-registration__icon-svg" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M14.7 6.2a5.1 5.1 0 0 0-6.8 6.1L3.1 17a2.1 2.1 0 0 0 3 3l4.7-4.8a5.1 5.1 0 0 0 6.1-6.8l-3 3-3.2-.9-.9-3.2 3-3.1Z" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><path d="m17.2 3.7 3.1 3.1" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+                      {% when 'bell' %}
+                        <svg class="sp-product-registration__icon-svg" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M18 9a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9ZM10 21h4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 2v1" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+                      {% when 'gift' %}
+                        <svg class="sp-product-registration__icon-svg" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 10h18v11H3zM2 6h20v4H2zM12 6v15" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M12 6H7.8a2.3 2.3 0 1 1 2.3-2.3L12 6Zm0 0h4.2a2.3 2.3 0 1 0-2.3-2.3L12 6Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>
+                      {% when 'headset' %}
+                        {% render 'sp-content-icon', name: 'headset', class: 'sp-product-registration__icon-svg' %}
+                      {% when 'star' %}
+                        {% render 'sp-content-icon', name: 'star', class: 'sp-product-registration__icon-svg' %}
+                      {% else %}
+                        {% render 'sp-content-icon', name: 'check', class: 'sp-product-registration__icon-svg' %}
+                    {% endcase %}
+                  </span>
+                  <span class="sp-product-registration__benefit-copy">
+                    <span class="sp-product-registration__benefit-heading">{{ block.settings.heading | escape }}</span>
+                    {% if block.settings.description != blank %}<span class="sp-product-registration__benefit-description">{{ block.settings.description | escape }}</span>{% endif %}
+                  </span>
+                </article>
+              {% endif %}
+            {% endfor %}
+          </div>
+        {% endif %}
+      </div>
+
+      <div class="sp-product-registration__form-card">
+        {% if sp.form_eyebrow != blank %}<p class="sp-product-registration__form-eyebrow">{{ sp.form_eyebrow | escape }}</p>{% endif %}
+        {% if sp.form_heading != blank %}<h3 class="sp-product-registration__form-title">{{ sp.form_heading | escape }}</h3>{% endif %}
+        {% if sp.form_description != blank %}<p class="sp-product-registration__form-description">{{ sp.form_description | escape }}</p>{% endif %}
+
+        {%- form 'contact', id: sp_form_id, class: 'sp-product-registration__form' -%}
+          <input type="hidden" name="contact[Registration type]" value="Product registration">
+          <input type="hidden" name="contact[name]" value="{% if customer %}{{ customer.name | escape }}{% endif %}" data-registration-full-name>
+          <textarea name="contact[body]" class="sp-product-registration__submission-summary" data-registration-summary tabindex="-1" aria-hidden="true">Product registration request. Registration details are included in the submitted contact fields.</textarea>
+
+          {% if form.posted_successfully? %}
+            <div class="sp-product-registration__status sp-product-registration__status--success" role="status" aria-live="polite" tabindex="-1">
+              <span class="sp-product-registration__status-icon" aria-hidden="true">✓</span>
+              <span>{{ sp.success_message | escape }}</span>
+            </div>
+          {% endif %}
+
+          {% if form.errors %}
+            <div class="sp-product-registration__status sp-product-registration__status--error" role="alert" tabindex="-1">
+              <strong>{{ sp.error_message | escape }}</strong>
+              {{ form.errors | default_errors }}
+            </div>
+          {% endif %}
+
+          <div class="sp-product-registration__fields">
+            <div class="sp-field sp-product-registration__field sp-product-registration__field--half">
+              <label class="sp-product-registration__sr-only" for="sp-pr-first-name-{{ section.id }}">{{ sp.first_name_label | escape }} *</label>
+              <input id="sp-pr-first-name-{{ section.id }}" name="contact[First name]" type="text" autocomplete="given-name" placeholder="{{ sp.first_name_placeholder | escape }} *" value="{% if customer %}{{ customer.first_name | escape }}{% endif %}" required data-registration-first-name>
+            </div>
+            <div class="sp-field sp-product-registration__field sp-product-registration__field--half">
+              <label class="sp-product-registration__sr-only" for="sp-pr-last-name-{{ section.id }}">{{ sp.last_name_label | escape }} *</label>
+              <input id="sp-pr-last-name-{{ section.id }}" name="contact[Last name]" type="text" autocomplete="family-name" placeholder="{{ sp.last_name_placeholder | escape }} *" value="{% if customer %}{{ customer.last_name | escape }}{% endif %}" required data-registration-last-name>
+            </div>
+            <div class="sp-field sp-product-registration__field sp-product-registration__field--full">
+              <label class="sp-product-registration__sr-only" for="sp-pr-email-{{ section.id }}">{{ sp.email_label | escape }} *</label>
+              <input id="sp-pr-email-{{ section.id }}" name="contact[email]" type="email" autocomplete="email" autocapitalize="off" spellcheck="false" placeholder="{{ sp.email_placeholder | escape }} *" value="{% if form.email %}{{ form.email | escape }}{% elsif customer %}{{ customer.email | escape }}{% endif %}" required {% if form.errors contains 'email' %}aria-invalid="true"{% endif %} data-registration-email>
+            </div>
+            <div class="sp-field sp-product-registration__field sp-product-registration__field--full">
+              <label class="sp-product-registration__sr-only" for="sp-pr-phone-{{ section.id }}">{{ sp.phone_label | escape }} *</label>
+              <input id="sp-pr-phone-{{ section.id }}" name="contact[phone]" type="tel" autocomplete="tel" placeholder="{{ sp.phone_placeholder | escape }} *" value="{{ form.phone | escape }}" required data-registration-phone>
+            </div>
+            <div class="sp-field sp-product-registration__field sp-product-registration__field--full">
+              <label class="sp-product-registration__sr-only" for="sp-pr-product-{{ section.id }}">{{ sp.product_name_label | escape }} *</label>
+              <input id="sp-pr-product-{{ section.id }}" name="contact[Product name]" type="text" autocomplete="off" placeholder="{{ sp.product_name_placeholder | escape }} *" required data-registration-product>
+            </div>
+            <div class="sp-field sp-product-registration__field sp-product-registration__field--half">
+              <label class="sp-product-registration__sr-only" for="sp-pr-model-{{ section.id }}">{{ sp.model_number_label | escape }} *</label>
+              <input id="sp-pr-model-{{ section.id }}" name="contact[Model number]" type="text" autocomplete="off" placeholder="{{ sp.model_number_placeholder | escape }} *" required data-registration-model>
+            </div>
+            <div class="sp-field sp-product-registration__field sp-product-registration__field--half">
+              <label class="sp-product-registration__sr-only" for="sp-pr-serial-{{ section.id }}">{{ sp.serial_number_label | escape }} *</label>
+              <input id="sp-pr-serial-{{ section.id }}" name="contact[Serial number]" type="text" autocomplete="off" placeholder="{{ sp.serial_number_placeholder | escape }} *" required data-registration-serial>
+            </div>
+            <div class="sp-field sp-product-registration__field sp-product-registration__field--full sp-product-registration__date-field">
+              <label class="sp-product-registration__sr-only" for="sp-pr-purchase-date-{{ section.id }}">{{ sp.purchase_date_label | escape }} *</label>
+              <div class="sp-product-registration__date-wrap" data-registration-date-wrap>
+                <input id="sp-pr-purchase-date-{{ section.id }}" name="contact[Date of purchase]" type="date" autocomplete="off" max="{{ 'now' | date: '%Y-%m-%d' }}" required data-registration-date>
+                <span class="sp-product-registration__date-placeholder" aria-hidden="true">{{ sp.purchase_date_label | escape }} *</span>
+              </div>
+            </div>
+            <div class="sp-field sp-product-registration__field sp-product-registration__field--full">
+              <label class="sp-product-registration__sr-only" for="sp-pr-purchase-place-{{ section.id }}">{{ sp.place_of_purchase_label | escape }} *</label>
+              <select id="sp-pr-purchase-place-{{ section.id }}" name="contact[Place of purchase]" required data-registration-place>
+                <option value="" selected disabled>{{ sp.place_of_purchase_placeholder | escape }} *</option>
+                {% for sp_place_option in sp_place_options %}
+                  {% assign sp_place_option_label = sp_place_option | strip %}
+                  {% if sp_place_option_label != blank %}<option value="{{ sp_place_option_label | escape }}">{{ sp_place_option_label | escape }}</option>{% endif %}
+                {% endfor %}
+              </select>
+            </div>
+            {% if sp.show_additional_information %}
+              <div class="sp-field sp-product-registration__field sp-product-registration__field--full">
+                <label class="sp-product-registration__sr-only" for="sp-pr-additional-{{ section.id }}">{{ sp.additional_info_label | escape }}</label>
+                <textarea id="sp-pr-additional-{{ section.id }}" name="contact[Additional information]" rows="3" placeholder="{{ sp.additional_info_placeholder | escape }}" data-registration-additional></textarea>
+              </div>
+            {% endif %}
+          </div>
+
+          <button class="sp-button sp-button--primary sp-product-registration__submit" type="submit" data-registration-submit data-loading-label="{{ sp.loading_label | escape }}">
+            <span data-registration-submit-label>{{ sp.submit_label | escape }}</span>
+            <svg class="sp-product-registration__submit-arrow" viewBox="0 0 24 24" fill="none" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><path d="M4.5 12h14m-5.5-5.5L18.5 12 13 17.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+
+          {% if sp.privacy_note != blank %}
+            <p class="sp-product-registration__privacy-note">
+              {{ sp.privacy_note | escape }}{% if sp.privacy_policy_url != blank %} <a href="{{ sp.privacy_policy_url }}">{{ sp.privacy_policy_label | escape }}</a>{% endif %}
+            </p>
+          {% endif %}
+        {%- endform -%}
+      </div>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Product Registration Form",
+  "tag": "section",
+  "class": "sp-section-wrapper sp-product-registration-wrapper",
+   "disabled_on": {
+    "groups": [
+      "header",
+      "footer",
+      "custom.system"
+    ]
+  },
+  "settings": [
+    { "type": "color_scheme", "id": "sp_color_scheme", "label": "Color scheme", "default": "scheme-1" },
+    { "type": "select", "id": "container_width", "label": "Container width", "options": [{ "value": "standard", "label": "Standard (global width)" }, { "value": "wide", "label": "Wide (global wide width)" }], "default": "wide" },
+    { "type": "range", "id": "padding_top", "label": "Desktop top padding", "min": 0, "max": 160, "step": 8, "unit": "px", "default": 72 },
+    { "type": "range", "id": "padding_bottom", "label": "Desktop bottom padding", "min": 0, "max": 160, "step": 8, "unit": "px", "default": 72 },
+    { "type": "range", "id": "padding_top_mobile", "label": "Mobile top padding", "min": 0, "max": 96, "step": 4, "unit": "px", "default": 44 },
+    { "type": "range", "id": "padding_bottom_mobile", "label": "Mobile bottom padding", "min": 0, "max": 96, "step": 4, "unit": "px", "default": 44 },
+    { "type": "range", "id": "column_gap", "label": "Column gap", "min": 24, "max": 100, "step": 4, "unit": "px", "default": 64 },
+    { "type": "range", "id": "card_padding", "label": "Form card padding (desktop)", "min": 24, "max": 64, "step": 4, "unit": "px", "default": 36 },
+    { "type": "range", "id": "card_padding_mobile", "label": "Form card padding (mobile)", "min": 16, "max": 36, "step": 4, "unit": "px", "default": 20 },
+    { "type": "range", "id": "card_radius", "label": "Form card corner radius", "min": 0, "max": 24, "step": 2, "unit": "px", "default": 16 },
+    { "type": "checkbox", "id": "card_shadow", "label": "Show subtle form-card shadow", "default": true },
+    { "type": "range", "id": "benefit_gap", "label": "Benefit grid gap", "min": 16, "max": 48, "step": 4, "unit": "px", "default": 32 },
+    { "type": "range", "id": "icon_size", "label": "Benefit icon container size", "min": 48, "max": 88, "step": 4, "unit": "px", "default": 80 },
+    { "type": "text", "id": "eyebrow", "label": "Introduction eyebrow", "default": "PRODUCT REGISTRATION" },
+    { "type": "checkbox", "id": "show_eyebrow_divider", "label": "Show eyebrow divider", "default": true },
+    { "type": "text", "id": "heading", "label": "Main heading", "default": "Register Your Product for Complete Peace of Mind." },
+    { "type": "text", "id": "highlighted_text", "label": "Highlighted heading phrase", "default": "Peace of Mind." },
+    { "type": "textarea", "id": "description", "label": "Introduction description", "default": "Register your product to activate your warranty, get faster support, and stay updated on the latest product news, tips, and exclusive offers." },
+    { "type": "text", "id": "form_eyebrow", "label": "Form eyebrow", "default": "PRODUCT REGISTRATION" },
+    { "type": "text", "id": "form_heading", "label": "Form heading", "default": "Register Your Product" },
+    { "type": "textarea", "id": "form_description", "label": "Form description", "default": "Fill in the details below to complete your product registration." },
+    { "type": "text", "id": "first_name_label", "label": "First name label", "default": "First name" },
+    { "type": "text", "id": "first_name_placeholder", "label": "First name placeholder", "default": "First name" },
+    { "type": "text", "id": "last_name_label", "label": "Last name label", "default": "Last name" },
+    { "type": "text", "id": "last_name_placeholder", "label": "Last name placeholder", "default": "Last name" },
+    { "type": "text", "id": "email_label", "label": "Email label", "default": "Email address" },
+    { "type": "text", "id": "email_placeholder", "label": "Email placeholder", "default": "Email address" },
+    { "type": "text", "id": "phone_label", "label": "Phone label", "default": "Phone number" },
+    { "type": "text", "id": "phone_placeholder", "label": "Phone placeholder", "default": "Phone number" },
+    { "type": "text", "id": "product_name_label", "label": "Product name label", "default": "Product name" },
+    { "type": "text", "id": "product_name_placeholder", "label": "Product name placeholder", "default": "Product name" },
+    { "type": "text", "id": "model_number_label", "label": "Model number label", "default": "Model number" },
+    { "type": "text", "id": "model_number_placeholder", "label": "Model number placeholder", "default": "Model number" },
+    { "type": "text", "id": "serial_number_label", "label": "Serial number label", "default": "Serial number" },
+    { "type": "text", "id": "serial_number_placeholder", "label": "Serial number placeholder", "default": "Serial number" },
+    { "type": "text", "id": "purchase_date_label", "label": "Purchase date label", "default": "Date of purchase" },
+    { "type": "text", "id": "place_of_purchase_label", "label": "Place of purchase label", "default": "Place of purchase" },
+    { "type": "text", "id": "place_of_purchase_placeholder", "label": "Place of purchase placeholder", "default": "Place of purchase" },
+    { "type": "text", "id": "place_options", "label": "Place of purchase options", "default": "Official website|Authorized retailer|Retail store|Trade show|Other", "info": "Separate each option with a vertical bar (|)." },
+    { "type": "checkbox", "id": "show_additional_information", "label": "Show additional information field", "default": true },
+    { "type": "text", "id": "additional_info_label", "label": "Additional information label", "default": "Additional information (optional)" },
+    { "type": "text", "id": "additional_info_placeholder", "label": "Additional information placeholder", "default": "Additional information (optional)" },
+    { "type": "text", "id": "submit_label", "label": "Submit button label", "default": "Register Product" },
+    { "type": "text", "id": "loading_label", "label": "Loading button label", "default": "Submitting..." },
+    { "type": "text", "id": "success_message", "label": "Success message", "default": "Thanks! Your product registration request has been submitted." },
+    { "type": "text", "id": "error_message", "label": "Error message heading", "default": "Please review the details and try submitting again." },
+    { "type": "text", "id": "privacy_note", "label": "Privacy note", "default": "Your information will be used to process your registration." },
+    { "type": "url", "id": "privacy_policy_url", "label": "Privacy policy link" },
+    { "type": "text", "id": "privacy_policy_label", "label": "Privacy policy link label", "default": "Privacy Policy" }
+  ],
+  "blocks": [
+    {
+      "type": "benefit",
+      "name": "Benefit item",
+      "limit": 8,
+      "settings": [
+        { "type": "select", "id": "icon", "label": "Icon", "options": [{ "value": "shield", "label": "Shield check" }, { "value": "wrench", "label": "Wrench" }, { "value": "bell", "label": "Bell" }, { "value": "gift", "label": "Gift" }, { "value": "headset", "label": "Headset" }, { "value": "star", "label": "Star" }, { "value": "check", "label": "Check" }], "default": "shield" },
+        { "type": "text", "id": "heading", "label": "Heading", "default": "Activate Warranty" },
+        { "type": "textarea", "id": "description", "label": "Description", "default": "Get full warranty coverage for your product." }
+      ]
+    }
+  ],
+  "max_blocks": 8,
+  "presets": [
+    {
+      "name": "Product Registration Form",
+      "category": "07. Store & Support",
+      "blocks": [
+        { "type": "benefit", "settings": { "icon": "shield", "heading": "Activate Warranty", "description": "Get full warranty coverage for your product." } },
+        { "type": "benefit", "settings": { "icon": "wrench", "heading": "Faster Support", "description": "Quicker and more personalized customer support." } },
+        { "type": "benefit", "settings": { "icon": "bell", "heading": "Product Updates", "description": "Be the first to know about new features and releases." } },
+        { "type": "benefit", "settings": { "icon": "gift", "heading": "Exclusive Offers", "description": "Access special offers and loyalty benefits." } }
+      ]
+    }
+  ]
+}
+{% endschema %}

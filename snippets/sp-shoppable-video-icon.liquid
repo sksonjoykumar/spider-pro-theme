@@ -1,0 +1,18 @@
+<svg
+  class="sp-shoppable-video-icon"
+  viewBox="0 0 24 24"
+  fill="none"
+  xmlns="http://www.w3.org/2000/svg"
+  aria-hidden="true"
+  focusable="false"
+>
+  {%- case name -%}
+    {%- when 'play' -%}
+      <path d="M8.5 6.5v11l9-5.5-9-5.5Z" fill="currentColor"/>
+    {%- when 'video' -%}
+      <rect x="3" y="5" width="13" height="14" rx="2" stroke="currentColor" stroke-width="1.7"/>
+      <path d="m16 9 5-3v12l-5-3V9Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
+    {%- else -%}
+      <circle cx="12" cy="12" r="8" stroke="currentColor" stroke-width="1.7"/>
+  {%- endcase -%}
+</svg>

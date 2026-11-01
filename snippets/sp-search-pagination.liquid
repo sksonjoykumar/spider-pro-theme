@@ -1,0 +1,28 @@
+{% comment %}Search-specific pagination with accessible page numbers and optional progressive Load More.{% endcomment %}
+{% if paginate.pages > 1 %}
+  {% if mode == 'load_more' and paginate.next %}
+    <div class="sp-search-load-more" data-search-pagination>
+      <a class="sp-button sp-button--secondary" href="{{ paginate.next.url }}" rel="next" data-search-load-more>Load more</a>
+    </div>
+  {% else %}
+    <nav class="sp-search-pagination" aria-label="{{ 'general.pagination.label' | t }}" data-search-pagination>
+      {% if paginate.previous %}
+        <a class="sp-search-pagination__arrow" href="{{ paginate.previous.url }}" rel="prev" aria-label="{{ 'general.pagination.previous' | t }}">←</a>
+      {% endif %}
+      {% for part in paginate.parts %}
+        {% if part.is_link %}
+          <a class="sp-search-pagination__page" href="{{ part.url }}" aria-label="{{ 'general.pagination.page' | t: number: part.title }}">{{ part.title }}</a>
+        {% else %}
+          {% if part.title == paginate.current_page %}
+            <span class="sp-search-pagination__page is-current" aria-current="page">{{ part.title }}</span>
+          {% else %}
+            <span class="sp-search-pagination__ellipsis" aria-hidden="true">{{ part.title }}</span>
+          {% endif %}
+        {% endif %}
+      {% endfor %}
+      {% if paginate.next %}
+        <a class="sp-search-pagination__arrow" href="{{ paginate.next.url }}" rel="next" aria-label="{{ 'general.pagination.next' | t }}">→</a>
+      {% endif %}
+    </nav>
+  {% endif %}
+{% endif %}

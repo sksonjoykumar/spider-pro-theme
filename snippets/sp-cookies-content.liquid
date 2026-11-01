@@ -1,0 +1,23 @@
+<div class="sp-cookies__content">
+  {% if section.settings.show_icon %}
+  <span class="sp-cookies__icon" aria-hidden="true">
+    {% if section.settings.cookie_image != blank %}
+      {{ section.settings.cookie_image | image_url: width: 240 | image_tag: loading: 'lazy', widths: '90,150,240', class: 'sp-cookies__icon-image', alt: '' }}
+    {% else %}<span class="sp-cookies__cookie-emoji">🍪</span>{% endif %}
+  </span>
+  {% endif %}
+  <div class="sp-cookies__copy">
+    {% if section.settings.heading_text != blank %}
+      <h2 class="sp-cookies__heading">{{ section.settings.heading_text | escape }}</h2>
+    {% endif %}
+    <div class="sp-cookies__text rte">{{ section.settings.message }}</div>
+    <div class="sp-cookies__copy-links">
+      {% assign policy_url = section.settings.more_info_url %}
+      {% if policy_url == blank and shop.policies.privacy_policy != blank %}{% assign policy_url = shop.policies.privacy_policy.url %}{% endif %}
+      {% if section.settings.more_info_position == 'after_message' and policy_url != blank and section.settings.more_info_label != blank %}<a class="sp-cookies__more" href="{{ policy_url }}">{{ section.settings.more_info_label | escape }}</a>{% endif %}
+      {% if section.settings.enable_preferences and section.settings.display_mode != 'notice_only' %}
+      <button class="sp-cookies__more sp-cookies__settings-link" type="button" data-sp-cookies-manage>{{ section.settings.cookie_settings_label | escape }}</button>
+      {% endif %}
+    </div>
+  </div>
+</div>

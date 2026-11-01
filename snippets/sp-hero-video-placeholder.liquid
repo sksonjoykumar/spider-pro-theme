@@ -1,0 +1,47 @@
+{% liquid
+  assign poster_loading = 'lazy'
+  assign poster_fetch = 'auto'
+  if is_priority
+    assign poster_loading = 'eager'
+    assign poster_fetch = 'high'
+  endif
+
+  assign poster_sizes = '100vw'
+  case section.settings.container
+    when 'contained'
+      assign poster_sizes = '(max-width: 749px) calc(100vw - 32px), (min-width: 1520px) 1440px, calc(100vw - 80px)'
+    when 'wide'
+      assign poster_sizes = '(max-width: 749px) calc(100vw - 32px), (min-width: 1760px) 1680px, calc(100vw - 80px)'
+    when 'default'
+      assign poster_sizes = '(max-width: 749px) calc(100vw - 32px), calc(100vw - 80px)'
+  endcase
+%}
+
+{% if poster != blank %}
+  <picture class="sp-hero-video__poster" data-sp-hv-poster aria-hidden="true">
+    {% if poster_mobile != blank and poster_mobile != poster %}
+      <source
+        media="(max-width: 749px)"
+        srcset="
+          {{ poster_mobile | image_url: width: 320 }} 320w,
+          {{ poster_mobile | image_url: width: 480 }} 480w,
+          {{ poster_mobile | image_url: width: 640 }} 640w,
+          {{ poster_mobile | image_url: width: 800 }} 800w,
+          {{ poster_mobile | image_url: width: 1000 }} 1000w,
+          {{ poster_mobile | image_url: width: 1200 }} 1200w
+        "
+        sizes="{{ poster_sizes }}"
+      >
+    {% endif %}
+    {{ poster
+      | image_url: width: 2400
+      | image_tag:
+        widths: '480, 720, 960, 1200, 1440, 1800, 2160, 2400',
+        sizes: poster_sizes,
+        loading: poster_loading,
+        fetchpriority: poster_fetch,
+        alt: '',
+        class: 'sp-hero-video__poster-image'
+    }}
+  </picture>
+{% endif %}

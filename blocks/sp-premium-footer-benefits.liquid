@@ -1,0 +1,9 @@
+<div class="sp-pf__benefits" style="--pf-benefit-columns:{{ block.settings.columns }}" role="list" aria-label="Store benefits" {{ block.shopify_attributes }}>
+  {% content_for 'blocks' %}
+</div>
+{% schema %}
+{"name":"Footer trust bar","tag":null,"blocks":[{"type":"sp-premium-footer-benefit"}],"settings":[
+ {"type":"range","id":"columns","label":"Desktop columns","min":2,"max":4,"step":1,"default":4},
+ {"type":"paragraph","content":"Add, edit, and reorder the trust benefit blocks. Only publish policy claims that your store actually provides."}
+ ],"presets":[{"name":"Footer trust bar","blocks":[{"type":"sp-premium-footer-benefit","settings":{"icon":"truck","heading":"Free shipping"}},{"type":"sp-premium-footer-benefit","settings":{"icon":"package","heading":"Easy returns"}},{"type":"sp-premium-footer-benefit","settings":{"icon":"shield","heading":"Secure checkout"}},{"type":"sp-premium-footer-benefit","settings":{"icon":"award","heading":"Warranty support"}}]}]}
+{% endschema %}

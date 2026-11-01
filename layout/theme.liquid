@@ -1,0 +1,55 @@
+<!doctype html>
+<html class="no-js{% if settings.sp_ui_hover_enabled %} sp-ui-hover-{{ settings.sp_ui_button_hover | default: 'lift' }} sp-ui-card-hover-{{ settings.sp_ui_card_hover | default: 'subtle' }}{% endif %}" lang="{{ request.locale.iso_code }}" dir="{% if request.locale.iso_code == 'ar' or request.locale.iso_code == 'he' or request.locale.iso_code == 'fa' %}rtl{% else %}ltr{% endif %}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  {% render 'meta-tags' %}
+  {% render 'social-meta' %}
+  {% render 'structured-data' %}
+  {% if settings.sp_favicon %}<link rel="icon" href="{{ settings.sp_favicon | image_url: width: 64, height: 64 }}">{% endif %}
+  {% render 'global-settings-css' %}
+  {{ 'sp-reset.css' | asset_url | stylesheet_tag }}
+  {{ 'sp-base.css' | asset_url | stylesheet_tag }}
+  {{ 'sp-components.css' | asset_url | stylesheet_tag }}
+  {{ 'sp-commerce.css' | asset_url | stylesheet_tag }}
+  {{ 'sp-global-forms.css' | asset_url | stylesheet_tag }}
+  {{ 'sp-premium-interactions.css' | asset_url | stylesheet_tag }}
+  {% if settings.sp_page_transition_enabled %}{{ 'sp-page-transition.css' | asset_url | stylesheet_tag }}{% endif %}
+  {{ content_for_header }}
+  <script>document.documentElement.classList.remove('no-js');document.documentElement.classList.add('js');</script>
+  {% if settings.sp_page_transition_enabled %}
+    <script>
+      (()=>{try{const r=document.documentElement,n='sp:page-transition:navigation',s='sp:page-transition:shown-at',d={{ request.design_mode | json }},p={{ settings.sp_loader_design_mode | json }};if(d&&!p){sessionStorage.removeItem(n);sessionStorage.removeItem(s);return;}if(!sessionStorage.getItem(n))return;sessionStorage.removeItem(n);r.classList.add('sp-page-entry','sp-page-entry--{{ settings.sp_page_transition_style | default: 'fade' | escape }}');const t=Number(sessionStorage.getItem(s)||0);sessionStorage.removeItem(s);const m={{ settings.sp_loader_min_duration | default: 250 }},e=t?Math.max(0,m-(Date.now()-t)):0;if(e>0){r.style.setProperty('--sp-loader-resume-remaining',e+'ms');r.dataset.spLoaderResume=String(e);r.classList.add('sp-loader-resume');}}catch(_){}})();
+    </script>
+  {% endif %}
+</head>
+<body class="{% render 'global-settings-classes' %}">
+  {% render 'sp-product-system-global' %}
+  {% render 'sp-recently-viewed-global' %}
+  {% if settings.sp_page_transition_enabled %}{% render 'sp-global-loader' %}{% endif %}
+  {% if settings.a11y_skip_link %}{% render 'skip-link' %}{% endif %}
+  {% sections 'header-group' %}
+  <main id="MainContent" class="sp-main" tabindex="-1">{{ content_for_layout }}</main>
+  {% sections 'footer-group' %}
+
+  {% comment %} System-Group {% endcomment %}
+  {% sections 'system-group' %}
+
+
+  <div id="SpiderLiveRegion" class="visually-hidden" role="status" aria-live="polite" aria-atomic="true"></div>
+  {% render 'global-settings-json' %}
+  <script src="{{ 'sp-core.js' | asset_url }}"{% if settings.perf_defer_scripts %} defer{% endif %}></script>
+  <script src="{{ 'sp-theme-settings.js' | asset_url }}"{% if settings.perf_defer_scripts %} defer{% endif %}></script>
+  {% if settings.sp_motion_enable %}<script src="{{ 'sp-motion.js' | asset_url }}" defer></script>{% endif %}
+  <script src="{{ 'sp-drawer.js' | asset_url }}"{% if settings.perf_defer_scripts %} defer{% endif %}></script>
+  <script src="{{ 'sp-header.js' | asset_url }}"{% if settings.perf_defer_scripts %} defer{% endif %}></script>
+  <script src="{{ 'sp-product-gallery.js' | asset_url }}"{% if settings.perf_defer_scripts %} defer{% endif %}></script>
+  <script src="{{ 'sp-product-form.js' | asset_url }}"{% if settings.perf_defer_scripts %} defer{% endif %}></script>
+  <script src="{{ 'sp-cart-controller.js' | asset_url }}"{% if settings.perf_defer_scripts %} defer{% endif %}></script>
+  <script src="{{ 'sp-predictive-search.js' | asset_url }}"{% if settings.perf_defer_scripts %} defer{% endif %}></script>
+  <script src="{{ 'sp-facets.js' | asset_url }}"{% if settings.perf_defer_scripts %} defer{% endif %}></script>
+  {% if settings.sp_page_transition_enabled %}<script src="{{ 'sp-page-transition.js' | asset_url }}"{% if settings.perf_defer_scripts %} defer{% endif %}></script>{% endif %}
+  {% if request.design_mode %}<script src="{{ 'sp-theme-editor.js' | asset_url }}"{% if settings.perf_defer_scripts %} defer{% endif %}></script>{% endif %}
+  {% render 'custom-code' %}
+</body>
+</html>

@@ -1,0 +1,44 @@
+<div id="SpiderSlideSpacer-{{ block.id }}" class="sp-slide-spacer" aria-hidden="true" {{ block.shopify_attributes }} style="--sp-space-d: {{ block.settings.desktop_space }}px; --sp-space-t: {{ block.settings.tablet_space }}px; --sp-space-m: {{ block.settings.mobile_space }}px;"></div>
+{% schema %}
+{
+  "name": "Slide Spacer",
+  "tag": null,
+  "settings": [
+    {
+      "type": "range",
+      "id": "desktop_space",
+      "label": "Desktop space",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "px",
+      "default": 24
+    },
+    {
+      "type": "range",
+      "id": "tablet_space",
+      "label": "Tablet space",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "default": 20
+    },
+    {
+      "type": "range",
+      "id": "mobile_space",
+      "label": "Mobile space",
+      "min": 0,
+      "max": 100,
+      "step": 2,
+      "unit": "px",
+      "default": 16
+    }
+  ],
+  "presets": [
+    {
+      "name": "Slide Spacer"
+    }
+  ]
+}
+{% endschema %}

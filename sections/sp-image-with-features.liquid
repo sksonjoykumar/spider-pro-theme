@@ -1,0 +1,682 @@
+{% render 'sp-section-color-scheme', section: section %}
+{{ 'sp-content-sections.css' | asset_url | stylesheet_tag }}
+
+{%- liquid
+  assign desktop_class = 'sp-image-with-features--image-left'
+  if section.settings.image_position == 'right'
+    assign desktop_class = 'sp-image-with-features--image-right'
+  endif
+
+  assign mobile_class = 'sp-image-with-features--mobile-image-first'
+  if section.settings.mobile_image_position == 'last'
+    assign mobile_class = 'sp-image-with-features--mobile-image-last'
+  endif
+
+  assign iwf_desktop_image = section.settings.image
+  if iwf_desktop_image == blank and section.settings.mobile_image != blank
+    assign iwf_desktop_image = section.settings.mobile_image
+  endif
+
+  assign iwf_alt = section.settings.image_alt
+  if iwf_alt == blank and iwf_desktop_image != blank
+    assign iwf_alt = iwf_desktop_image.alt
+  endif
+  if iwf_alt == blank and section.settings.mobile_image != blank
+    assign iwf_alt = section.settings.mobile_image.alt
+  endif
+  if iwf_alt == blank
+    assign iwf_alt = section.settings.heading
+  endif
+
+  assign iwf_focus = 'center center'
+  if section.settings.image_focus == 'shopify'
+    if iwf_desktop_image != blank and iwf_desktop_image.presentation.focal_point != blank
+      assign iwf_focus = iwf_desktop_image.presentation.focal_point
+    endif
+  else
+    assign iwf_focus = section.settings.image_focus
+  endif
+
+  assign iwf_mobile_focus = 'center center'
+  if section.settings.mobile_image != blank and section.settings.mobile_image.presentation.focal_point != blank
+    assign iwf_mobile_focus = section.settings.mobile_image.presentation.focal_point
+  endif
+
+  assign iwf_content_width = 100 | minus: section.settings.image_width
+-%}
+
+{%- capture iwf_style -%}
+  --sp-iwf-image-fr: {{ section.settings.image_width }}fr;
+  --sp-iwf-content-fr: {{ iwf_content_width }}fr;
+  --sp-iwf-column-gap: {{ section.settings.column_gap }}px;
+  --sp-iwf-mobile-gap: {{ section.settings.mobile_gap }}px;
+  --sp-iwf-image-ratio: {{ section.settings.image_ratio }};
+  --sp-iwf-mobile-ratio: {{ section.settings.mobile_image_ratio }};
+  --sp-iwf-image-position: {{ iwf_focus }};
+  --sp-iwf-mobile-position: {{ iwf_mobile_focus }};
+  --sp-iwf-content-max: {{ section.settings.content_width }}px;
+  --sp-iwf-content-align: {{ section.settings.content_align }};
+  --sp-iwf-content-valign: {{ section.settings.vertical_align }};
+  --sp-iwf-check-gap: {{ section.settings.check_gap }}px;
+  --sp-iwf-check-badge-size: {{ section.settings.check_circle_size }}px;
+  --sp-iwf-button-gap: {{ section.settings.button_spacing }}px;
+  {% if section.settings.padding_top > 0 %}--sp-iwf-pad-top: {{ section.settings.padding_top }}px;{% endif %}
+  {% if section.settings.padding_bottom > 0 %}--sp-iwf-pad-bottom: {{ section.settings.padding_bottom }}px;{% endif %}
+  {% if section.settings.mobile_padding_top > 0 %}--sp-iwf-pad-mobile-top: {{ section.settings.mobile_padding_top }}px;{% endif %}
+  {% if section.settings.mobile_padding_bottom > 0 %}--sp-iwf-pad-mobile-bottom: {{ section.settings.mobile_padding_bottom }}px;{% endif %}
+  {% if section.settings.heading_size_desktop > 0 %}--sp-iwf-heading-size-d: {{ section.settings.heading_size_desktop }}px;{% endif %}
+  {% if section.settings.heading_size_mobile > 0 %}--sp-iwf-heading-size-m: {{ section.settings.heading_size_mobile }}px;{% endif %}
+  {% if section.settings.body_size > 0 %}--sp-iwf-description-size: {{ section.settings.body_size }}px;{% endif %}
+{%- endcapture -%}
+
+<section
+  class="sp-section sp-image-with-features {{ desktop_class }} {{ mobile_class }} sp-image-with-features--width-{{ section.settings.section_width }} sp-image-with-features--media-{{ section.settings.image_effect }} {% if section.settings.button_full_mobile %} sp-image-with-features--mobile-full-button{% endif %}{% if section.settings.button_arrow %} sp-image-with-features--button-arrow{% endif %}"
+  data-section-id="{{ section.id }}"
+  style="{{ iwf_style | strip_newlines | strip }}"
+  {% if section.settings.heading != blank %}
+    aria-labelledby="SpImageWithFeaturesTitle-{{ section.id }}"
+  {% else %}
+    aria-label="{{ section.settings.eyebrow | default: 'Image with features' | escape }}"
+  {% endif %}
+>
+  <div class="sp-container sp-image-with-features__grid">
+    <div class="sp-image-with-features__media">
+      <div class="sp-content-media" data-desktop-ratio="{{ section.settings.image_ratio | escape }}" data-mobile-ratio="{{ section.settings.mobile_image_ratio | escape }}">
+        {% if iwf_desktop_image != blank %}
+          <picture>
+            {% if section.settings.mobile_image != blank %}
+              <source
+                media="(max-width: 749px)"
+                srcset="{{ section.settings.mobile_image | image_url: width: 360 }} 360w, {{ section.settings.mobile_image | image_url: width: 540 }} 540w, {{ section.settings.mobile_image | image_url: width: 750 }} 750w, {{ section.settings.mobile_image | image_url: width: 990 }} 990w"
+                sizes="(max-width: 749px) calc(100vw - 32px), 100vw"
+              >
+            {% endif %}
+            {% render 'responsive-image',
+              image: iwf_desktop_image,
+              widths: '360, 480, 640, 750, 900, 1100, 1320, 1600, 1800',
+              sizes: '(min-width: 1440px) 50vw, (min-width: 750px) 54vw, calc(100vw - 32px)',
+              loading: 'lazy',
+              class: 'sp-content-media__image',
+              alt: iwf_alt
+            %}
+          </picture>
+        {% else %}
+          {% render 'placeholder-image', name: 'lifestyle-2', class: 'sp-placeholder' %}
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="sp-image-with-features__content">
+      {% if section.settings.eyebrow != blank %}
+        <p class="sp-content-eyebrow">{{ section.settings.eyebrow | escape }}</p>
+      {% endif %}
+
+      {% if section.settings.heading != blank %}
+        <h2 id="SpImageWithFeaturesTitle-{{ section.id }}" class="sp-image-with-features__title">{{ section.settings.heading | escape }}</h2>
+      {% endif %}
+
+      {% if section.settings.text != blank %}
+        <div class="sp-content-copy rte">{{ section.settings.text }}</div>
+      {% endif %}
+
+      {% if section.blocks.size > 0 %}
+        <ul class="sp-content-checks" role="list">
+          {% for block in section.blocks %}
+            {% if block.settings.text != blank %}
+              <li class="sp-content-check" {{ block.shopify_attributes }}>
+                {% if section.settings.show_check_icons %}
+                  <span class="sp-image-with-features__check-badge">
+                    {% render 'sp-content-icon', name: 'check', class: 'sp-content-check__icon' %}
+                  </span>
+                {% endif %}
+                <span class="sp-image-with-features__check-text">{{ block.settings.text | escape }}</span>
+              </li>
+            {% endif %}
+          {% endfor %}
+        </ul>
+      {% endif %}
+
+      {% if section.settings.show_button and section.settings.button_label != blank %}
+        <div class="sp-content-actions">
+          {% if section.settings.button_link != blank %}
+            {% assign iwf_main_label = section.settings.button_label | escape %}
+            {% render 'button', label: iwf_main_label, href: section.settings.button_link, style: section.settings.button_style %}
+          {% elsif section.settings.fallback_collection_link %}
+            {% assign iwf_main_label = section.settings.button_label | escape %}
+            {% render 'button', label: iwf_main_label, href: routes.all_products_collection_url, style: section.settings.button_style %}
+          {% endif %}
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Image with features",
+  "disabled_on": {
+    "groups": [
+      "header",
+      "footer",
+      "custom.system"
+    ]
+  },
+  "settings": [
+    {
+      "type": "header",
+      "content": "Global design system"
+    },
+    {
+      "type": "color_scheme",
+      "id": "sp_color_scheme",
+      "label": "Color scheme",
+      "default": "scheme-2",
+      "info": "Uses the shared Spider color panel from Theme settings."
+    },
+    {
+      "type": "header",
+      "content": "Content"
+    },
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Eyebrow",
+      "default": "HIGHLIGHTS"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Designed with purpose"
+    },
+    {
+      "type": "richtext",
+      "id": "text",
+      "label": "Text",
+      "default": "<p>Pair an image with concise supporting content, key benefits, or important details.</p>"
+    },
+    {
+      "type": "select",
+      "id": "content_align",
+      "label": "Text alignment",
+      "default": "start",
+      "options": [
+        {
+          "value": "start",
+          "label": "Left"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "end",
+          "label": "Right"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "vertical_align",
+      "label": "Vertical content alignment",
+      "default": "center",
+      "options": [
+        {
+          "value": "start",
+          "label": "Top"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "end",
+          "label": "Bottom"
+        }
+      ]
+    },
+    {
+      "type": "range",
+      "id": "content_width",
+      "label": "Content maximum width",
+      "min": 360,
+      "max": 800,
+      "step": 20,
+      "default": 680,
+      "unit": "px"
+    },
+    {
+      "type": "header",
+      "content": "Image and layout"
+    },
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "Image"
+    },
+    {
+      "type": "image_picker",
+      "id": "mobile_image",
+      "label": "Optional mobile image"
+    },
+    {
+      "type": "text",
+      "id": "image_alt",
+      "label": "Image alt text",
+      "info": "Leave blank to use Shopify Files image alt text."
+    },
+    {
+      "type": "select",
+      "id": "image_position",
+      "label": "Desktop image position",
+      "default": "left",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "mobile_image_position",
+      "label": "Mobile image position",
+      "default": "first",
+      "options": [
+        {
+          "value": "first",
+          "label": "First"
+        },
+        {
+          "value": "last",
+          "label": "Last"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "section_width",
+      "label": "Content width",
+      "default": "standard",
+      "options": [
+        {
+          "value": "standard",
+          "label": "Global container"
+        },
+        {
+          "value": "wide",
+          "label": "Global wide container"
+        },
+        {
+          "value": "narrow",
+          "label": "Global narrow container"
+        },
+        {
+          "value": "full",
+          "label": "Full width with gutters"
+        }
+      ]
+    },
+    {
+      "type": "range",
+      "id": "image_width",
+      "label": "Image column proportion",
+      "min": 40,
+      "max": 65,
+      "step": 1,
+      "default": 52,
+      "unit": "%"
+    },
+    {
+      "type": "select",
+      "id": "image_ratio",
+      "label": "Desktop image ratio",
+      "default": "8 / 7",
+      "options": [
+        {
+          "value": "8 / 7",
+          "label": "Reference (8:7)"
+        },
+        {
+          "value": "4 / 3",
+          "label": "Landscape (4:3)"
+        },
+        {
+          "value": "16 / 10",
+          "label": "Wide (16:10)"
+        },
+        {
+          "value": "1 / 1",
+          "label": "Square (1:1)"
+        },
+        {
+          "value": "4 / 5",
+          "label": "Portrait (4:5)"
+        },
+        {
+          "value": "auto",
+          "label": "Natural height"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "mobile_image_ratio",
+      "label": "Mobile image ratio",
+      "default": "4 / 3",
+      "options": [
+        {
+          "value": "4 / 3",
+          "label": "Landscape (4:3)"
+        },
+        {
+          "value": "1 / 1",
+          "label": "Square (1:1)"
+        },
+        {
+          "value": "8 / 7",
+          "label": "Reference (8:7)"
+        },
+        {
+          "value": "4 / 5",
+          "label": "Portrait (4:5)"
+        },
+        {
+          "value": "auto",
+          "label": "Natural height"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "image_focus",
+      "label": "Image focal point",
+      "default": "shopify",
+      "options": [
+        {
+          "value": "shopify",
+          "label": "Use Shopify image focal point"
+        },
+        {
+          "value": "center center",
+          "label": "Center"
+        },
+        {
+          "value": "center top",
+          "label": "Top"
+        },
+        {
+          "value": "center bottom",
+          "label": "Bottom"
+        },
+        {
+          "value": "left center",
+          "label": "Left"
+        },
+        {
+          "value": "right center",
+          "label": "Right"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "image_effect",
+      "label": "Image hover",
+      "default": "none",
+      "options": [
+        {
+          "value": "none",
+          "label": "None"
+        },
+        {
+          "value": "zoom",
+          "label": "Subtle zoom"
+        }
+      ]
+    },
+    {
+      "type": "range",
+      "id": "column_gap",
+      "label": "Desktop column gap",
+      "min": 16,
+      "max": 112,
+      "step": 4,
+      "default": 56,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "mobile_gap",
+      "label": "Mobile image/content gap",
+      "min": 12,
+      "max": 64,
+      "step": 4,
+      "default": 28,
+      "unit": "px"
+    },
+    {
+      "type": "header",
+      "content": "Typography"
+    },
+    {
+      "type": "range",
+      "id": "heading_size_desktop",
+      "label": "Desktop heading override (0 = global)",
+      "min": 0,
+      "max": 72,
+      "step": 2,
+      "default": 0,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "heading_size_mobile",
+      "label": "Mobile heading override (0 = global)",
+      "min": 0,
+      "max": 48,
+      "step": 2,
+      "default": 0,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "body_size",
+      "label": "Description size (0 = global)",
+      "min": 0,
+      "max": 24,
+      "step": 1,
+      "default": 0,
+      "unit": "px"
+    },
+    {
+      "type": "header",
+      "content": "Checklist"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_check_icons",
+      "label": "Show check icons",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "check_gap",
+      "label": "Checklist row gap",
+      "min": 8,
+      "max": 40,
+      "step": 2,
+      "default": 16,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "check_circle_size",
+      "label": "Check circle diameter",
+      "min": 24,
+      "max": 64,
+      "step": 2,
+      "default": 48,
+      "unit": "px"
+    },
+    {
+      "type": "header",
+      "content": "Buttons"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_button",
+      "label": "Show call-to-action",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "button_label",
+      "label": "Button label",
+      "default": "Learn More"
+    },
+    {
+      "type": "url",
+      "id": "button_link",
+      "label": "Button link"
+    },
+    {
+      "type": "checkbox",
+      "id": "fallback_collection_link",
+      "label": "Use All Products when button link is empty",
+      "default": false,
+      "info": "Turn off to hide an unlinked button, matching the original section behavior."
+    },
+    {
+      "type": "select",
+      "id": "button_style",
+      "label": "Main button style",
+      "default": "primary",
+      "options": [
+        {
+          "value": "primary",
+          "label": "Spider primary"
+        },
+        {
+          "value": "secondary",
+          "label": "Spider secondary"
+        }
+      ]
+    },
+    {
+      "type": "checkbox",
+      "id": "button_arrow",
+      "label": "Show button arrow",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "button_full_mobile",
+      "label": "Full-width mobile buttons",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "button_spacing",
+      "label": "Checklist to button spacing",
+      "min": 12,
+      "max": 72,
+      "step": 2,
+      "default": 32,
+      "unit": "px"
+    },
+    {
+      "type": "header",
+      "content": "Section spacing"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "Desktop top padding (0 = global)",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "default": 0,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "Desktop bottom padding (0 = global)",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "default": 0,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "mobile_padding_top",
+      "label": "Mobile top padding (0 = global)",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "default": 0,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "mobile_padding_bottom",
+      "label": "Mobile bottom padding (0 = global)",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "default": 0,
+      "unit": "px"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "check",
+      "name": "Checklist item",
+      "limit": 5,
+      "settings": [
+        {
+          "type": "text",
+          "id": "text",
+          "label": "Text",
+          "default": "Purpose-driven products"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Image with features",
+      "blocks": [
+        {
+          "type": "check",
+          "settings": {
+            "text": "Purpose-driven products"
+          }
+        },
+        {
+          "type": "check",
+          "settings": {
+            "text": "Responsible sourcing and production"
+          }
+        },
+        {
+          "type": "check",
+          "settings": {
+            "text": "Built to last, made to be used"
+          }
+        }
+      ],
+      "category": "04. Content",
+      "settings": {
+        "fallback_collection_link": true
+      }
+    }
+  ]
+}
+{% endschema %}

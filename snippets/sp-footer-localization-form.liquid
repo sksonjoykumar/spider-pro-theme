@@ -1,0 +1,39 @@
+{% if variant == 'premium' %}
+{% if has_language or has_country %}
+    {% assign pf_localization_id = 'SpPFLocalization-' | append: block.id %}
+    {% form 'localization', id: pf_localization_id, class: 'sp-pf__localization-form' %}
+      {% if has_language %}
+        <label><span class="sp-pf__sr-only">Language</span><select name="language_code" data-sp-pf-localization>{% for lang in localization.available_languages %}<option value="{{ lang.iso_code }}"{% if lang.iso_code == localization.language.iso_code %} selected{% endif %}>{{ lang.endonym_name | default: lang.name | escape }}</option>{% endfor %}</select></label>
+      {% endif %}
+      {% if has_country %}
+        <label><span class="sp-pf__sr-only">Country / currency</span><select name="country_code" data-sp-pf-localization>{% for country in localization.available_countries %}<option value="{{ country.iso_code }}"{% if country.iso_code == localization.country.iso_code %} selected{% endif %}>{{ country.name | escape }} — {{ country.currency.iso_code }}</option>{% endfor %}</select></label>
+      {% endif %}
+      <button type="submit" class="sp-pf__sr-only">Update region</button>
+    {% endform %}
+  {% endif %}
+{% else %}
+{%- assign form_id = 'SpFooterLocalization-' | append: block.id -%}
+{% form 'localization', id: form_id, class: 'sp-footer-localization__form' %}
+  <div class="sp-footer-localization__controls">
+    {%- if has_country -%}
+      <label class="sp-footer-localization__field"><span class="sp-footer-localization__label">Country / region</span><span class="sp-footer-localization__select-wrap"><select class="sp-footer-localization__select" name="country_code">
+        {%- for country in localization.available_countries -%}
+          {%- capture country_label -%}{%- case block.settings.country_display -%}{%- when 'iso' -%}{{ country.iso_code }}{%- when 'name_iso' -%}{{ country.name }} — {{ country.iso_code }}{%- when 'name_currency' -%}{{ country.name }} — {{ country.currency.iso_code }} {{ country.currency.symbol }}{%- else -%}{{ country.name }}{%- endcase -%}{%- endcapture -%}
+          <option value="{{ country.iso_code }}"{% if country.iso_code == localization.country.iso_code %} selected{% endif %}>{{ country_label | strip | escape }}</option>
+        {%- endfor -%}
+      </select><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M7 9l5 5 5-5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span></label>
+    {%- endif -%}
+    {%- if has_language -%}
+      <label class="sp-footer-localization__field"><span class="sp-footer-localization__label">Language</span><span class="sp-footer-localization__select-wrap"><select class="sp-footer-localization__select" name="language_code">
+        {%- for language in localization.available_languages -%}
+          {%- capture language_label -%}{%- case block.settings.language_display -%}{%- when 'iso' -%}{{ language.iso_code }}{%- when 'name_iso' -%}{{ language.endonym_name | default: language.name }} — {{ language.iso_code }}{%- else -%}{{ language.endonym_name | default: language.name }}{%- endcase -%}{%- endcapture -%}
+          <option value="{{ language.iso_code }}"{% if language.iso_code == localization.language.iso_code %} selected{% endif %}>{{ language_label | strip | escape }}</option>
+        {%- endfor -%}
+      </select><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M7 9l5 5 5-5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span></label>
+    {%- endif -%}
+    {%- if block.settings.show_currency -%}<div class="sp-footer-localization__currency"><span>Currency</span><strong>{{ localization.country.currency.iso_code }}{% if localization.country.currency.symbol != blank %} {{ localization.country.currency.symbol }}{% endif %}</strong></div>{%- endif -%}
+  </div>
+  {%- if has_country or has_language -%}<button class="sp-footer-localization__submit" type="submit">{{ block.settings.submit_label | escape }}</button>{%- endif -%}
+{% endform %}
+
+{% endif %}

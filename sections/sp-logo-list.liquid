@@ -1,0 +1,1280 @@
+{%- comment -%}
+  Spider Logo List / Brand Partners. Merchant-provided actual partner logos only.
+  Schema is generated below. All visual tokens remain section-scoped.
+{%- endcomment -%}
+{%- liquid
+  assign sp_s = section.settings
+  assign sp_valid_count = 0
+  assign sp_featured_id = ''
+  assign sp_first_id = ''
+  for sp_b in section.blocks
+    if sp_b.type == 'logo'
+      if sp_b.settings.logo != blank or request.design_mode
+        assign sp_valid_count = sp_valid_count | plus: 1
+        if sp_first_id == blank
+          assign sp_first_id = sp_b.id
+        endif
+        if sp_b.settings.featured_partner and sp_featured_id == blank
+          assign sp_featured_id = sp_b.id
+        endif
+      endif
+    endif
+  endfor
+  if sp_featured_id == blank
+    assign sp_featured_id = sp_first_id
+  endif
+  assign sp_container = 'sp-container'
+  if sp_s.section_max_width == 'wide'
+    assign sp_container = 'sp-container sp-container--wide'
+  elsif sp_s.section_max_width == 'full'
+    assign sp_container = 'sp-logo-list__full-container'
+  endif
+-%}
+{%- if sp_valid_count > 0 or request.design_mode -%}
+  {% render 'sp-section-color-scheme', section: section %}
+  {{ 'sp-section-heading.css' | asset_url | stylesheet_tag }}
+  {{ 'sp-logo-list.css' | asset_url | stylesheet_tag }}
+  {% if sp_s.layout_style == 'style_1' %}<script src="{{ 'sp-logo-list.js' | asset_url }}" defer></script>{% endif %}
+  {%- style -%}
+  #shopify-section-{{ section.id }} .sp-logo-list {
+    --sp-logo-d-cols:{{ sp_s.desktop_columns }};
+    --sp-logo-t-cols:{{ sp_s.tablet_columns }};
+    --sp-logo-m-cols:{{ sp_s.mobile_columns }};
+    --sp-logo-carousel-d:{{ sp_s.desktop_slides }};
+    --sp-logo-carousel-t:{{ sp_s.tablet_slides }};
+    --sp-logo-carousel-m:{{ sp_s.mobile_slides }};
+    --sp-logo-peek-d:{{ sp_s.peek_width_desktop | default: 120 }}px;
+    --sp-logo-peek-t:{{ sp_s.peek_width_tablet | default: 60 }}px;
+    --sp-logo-peek-m:{{ sp_s.peek_width_mobile | default: 28 }}px;
+    --sp-logo-arrow-size:{{ sp_s.arrow_size | default: 52 }}px;
+    --sp-logo-gap-d:{{ sp_s.grid_gap_desktop }}px;
+    --sp-logo-gap-t:{{ sp_s.grid_gap_tablet }}px;
+    --sp-logo-gap-m:{{ sp_s.grid_gap_mobile }}px;
+    --sp-logo-height-d:{{ sp_s.card_height_desktop }}px;
+    --sp-logo-height-t:{{ sp_s.card_height_tablet }}px;
+    --sp-logo-height-m:{{ sp_s.card_height_mobile }}px;
+    --sp-logo-radius:{{ sp_s.card_border_radius }}px;
+    --sp-logo-border-width:{{ sp_s.card_border_width }}px;
+    --sp-logo-card-padding-d:{{ sp_s.card_padding_desktop }}px;
+    --sp-logo-card-padding-m:{{ sp_s.card_padding_mobile }}px;
+    --sp-logo-max-width:{{ sp_s.logo_max_width }}px;
+    --sp-logo-max-height:{{ sp_s.logo_max_height }}px;
+    --sp-logo-max-width-mobile:{{ sp_s.logo_max_width_mobile }}px;
+    --sp-logo-max-height-mobile:{{ sp_s.logo_max_height_mobile }}px;
+    --sp-logo-opacity:{{ sp_s.logo_opacity | divided_by: 100.0 }};
+    --sp-logo-progress-h:{{ sp_s.progress_thickness }}px;
+    --sp-logo-progress-width:25%;
+    --sp-logo-progress-left:0%;
+    --sp-logo-marquee-duration:{{ sp_s.marquee_speed }}s;
+    --sp-logo-marquee-gap:{{ sp_s.marquee_gap }}px;
+    --sp-logo-edge-width:{{ sp_s.edge_fade_width }}px;
+    --sp-logo-feature-cols:{{ sp_s.supporting_logo_columns }};
+    --sp-logo-feature-size:{{ sp_s.featured_logo_size }}px;
+    --sp-logo-shadow:{% if sp_s.card_shadow == 'soft' %}0 6px 24px #0000000d{% elsif sp_s.card_shadow == 'strong' %}0 15px 35px #00000020{% else %}none{% endif %};
+    --sp-logo-section-top:{{ sp_s.padding_top }}px;
+    --sp-logo-section-bottom:{{ sp_s.padding_bottom }}px;
+    --sp-logo-section-top-t:{{ sp_s.padding_top_tablet }}px;
+    --sp-logo-section-bottom-t:{{ sp_s.padding_bottom_tablet }}px;
+    --sp-logo-section-top-m:{{ sp_s.padding_top_mobile }}px;
+    --sp-logo-section-bottom-m:{{ sp_s.padding_bottom_mobile }}px;
+    --sp-logo-header-gap:{{ sp_s.header_to_logos_spacing }}px;
+    --sp-logo-progress-gap:{{ sp_s.logos_to_progress_spacing }}px;
+    --sp-logo-helper-gap:{{ sp_s.progress_to_helper_spacing }}px;
+    --sp-logo-card-bg:{% if sp_s.card_background != blank %}{{ sp_s.card_background }}{% else %}var(--sp-section-card, #fff){% endif %};
+    --sp-logo-card-border:{% if sp_s.card_border_color != blank %}{{ sp_s.card_border_color }}{% else %}var(--sp-section-border, #e4e4e7){% endif %};
+    --sp-logo-progress-track:{% if sp_s.progress_track_color != blank %}{{ sp_s.progress_track_color }}{% else %}var(--sp-section-border,#dedee3){% endif %};
+    --sp-logo-progress-accent:{% if sp_s.progress_color != blank %}{{ sp_s.progress_color }}{% else %}var(--sp-section-accent,#415dff){% endif %};
+    --sp-logo-feature-bg:{% if sp_s.featured_background != blank %}{{ sp_s.featured_background }}{% else %}var(--sp-logo-card-bg){% endif %};
+    --sp-logo-interaction-opacity:{% if sp_s.logo_grayscale and sp_s.preserve_logo_colors == false %}1{% else %}0{% endif %};
+  }
+  {%- endstyle -%}
+  <section id="sp-logo-list-{{ section.id }}"
+    class="sp-logo-list sp-logo-list--{{ sp_s.layout_style }} sp-logo-list--hover-{{ sp_s.logo_hover_behavior }} sp-logo-list--progress-{{ sp_s.progress_style }} sp-logo-list--feature-{{ sp_s.featured_position }} sp-logo-list--mobile-feature-{{ sp_s.mobile_featured_position }}{% if sp_s.show_partial_next_card %} sp-logo-list--peek{% endif %}{% if sp_s.enable_edge_fade %} sp-logo-list--edge-fade{% endif %}{% if sp_s.logo_grayscale and sp_s.preserve_logo_colors == false %} sp-logo-list--grayscale{% endif %}{% if sp_s.card_equal_height %} sp-logo-list--equal{% endif %}{% if sp_s.pause_marquee_on_hover %} sp-logo-list--pause-hover{% endif %}{% if sp_s.pause_marquee_on_focus %} sp-logo-list--pause-focus{% endif %} sp-logo-list--marquee-{{ sp_s.marquee_direction }} sp-logo-list--align-{{ sp_s.logo_alignment }} sp-logo-list--valign-{{ sp_s.logo_vertical_alignment }} sp-logo-list--progress-pos-{{ sp_s.progress_position }}"
+    data-sp-logo-list data-sp-style="{{ sp_s.layout_style }}" data-sp-design-mode="{{ request.design_mode }}" data-sp-drag="{{ sp_s.enable_pointer_drag }}" data-sp-swipe="{{ sp_s.enable_swipe }}" data-sp-autoplay="{{ sp_s.enable_autoplay }}" data-sp-autoplay-speed="{{ sp_s.autoplay_speed }}" data-sp-autoplay-hover="{{ sp_s.pause_on_hover }}" data-sp-loop="{{ sp_s.infinite_loop }}" aria-label="{{ sp_s.heading | default: 'Our partners' | escape }}">
+    <div class="{{ sp_container }} sp-logo-list__container">
+      {% if sp_s.show_header %}
+        <div class="sp-logo-list__header-area">
+          <div class="sp-logo-list__intro sp-logo-list__intro--{{ sp_s.heading_alignment }}" style="--sp-logo-intro-width:{{ sp_s.header_max_width }}px;--sp-logo-desc-width:{{ sp_s.description_width }}px;">
+            {% if sp_s.eyebrow != blank %}<p class="sp-logo-list__eyebrow">{{ sp_s.eyebrow | escape }}</p>{% endif %}
+            {% render 'sp-section-heading', heading_settings: sp_s, heading: sp_s.heading, subheading: sp_s.description, heading_tag: 'h2', alignment: sp_s.heading_alignment, mobile_alignment: sp_s.heading_alignment, heading_size_desktop: sp_s.heading_size, heading_size_mobile: sp_s.heading_size_mobile, typography_source: sp_s.heading_typography_source, bottom_spacing: 0 %}
+          </div>
+          {% if sp_s.layout_style == 'style_1' and sp_s.show_arrows and sp_s.arrow_position == 'top' %}
+            <div class="sp-logo-list__arrows sp-logo-list__arrows--heading">
+              <button type="button" class="sp-logo-list__arrow" data-sp-logo-prev aria-label="Previous partners" disabled>{% render 'icon', name: 'chevron-left' %}</button>
+              <button type="button" class="sp-logo-list__arrow sp-logo-list__arrow--next" data-sp-logo-next aria-label="Next partners">{% render 'icon', name: 'chevron-right' %}</button>
+            </div>
+          {% endif %}
+        </div>
+      {% endif %}
+
+      {% if sp_s.layout_style == 'style_1' %}
+        <div class="sp-logo-list__carousel-shell" aria-roledescription="carousel" aria-label="{{ sp_s.heading | default: 'Partners' | escape }}">
+          {% if sp_s.show_arrows %}{% unless sp_s.arrow_position == 'top' and sp_s.show_header %}
+            <div class="sp-logo-list__arrows sp-logo-list__arrows--{{ sp_s.arrow_position }}">
+              <button type="button" class="sp-logo-list__arrow" data-sp-logo-prev aria-label="Previous partners" disabled>{% render 'icon', name: 'chevron-left' %}</button>
+              <button type="button" class="sp-logo-list__arrow sp-logo-list__arrow--next" data-sp-logo-next aria-label="Next partners">{% render 'icon', name: 'chevron-right' %}</button>
+            </div>
+            {% endunless %}{% endif %}
+          <div class="sp-logo-list__viewport" data-sp-logo-viewport tabindex="0" aria-label="Partner logos, horizontally scrollable">
+            <ul class="sp-logo-list__items" data-sp-logo-track role="list">
+              {% for block in section.blocks %}
+                {% if block.type == 'logo' %}
+                  {% if block.settings.logo != blank or request.design_mode %}{% render 'sp-logo-item', block: block, section: section, image_loading: sp_s.image_loading %}{% endif %}
+                {% endif %}
+              {% endfor %}
+            </ul>
+          </div>
+          <div class="sp-logo-list__navigation" data-sp-logo-navigation>
+            {% if sp_s.show_progress_bar and sp_s.progress_style != 'none' %}
+              {% if sp_s.progress_style == 'bar' %}<div class="sp-logo-list__progress" data-sp-logo-progress role="presentation"><span class="sp-logo-list__progress-thumb"></span></div>{% endif %}
+              {% if sp_s.progress_style == 'dots' %}<div class="sp-logo-list__dots" data-sp-logo-dots aria-label="Carousel pages"></div>{% endif %}
+              {% if sp_s.progress_style == 'fraction' %}<p class="sp-logo-list__fraction" data-sp-logo-fraction aria-hidden="true">1 / 1</p>{% endif %}
+            {% endif %}
+            {% if sp_s.show_dots and sp_s.progress_style != 'dots' %}<div class="sp-logo-list__dots" data-sp-logo-dots aria-label="Carousel pages"></div>{% endif %}
+            {% if sp_s.show_helper_text and sp_s.helper_text != blank %}<p class="sp-logo-list__helper">{{ sp_s.helper_text | escape }} <span aria-hidden="true">→</span></p>{% endif %}
+          </div>
+        </div>
+      {% elsif sp_s.layout_style == 'style_3' %}
+        <div class="sp-logo-list__marquee-viewport" aria-label="Partner logo marquee">
+          <div class="sp-logo-list__marquee-track">
+            {% for sp_copy in (1..4) %}
+              <ul class="sp-logo-list__marquee-group" role="list"{% if sp_copy > 1 %} aria-hidden="true" inert{% endif %}>
+                {% for block in section.blocks %}
+                  {% if block.type == 'logo' %}{% if block.settings.logo != blank or request.design_mode %}{% if sp_copy > 1 %}{% render 'sp-logo-item', block: block, section: section, duplicate: true, image_loading: sp_s.image_loading %}{% else %}{% render 'sp-logo-item', block: block, section: section, image_loading: sp_s.image_loading %}{% endif %}{% endif %}{% endif %}
+                {% endfor %}
+              </ul>
+            {% endfor %}
+          </div>
+        </div>
+      {% elsif sp_s.layout_style == 'style_5' %}
+        <div class="sp-logo-list__featured-layout">
+          <ul class="sp-logo-list__featured-primary" role="list">
+            {% for block in section.blocks %}
+              {% if block.type == 'logo' and block.id == sp_featured_id %}
+                {% render 'sp-logo-item', block: block, section: section, featured: true, image_loading: sp_s.image_loading %}
+              {% endif %}
+            {% endfor %}
+          </ul>
+          <ul class="sp-logo-list__featured-others" role="list">
+            {% for block in section.blocks %}
+              {% if block.type == 'logo' and block.id != sp_featured_id %}{% if block.settings.logo != blank or request.design_mode %}{% render 'sp-logo-item', block: block, section: section, image_loading: sp_s.image_loading %}{% endif %}{% endif %}
+            {% endfor %}
+          </ul>
+        </div>
+      {% else %}
+        <ul class="sp-logo-list__grid" role="list">
+          {% for block in section.blocks %}
+            {% if block.type == 'logo' %}{% if block.settings.logo != blank or request.design_mode %}{% render 'sp-logo-item', block: block, section: section, image_loading: sp_s.image_loading %}{% endif %}{% endif %}
+          {% endfor %}
+        </ul>
+      {% endif %}
+    </div>
+  </section>
+{%- endif -%}
+{% schema %}
+{
+  "name": "Logo List / Partners",
+  "tag": "section",
+  "class": "sp-logo-list-section",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Content"
+    },
+    {
+      "type": "color_scheme",
+      "id": "sp_color_scheme",
+      "label": "Spider color scheme",
+      "default": "scheme-1"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_header",
+      "label": "Show heading",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Eyebrow",
+      "default": "OUR PARTNERS"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Brands We’re Proud to Work With"
+    },
+    {
+      "type": "richtext",
+      "id": "description",
+      "label": "Description",
+      "default": "<p>Trusted by forward-thinking brands around the world.</p>"
+    },
+    {
+      "type": "select",
+      "id": "heading_alignment",
+      "label": "Heading alignment",
+      "options": [
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "range",
+      "id": "heading_size",
+      "label": "Heading size",
+      "min": 28,
+      "max": 72,
+      "step": 2,
+      "default": 54,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "heading_size_mobile",
+      "label": "Mobile heading size",
+      "min": 20,
+      "max": 48,
+      "step": 2,
+      "default": 30,
+      "unit": "px"
+    },
+    {
+      "type": "select",
+      "id": "heading_typography_source",
+      "label": "Heading typography",
+      "options": [
+        {
+          "value": "custom",
+          "label": "Reference size (global font)"
+        },
+        {
+          "value": "global",
+          "label": "Global H2 settings"
+        }
+      ],
+      "default": "custom"
+    },
+    {
+      "type": "range",
+      "id": "description_width",
+      "label": "Description maximum width",
+      "min": 320,
+      "max": 1100,
+      "step": 20,
+      "default": 800,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "header_max_width",
+      "label": "Header maximum width",
+      "min": 600,
+      "max": 1400,
+      "step": 20,
+      "default": 1300,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "header_to_logos_spacing",
+      "label": "Header to logos",
+      "min": 16,
+      "max": 100,
+      "step": 2,
+      "default": 38,
+      "unit": "px"
+    },
+    {
+      "type": "header",
+      "content": "Layout Style"
+    },
+    {
+      "type": "select",
+      "id": "layout_style",
+      "label": "Layout style",
+      "options": [
+        {
+          "value": "style_1",
+          "label": "Premium Logo Carousel"
+        },
+        {
+          "value": "style_2",
+          "label": "Classic Logo Grid"
+        },
+        {
+          "value": "style_3",
+          "label": "Continuous Logo Marquee"
+        },
+        {
+          "value": "style_4",
+          "label": "Minimal Logo Wall"
+        },
+        {
+          "value": "style_5",
+          "label": "Featured Partner"
+        }
+      ],
+      "default": "style_1"
+    },
+    {
+      "type": "select",
+      "id": "section_max_width",
+      "label": "Section width",
+      "options": [
+        {
+          "value": "normal",
+          "label": "Standard"
+        },
+        {
+          "value": "wide",
+          "label": "Wide"
+        },
+        {
+          "value": "full",
+          "label": "Full width"
+        }
+      ],
+      "default": "wide"
+    },
+    {
+      "type": "header",
+      "content": "Logo Appearance"
+    },
+    {
+      "type": "select",
+      "id": "logo_alignment",
+      "label": "Horizontal alignment",
+      "options": [
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "select",
+      "id": "logo_vertical_alignment",
+      "label": "Vertical alignment",
+      "options": [
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "start",
+          "label": "Top"
+        },
+        {
+          "value": "end",
+          "label": "Bottom"
+        }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "range",
+      "id": "logo_max_width",
+      "label": "Maximum logo width",
+      "min": 70,
+      "max": 440,
+      "step": 10,
+      "default": 240,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "logo_max_height",
+      "label": "Maximum logo height",
+      "min": 35,
+      "max": 250,
+      "step": 5,
+      "default": 140,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "logo_max_width_mobile",
+      "label": "Mobile logo width",
+      "min": 60,
+      "max": 300,
+      "step": 10,
+      "default": 160,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "logo_max_height_mobile",
+      "label": "Mobile logo height",
+      "min": 35,
+      "max": 200,
+      "step": 5,
+      "default": 100,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "logo_opacity",
+      "label": "Logo opacity",
+      "min": 20,
+      "max": 100,
+      "step": 5,
+      "default": 100,
+      "unit": "%"
+    },
+    {
+      "type": "checkbox",
+      "id": "preserve_logo_colors",
+      "label": "Preserve original colors",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "logo_grayscale",
+      "label": "Enable grayscale option",
+      "default": false
+    },
+    {
+      "type": "select",
+      "id": "logo_hover_behavior",
+      "label": "Hover effect",
+      "options": [
+        {
+          "value": "none",
+          "label": "None"
+        },
+        {
+          "value": "increase_opacity",
+          "label": "Increase opacity"
+        },
+        {
+          "value": "reveal_color",
+          "label": "Reveal color"
+        },
+        {
+          "value": "subtle_scale",
+          "label": "Subtle scale"
+        }
+      ],
+      "default": "subtle_scale"
+    },
+    {
+      "type": "select",
+      "id": "image_loading",
+      "label": "Image loading",
+      "options": [
+        {
+          "value": "lazy",
+          "label": "Lazy"
+        },
+        {
+          "value": "eager",
+          "label": "Eager"
+        }
+      ],
+      "default": "lazy"
+    },
+    {
+      "type": "header",
+      "content": "Grid and Cards"
+    },
+    {
+      "type": "range",
+      "id": "desktop_columns",
+      "label": "Desktop columns",
+      "min": 2,
+      "max": 6,
+      "step": 1,
+      "default": 4
+    },
+    {
+      "type": "range",
+      "id": "tablet_columns",
+      "label": "Tablet columns",
+      "min": 1,
+      "max": 4,
+      "step": 1,
+      "default": 3
+    },
+    {
+      "type": "range",
+      "id": "mobile_columns",
+      "label": "Mobile columns",
+      "min": 1,
+      "max": 3,
+      "step": 1,
+      "default": 2
+    },
+    {
+      "type": "range",
+      "id": "grid_gap_desktop",
+      "label": "Desktop gap",
+      "min": 4,
+      "max": 56,
+      "step": 2,
+      "default": 16,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "grid_gap_tablet",
+      "label": "Tablet gap",
+      "min": 4,
+      "max": 40,
+      "step": 2,
+      "default": 14,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "grid_gap_mobile",
+      "label": "Mobile gap",
+      "min": 4,
+      "max": 32,
+      "step": 2,
+      "default": 10,
+      "unit": "px"
+    },
+    {
+      "type": "checkbox",
+      "id": "card_equal_height",
+      "label": "Equal card heights",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "card_height_desktop",
+      "label": "Desktop card height",
+      "min": 140,
+      "max": 440,
+      "step": 10,
+      "default": 290,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "card_height_tablet",
+      "label": "Tablet card height",
+      "min": 120,
+      "max": 340,
+      "step": 10,
+      "default": 230,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "card_height_mobile",
+      "label": "Mobile card height",
+      "min": 100,
+      "max": 300,
+      "step": 10,
+      "default": 160,
+      "unit": "px"
+    },
+    {
+      "type": "color",
+      "id": "card_background",
+      "label": "Card background override"
+    },
+    {
+      "type": "range",
+      "id": "card_border_width",
+      "label": "Card border width",
+      "min": 0,
+      "max": 4,
+      "step": 1,
+      "default": 1,
+      "unit": "px"
+    },
+    {
+      "type": "color",
+      "id": "card_border_color",
+      "label": "Card border override"
+    },
+    {
+      "type": "range",
+      "id": "card_border_radius",
+      "label": "Card corner radius",
+      "min": 0,
+      "max": 36,
+      "step": 2,
+      "default": 16,
+      "unit": "px"
+    },
+    {
+      "type": "select",
+      "id": "card_shadow",
+      "label": "Card shadow",
+      "options": [
+        {
+          "value": "none",
+          "label": "None"
+        },
+        {
+          "value": "soft",
+          "label": "Soft"
+        },
+        {
+          "value": "strong",
+          "label": "Strong"
+        }
+      ],
+      "default": "none"
+    },
+    {
+      "type": "range",
+      "id": "card_padding_desktop",
+      "label": "Desktop card padding",
+      "min": 8,
+      "max": 64,
+      "step": 2,
+      "default": 24,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "card_padding_mobile",
+      "label": "Mobile card padding",
+      "min": 4,
+      "max": 36,
+      "step": 2,
+      "default": 12,
+      "unit": "px"
+    },
+    {
+      "type": "header",
+      "content": "Carousel"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_swipe",
+      "label": "Touch swipe",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_pointer_drag",
+      "label": "Mouse / pen drag",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_arrows",
+      "label": "Show arrows",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "arrow_position",
+      "label": "Arrow position",
+      "options": [
+        {
+          "value": "top",
+          "label": "Above cards"
+        },
+        {
+          "value": "overlay",
+          "label": "Overlay"
+        },
+        {
+          "value": "bottom",
+          "label": "Below cards"
+        }
+      ],
+      "default": "top"
+    },
+    {
+      "type": "range",
+      "id": "arrow_size",
+      "label": "Arrow button size",
+      "min": 44,
+      "max": 72,
+      "step": 2,
+      "default": 52,
+      "unit": "px"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_progress_bar",
+      "label": "Show progress indicator",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_helper_text",
+      "label": "Show helper text",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "helper_text",
+      "label": "Helper text",
+      "default": "Drag or swipe to explore"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_dots",
+      "label": "Show additional pagination dots",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_autoplay",
+      "label": "Autoplay",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "autoplay_speed",
+      "label": "Autoplay interval",
+      "min": 3000,
+      "max": 9000,
+      "step": 1000,
+      "default": 5000,
+      "unit": "ms"
+    },
+    {
+      "type": "checkbox",
+      "id": "pause_on_hover",
+      "label": "Pause autoplay on hover",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "infinite_loop",
+      "label": "Loop arrows at ends",
+      "default": false,
+      "info": "Wrap navigation between first and last slide; no focus-duplicating clones."
+    },
+    {
+      "type": "checkbox",
+      "id": "show_partial_next_card",
+      "label": "Peek of next card",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "peek_width_desktop",
+      "label": "Desktop next-card peek",
+      "min": 0,
+      "max": 200,
+      "step": 4,
+      "default": 120,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "peek_width_tablet",
+      "label": "Tablet next-card peek",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "default": 60,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "peek_width_mobile",
+      "label": "Mobile next-card peek",
+      "min": 0,
+      "max": 80,
+      "step": 2,
+      "default": 28,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "desktop_slides",
+      "label": "Desktop slides",
+      "min": 1,
+      "max": 6,
+      "step": 1,
+      "default": 4
+    },
+    {
+      "type": "range",
+      "id": "tablet_slides",
+      "label": "Tablet slides",
+      "min": 1,
+      "max": 4,
+      "step": 1,
+      "default": 3
+    },
+    {
+      "type": "range",
+      "id": "mobile_slides",
+      "label": "Mobile slides",
+      "min": 1,
+      "max": 3,
+      "step": 1,
+      "default": 1
+    },
+    {
+      "type": "header",
+      "content": "Progress Indicator"
+    },
+    {
+      "type": "select",
+      "id": "progress_style",
+      "label": "Style",
+      "options": [
+        {
+          "value": "bar",
+          "label": "Progress bar"
+        },
+        {
+          "value": "dots",
+          "label": "Dots"
+        },
+        {
+          "value": "fraction",
+          "label": "Fraction"
+        },
+        {
+          "value": "none",
+          "label": "None"
+        }
+      ],
+      "default": "bar"
+    },
+    {
+      "type": "select",
+      "id": "progress_position",
+      "label": "Progress position",
+      "options": [
+        {
+          "value": "bottom",
+          "label": "Below cards"
+        },
+        {
+          "value": "top",
+          "label": "Above cards"
+        }
+      ],
+      "default": "bottom"
+    },
+    {
+      "type": "range",
+      "id": "progress_thickness",
+      "label": "Progress bar height",
+      "min": 2,
+      "max": 12,
+      "step": 1,
+      "default": 6,
+      "unit": "px"
+    },
+    {
+      "type": "color",
+      "id": "progress_track_color",
+      "label": "Track color override"
+    },
+    {
+      "type": "color",
+      "id": "progress_color",
+      "label": "Progress color override"
+    },
+    {
+      "type": "range",
+      "id": "logos_to_progress_spacing",
+      "label": "Logos to progress",
+      "min": 8,
+      "max": 60,
+      "step": 2,
+      "default": 20,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "progress_to_helper_spacing",
+      "label": "Progress to helper",
+      "min": 8,
+      "max": 60,
+      "step": 2,
+      "default": 24,
+      "unit": "px"
+    },
+    {
+      "type": "header",
+      "content": "Marquee"
+    },
+    {
+      "type": "select",
+      "id": "marquee_direction",
+      "label": "Movement direction",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ],
+      "default": "left"
+    },
+    {
+      "type": "range",
+      "id": "marquee_speed",
+      "label": "Loop duration",
+      "min": 10,
+      "max": 120,
+      "step": 5,
+      "default": 35,
+      "unit": "s"
+    },
+    {
+      "type": "range",
+      "id": "marquee_gap",
+      "label": "Marquee logo gap",
+      "min": 4,
+      "max": 60,
+      "step": 2,
+      "default": 20,
+      "unit": "px"
+    },
+    {
+      "type": "checkbox",
+      "id": "pause_marquee_on_hover",
+      "label": "Pause on hover",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "pause_marquee_on_focus",
+      "label": "Pause on focus",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_edge_fade",
+      "label": "Edge fade",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "edge_fade_width",
+      "label": "Fade size",
+      "min": 10,
+      "max": 100,
+      "step": 5,
+      "default": 45,
+      "unit": "px"
+    },
+    {
+      "type": "header",
+      "content": "Featured Partner"
+    },
+    {
+      "type": "select",
+      "id": "featured_position",
+      "label": "Featured partner desktop",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ],
+      "default": "left"
+    },
+    {
+      "type": "color",
+      "id": "featured_background",
+      "label": "Featured card override"
+    },
+    {
+      "type": "range",
+      "id": "featured_logo_size",
+      "label": "Featured logo max width",
+      "min": 140,
+      "max": 500,
+      "step": 10,
+      "default": 340,
+      "unit": "px"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_partner_name",
+      "label": "Show partner name",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_partner_description",
+      "label": "Show description",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_partner_link",
+      "label": "Show partner button",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "partner_link_label",
+      "label": "Partner link label",
+      "default": "Learn more"
+    },
+    {
+      "type": "range",
+      "id": "supporting_logo_columns",
+      "label": "Supporting logo columns",
+      "min": 1,
+      "max": 4,
+      "step": 1,
+      "default": 2
+    },
+    {
+      "type": "select",
+      "id": "mobile_featured_position",
+      "label": "Featured position on mobile",
+      "options": [
+        {
+          "value": "first",
+          "label": "First"
+        },
+        {
+          "value": "last",
+          "label": "Last"
+        }
+      ],
+      "default": "first"
+    },
+    {
+      "type": "header",
+      "content": "Desktop Spacing"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "Top padding",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "default": 76,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "Bottom padding",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "default": 76,
+      "unit": "px"
+    },
+    {
+      "type": "header",
+      "content": "Tablet Spacing"
+    },
+    {
+      "type": "range",
+      "id": "padding_top_tablet",
+      "label": "Tablet top padding",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "default": 60,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom_tablet",
+      "label": "Tablet bottom padding",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "default": 60,
+      "unit": "px"
+    },
+    {
+      "type": "header",
+      "content": "Mobile Spacing"
+    },
+    {
+      "type": "range",
+      "id": "padding_top_mobile",
+      "label": "Mobile top padding",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "default": 40,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom_mobile",
+      "label": "Mobile bottom padding",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "default": 40,
+      "unit": "px"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "logo",
+      "name": "Partner logo",
+      "limit": 20,
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "logo",
+          "label": "Desktop logo"
+        },
+        {
+          "type": "image_picker",
+          "id": "mobile_logo",
+          "label": "Optional mobile logo"
+        },
+        {
+          "type": "text",
+          "id": "logo_alt",
+          "label": "Logo alternative text"
+        },
+        {
+          "type": "text",
+          "id": "partner_name",
+          "label": "Partner name",
+          "default": "Partner"
+        },
+        {
+          "type": "textarea",
+          "id": "partner_description",
+          "label": "Partner description"
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "Partner link"
+        },
+        {
+          "type": "checkbox",
+          "id": "open_in_new_tab",
+          "label": "Open link in new tab",
+          "default": false
+        },
+        {
+          "type": "checkbox",
+          "id": "featured_partner",
+          "label": "Feature this partner",
+          "default": false
+        },
+        {
+          "type": "range",
+          "id": "custom_logo_width",
+          "label": "Logo maximum width",
+          "min": 60,
+          "max": 400,
+          "step": 10,
+          "default": 220,
+          "unit": "px"
+        },
+        {
+          "type": "range",
+          "id": "custom_logo_width_mobile",
+          "label": "Mobile logo maximum width",
+          "min": 60,
+          "max": 300,
+          "step": 10,
+          "default": 160,
+          "unit": "px"
+        },
+        {
+          "type": "checkbox",
+          "id": "show_tooltip",
+          "label": "Show tooltip",
+          "default": false
+        },
+        {
+          "type": "text",
+          "id": "tooltip_text",
+          "label": "Tooltip text"
+        }
+      ]
+    }
+  ],
+  "max_blocks": 20,
+  "presets": [
+    {
+      "name": "Logo List / Partners",
+      "settings": {
+        "layout_style": "style_1"
+      },
+      "category": "06. Promotions",
+      "blocks": [
+        {
+          "type": "logo",
+          "settings": {
+            "partner_name": "Partner 1",
+            "featured_partner": false
+          }
+        },
+        {
+          "type": "logo",
+          "settings": {
+            "partner_name": "Partner 2",
+            "featured_partner": false
+          }
+        },
+        {
+          "type": "logo",
+          "settings": {
+            "partner_name": "Partner 3",
+            "featured_partner": false
+          }
+        },
+        {
+          "type": "logo",
+          "settings": {
+            "partner_name": "Partner 4",
+            "featured_partner": false
+          }
+        },
+        {
+          "type": "logo",
+          "settings": {
+            "partner_name": "Partner 5",
+            "featured_partner": false
+          }
+        }
+      ]
+    }
+  ],
+  "disabled_on": {
+    "groups": [
+      "header",
+      "footer",
+      "custom.system"
+    ]
+  }
+}
+{% endschema %}

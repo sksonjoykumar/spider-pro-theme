@@ -1,0 +1,839 @@
+{{ 'sp-main-search.css' | asset_url | stylesheet_tag }}
+{% render 'sp-section-color-scheme', section: section %}
+
+{% liquid
+  assign enabled_types = ''
+  if section.settings.show_products
+    assign enabled_types = 'product'
+  endif
+  if section.settings.show_articles
+    if enabled_types != blank
+      assign enabled_types = enabled_types | append: ','
+    endif
+    assign enabled_types = enabled_types | append: 'article'
+  endif
+  if section.settings.show_pages
+    if enabled_types != blank
+      assign enabled_types = enabled_types | append: ','
+    endif
+    assign enabled_types = enabled_types | append: 'page'
+  endif
+  if enabled_types == blank
+    assign enabled_types = 'product,article,page'
+  endif
+
+  assign active_type = 'all'
+  if search.types.size == 1
+    assign active_type = search.types.first
+  endif
+
+  assign current_type_value = search.types | join: ','
+  if current_type_value == blank
+    assign current_type_value = enabled_types
+  endif
+
+  assign sort_by = search.sort_by | default: search.default_sort_by
+  assign encoded_terms = search.terms | url_encode
+  assign encoded_sort = sort_by | url_encode
+
+  assign active_filter_count = 0
+  for filter in search.filters
+    assign active_filter_count = active_filter_count | plus: filter.active_values.size
+    if filter.min_value.value or filter.max_value.value
+      assign active_filter_count = active_filter_count | plus: 1
+    endif
+  endfor
+
+  capture clear_filters_url
+    echo routes.search_url
+    echo '?q='
+    echo encoded_terms
+    echo '&type='
+    echo current_type_value
+    echo '&options[prefix]=last'
+    if sort_by != blank
+      echo '&sort_by='
+      echo encoded_sort
+    endif
+  endcapture
+
+
+  capture active_filter_query
+    for filter in search.filters
+      for value in filter.active_values
+        echo '&'
+        echo value.param_name | url_encode
+        echo '='
+        echo value.value | url_encode
+      endfor
+      if filter.min_value.value
+        echo '&'
+        echo filter.min_value.param_name | url_encode
+        echo '='
+        echo filter.min_value.value | money_without_currency | replace: ',', '' | strip | url_encode
+      endif
+      if filter.max_value.value
+        echo '&'
+        echo filter.max_value.param_name | url_encode
+        echo '='
+        echo filter.max_value.value | money_without_currency | replace: ',', '' | strip | url_encode
+      endif
+    endfor
+  endcapture
+
+  case section.settings.container_width
+    when 'narrow'
+      assign container_class = 'sp-container sp-container--narrow'
+    when 'wide'
+      assign container_class = 'sp-container sp-container--wide'
+    when 'full'
+      assign container_class = 'sp-main-search__container--full'
+    else
+      assign container_class = 'sp-container'
+  endcase
+
+
+  assign search_input_id = 'SearchPageInput-' | append: section.id
+  assign search_again_id = 'SearchAgain-' | append: section.id
+
+  assign search_product_design = blank
+  unless section.settings.use_global_product_settings
+    assign search_product_design = section.settings.product_design
+  endunless
+
+  assign title_class = 'sp-heading--h1'
+  case section.settings.heading_style
+    when 'h2'
+      assign title_class = 'sp-heading--h2'
+    when 'h3'
+      assign title_class = 'sp-heading--h3'
+    when 'custom'
+      assign title_class = 'sp-main-search__title--custom'
+  endcase
+%}
+
+<section
+  class="sp-main-search sp-main-search--filters-{{ section.settings.desktop_filter_layout }} sp-main-search--align-{{ section.settings.heading_alignment }}"
+  data-search-section
+  data-section-id="{{ section.id }}"
+  data-search-url="{{ routes.search_url }}"
+  data-search-ajax="{{ section.settings.enable_ajax }}"
+  style="--sp-search-sidebar-width: {{ section.settings.sidebar_width | default: 220 }}px; --sp-search-hero-width: {{ section.settings.hero_max_width | default: 720 }}px; --sp-search-cols-d: {{ section.settings.columns_desktop }}; --sp-search-cols-t: {{ section.settings.columns_tablet }}; --sp-search-cols-m: {{ section.settings.columns_mobile }}; --sp-search-custom-title-size: {{ section.settings.custom_heading_size }}px; --sp-search-pad-top: {% if section.settings.spacing_source == 'custom' %}{{ section.settings.padding_top }}px{% else %}var(--sp-section-space, 96px){% endif %}; --sp-search-pad-bottom: {% if section.settings.spacing_source == 'custom' %}{{ section.settings.padding_bottom }}px{% else %}var(--sp-section-space, 96px){% endif %}; --sp-search-pad-top-mobile: {% if section.settings.spacing_source == 'custom' %}{{ section.settings.padding_top_mobile }}px{% else %}var(--sp-section-space-mobile, 56px){% endif %}; --sp-search-pad-bottom-mobile: {% if section.settings.spacing_source == 'custom' %}{{ section.settings.padding_bottom_mobile }}px{% else %}var(--sp-section-space-mobile, 56px){% endif %};"
+>
+  <div class="sp-main-search__hero">
+    <div class="{{ container_class }}">
+      <header class="sp-main-search__header">
+        <h1 class="sp-main-search__title {{ title_class }}{% unless section.settings.show_heading %} visually-hidden{% endunless %}">{{ section.settings.heading | default: 'Search' | escape }}</h1>
+
+        {% if section.settings.show_search_form %}
+          {% render 'sp-search-form',
+            section: section,
+            search: search,
+            enabled_types: enabled_types,
+            input_id: search_input_id
+          %}
+        {% endif %}
+        {% if section.settings.hero_description != blank %}
+          <p class="sp-main-search__hero-description">{{ section.settings.hero_description | escape }}</p>
+        {% endif %}
+      </header>
+    </div>
+  </div>
+
+  <div class="{{ container_class }} sp-main-search__body">
+    {% if search.performed %}
+      <div class="sp-main-search__summary" data-search-summary role="status" aria-live="polite" aria-atomic="true">
+        <h2 class="sp-main-search__query">
+          <span>{{ 'search.search_results' | t }}</span>
+          <strong>“{{ search.terms | escape }}”</strong>
+        </h2>
+        <p class="sp-main-search__count">{{ 'search.results_found' | t: count: search.results_count }}</p>
+      </div>
+    {% elsif section.settings.empty_intro != blank %}
+      <p class="sp-main-search__intro">{{ section.settings.empty_intro | escape }}</p>
+    {% endif %}
+
+    {% if search.performed and section.settings.show_result_types %}
+      <nav class="sp-search-types" aria-label="Search result types">
+        {% capture all_url %}{{ routes.search_url }}?q={{ encoded_terms }}&type={{ enabled_types }}&options[prefix]=last{% if sort_by != blank %}&sort_by={{ encoded_sort }}{% endif %}{% endcapture %}
+        <a class="sp-search-types__link{% if active_type == 'all' %} is-active{% endif %}" href="{{ all_url }}"{% if active_type == 'all' %} aria-current="page"{% endif %}>All</a>
+        {% if section.settings.show_products %}
+          {% capture product_url %}{{ routes.search_url }}?q={{ encoded_terms }}&type=product&options[prefix]=last{% if sort_by != blank %}&sort_by={{ encoded_sort }}{% endif %}{{ active_filter_query }}{% endcapture %}
+          <a class="sp-search-types__link{% if active_type == 'product' %} is-active{% endif %}" href="{{ product_url }}"{% if active_type == 'product' %} aria-current="page"{% endif %}>{{ 'general.search.products' | t }}</a>
+        {% endif %}
+        {% if section.settings.show_articles %}
+          {% capture article_url %}{{ routes.search_url }}?q={{ encoded_terms }}&type=article&options[prefix]=last{% if sort_by != blank %}&sort_by={{ encoded_sort }}{% endif %}{% endcapture %}
+          <a class="sp-search-types__link{% if active_type == 'article' %} is-active{% endif %}" href="{{ article_url }}"{% if active_type == 'article' %} aria-current="page"{% endif %}>{{ 'general.search.articles' | t }}</a>
+        {% endif %}
+        {% if section.settings.show_pages %}
+          {% capture page_url %}{{ routes.search_url }}?q={{ encoded_terms }}&type=page&options[prefix]=last{% if sort_by != blank %}&sort_by={{ encoded_sort }}{% endif %}{% endcapture %}
+          <a class="sp-search-types__link{% if active_type == 'page' %} is-active{% endif %}" href="{{ page_url }}"{% if active_type == 'page' %} aria-current="page"{% endif %}>{{ 'general.search.pages' | t }}</a>
+        {% endif %}
+      </nav>
+    {% endif %}
+
+    {% if search.performed and search.results_count > 0 %}
+      {% paginate search.results by section.settings.results_per_page %}
+        <div class="sp-main-search__toolbar{% unless section.settings.enable_filters and search.filters.size > 0 and section.settings.desktop_filter_layout != 'hidden' %} sp-main-search__toolbar--no-filter{% endunless %}">
+          {% if section.settings.enable_filters and search.filters.size > 0 and section.settings.desktop_filter_layout != 'hidden' %}
+            <button
+              class="sp-button sp-button--secondary sp-search-filter-toggle"
+              type="button"
+              data-search-filter-open
+              aria-controls="SearchFilters-{{ section.id }}"
+              aria-expanded="true"
+            >
+              <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M4 17h16"/><circle cx="9" cy="7" r="2" fill="currentColor" stroke="none"/><circle cx="16" cy="17" r="2" fill="currentColor" stroke="none"/></svg>
+              {{ 'collections.filtering.filter' | t }}{% if active_filter_count > 0 %} ({{ active_filter_count }}){% endif %}
+            </button>
+          {% endif %}
+
+          <span class="sp-main-search__toolbar-count">{{ 'search.results_found' | t: count: search.results_count }}</span>
+
+          {% if section.settings.enable_sorting and search.sort_options.size > 0 %}
+            {% render 'sp-search-sort', search: search, section: section, current_type_value: current_type_value %}
+          {% endif %}
+        </div>
+
+        {% if section.settings.show_active_filters and active_filter_count > 0 %}
+          {% render 'sp-search-active-filters', search: search, clear_url: clear_filters_url %}
+        {% endif %}
+
+        <div class="sp-main-search__layout">
+          {% if section.settings.enable_filters and search.filters.size > 0 and section.settings.desktop_filter_layout != 'hidden' %}
+            <div class="sp-search-filter-overlay" data-search-filter-overlay hidden></div>
+            <aside
+              class="sp-search-filters"
+              id="SearchFilters-{{ section.id }}"
+              data-search-filters-panel
+              aria-label="{{ 'collections.filtering.filters' | t }}"
+            >
+              <div class="sp-search-filters__mobile-head">
+                <strong>{{ 'collections.filtering.filters' | t }}</strong>
+                <button class="sp-search-filters__close" type="button" data-search-filter-close aria-label="Close filters">{% render 'icon', name: 'close' %}</button>
+              </div>
+              {% render 'sp-search-facets', search: search, section: section, current_type_value: current_type_value, clear_url: clear_filters_url %}
+            </aside>
+          {% endif %}
+
+          <div class="sp-main-search__results" data-search-results tabindex="-1">
+            <div
+              class="sp-search-results-list{% if active_type == 'article' or active_type == 'page' %} sp-search-results-list--editorial{% endif %}"
+              data-search-results-list
+            >
+              {% for item in search.results %}
+                {% case item.object_type %}
+                  {% when 'product' %}
+                    {% if section.settings.show_products %}
+                      <div class="sp-search-result-item sp-search-result-item--product" data-search-result-item data-search-result-type="product">
+                        {% render 'sp-product-card',
+                          product: item,
+                          context: 'search',
+                          design: search_product_design,
+                          section_id: section.id,
+                          instance_id: 'search',
+                          sizes: '(min-width: 990px) 25vw, (min-width: 750px) 33vw, 50vw'
+                        %}
+                      </div>
+                    {% endif %}
+                  {% when 'article' %}
+                    {% if section.settings.show_articles %}
+                      <div class="sp-search-result-item sp-search-result-item--article" data-search-result-item data-search-result-type="article">
+                        {% render 'sp-search-article-card', article: item, search_terms: search.terms, show_image: section.settings.article_show_image, show_date: section.settings.article_show_date, show_excerpt: section.settings.article_show_excerpt %}
+                      </div>
+                    {% endif %}
+                  {% when 'page' %}
+                    {% if section.settings.show_pages %}
+                      <div class="sp-search-result-item sp-search-result-item--page" data-search-result-item data-search-result-type="page">
+                        {% render 'sp-search-page-card', page: item, search_terms: search.terms, show_excerpt: section.settings.page_show_excerpt %}
+                      </div>
+                    {% endif %}
+                {% endcase %}
+              {% endfor %}
+            </div>
+
+            {% render 'sp-search-pagination', paginate: paginate, mode: section.settings.pagination_type %}
+          </div>
+        </div>
+      {% endpaginate %}
+    {% elsif search.performed %}
+      {% if section.settings.show_active_filters and active_filter_count > 0 %}
+        {% render 'sp-search-active-filters', search: search, clear_url: clear_filters_url %}
+      {% endif %}
+      <div class="sp-search-state sp-search-state--no-results">
+        <div class="sp-search-state__icon" aria-hidden="true">{% render 'icon', name: 'search' %}</div>
+        <h2 class="sp-heading--h3">{{ 'search.no_results' | t: terms: search.terms }}</h2>
+        <p>Try checking the spelling, using a different term, or browsing the store.</p>
+        {% render 'sp-search-form', section: section, search: search, enabled_types: enabled_types, input_id: search_again_id, compact: true %}
+        <a class="sp-button sp-button--secondary" href="{{ routes.all_products_collection_url }}">{{ 'general.buttons.continue_shopping' | t }}</a>
+      </div>
+    {% else %}
+      <div class="sp-search-state sp-search-state--empty">
+        <div class="sp-search-state__icon" aria-hidden="true">{% render 'icon', name: 'search' %}</div>
+        <h2 class="sp-heading--h3">{{ section.settings.empty_heading | escape }}</h2>
+        {% if section.settings.empty_text != blank %}<p>{{ section.settings.empty_text | escape }}</p>{% endif %}
+
+        {% if section.settings.show_popular_searches %}
+          {% assign has_popular = false %}
+          {% for block in section.blocks %}
+            {% if block.type == 'popular_search' and block.settings.query != blank %}{% assign has_popular = true %}{% endif %}
+          {% endfor %}
+          {% if has_popular %}
+            <div class="sp-search-discovery" aria-label="Popular searches">
+              <strong>{{ 'search.popular_searches' | t }}</strong>
+              <div class="sp-search-discovery__links">
+                {% for block in section.blocks %}
+                  {% if block.type == 'popular_search' and block.settings.query != blank %}
+                    <a href="{{ routes.search_url }}?q={{ block.settings.query | url_encode }}&type={{ enabled_types }}&options[prefix]=last" {{ block.shopify_attributes }}>{{ block.settings.label | default: block.settings.query | escape }}</a>
+                  {% endif %}
+                {% endfor %}
+              </div>
+            </div>
+          {% endif %}
+        {% endif %}
+
+        {% if section.settings.show_suggested_collections %}
+          {% assign has_collections = false %}
+          {% for block in section.blocks %}
+            {% if block.type == 'suggested_collection' and block.settings.collection != blank %}{% assign has_collections = true %}{% endif %}
+          {% endfor %}
+          {% if has_collections %}
+            <div class="sp-search-discovery" aria-label="Suggested collections">
+              <strong>{{ 'general.search.collections' | t }}</strong>
+              <div class="sp-search-discovery__collections">
+                {% for block in section.blocks %}
+                  {% if block.type == 'suggested_collection' and block.settings.collection != blank %}
+                    {% assign suggested_collection = block.settings.collection %}
+                    <a class="sp-search-discovery__collection" href="{{ suggested_collection.url }}" {{ block.shopify_attributes }}>
+                      {% if suggested_collection.image %}
+                        {% render 'responsive-image', image: suggested_collection.image, class: 'sp-search-discovery__collection-image', widths: '240, 360, 480, 640', sizes: '(min-width: 750px) 220px, 42vw', loading: 'lazy', alt: suggested_collection.title %}
+                      {% endif %}
+                      <span>{{ suggested_collection.title | escape }}</span>
+                    </a>
+                  {% endif %}
+                {% endfor %}
+              </div>
+            </div>
+          {% endif %}
+        {% endif %}
+      </div>
+    {% endif %}
+  </div>
+</section>
+
+{% if section.settings.show_search_form or section.settings.enable_filters or section.settings.enable_ajax or section.settings.pagination_type == 'load_more' %}
+  <script src="{{ 'sp-main-search.js' | asset_url }}" defer></script>
+{% endif %}
+
+{% schema %}
+{
+  "name": "Main search",
+  "enabled_on": {
+    "templates": [
+      "search"
+    ]
+  },
+  "settings": [
+    {
+      "type": "header",
+      "content": "Header"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_heading",
+      "label": "Show heading",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Search"
+    },
+    {
+      "type": "select",
+      "id": "heading_style",
+      "label": "Heading style",
+      "default": "h1",
+      "options": [
+        {
+          "value": "h1",
+          "label": "Global H1"
+        },
+        {
+          "value": "h2",
+          "label": "Global H2"
+        },
+        {
+          "value": "h3",
+          "label": "Global H3"
+        },
+        {
+          "value": "custom",
+          "label": "Custom"
+        }
+      ]
+    },
+    {
+      "type": "range",
+      "id": "custom_heading_size",
+      "label": "Custom heading size",
+      "default": 48,
+      "min": 28,
+      "max": 80,
+      "step": 1,
+      "unit": "px"
+    },
+    {
+      "type": "select",
+      "id": "heading_alignment",
+      "label": "Heading alignment",
+      "default": "left",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ]
+    },
+    {
+      "type": "checkbox",
+      "id": "show_search_form",
+      "label": "Show search form",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "search_placeholder",
+      "label": "Search placeholder",
+      "default": "Search products, articles and pages"
+    },
+    {
+      "type": "text",
+      "id": "hero_description",
+      "label": "Text under search box",
+      "default": "Search products, articles and pages"
+    },
+    {
+      "type": "text",
+      "id": "search_button_label",
+      "label": "Search button label",
+      "default": "Search"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_search_clear",
+      "label": "Show search clear button",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "hero_max_width",
+      "label": "Search form max width",
+      "min": 480,
+      "max": 1000,
+      "step": 20,
+      "unit": "px",
+      "default": 720
+    },
+    {
+      "type": "header",
+      "content": "Result types"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_result_types",
+      "label": "Show result type navigation",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_products",
+      "label": "Show products",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_articles",
+      "label": "Show articles",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_pages",
+      "label": "Show pages",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Filters and sorting"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_filters",
+      "label": "Enable Shopify search filters",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "desktop_filter_layout",
+      "label": "Desktop filter layout",
+      "default": "sidebar_left",
+      "options": [
+        {
+          "value": "sidebar_left",
+          "label": "Sidebar left"
+        },
+        {
+          "value": "sidebar_right",
+          "label": "Sidebar right"
+        },
+        {
+          "value": "horizontal",
+          "label": "Horizontal"
+        },
+        {
+          "value": "drawer",
+          "label": "Drawer"
+        },
+        {
+          "value": "hidden",
+          "label": "Hidden"
+        }
+      ]
+    },
+    {
+      "type": "range",
+      "id": "sidebar_width",
+      "label": "Desktop filter sidebar width",
+      "min": 180,
+      "max": 320,
+      "step": 10,
+      "unit": "px",
+      "default": 220
+    },
+    {
+      "type": "checkbox",
+      "id": "show_active_filters",
+      "label": "Show active filter chips",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_sorting",
+      "label": "Enable native sorting",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_ajax",
+      "label": "AJAX filter and sort enhancement",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Product results"
+    },
+    {
+      "type": "checkbox",
+      "id": "use_global_product_settings",
+      "label": "Use global Product Settings",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "product_design",
+      "label": "Search product design",
+      "default": "01",
+      "options": [
+        {
+          "value": "01",
+          "label": "01 — Classic Premium"
+        },
+        {
+          "value": "02",
+          "label": "02 — Modern Badges"
+        },
+        {
+          "value": "03",
+          "label": "03 — Variant Preview"
+        },
+        {
+          "value": "04",
+          "label": "04 — Image Overlay"
+        },
+        {
+          "value": "05",
+          "label": "05 — Apparel Swatches"
+        },
+        {
+          "value": "06",
+          "label": "06 — Stock Status"
+        },
+        {
+          "value": "07",
+          "label": "07 — Minimal Luxury"
+        },
+        {
+          "value": "08",
+          "label": "08 — Lifestyle Wide"
+        }
+      ],
+      "info": "Choose one of 8 Spider premium product card layouts; use Global Product Settings to inherit the global selection."
+    },
+    {
+      "type": "range",
+      "id": "columns_desktop",
+      "label": "Desktop columns",
+      "default": 4,
+      "min": 2,
+      "max": 6,
+      "step": 1
+    },
+    {
+      "type": "range",
+      "id": "columns_tablet",
+      "label": "Tablet columns",
+      "default": 3,
+      "min": 2,
+      "max": 4,
+      "step": 1
+    },
+    {
+      "type": "select",
+      "id": "columns_mobile",
+      "label": "Mobile columns",
+      "default": "2",
+      "options": [
+        {
+          "value": "1",
+          "label": "1 column"
+        },
+        {
+          "value": "2",
+          "label": "2 columns"
+        }
+      ]
+    },
+    {
+      "type": "header",
+      "content": "Article and page results"
+    },
+    {
+      "type": "checkbox",
+      "id": "article_show_image",
+      "label": "Show article image",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "article_show_date",
+      "label": "Show article date",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "article_show_excerpt",
+      "label": "Show article excerpt",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "page_show_excerpt",
+      "label": "Show page excerpt",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Pagination"
+    },
+    {
+      "type": "range",
+      "id": "results_per_page",
+      "label": "Results per page",
+      "default": 24,
+      "min": 8,
+      "max": 48,
+      "step": 4
+    },
+    {
+      "type": "select",
+      "id": "pagination_type",
+      "label": "Pagination type",
+      "default": "pagination",
+      "options": [
+        {
+          "value": "pagination",
+          "label": "Pagination"
+        },
+        {
+          "value": "load_more",
+          "label": "Load more"
+        }
+      ]
+    },
+    {
+      "type": "header",
+      "content": "Empty search discovery"
+    },
+    {
+      "type": "text",
+      "id": "empty_intro",
+      "label": "Intro text",
+      "default": "Find products, articles and more."
+    },
+    {
+      "type": "text",
+      "id": "empty_heading",
+      "label": "Empty state heading",
+      "default": "What are you looking for?"
+    },
+    {
+      "type": "text",
+      "id": "empty_text",
+      "label": "Empty state text",
+      "default": "Search the store or explore one of the suggestions below."
+    },
+    {
+      "type": "checkbox",
+      "id": "show_popular_searches",
+      "label": "Show popular search blocks",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "show_suggested_collections",
+      "label": "Show suggested collection blocks",
+      "default": false
+    },
+    {
+      "type": "header",
+      "content": "Global design system"
+    },
+    {
+      "type": "color_scheme",
+      "id": "sp_color_scheme",
+      "label": "Color scheme",
+      "default": "scheme-1"
+    },
+    {
+      "type": "select",
+      "id": "container_width",
+      "label": "Container width",
+      "default": "theme",
+      "options": [
+        {
+          "value": "theme",
+          "label": "Theme default"
+        },
+        {
+          "value": "narrow",
+          "label": "Narrow"
+        },
+        {
+          "value": "wide",
+          "label": "Wide"
+        },
+        {
+          "value": "full",
+          "label": "Full width"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "spacing_source",
+      "label": "Section spacing",
+      "default": "theme",
+      "options": [
+        {
+          "value": "theme",
+          "label": "Theme default"
+        },
+        {
+          "value": "custom",
+          "label": "Custom"
+        }
+      ]
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "Desktop top spacing",
+      "default": 64,
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "Desktop bottom spacing",
+      "default": 80,
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "padding_top_mobile",
+      "label": "Mobile top spacing",
+      "default": 36,
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom_mobile",
+      "label": "Mobile bottom spacing",
+      "default": 56,
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "popular_search",
+      "name": "Popular search",
+      "settings": [
+        {
+          "type": "text",
+          "id": "label",
+          "label": "Label"
+        },
+        {
+          "type": "text",
+          "id": "query",
+          "label": "Search query"
+        }
+      ]
+    },
+    {
+      "type": "suggested_collection",
+      "name": "Suggested collection",
+      "settings": [
+        {
+          "type": "collection",
+          "id": "collection",
+          "label": "Collection"
+        }
+      ]
+    }
+  ],
+  "max_blocks": 12
+}
+{% endschema %}

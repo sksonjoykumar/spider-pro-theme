@@ -1,0 +1,39 @@
+{%- comment -%}
+  Spider Logo List: one logo. `duplicate` is reserved for inert marquee copies;
+  neither Shopify block attributes nor focusable links are duplicated.
+{%- endcomment -%}
+{%- liquid
+  assign sp_logo = block.settings.logo
+  assign sp_alt = block.settings.logo_alt | default: block.settings.partner_name | default: 'Partner logo'
+  assign sp_label = block.settings.partner_name | default: sp_alt
+  assign sp_link = block.settings.link
+  assign sp_mobile = block.settings.mobile_logo
+  assign sp_loading = image_loading | default: 'lazy'
+  assign sp_custom_width = block.settings.custom_logo_width | default: 220
+  assign sp_custom_mobile_width = block.settings.custom_logo_width_mobile | default: 160
+-%}
+<li class="sp-logo-list__item{% if featured %} sp-logo-list__item--featured{% endif %}{% if block.settings.show_tooltip and block.settings.tooltip_text != blank %} sp-logo-list__item--tip{% endif %}" data-sp-logo-item{% unless duplicate %} data-sp-logo-block="{{ block.id }}" {{ block.shopify_attributes }}{% endunless %} style="--sp-logo-item-width:{{ sp_custom_width }}px;--sp-logo-item-mobile-width:{{ sp_custom_mobile_width }}px;">
+  <div class="sp-logo-list__card" {% if block.settings.show_tooltip and block.settings.tooltip_text != blank %}data-sp-tooltip="{{ block.settings.tooltip_text | escape }}"{% endif %}>
+    {%- if sp_link != blank -%}<a class="sp-logo-list__media sp-logo-list__link" href="{{ sp_link }}" aria-label="{{ sp_label | escape }}"{% if block.settings.open_in_new_tab %} target="_blank" rel="noopener noreferrer"{% endif %}{% if duplicate %} tabindex="-1"{% endif %}>{%- else -%}<div class="sp-logo-list__media"{% if block.settings.show_tooltip and block.settings.tooltip_text != blank and duplicate != true %} tabindex="0" aria-label="{{ sp_label | escape }}: {{ block.settings.tooltip_text | escape }}"{% endif %}>{%- endif -%}
+      {%- if sp_logo != blank -%}
+        <picture>
+          {%- if sp_mobile != blank -%}
+            <source media="(max-width: 749px)" srcset="{{ sp_mobile | image_url: width: 120 }} 120w, {{ sp_mobile | image_url: width: 240 }} 240w, {{ sp_mobile | image_url: width: 480 }} 480w" sizes="(max-width: 749px) {{ sp_custom_mobile_width }}px, {{ sp_custom_width }}px">
+          {%- endif -%}
+          {{ sp_logo | image_url: width: 640 | image_tag: class: 'sp-logo-list__image', widths: '120,180,240,360,480,640', sizes: '(max-width:749px) 160px, 220px', loading: sp_loading, alt: sp_alt }}
+        </picture>
+      {%- elsif request.design_mode -%}
+        <div class="sp-logo-list__placeholder" aria-hidden="true">{{ 'image' | placeholder_svg_tag: 'sp-logo-list__placeholder-svg' }}</div>
+      {%- endif -%}
+    {%- if sp_link != blank -%}</a>{%- else -%}</div>{%- endif -%}
+    {%- if featured -%}
+      <div class="sp-logo-list__featured-copy">
+        {%- if section.settings.show_partner_name and sp_label != blank -%}<h3>{{ sp_label | escape }}</h3>{%- endif -%}
+        {%- if section.settings.show_partner_description and block.settings.partner_description != blank -%}<p>{{ block.settings.partner_description | escape }}</p>{%- endif -%}
+        {%- if section.settings.show_partner_link and sp_link != blank -%}
+          <a href="{{ sp_link }}" class="sp-button sp-button--secondary"{% if block.settings.open_in_new_tab %} target="_blank" rel="noopener noreferrer"{% endif %}{% if duplicate %} tabindex="-1"{% endif %}>{{ section.settings.partner_link_label | escape }}</a>
+        {%- endif -%}
+      </div>
+    {%- endif -%}
+  </div>
+</li>

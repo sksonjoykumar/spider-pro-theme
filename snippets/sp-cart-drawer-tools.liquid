@@ -1,0 +1,42 @@
+{%- assign has_tools = false -%}
+{%- if section.settings.show_cart_note or section.settings.show_shipping_estimator -%}
+  {%- assign has_tools = true -%}
+{%- endif -%}
+{%- if section.settings.show_discount and section.settings.premium_inline_discount == false -%}
+  {%- assign has_tools = true -%}
+{%- endif -%}
+{%- if section.settings.show_gift_wrap and gift_product != blank and gift_variant != blank and gift_variant.available and gift_in_cart == false -%}
+  {%- assign has_tools = true -%}
+{%- endif -%}
+
+{%- if has_tools -%}
+  <div class="sp-cart-drawer__tools" aria-label="Cart tools" data-sp-cart-tools>
+    {%- if section.settings.show_cart_note -%}
+      <button class="sp-cart-drawer__tool" type="button" data-sp-cart-tool-open="note" aria-label="{% if cart.note != blank %}Edit note{% else %}Add note{% endif %}">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v18H6zM9 7h6M9 11h6M9 15h4"/></svg>
+        <span class="sp-cart-drawer__tool-label">{% if cart.note != blank %}Edit note{% else %}Add note{% endif %}</span>
+      </button>
+    {%- endif -%}
+
+    {%- if section.settings.show_gift_wrap and gift_product != blank and gift_variant != blank and gift_variant.available and gift_in_cart == false -%}
+      <button class="sp-cart-drawer__tool" type="button" data-sp-cart-tool-open="gift" aria-label="Add gift wrap">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h16v11H4zM3 6h18v4H3zM12 6v14M8 6c-1.7 0-3-1-3-2.3C5 2.8 5.8 2 7 2c2.4 0 5 4 5 4M16 6c1.7 0 3-1 3-2.3C19 2.8 18.2 2 17 2c-2.4 0-5 4-5 4"/></svg>
+        <span class="sp-cart-drawer__tool-label">Gift wrap</span>
+      </button>
+    {%- endif -%}
+
+    {%- if section.settings.show_shipping_estimator -%}
+      <button class="sp-cart-drawer__tool" type="button" data-sp-cart-tool-open="shipping" aria-label="Estimate shipping">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5h11v12H3zM14 9h4l3 4v4h-7zM7 20a2 2 0 1 0 0-4 2 2 0 0 0 0 4ZM18 20a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z"/></svg>
+        <span class="sp-cart-drawer__tool-label">Shipping</span>
+      </button>
+    {%- endif -%}
+
+    {%- if section.settings.show_discount and section.settings.premium_inline_discount == false -%}
+      <button class="sp-cart-drawer__tool" type="button" data-sp-cart-tool-open="discount" aria-label="Apply discount">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 13 11 22l-9-9V2h11l7 7v4Z"/><circle cx="7.5" cy="7.5" r="1.5"/></svg>
+        <span class="sp-cart-drawer__tool-label">Discount</span>
+      </button>
+    {%- endif -%}
+  </div>
+{%- endif -%}

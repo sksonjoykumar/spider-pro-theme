@@ -1,0 +1,847 @@
+{% render 'sp-section-color-scheme', section: section %}
+{{ 'sp-recently-viewed-products.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'sp-recently-viewed-products.js' | asset_url }}" defer></script>
+
+{%- liquid
+  assign sp_product_design = blank
+  assign sp_renderer_section = 'sp-rv-card-global'
+  unless section.settings.use_global_product_settings
+    assign sp_product_design = section.settings.product_style | default: '01' | append: '' | strip
+    case sp_product_design
+      when '01', '1'
+        assign sp_renderer_section = 'sp-rv-card-1'
+      when '02', '2'
+        assign sp_renderer_section = 'sp-rv-card-2'
+      when '03', '3'
+        assign sp_renderer_section = 'sp-rv-card-3'
+      when '04', '4'
+        assign sp_renderer_section = 'sp-rv-card-4'
+      when '05', '5'
+        assign sp_renderer_section = 'sp-rv-card-5'
+      when '06', '6'
+        assign sp_renderer_section = 'sp-rv-card-6'
+      when '07', '7'
+        assign sp_renderer_section = 'sp-rv-card-7'
+      when '08', '8'
+        assign sp_renderer_section = 'sp-rv-card-8'
+      else
+        assign sp_renderer_section = 'sp-rv-card-1'
+    endcase
+  endunless
+
+  assign sp_container_choice = section.settings.container_width | default: 'theme'
+  assign sp_container_class = 'sp-container'
+  case sp_container_choice
+    when 'full'
+      assign sp_container_class = 'sp-recently-viewed-products__container--full'
+    when 'wide'
+      assign sp_container_class = 'sp-container sp-container--wide'
+    when 'narrow'
+      assign sp_container_class = 'sp-container sp-container--narrow'
+    when 'boxed'
+      assign sp_container_class = 'sp-container'
+    else
+      if settings.sp_layout_style == 'full'
+        assign sp_container_class = 'sp-recently-viewed-products__container--full'
+      endif
+  endcase
+
+  assign sp_heading_style = section.settings.heading_style | default: 'h2'
+  assign sp_heading_tag = sp_heading_style
+  assign sp_typography_source = 'global'
+  if sp_heading_style == 'custom'
+    assign sp_heading_tag = 'h2'
+    assign sp_typography_source = 'custom'
+  endif
+
+  assign sp_spacing_class = 'sp-recently-viewed-products--theme-spacing'
+  if section.settings.spacing_source == 'custom'
+    assign sp_spacing_class = 'sp-recently-viewed-products--custom-spacing'
+  endif
+
+  assign sp_autoplay_ms = section.settings.autoplay_speed | times: 1000
+  assign sp_current_product_id = ''
+  assign sp_current_product_handle = ''
+  assign sp_current_variant_id = ''
+  if request.page_type == 'product' and product != blank
+    assign sp_current_product_id = product.id
+    assign sp_current_product_handle = product.handle
+    assign sp_current_variant_id = product.selected_or_first_available_variant.id
+  endif
+-%}
+
+<sp-recently-viewed-products
+  class="sp-recently-viewed-products {{ sp_spacing_class }}"
+  data-sp-recently-viewed-products
+  data-section-id="{{ section.id }}"
+  data-renderer-section="{{ sp_renderer_section }}"
+  data-products-to-show="{{ section.settings.products_to_show }}"
+  data-min-products="{{ section.settings.minimum_products }}"
+  data-history-max="{{ section.settings.history_max }}"
+  data-expiration-days="{{ section.settings.expiration_days }}"
+  data-hide-sold-out="{{ section.settings.hide_sold_out }}"
+  data-layout="{{ section.settings.layout }}"
+  data-current-product-id="{{ sp_current_product_id }}"
+  data-current-product-handle="{{ sp_current_product_handle | escape }}"
+  data-current-variant-id="{{ sp_current_variant_id }}"
+  data-core-url="{{ 'sp-recently-viewed-core.js' | asset_url }}"
+  data-design-mode="{{ request.design_mode }}"
+  data-product-design="{% if sp_product_design != blank %}{{ sp_product_design }}{% else %}global{% endif %}"
+  data-cart-add-url="{{ routes.cart_add_url }}"
+  data-money-format="{{ shop.money_with_currency_format | escape }}"
+  data-currency="{{ cart.currency.iso_code | default: shop.currency | escape }}"
+  data-compare-max="4"
+  data-buy-now="{{ settings.dynamic_checkout }}"
+  aria-busy="true"
+  aria-label="{{ section.settings.heading | default: 'Recently viewed' | escape }}"
+  style="
+    --sp-rv-cols-d: {{ section.settings.columns_desktop }};
+    --sp-rv-cols-t: {{ section.settings.columns_tablet }};
+    --sp-rv-cols-m: {{ section.settings.columns_mobile }};
+    --sp-rv-gap-d: {{ section.settings.gap_desktop }}px;
+    --sp-rv-gap-t: {{ section.settings.gap_tablet }}px;
+    --sp-rv-gap-m: {{ section.settings.gap_mobile }}px;
+    --sp-rv-pt-d: {{ section.settings.padding_top_desktop }}px;
+    --sp-rv-pb-d: {{ section.settings.padding_bottom_desktop }}px;
+    --sp-rv-pt-t: {{ section.settings.padding_top_tablet }}px;
+    --sp-rv-pb-t: {{ section.settings.padding_bottom_tablet }}px;
+    --sp-rv-pt-m: {{ section.settings.padding_top_mobile }}px;
+    --sp-rv-pb-m: {{ section.settings.padding_bottom_mobile }}px;
+  "
+  {% unless request.design_mode %}hidden{% endunless %}
+>
+  <div class="{{ sp_container_class }} sp-recently-viewed-products__container">
+    <div data-sp-rv-heading>
+      {% render 'sp-section-heading',
+        heading: section.settings.heading,
+        subheading: section.settings.subheading,
+        heading_tag: sp_heading_tag,
+        design: section.settings.heading_design,
+        alignment: section.settings.heading_alignment,
+        mobile_alignment: section.settings.heading_alignment_mobile,
+        heading_gap: section.settings.heading_gap,
+        bottom_spacing: section.settings.heading_bottom_spacing,
+        typography_source: sp_typography_source,
+        heading_size_desktop: section.settings.heading_size_desktop,
+        heading_size_tablet: section.settings.heading_size_tablet,
+        heading_size_mobile: section.settings.heading_size_mobile,
+        heading_weight: section.settings.heading_weight,
+        heading_line_height: section.settings.heading_line_height,
+        heading_letter_spacing: section.settings.heading_letter_spacing,
+        subheading_size: section.settings.subheading_size
+      %}
+    </div>
+
+    {%- if section.settings.layout == 'grid' -%}
+      <div class="sp-recently-viewed-products__grid sp-product-display" data-sp-rv-products data-title-lines="2"></div>
+    {%- else -%}
+      <div
+        class="sp-recently-viewed-products__carousel sp-carousel-block sp-product-display"
+        data-sp-rv-carousel
+        data-loop="{{ section.settings.loop }}"
+        data-autoplay="{{ section.settings.autoplay }}"
+        data-autoplay-delay="{{ sp_autoplay_ms }}"
+        data-pause-hover="{{ section.settings.pause_on_hover }}"
+        data-drag="{{ section.settings.mouse_drag }}"
+        data-outside-opacity="false"
+        data-pagination-style="{{ section.settings.pagination_style }}"
+        data-design-mode="{{ request.design_mode }}"
+        data-title-lines="2"
+        aria-roledescription="carousel"
+        aria-label="{{ section.settings.heading | default: 'Recently viewed products' | escape }}"
+      >
+        <div class="sp-recently-viewed-products__viewport" data-sp-carousel-viewport tabindex="0">
+          <div class="sp-recently-viewed-products__track" data-sp-carousel-track data-sp-rv-products></div>
+        </div>
+
+        {%- if section.settings.show_arrows -%}
+          <div class="sp-recently-viewed-products__navigation" aria-label="Recently viewed product navigation">
+            <button class="sp-recently-viewed-products__arrow sp-recently-viewed-products__arrow--prev" type="button" data-sp-carousel-prev aria-label="Previous products">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 5-7 7 7 7" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+            <button class="sp-recently-viewed-products__arrow sp-recently-viewed-products__arrow--next" type="button" data-sp-carousel-next aria-label="Next products">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 7 7-7 7" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+          </div>
+        {%- endif -%}
+
+        {%- if section.settings.show_dots or section.settings.autoplay -%}
+          <div class="sp-recently-viewed-products__controls">
+            {%- if section.settings.show_dots -%}<div class="sp-recently-viewed-products__pagination" data-sp-carousel-pagination aria-label="Recently viewed pages"></div>{%- endif -%}
+            {%- if section.settings.autoplay -%}
+              <button class="sp-recently-viewed-products__pause" type="button" data-sp-carousel-pause aria-label="Pause autoplay" aria-pressed="false">
+                <span aria-hidden="true">Ⅱ</span><span class="visually-hidden">Pause autoplay</span>
+              </button>
+            {%- endif -%}
+          </div>
+        {%- endif -%}
+      </div>
+    {%- endif -%}
+
+    <div class="sp-recently-viewed-products__editor-state" data-sp-rv-editor-state {% unless request.design_mode %}hidden{% endunless %} role="status">
+      Browse at least two products in this storefront to populate Recently Viewed Products. On a product page, the current product is intentionally excluded from its own Recently Viewed list.
+    </div>
+
+    {%- if section.settings.show_clear_history -%}
+      <div class="sp-recently-viewed-products__footer" data-sp-rv-footer hidden>
+        <button type="button" class="sp-button sp-button--secondary sp-recently-viewed-products__clear" data-sp-rv-clear>Clear recently viewed</button>
+      </div>
+    {%- endif -%}
+
+    <p class="visually-hidden" aria-live="polite" aria-atomic="true" data-sp-rv-status></p>
+  </div>
+</sp-recently-viewed-products>
+
+<noscript><style>#shopify-section-{{ section.id }} .sp-recently-viewed-products{display:none!important}</style></noscript>
+
+{% schema %}
+{
+  "name": "Recently Viewed Products",
+  "enabled_on": {
+    "templates": [
+      "product",
+      "collection",
+      "list-collections"
+    ]
+  },
+  "tag": "section",
+  "class": "sp-section-recently-viewed-products",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Content"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Recently viewed"
+    },
+    {
+      "type": "textarea",
+      "id": "subheading",
+      "label": "Description"
+    },
+    {
+      "type": "range",
+      "id": "products_to_show",
+      "label": "Products to show",
+      "min": 2,
+      "max": 12,
+      "step": 1,
+      "default": 8
+    },
+    {
+      "type": "range",
+      "id": "minimum_products",
+      "label": "Minimum products before showing",
+      "min": 1,
+      "max": 6,
+      "step": 1,
+      "default": 1
+    },
+    {
+      "type": "header",
+      "content": "Product card"
+    },
+    {
+      "type": "checkbox",
+      "id": "use_global_product_settings",
+      "label": "Use Global Product Settings",
+      "default": true,
+      "info": "Uses Theme settings → Product Settings, including the eight premium Product Card Styles and global commerce actions. Turn off only to override Product Design for this section."
+    },
+    {
+      "type": "select",
+      "id": "product_style",
+      "label": "Product Design",
+      "default": "01",
+      "info": "Choose one of 8 Spider premium product card layouts; use Global Product Settings to inherit the global selection.",
+      "options": [
+        {
+          "value": "01",
+          "label": "01 — Classic Premium"
+        },
+        {
+          "value": "02",
+          "label": "02 — Modern Badges"
+        },
+        {
+          "value": "03",
+          "label": "03 — Variant Preview"
+        },
+        {
+          "value": "04",
+          "label": "04 — Image Overlay"
+        },
+        {
+          "value": "05",
+          "label": "05 — Apparel Swatches"
+        },
+        {
+          "value": "06",
+          "label": "06 — Stock Status"
+        },
+        {
+          "value": "07",
+          "label": "07 — Minimal Luxury"
+        },
+        {
+          "value": "08",
+          "label": "08 — Lifestyle Wide"
+        }
+      ]
+    },
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    {
+      "type": "select",
+      "id": "layout",
+      "label": "Layout",
+      "default": "carousel",
+      "options": [
+        {
+          "value": "grid",
+          "label": "Grid"
+        },
+        {
+          "value": "carousel",
+          "label": "Carousel"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "container_width",
+      "label": "Container width",
+      "default": "theme",
+      "options": [
+        {
+          "value": "theme",
+          "label": "Use Theme Default"
+        },
+        {
+          "value": "narrow",
+          "label": "Narrow"
+        },
+        {
+          "value": "boxed",
+          "label": "Boxed"
+        },
+        {
+          "value": "wide",
+          "label": "Wide"
+        },
+        {
+          "value": "full",
+          "label": "Full Width"
+        }
+      ]
+    },
+    {
+      "type": "range",
+      "id": "columns_desktop",
+      "label": "Desktop columns",
+      "min": 2,
+      "max": 6,
+      "step": 1,
+      "default": 4
+    },
+    {
+      "type": "range",
+      "id": "columns_tablet",
+      "label": "Tablet columns",
+      "min": 1,
+      "max": 4,
+      "step": 1,
+      "default": 3
+    },
+    {
+      "type": "select",
+      "id": "columns_mobile",
+      "label": "Mobile columns",
+      "default": "2",
+      "options": [
+        {
+          "value": "1",
+          "label": "1"
+        },
+        {
+          "value": "2",
+          "label": "2"
+        }
+      ]
+    },
+    {
+      "type": "range",
+      "id": "gap_desktop",
+      "label": "Desktop gap",
+      "min": 0,
+      "max": 48,
+      "step": 2,
+      "unit": "px",
+      "default": 24
+    },
+    {
+      "type": "range",
+      "id": "gap_tablet",
+      "label": "Tablet gap",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "default": 20
+    },
+    {
+      "type": "range",
+      "id": "gap_mobile",
+      "label": "Mobile gap",
+      "min": 0,
+      "max": 28,
+      "step": 1,
+      "unit": "px",
+      "default": 12
+    },
+    {
+      "type": "header",
+      "content": "Carousel"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_arrows",
+      "label": "Show arrows",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_dots",
+      "label": "Show pagination",
+      "default": false
+    },
+    {
+      "type": "select",
+      "id": "pagination_style",
+      "label": "Pagination style",
+      "default": "default",
+      "options": [
+        {
+          "value": "default",
+          "label": "Dots"
+        },
+        {
+          "value": "numbers",
+          "label": "Numbers"
+        },
+        {
+          "value": "fraction",
+          "label": "Fraction"
+        }
+      ]
+    },
+    {
+      "type": "checkbox",
+      "id": "loop",
+      "label": "Loop",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "mouse_drag",
+      "label": "Mouse drag",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "autoplay",
+      "label": "Autoplay",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "autoplay_speed",
+      "label": "Autoplay speed",
+      "min": 3,
+      "max": 10,
+      "step": 1,
+      "unit": "s",
+      "default": 5
+    },
+    {
+      "type": "checkbox",
+      "id": "pause_on_hover",
+      "label": "Pause on hover",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Recently viewed history"
+    },
+    {
+      "type": "range",
+      "id": "history_max",
+      "label": "History maximum",
+      "min": 5,
+      "max": 50,
+      "step": 1,
+      "default": 20
+    },
+    {
+      "type": "range",
+      "id": "expiration_days",
+      "label": "History expiration",
+      "min": 5,
+      "max": 365,
+      "step": 5,
+      "unit": "d",
+      "default": 30,
+      "info": "Expired items are pruned lazily during normal Recently Viewed operations."
+    },
+    {
+      "type": "checkbox",
+      "id": "hide_sold_out",
+      "label": "Hide sold-out products",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "show_clear_history",
+      "label": "Show Clear recently viewed button",
+      "default": false
+    },
+    {
+      "type": "header",
+      "content": "Global design"
+    },
+    {
+      "type": "color_scheme",
+      "id": "sp_color_scheme",
+      "label": "Color scheme",
+      "default": "scheme-1",
+      "info": "Uses Spider Theme Settings → Spider Color Schemes."
+    },
+    {
+      "type": "select",
+      "id": "heading_design",
+      "label": "Heading design",
+      "default": "1",
+      "options": [
+        {
+          "value": "1",
+          "label": "1"
+        },
+        {
+          "value": "2",
+          "label": "2"
+        },
+        {
+          "value": "3",
+          "label": "3"
+        },
+        {
+          "value": "4",
+          "label": "4"
+        },
+        {
+          "value": "5",
+          "label": "5"
+        },
+        {
+          "value": "6",
+          "label": "6"
+        },
+        {
+          "value": "7",
+          "label": "7"
+        },
+        {
+          "value": "8",
+          "label": "8"
+        },
+        {
+          "value": "9",
+          "label": "9"
+        },
+        {
+          "value": "10",
+          "label": "10"
+        },
+        {
+          "value": "11",
+          "label": "11"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "heading_style",
+      "label": "Heading style",
+      "default": "h2",
+      "options": [
+        {
+          "value": "h1",
+          "label": "Global H1"
+        },
+        {
+          "value": "h2",
+          "label": "Global H2"
+        },
+        {
+          "value": "h3",
+          "label": "Global H3"
+        },
+        {
+          "value": "h4",
+          "label": "Global H4"
+        },
+        {
+          "value": "h5",
+          "label": "Global H5"
+        },
+        {
+          "value": "h6",
+          "label": "Global H6"
+        },
+        {
+          "value": "custom",
+          "label": "Custom"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "heading_alignment",
+      "label": "Heading alignment — desktop/tablet",
+      "default": "center",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "heading_alignment_mobile",
+      "label": "Heading alignment — mobile",
+      "default": "center",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ]
+    },
+    {
+      "type": "range",
+      "id": "heading_size_desktop",
+      "label": "Custom heading size — desktop",
+      "min": 18,
+      "max": 64,
+      "step": 1,
+      "unit": "px",
+      "default": 32,
+      "info": "Used only when Heading style is Custom."
+    },
+    {
+      "type": "range",
+      "id": "heading_size_tablet",
+      "label": "Custom heading size — tablet",
+      "min": 18,
+      "max": 52,
+      "step": 1,
+      "unit": "px",
+      "default": 28,
+      "info": "Used only when Heading style is Custom."
+    },
+    {
+      "type": "range",
+      "id": "heading_size_mobile",
+      "label": "Custom heading size — mobile",
+      "min": 16,
+      "max": 40,
+      "step": 1,
+      "unit": "px",
+      "default": 24,
+      "info": "Used only when Heading style is Custom."
+    },
+    {
+      "type": "select",
+      "id": "heading_weight",
+      "label": "Custom heading weight",
+      "default": "600",
+      "options": [
+        {
+          "value": "400",
+          "label": "Regular"
+        },
+        {
+          "value": "500",
+          "label": "Medium"
+        },
+        {
+          "value": "600",
+          "label": "Semibold"
+        },
+        {
+          "value": "700",
+          "label": "Bold"
+        }
+      ]
+    },
+    {
+      "type": "range",
+      "id": "heading_line_height",
+      "label": "Custom heading line height",
+      "min": 90,
+      "max": 150,
+      "step": 5,
+      "unit": "%",
+      "default": 115
+    },
+    {
+      "type": "range",
+      "id": "heading_letter_spacing",
+      "label": "Custom heading letter spacing",
+      "min": -2,
+      "max": 6,
+      "step": 0.5,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "subheading_size",
+      "label": "Description size",
+      "min": 12,
+      "max": 24,
+      "step": 1,
+      "unit": "px",
+      "default": 15
+    },
+    {
+      "type": "range",
+      "id": "heading_gap",
+      "label": "Heading / description gap",
+      "min": 0,
+      "max": 32,
+      "step": 1,
+      "unit": "px",
+      "default": 8
+    },
+    {
+      "type": "range",
+      "id": "heading_bottom_spacing",
+      "label": "Heading bottom spacing",
+      "min": 0,
+      "max": 80,
+      "step": 2,
+      "unit": "px",
+      "default": 30
+    },
+    {
+      "type": "header",
+      "content": "Section spacing"
+    },
+    {
+      "type": "select",
+      "id": "spacing_source",
+      "label": "Spacing source",
+      "default": "theme",
+      "options": [
+        {
+          "value": "theme",
+          "label": "Use Theme Default"
+        },
+        {
+          "value": "custom",
+          "label": "Custom"
+        }
+      ]
+    },
+    {
+      "type": "range",
+      "id": "padding_top_desktop",
+      "label": "Custom padding top — desktop",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "px",
+      "default": 80
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom_desktop",
+      "label": "Custom padding bottom — desktop",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "px",
+      "default": 80
+    },
+    {
+      "type": "range",
+      "id": "padding_top_tablet",
+      "label": "Custom padding top — tablet",
+      "min": 0,
+      "max": 140,
+      "step": 4,
+      "unit": "px",
+      "default": 64
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom_tablet",
+      "label": "Custom padding bottom — tablet",
+      "min": 0,
+      "max": 140,
+      "step": 4,
+      "unit": "px",
+      "default": 64
+    },
+    {
+      "type": "range",
+      "id": "padding_top_mobile",
+      "label": "Custom padding top — mobile",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "default": 48
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom_mobile",
+      "label": "Custom padding bottom — mobile",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "default": 48
+    }
+  ],
+  "presets": [
+    {
+      "name": "Recently Viewed Products",
+      "category": "02. Products"
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,63 @@
+/* Spider Premium Forms v1 — central, scheme-aware, merchant-controlled. */
+:is(.sp-field input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="range"]), .sp-field select, .sp-field textarea, .sp-newsletter-form input:not([type="checkbox"]), .sp-localization select, .sp-main-cart__note textarea, .sp-cart-shipping-calculator input, .sp-cart-shipping-calculator select, .sp-cart-drawer__tool-form input, .sp-cart-drawer__tool-form select, .sp-cart-drawer__tool-form textarea) {
+  box-sizing: border-box;
+  min-width: 0;
+  min-height: var(--sp-form-height, 52px);
+  border: var(--sp-form-border-width, 1px) solid var(--sp-form-border, #d6d9df);
+  border-radius: var(--sp-form-radius, 8px);
+  font-size: 16px;
+  transition: border-color var(--sp-form-transition, 200ms) ease, box-shadow var(--sp-form-transition, 200ms) ease;
+}
+:is(.sp-field input:not(:disabled):hover, .sp-field select:not(:disabled):hover, .sp-field textarea:not(:disabled):hover, .sp-newsletter-form input:not(:disabled):hover, .sp-main-cart__note textarea:not(:disabled):hover, .sp-cart-shipping-calculator input:not(:disabled):hover, .sp-cart-shipping-calculator select:not(:disabled):hover, .sp-cart-drawer__tool-form :is(input,select,textarea):not(:disabled):hover) {
+  border-color: var(--sp-form-hover-border, #999fa9);
+}
+:is(.sp-field input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="range"]), .sp-field select, .sp-field textarea, .sp-newsletter-form input, .sp-main-cart__note textarea, .sp-cart-shipping-calculator input, .sp-cart-shipping-calculator select, .sp-cart-drawer__tool-form :is(input,select,textarea)):focus-visible {
+  border-color: var(--sp-form-focus, #415dff);
+  outline: 2px solid transparent;
+  outline-offset: 0;
+  box-shadow: 0 0 0 var(--sp-form-ring-width, 3px) color-mix(in srgb, var(--sp-form-focus, #415dff) var(--sp-form-ring-opacity, 13%), transparent);
+}
+:is(.sp-field input, .sp-field textarea, .sp-newsletter-form input, .sp-main-cart__note textarea, .sp-cart-shipping-calculator input, .sp-cart-drawer__tool-form input, .sp-cart-drawer__tool-form textarea)::placeholder { color: var(--sp-form-placeholder, #9299a5); opacity: 1; }
+:is(.sp-field textarea, .sp-main-cart__note textarea, .sp-cart-drawer__tool-form textarea) { min-height: var(--sp-form-textarea-height, 120px); resize: vertical; }
+:is(.sp-field :is(input,select,textarea), .sp-newsletter-form input, .sp-main-cart__note textarea, .sp-cart-shipping-calculator :is(input,select), .sp-cart-drawer__tool-form :is(input,select,textarea))[aria-invalid="true"] { border-color: var(--sp-form-error, #b91c1c); }
+:is(.sp-field :is(input,select,textarea), .sp-newsletter-form input, .sp-main-cart__note textarea, .sp-cart-shipping-calculator :is(input,select), .sp-cart-drawer__tool-form :is(input,select,textarea))[aria-invalid="true"]:focus-visible { border-color: var(--sp-form-error, #b91c1c); box-shadow: 0 0 0 var(--sp-form-ring-width, 3px) color-mix(in srgb, var(--sp-form-error, #b91c1c) var(--sp-form-ring-opacity, 13%), transparent); }
+/* Search is a compound input: a single wrapper ring, no nested duplicate ring. */
+.sp-search-drawer__input-wrap:focus-within { border-color: var(--sp-form-focus, #415dff); box-shadow: 0 0 0 var(--sp-form-ring-width, 3px) color-mix(in srgb, var(--sp-form-focus, #415dff) var(--sp-form-ring-opacity, 13%), transparent); }
+.sp-search-drawer__input:focus-visible { outline: 0; box-shadow: none; }
+.sp-search-drawer__scope:focus-visible { border-color: var(--sp-form-focus, #415dff); outline-color: var(--sp-form-focus, #415dff); }
+/* Cart component inputs retain their independently designed quantity control dimensions. */
+.sp-main-cart__note textarea:focus-visible,
+.sp-cart-shipping-calculator :is(input,select):focus-visible,
+.sp-cart-drawer__tool-form :is(input,select,textarea):focus-visible {
+  border-color: var(--sp-form-focus, #415dff);
+  outline: 2px solid transparent;
+  outline-offset: 0;
+  box-shadow: 0 0 0 var(--sp-form-ring-width, 3px) color-mix(in srgb, var(--sp-form-focus, #415dff) var(--sp-form-ring-opacity, 13%), transparent);
+}
+@media (forced-colors: active) {
+  :is(.sp-field input, .sp-field select, .sp-field textarea, .sp-newsletter-form input, .sp-main-cart__note textarea, .sp-cart-shipping-calculator :is(input,select), .sp-cart-drawer__tool-form :is(input,select,textarea)):focus-visible,
+  .sp-search-drawer__input-wrap:focus-within { outline: 2px solid Highlight; outline-offset: 2px; }
+}
+@media (prefers-reduced-motion: reduce) { :is(.sp-field input, .sp-field select, .sp-field textarea, .sp-newsletter-form input, .sp-main-cart__note textarea, .sp-cart-shipping-calculator :is(input,select), .sp-cart-drawer__tool-form :is(input,select,textarea)) { transition: none; } }
+
+/* Spider-owned classic account forms (not Shopify-hosted customer accounts). */
+.sp-account-field :is(input:not([type="checkbox"]),select,textarea) {
+  min-height: var(--sp-form-height, 52px);
+  border-width: var(--sp-form-border-width, 1px);
+  border-color: var(--sp-form-border, #d6d9df);
+  border-radius: var(--sp-form-radius, 8px);
+  font-size: 16px;
+  transition: border-color var(--sp-form-transition, 200ms) ease,box-shadow var(--sp-form-transition, 200ms) ease;
+}
+.sp-account-field :is(input,select,textarea):focus-visible {
+  outline: 2px solid transparent;
+  outline-offset: 0;
+  border-color: var(--sp-form-focus, #415dff);
+  box-shadow: 0 0 0 var(--sp-form-ring-width,3px) color-mix(in srgb, var(--sp-form-focus,#415dff) var(--sp-form-ring-opacity,13%),transparent);
+}
+/* Password page is a compound input: preserve its layout and local 8px card radius. */
+.sp-pw__input-shell:focus-within {
+  outline: none;
+  box-shadow: 0 0 0 var(--sp-form-ring-width,3px) color-mix(in srgb, var(--sp-form-focus,#415dff) var(--sp-form-ring-opacity,13%),transparent);
+}
+@media (forced-colors: active) { .sp-account-field :is(input,select,textarea):focus-visible,.sp-pw__input-shell:focus-within { outline:2px solid Highlight;outline-offset:2px; } }

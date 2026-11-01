@@ -1,0 +1,101 @@
+{% comment %}
+  Spider Premium Header — desktop navigation.
+  Params: section (required), menu (required), part ('all'|'before'|'after')
+{% endcomment %}
+{% assign sp_part = part | default: 'all' %}
+{% assign sp_split_after = section.settings.split_after | default: 3 %}
+<nav
+  class="sp-header__navigation"
+  aria-label="Main navigation"
+  data-sp-header-nav>
+  <ul class="sp-header__menu" role="list">
+    {% for link in menu.links %}
+      {% assign sp_render_item = true %}
+      {% if sp_part == 'before' and forloop.index > sp_split_after %}
+        {% assign sp_render_item = false %}{% endif %}
+      {% if sp_part == 'after' and forloop.index <= sp_split_after %}
+        {% assign sp_render_item = false %}{% endif %}
+      {% if sp_render_item %}
+        {% assign sp_mega_block = nil %}
+        {% assign sp_link_key = link.title | strip | downcase %}
+        {% for sp_block in section.blocks %}
+          {% if sp_block.type == 'mega_menu' %}
+            {% assign sp_mega_key = sp_block.settings.menu_item | strip | downcase %}
+            {% if sp_mega_key != blank and sp_mega_key == sp_link_key %}
+              {% assign sp_mega_block = sp_block %}
+              {% break %}
+            {% endif %}
+          {% endif %}
+        {% endfor %}
+
+        <li class="sp-header__menu-item{% if link.links != blank or sp_mega_block %} has-submenu{% endif %}" data-sp-menu-item>
+          <div class="sp-header__menu-link-row">
+            <a
+              class="sp-header__menu-link{% if link.current %} is-active{% endif %}"
+              href="{{ link.url }}"
+              {% if link.current %}
+              aria-current="page"
+              {% endif %}>
+              <span>{{ link.title | escape }}</span>
+              {% render 'sp-header-badge'
+                , title: link.title
+                , section: section %}
+            </a>
+            {% if link.links != blank or sp_mega_block %}
+              <button
+                class="sp-header__submenu-toggle"
+                type="button"
+                aria-expanded="false"
+                aria-controls="SpHeaderSubmenu-{{ section.id }}-{{ forloop.index }}"
+                data-sp-submenu-toggle>
+                <span class="visually-hidden">Open {{ link.title | escape }} menu</span>
+                {% render 'icon'
+                  , name: 'chevron' %}
+              </button>
+            {% endif %}
+          </div>
+
+          {% if link.links != blank or sp_mega_block %}
+            <div
+              id="SpHeaderSubmenu-{{ section.id }}-{{ forloop.index }}"
+              class="sp-header__submenu{% if sp_mega_block %} sp-header__submenu--mega{% else %} sp-header__submenu--dropdown{% endif %}"
+              data-sp-submenu
+              hidden>
+              {% if sp_mega_block %}
+                {% render 'sp-header-mega-menu'
+                  , link: link
+                  , block: sp_mega_block
+                  , section: section %}
+              {% else %}
+                <ul class="sp-header-dropdown" role="list">
+                  {% for child in link.links %}
+                    <li class="sp-header-dropdown__item{% if child.links != blank %} has-children{% endif %}">
+                      <a
+                        href="{{ child.url }}"
+                        {% if child.current %}
+                        aria-current="page"
+                        {% endif %}>{{ child.title | escape }}</a>
+                      {% if child.links != blank %}
+                        <ul class="sp-header-dropdown__nested" role="list">
+                          {% for grandchild in child.links %}
+                            <li>
+                              <a
+                                href="{{ grandchild.url }}"
+                                {% if grandchild.current %}
+                                aria-current="page"
+                                {% endif %}>{{ grandchild.title | escape }}</a>
+                            </li>
+                          {% endfor %}
+                        </ul>
+                      {% endif %}
+                    </li>
+                  {% endfor %}
+                </ul>
+              {% endif %}
+            </div>
+          {% endif %}
+        </li>
+      {% endif %}
+    {% endfor %}
+  </ul>
+</nav>

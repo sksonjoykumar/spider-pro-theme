@@ -1,0 +1,15 @@
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+{% case name %}
+{% when 'mail' %}<rect x="2" y="4" width="20" height="16" rx="2"/><path d="m3 6 9 7 9-7"/>
+{% when 'phone' %}<path d="M8 3 4 5c-.8 5.6 9.5 16 15 15l2-4-5-3-3 3c-3-1.5-4.5-3-6-6l3-3z"/>
+{% when 'map' %}<path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/>
+{% when 'clock' %}<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>
+{% when 'truck' %}<path d="M1.5 5h13v12h-13zM14.5 9h4l3 4v4h-7"/><circle cx="5.5" cy="18" r="2"/><circle cx="18" cy="18" r="2"/><path d="M1.5 9h8M1.5 12h5"/>
+{% when 'box' %}<path d="m12 2 9 5-9 5-9-5 9-5ZM3 7v10l9 5 9-5V7M12 12v10M7.5 4.5l9 5"/>
+{% when 'shield' %}<path d="M12 2 21 6v6c0 6-4 9-9 10-5-1-9-4-9-10V6l9-4Z"/><path d="m8 12 2.5 2.5L16 9"/>
+{% when 'award' %}<circle cx="12" cy="8" r="5"/><path d="m8.5 12-2 9 5.5-3 5.5 3-2-9"/><path d="m12 5.6.8 1.5 1.6.2-1.2 1.2.3 1.6-1.5-.8-1.5.8.3-1.6-1.2-1.2 1.6-.2z"/>
+{% when 'globe' %}<circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2c6 5 6 15 0 20M12 2c-6 5-6 15 0 20"/>
+{% when 'down' %}<path d="m6 9 6 6 6-6"/>
+{% when 'check' %}<path d="m4 12 5 5L20 6"/>
+{% endcase %}
+</svg>

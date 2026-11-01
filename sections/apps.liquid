@@ -1,0 +1,29 @@
+{% render 'sp-section-color-scheme', section: section %}
+<section class="sp-section" data-section-id="{{ section.id }}"><div class="sp-container">{% for block in section.blocks %}{% render block %}{% endfor %}</div></section>{% schema %}
+{
+  "name": "Apps",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Global design system"
+    },
+    {
+      "type": "color_scheme",
+      "id": "sp_color_scheme",
+      "label": "Color scheme",
+      "default": "scheme-1",
+      "info": "Shared Spider color panel. Edit schemes once in Theme settings → Spider Color Schemes."
+    }
+  ],
+  "blocks": [
+    {
+      "type": "@app"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Apps"
+    }
+  ]
+}
+{% endschema %}

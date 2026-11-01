@@ -1,0 +1,51 @@
+{%- comment -%}
+  Static map markers are merchant-positioned percentage coordinates, not automatic geocoding.
+  External embeds are consent-gated in JavaScript. Static-map zoom controls affect the uploaded image
+  and its markers together; they do not represent a live map provider.
+{%- endcomment -%}
+<div class="sp-rl__map" id="sp-rl-map-{{ section.id }}" role="region" aria-label="{{ settings.external_map_title | escape }}" data-sp-map>
+  {% if settings.map_mode == 'static_image' and settings.static_map_image != blank %}
+    <div class="sp-rl__map-canvas" data-sp-map-canvas style="--sp-rl-map-zoom:1">
+      <div class="sp-rl__map-picture">
+        {% if settings.static_map_image_mobile != blank %}
+          <picture>
+            <source media="(max-width: 749px)" srcset="{{ settings.static_map_image_mobile | image_url: width: 850 }}">
+            {% render 'responsive-image', image: settings.static_map_image, alt: settings.static_map_alt, widths: '640,850,1100,1500,1800', sizes: '(min-width: 1200px) 65vw, 100vw', loading: 'lazy', class: 'sp-rl__map-image' %}
+          </picture>
+        {% else %}
+          {% render 'responsive-image', image: settings.static_map_image, alt: settings.static_map_alt, widths: '640,850,1100,1500,1800', sizes: '(min-width: 1200px) 65vw, 100vw', loading: 'lazy', class: 'sp-rl__map-image' %}
+        {% endif %}
+      </div>
+      <div class="sp-rl__markers">
+        {%- assign sp_marker_index = 0 -%}
+        {%- for block in section.blocks -%}
+          {%- if block.type == 'location' and block.settings.location_name != blank -%}
+            {%- assign sp_has_address = block.settings.address_line_1 | default: block.settings.city | default: block.settings.country -%}
+            {%- if sp_has_address != blank -%}
+              {%- assign sp_marker_index = sp_marker_index | plus: 1 -%}
+              {%- assign sp_x = block.settings.static_map_x | at_least: 0 | at_most: 100 -%}
+              {%- assign sp_y = block.settings.static_map_y | at_least: 0 | at_most: 100 -%}
+              <button type="button" class="sp-rl__marker" data-sp-marker data-sp-id="{{ block.id }}" data-sp-marker-index="{{ sp_marker_index }}" style="--sp-rl-x:{{ sp_x }}%;--sp-rl-y:{{ sp_y }}%;" aria-label="Select {{ block.settings.location_name | escape }} on map" aria-pressed="false">
+                <span class="sp-rl__marker-content"{% if settings.show_marker_numbers %} data-sp-number="{{ sp_marker_index }}"{% endif %}>{% if settings.show_marker_numbers %}{{ sp_marker_index }}{% else %}<span aria-hidden="true">●</span>{% endif %}</span>
+              </button>
+            {%- endif -%}
+          {%- endif -%}
+        {%- endfor -%}
+      </div>
+    </div>
+    {% if settings.show_map_zoom_controls %}
+      <div class="sp-rl__map-zoom" role="group" aria-label="Map zoom controls">
+        <button type="button" data-sp-map-zoom="in" aria-label="Zoom in on map" aria-controls="sp-rl-map-{{ section.id }}">+</button>
+        <button type="button" data-sp-map-zoom="out" aria-label="Zoom out on map" aria-controls="sp-rl-map-{{ section.id }}" disabled>−</button>
+      </div>
+      <span class="sp-rl__sr-only" data-sp-map-zoom-status aria-live="polite" aria-atomic="true">Map zoom 100 percent</span>
+    {% endif %}
+  {% elsif settings.map_mode == 'external_embed' and settings.external_embed_url != blank %}
+    <div class="sp-rl__embed" data-sp-embed data-sp-embed-url="{{ settings.external_embed_url | escape }}" data-sp-embed-title="{{ settings.external_map_title | escape }}">
+      <div class="sp-rl__map-consent" data-sp-consent-note>
+        <strong>Map requires permission</strong>
+        <p>This third-party map loads only when your browser's preferences consent allows it. You can still browse every location in the list.</p>
+      </div>
+    </div>
+  {% endif %}
+</div>

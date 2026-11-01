@@ -1,0 +1,26 @@
+<div class="sp-pf__brand" {{ block.shopify_attributes }}>
+  {% if block.settings.logo != blank %}
+    {{ block.settings.logo | image_url: width: 500 | image_tag: loading: 'lazy', widths: '120, 240, 360, 500', sizes: '220px', class: 'sp-pf__logo', alt: block.settings.logo.alt | default: shop.name }}
+  {% else %}
+    <h2 class="sp-pf__brand-name">{{ shop.name | escape }}<span aria-hidden="true">●</span></h2>
+  {% endif %}
+  {% if block.settings.tagline != blank %}<div class="sp-pf__tagline">{{ block.settings.tagline | escape }}</div>{% endif %}
+  {% if block.settings.description != blank %}<div class="sp-pf__brand-description">{{ block.settings.description }}</div>{% endif %}
+  <address class="sp-pf__contact">
+    {% if block.settings.email != blank %}<a href="mailto:{{ block.settings.email | escape }}"><span class="sp-pf__contact-icon" aria-hidden="true">✉</span>{{ block.settings.email | escape }}</a>{% endif %}
+    {% if block.settings.phone != blank %}<a href="tel:{{ block.settings.phone | remove: ' ' | remove: '(' | remove: ')' | remove: '-' | escape }}"><span class="sp-pf__contact-icon" aria-hidden="true">☎</span>{{ block.settings.phone | escape }}</a>{% endif %}
+    {% if block.settings.address != blank %}<div><span class="sp-pf__contact-icon" aria-hidden="true">⌖</span><span>{{ block.settings.address | newline_to_br }}</span></div>{% endif %}
+    {% if block.settings.hours != blank %}<div><span class="sp-pf__contact-icon" aria-hidden="true">◷</span><span>{{ block.settings.hours | newline_to_br }}</span></div>{% endif %}
+  </address>
+</div>
+{% schema %}
+{"name":"Footer brand & contact","tag":null,"settings":[
+ {"type":"image_picker","id":"logo","label":"Footer logo"},
+ {"type":"text","id":"tagline","label":"Tagline","default":"A HIGHER STANDARD IN SOUND"},
+ {"type":"richtext","id":"description","label":"Brand description","default":"<p>Premium audio products for a richer, more immersive life. From everyday listening to studio-grade performance.</p>"},
+ {"type":"text","id":"email","label":"Support email"},
+ {"type":"text","id":"phone","label":"Support phone"},
+ {"type":"textarea","id":"address","label":"Office address"},
+ {"type":"textarea","id":"hours","label":"Support hours"}
+ ],"presets":[{"name":"Footer brand & contact"}]}
+{% endschema %}

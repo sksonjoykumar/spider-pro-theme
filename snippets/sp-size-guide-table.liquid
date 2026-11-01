@@ -1,0 +1,40 @@
+{%- assign sp_fit_axes = 'chest,waist,hips,height,inseam,shoulder' | split: ',' -%}
+{%- comment -%}Both chart and fit calculator consume the same size_rule blocks. Example chart rows are editor-only until approved.{%- endcomment -%}
+<div class="sp-fit-chart" data-sp-chart>
+  <div class="sp-fit-chart__intro"><h3>{{ section.settings.table_heading | escape }}</h3><div class="rte">{{ section.settings.table_description }}</div></div>
+  {% if section.settings.approve_size_rules or request.design_mode %}
+  <div class="sp-fit-chart__scroll" tabindex="0" role="region" aria-label="Size chart, scroll horizontally if needed">
+    <table class="sp-fit-chart__table{% if section.settings.sticky_first_column %} sp-fit-chart__table--sticky{% endif %}">
+      <caption class="sp-fit-sr-only">{{ section.settings.table_heading | escape }}</caption>
+      <thead><tr><th scope="col">Size</th>
+        {%- for axis in sp_fit_axes -%}{%- liquid
+          assign setting_key = 'chart_' | append: axis
+          assign field_enabled = section.settings[setting_key]
+        -%}{%- if field_enabled -%}<th scope="col">{{ axis | capitalize }} (<span data-sp-unit-label>cm</span>)</th>{%- endif -%}{%- endfor -%}
+      </tr></thead>
+      <tbody>
+      {%- assign rule_count = 0 -%}
+      {%- for block in section.blocks -%}
+        {%- if block.type == 'size_rule' and block.settings.size_label != blank -%}
+          {%- assign rule_count = rule_count | plus: 1 -%}
+          <tr data-sp-rule-row="{{ block.id }}" {{ block.shopify_attributes }}><th scope="row">{{ block.settings.size_label | escape }}</th>
+          {%- for axis in sp_fit_axes -%}
+            {%- liquid
+              assign chart_key = 'chart_' | append: axis
+              assign field_min = axis | append: '_min_cm'
+              assign field_max = axis | append: '_max_cm'
+            -%}
+            {%- if section.settings[chart_key] -%}<td>{%- if block.settings[field_min] != blank and block.settings[field_max] != blank -%}<span data-sp-cm-range data-sp-min="{{ block.settings[field_min] }}" data-sp-max="{{ block.settings[field_max] }}">{{ block.settings[field_min] }}–{{ block.settings[field_max] }}</span>{%- else -%}—{%- endif -%}</td>{%- endif -%}
+          {%- endfor -%}
+          </tr>
+        {%- endif -%}
+      {%- endfor -%}
+      {%- if rule_count == 0 -%}<tr><td colspan="7">No size rules configured.</td></tr>{%- endif -%}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <p class="sp-fit-chart__draft">This size chart is not yet available. Please contact the store for accurate sizing information.</p>
+  {% endif %}
+  {% if request.design_mode and section.settings.approve_size_rules == false %}<p class="sp-fit-chart__draft">Preview measurements only. Replace these example ranges with your manufacturer's chart and approve the rules before publishing recommendations.</p>{% endif %}
+</div>

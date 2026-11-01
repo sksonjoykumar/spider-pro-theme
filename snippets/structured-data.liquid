@@ -1,0 +1,86 @@
+{%- capture sp_site_url -%}
+  {{ request.origin }}{{ routes.root_url }}
+{%- endcapture -%}
+
+{%- capture sp_search_target -%}
+  {{ request.origin }}{{ routes.search_url }}?q={search_term_string}
+{%- endcapture -%}
+
+{%- if settings.seo_org_schema -%}
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": {{ shop.name | json }},
+      "url": {{ sp_site_url | strip | json }}
+    }
+  </script>
+{%- endif -%}
+
+{%- if settings.seo_website_schema -%}
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": {{ shop.name | json }},
+      "url": {{ sp_site_url | strip | json }},
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": {{ sp_search_target | strip | json }},
+        "query-input": "required name=search_term_string"
+      }
+    }
+  </script>
+{%- endif -%}
+
+{%- if request.page_type == 'product' and settings.seo_product_schema -%}
+  <script type="application/ld+json">
+    {{ product | structured_data }}
+  </script>
+{%- endif -%}
+
+{%- if request.page_type == 'article' and settings.seo_article_schema -%}
+  <script type="application/ld+json">
+    {{ article | structured_data }}
+  </script>
+{%- endif -%}
+
+{%- if settings.seo_breadcrumb_schema and request.page_type != 'index' -%}
+  {%- assign sp_breadcrumb_name = page_title | default: shop.name -%}
+  {%- assign sp_breadcrumb_url = canonical_url -%}
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": {{ shop.name | json }},
+          "item": {{ sp_site_url | strip | json }}
+        }
+        {%- if request.page_type == 'article' and blog != blank -%},
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": {{ blog.title | json }},
+          "item": {{ request.origin | append: blog.url | json }}
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": {{ article.title | json }},
+          "item": {{ sp_breadcrumb_url | json }}
+        }
+        {%- else -%},
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": {{ sp_breadcrumb_name | json }},
+          "item": {{ sp_breadcrumb_url | json }}
+        }
+        {%- endif -%}
+      ]
+    }
+  </script>
+{%- endif -%}

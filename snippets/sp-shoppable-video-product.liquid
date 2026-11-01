@@ -1,0 +1,155 @@
+{%- liquid
+  assign current_variant = product.selected_or_first_available_variant
+  assign featured_image = product.featured_media.preview_image | default: product.featured_image
+  assign form_id = 'ShoppableVideoProductForm-' | append: section_id | append: '-' | append: index
+
+  assign rating_value = blank
+  assign rating_max = 5
+  assign rating_count = product.metafields.reviews.rating_count
+  assign rating_percent = 0
+
+  if product.metafields.reviews.rating.value != blank
+    assign rating_value = product.metafields.reviews.rating.value.rating
+    assign rating_max = product.metafields.reviews.rating.value.scale_max | default: 5
+    if rating_value != blank and rating_max > 0
+      assign rating_percent = rating_value | times: 100.0 | divided_by: rating_max
+    endif
+  endif
+-%}
+
+<article
+  class="sp-shoppable-video__product{% if active %} is-active{% endif %}"
+  role="listitem"
+  data-hotspot-target
+  data-hotspot-index="{{ index }}"
+  data-block-id="{{ block_id }}"
+  data-sp-product-card
+  data-product-id="{{ product.id }}"
+  data-product-handle="{{ product.handle | escape }}"
+  data-product-url="{{ product.url }}"
+  data-product-base-url="{{ product.url }}"
+  data-product-title="{{ product.title | escape }}"
+  data-product-vendor="{{ product.vendor | escape }}"
+  data-product-image="{% if featured_image %}{{ featured_image | image_url: width: 360 }}{% endif %}"
+  data-product-available="{{ product.available }}"
+  data-product-price="{{ current_variant.price }}"
+  data-product-compare-at="{{ current_variant.compare_at_price | default: 0 }}"
+  data-product-context="shoppable-video"
+  data-initial-variant-id="{{ current_variant.id }}"
+  data-selected-variant-id="{{ current_variant.id }}"
+>
+  <button
+    class="sp-shoppable-video__product-number"
+    type="button"
+    data-hotspot-trigger
+    data-hotspot-index="{{ index }}"
+    data-block-id="{{ block_id }}"
+    aria-label="Show {{ product.title | escape }}"
+  >
+    {{ index }}
+  </button>
+
+  <a class="sp-shoppable-video__product-thumb" href="{{ product.url }}" aria-label="{{ product.title | escape }}">
+    {%- if featured_image -%}
+      {{
+        featured_image
+        | image_url: width: 280
+        | image_tag:
+          widths: '96, 144, 200, 280',
+          sizes: '88px',
+          loading: 'lazy',
+          alt: featured_image.alt | default: product.title,
+          class: 'sp-shoppable-video__product-image'
+      }}
+    {%- else -%}
+      {{ 'product-1' | placeholder_svg_tag: 'sp-shoppable-video__product-placeholder placeholder-svg' }}
+    {%- endif -%}
+  </a>
+
+  <div class="sp-shoppable-video__product-info">
+    <a class="sp-shoppable-video__product-title" href="{{ product.url }}">
+      {{ product.title | escape }}
+    </a>
+
+    {%- if show_vendor and product.vendor != blank -%}
+      <span class="sp-shoppable-video__product-vendor">{{ product.vendor | escape }}</span>
+    {%- endif -%}
+
+    <div class="sp-shoppable-video__product-meta">
+      <div class="sp-shoppable-video__product-price">
+        {% render 'product-price',
+          product: product,
+          variant: current_variant,
+          show_compare: true,
+          show_savings: false
+        %}
+      </div>
+
+      {%- if show_rating and rating_value != blank -%}
+        <div class="sp-shoppable-video__rating">
+          <span
+            class="sp-shoppable-video__stars"
+            style="--sp-shoppable-rating-fill: {{ rating_percent }}%;"
+            aria-hidden="true"
+          >
+            <span class="sp-shoppable-video__stars-base">★★★★★</span>
+            <span class="sp-shoppable-video__stars-fill">★★★★★</span>
+          </span>
+          <span class="visually-hidden">{{ rating_value }} out of {{ rating_max }} stars</span>
+          {%- if rating_count != blank -%}
+            <span class="sp-shoppable-video__rating-count">({{ rating_count }})</span>
+          {%- endif -%}
+        </div>
+      {%- endif -%}
+    </div>
+  </div>
+
+  <div class="sp-shoppable-video__product-action">
+    {%- if product.available == false -%}
+      <button
+        class="sp-button sp-button--primary sp-shoppable-video__product-cta"
+        type="button"
+        disabled
+        aria-disabled="true"
+      >
+        {{ sold_out_label | escape }}
+      </button>
+
+    {%- elsif product.has_only_default_variant -%}
+      {% form 'product', product,
+        id: form_id,
+        class: 'sp-card-form sp-shoppable-video__product-form',
+        data-product-card-form: ''
+      %}
+        <input type="hidden" name="id" value="{{ current_variant.id }}">
+        <input type="hidden" name="quantity" value="1">
+
+        <button
+          class="sp-button sp-button--primary sp-shoppable-video__product-cta"
+          type="submit"
+          data-add-to-cart
+        >
+          {{ add_to_cart_label | escape }}
+        </button>
+
+        <div
+          class="sp-shoppable-video__product-message"
+          role="status"
+          aria-live="polite"
+          data-product-message
+        ></div>
+      {% endform %}
+
+    {%- else -%}
+      <button
+        class="sp-button sp-button--primary sp-shoppable-video__product-cta"
+        type="button"
+        data-sp-product-quick-add
+        aria-controls="SpProductQuickAdd"
+        aria-label="{{ choose_options_label | escape }}: {{ product.title | escape }}"
+      >
+        {{ choose_options_label | escape }}
+      </button>
+    {%- endif -%}
+  </div>
+</article>

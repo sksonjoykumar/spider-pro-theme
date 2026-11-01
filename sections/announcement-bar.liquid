@@ -1,0 +1,988 @@
+{% liquid
+  assign sp_enabled_count = 0
+  for block in section.blocks
+    if block.settings.enabled
+      assign sp_enabled_count = sp_enabled_count | plus: 1
+    endif
+  endfor
+
+  assign sp_should_render = false
+  if section.settings.enabled and sp_enabled_count > 0
+    assign sp_should_render = true
+  endif
+
+  assign sp_previous_label = 'sections.announcement.previous' | t
+  assign sp_previous_test = sp_previous_label | downcase
+  if sp_previous_test contains 'translation missing'
+    assign sp_previous_label = 'Previous announcement'
+  endif
+
+  assign sp_next_label = 'sections.announcement.next' | t
+  assign sp_next_test = sp_next_label | downcase
+  if sp_next_test contains 'translation missing'
+    assign sp_next_label = 'Next announcement'
+  endif
+
+  assign sp_close_label = 'sections.announcement.close' | t
+  assign sp_close_test = sp_close_label | downcase
+  if sp_close_test contains 'translation missing'
+    assign sp_close_label = 'Close'
+  endif
+
+  assign sp_close_aria_label = 'sections.announcement.close_aria' | t
+  assign sp_close_aria_test = sp_close_aria_label | downcase
+  if sp_close_aria_test contains 'translation missing'
+    assign sp_close_aria_label = 'Close announcement bar'
+  endif
+
+  assign sp_countdown_label = 'sections.announcement.countdown' | t
+  assign sp_countdown_test = sp_countdown_label | downcase
+  if sp_countdown_test contains 'translation missing'
+    assign sp_countdown_label = 'Countdown'
+  endif
+
+  assign sp_region_label = 'sections.announcement.label' | t
+  assign sp_region_test = sp_region_label | downcase
+  if sp_region_test contains 'translation missing'
+    assign sp_region_label = 'Announcement'
+  endif
+
+  assign sp_scheme_key = section.settings.sp_color_scheme | default: 'scheme-1'
+  assign sp_scheme_record = settings.sp_color_schemes[sp_scheme_key]
+  assign sp_scheme_values = sp_scheme_record.settings
+
+  assign sp_background = sp_scheme_values.background | default: settings.sp_background | default: '#FFFFFF'
+  assign sp_background_gradient = sp_scheme_values.background_gradient
+  if sp_background_gradient != blank
+    assign sp_background = sp_background_gradient
+  endif
+  assign sp_text_color = sp_scheme_values.text | default: settings.sp_text | default: '#3F3F46'
+  assign sp_link_color = sp_scheme_values.accent | default: settings.sp_accent | default: '#415DFF'
+  assign sp_link_hover_color = sp_scheme_values.accent | default: settings.sp_accent | default: '#415DFF'
+  assign sp_highlight_color = sp_scheme_values.accent | default: settings.sp_accent | default: '#415DFF'
+  assign sp_border_color = sp_scheme_values.border | default: settings.sp_border | default: '#E4E4E7'
+  assign sp_focus_color = sp_scheme_values.focus | default: settings.a11y_focus_color | default: '#415DFF'
+
+  if section.settings.enable_custom_color_overrides
+    assign sp_background = section.settings.background_color | default: sp_background
+    if section.settings.background_type == 'gradient' and section.settings.background_gradient != blank
+      assign sp_background = section.settings.background_gradient
+    endif
+    assign sp_text_color = section.settings.text_color | default: sp_text_color
+    assign sp_link_color = section.settings.link_color | default: sp_link_color
+    assign sp_link_hover_color = section.settings.link_hover_color | default: sp_link_hover_color
+    assign sp_highlight_color = section.settings.highlight_color | default: sp_highlight_color
+    assign sp_border_color = section.settings.border_color | default: sp_border_color
+  endif
+
+  assign sp_opacity = section.settings.background_opacity | divided_by: 100.0
+
+  assign sp_show_motion_control = false
+  if section.settings.show_motion_control
+    if section.settings.display_mode == 'marquee'
+      assign sp_show_motion_control = true
+    elsif section.settings.display_mode == 'slider' and section.settings.slider_autoplay and sp_enabled_count > 1
+      assign sp_show_motion_control = true
+    endif
+  endif
+
+  assign sp_pause_label = 'sections.announcement.pause' | t
+  assign sp_pause_test = sp_pause_label | downcase
+  if sp_pause_test contains 'translation missing'
+    assign sp_pause_label = 'Pause announcements'
+  endif
+
+  assign sp_resume_label = 'sections.announcement.resume' | t
+  assign sp_resume_test = sp_resume_label | downcase
+  if sp_resume_test contains 'translation missing'
+    assign sp_resume_label = 'Resume announcements'
+  endif
+
+  assign sp_justify = 'center'
+  assign sp_text_align = 'center'
+  if section.settings.text_alignment == 'left'
+    assign sp_justify = 'flex-start'
+    assign sp_text_align = 'start'
+  elsif section.settings.text_alignment == 'right'
+    assign sp_justify = 'flex-end'
+    assign sp_text_align = 'end'
+  endif
+
+  assign sp_root_classes = 'sp-announcement-bar sp-announcement-transition--' | append: section.settings.slider_transition
+  unless section.settings.show_desktop
+    assign sp_root_classes = sp_root_classes | append: ' sp-announcement-bar--hide-desktop'
+  endunless
+  unless section.settings.show_mobile
+    assign sp_root_classes = sp_root_classes | append: ' sp-announcement-bar--hide-mobile'
+  endunless
+  if section.settings.show_bottom_border
+    assign sp_root_classes = sp_root_classes | append: ' has-bottom-border'
+  endif
+  unless section.settings.close_mode == 'disabled'
+    assign sp_root_classes = sp_root_classes | append: ' has-close'
+  endunless
+  if sp_show_motion_control
+    assign sp_root_classes = sp_root_classes | append: ' has-motion-control'
+  endif
+%}
+
+{% if sp_should_render or request.design_mode %}
+  {% render 'sp-section-color-scheme', section: section %}
+  <style id="SpAnnouncementWrapper-{{ section.id }}">
+    #shopify-section-{{ section.id }} { background: transparent; }
+  </style>
+  {{ 'sp-announcement-bar.css' | asset_url | stylesheet_tag }}
+  <script src="{{ 'sp-announcement-bar.js' | asset_url }}" defer></script>
+  <div class="sp-announcement-section" data-sp-announcement-section>
+    {% if sp_should_render %}
+      <sp-announcement-bar
+        class="{{ sp_root_classes }}"
+        role="region"
+        aria-label="{{ sp_region_label | escape }}"
+        data-sp-announcement-bar
+        data-section-id="{{ section.id }}"
+        data-mode="{{ section.settings.display_mode }}"
+        data-autoplay="{{ section.settings.slider_autoplay }}"
+        data-autoplay-interval="{{ section.settings.slider_autoplay_interval | times: 1000 }}"
+        data-pause-hover="{{ section.settings.slider_pause_hover }}"
+        data-marquee-pause-hover="{{ section.settings.marquee_pause_hover }}"
+        data-transition-duration="{{ section.settings.slider_transition_speed }}"
+        data-dismissal="{{ section.settings.remember_dismissal }}"
+        data-dismissal-version="{{ section.settings.dismissal_version }}"
+        data-close-mode="{{ section.settings.close_mode }}"
+        data-sticky="{{ section.settings.sticky }}"
+        {% if request.design_mode %}data-design-mode="true"{% endif %}
+        style="
+          --sp-announcement-background: {{ sp_background }};
+          --sp-announcement-background-opacity: {{ sp_opacity }};
+          --sp-announcement-text: {{ sp_text_color }};
+          --sp-announcement-link: {{ sp_link_color }};
+          --sp-announcement-link-hover: {{ sp_link_hover_color }};
+          --sp-announcement-highlight: {{ sp_highlight_color }};
+          --sp-announcement-border: {{ sp_border_color }};
+          --sp-announcement-focus: {{ sp_focus_color }};
+          --sp-announcement-border-size: {{ section.settings.border_thickness }}px;
+          --sp-announcement-font-size: {{ section.settings.font_size_desktop }}px;
+          --sp-announcement-font-size-mobile: {{ section.settings.font_size_mobile }}px;
+          --sp-announcement-font-weight: {{ section.settings.font_weight }};
+          --sp-announcement-letter-spacing: {{ section.settings.letter_spacing }}px;
+          --sp-announcement-text-transform: {{ section.settings.text_transform }};
+          --sp-announcement-min-height: {{ section.settings.min_height_desktop }}px;
+          --sp-announcement-min-height-mobile: {{ section.settings.min_height_mobile }}px;
+          --sp-announcement-padding-y: {{ section.settings.padding_y_desktop }}px;
+          --sp-announcement-padding-y-mobile: {{ section.settings.padding_y_mobile }}px;
+          --sp-announcement-padding-x: {{ section.settings.padding_x_desktop }}px;
+          --sp-announcement-padding-x-mobile: {{ section.settings.padding_x_mobile }}px;
+          --sp-announcement-transition-duration: {{ section.settings.slider_transition_speed }}ms;
+          --sp-announcement-item-gap: {{ section.settings.marquee_item_gap }}px;
+          --sp-announcement-marquee-duration: {{ section.settings.marquee_speed }}s;
+          --sp-announcement-separator-width: {{ section.settings.marquee_separator_width }}px;
+          --sp-announcement-justify: {{ sp_justify }};
+          --sp-announcement-text-align: {{ sp_text_align }};
+        "
+      >
+        <div class="sp-announcement-bar__shell{% if section.settings.content_width == 'page' %} sp-announcement-bar__shell--page{% endif %}">
+          <div class="sp-announcement-bar__inner">
+            <div class="sp-announcement-bar__center">
+              {% case section.settings.display_mode %}
+                {% when 'slider' %}
+                  {% render 'sp-announcement-slider', section: section, enabled_count: sp_enabled_count, previous_label: sp_previous_label, next_label: sp_next_label, countdown_label: sp_countdown_label %}
+                {% when 'marquee' %}
+                  {% render 'sp-announcement-marquee', section: section, countdown_label: sp_countdown_label %}
+                {% else %}
+                  <div class="sp-announcement-static" data-sp-announcement-static>
+                    {% assign sp_first_enabled_found = false %}
+                    {% for block in section.blocks %}
+                      {% assign sp_static_active = false %}
+                      {% if block.settings.enabled and sp_first_enabled_found == false %}
+                        {% assign sp_static_active = true %}
+                        {% assign sp_first_enabled_found = true %}
+                      {% endif %}
+                      {% render 'sp-announcement-item', block: block, is_active: sp_static_active, duplicate: false, countdown_label: sp_countdown_label %}
+                    {% endfor %}
+                  </div>
+              {% endcase %}
+            </div>
+
+            {% if sp_show_motion_control or section.settings.close_mode != 'disabled' %}
+              <div class="sp-announcement-bar__close-wrap" data-sp-announcement-controls>
+                {% if sp_show_motion_control %}
+                  <button
+                    class="sp-announcement-bar__motion-toggle"
+                    type="button"
+                    data-sp-announcement-motion-toggle
+                    data-pause-label="{{ sp_pause_label | escape }}"
+                    data-resume-label="{{ sp_resume_label | escape }}"
+                    aria-label="{{ sp_pause_label | escape }}"
+                    aria-pressed="false"
+                  >
+                    <span class="sp-announcement-bar__motion-icon" data-sp-announcement-pause-icon aria-hidden="true">
+                      <svg class="sp-announcement-bar__icon-svg" viewBox="0 0 24 24" fill="none"><path d="M8 5v14M16 5v14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                    </span>
+                    <span class="sp-announcement-bar__motion-icon" data-sp-announcement-play-icon aria-hidden="true" hidden>
+                      <svg class="sp-announcement-bar__icon-svg" viewBox="0 0 24 24" fill="none"><path d="m8 5 11 7-11 7V5Z" fill="currentColor"/></svg>
+                    </span>
+                    <span class="sp-announcement-bar__sr-only" data-sp-announcement-motion-label>{{ sp_pause_label | escape }}</span>
+                  </button>
+                {% endif %}
+                {% unless section.settings.close_mode == 'disabled' %}
+                  {% render 'sp-announcement-close', mode: section.settings.close_mode, close_label: sp_close_label, close_aria_label: sp_close_aria_label %}
+                {% endunless %}
+              </div>
+            {% endif %}
+          </div>
+        </div>
+      </sp-announcement-bar>
+    {% elsif request.design_mode %}
+      <div class="sp-announcement-bar-placeholder">
+        {% if section.settings.enabled %}
+          Add an Announcement block and enable it to display this section.
+        {% else %}
+          Announcement Bar is disabled. Enable the section to preview it.
+        {% endif %}
+      </div>
+    {% endif %}
+  </div>
+{% endif %}
+
+{% schema %}
+{
+  "name": "Announcement Bar",
+  "tag": "section",
+  "class": "sp-announcement-shopify-section",
+  "max_blocks": 12,
+  "enabled_on": {
+    "groups": [
+      "header"
+    ]
+  },
+  "settings": [
+    {
+      "type": "header",
+      "content": "Global design system"
+    },
+    {
+      "type": "color_scheme",
+      "id": "sp_color_scheme",
+      "label": "Color scheme",
+      "default": "scheme-4",
+      "info": "Shared Spider color panel. Edit schemes once in Theme settings → Spider Color Schemes."
+    },
+    {
+      "type": "header",
+      "content": "General"
+    },
+    {
+      "type": "checkbox",
+      "id": "enabled",
+      "label": "Enable section",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "display_mode",
+      "label": "Display mode",
+      "options": [
+        {
+          "value": "static",
+          "label": "Static"
+        },
+        {
+          "value": "slider",
+          "label": "Slider"
+        },
+        {
+          "value": "marquee",
+          "label": "Marquee"
+        }
+      ],
+      "default": "slider"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_desktop",
+      "label": "Show on desktop",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_mobile",
+      "label": "Show on mobile",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "content_width",
+      "label": "Content width",
+      "options": [
+        {
+          "value": "page",
+          "label": "Page width"
+        },
+        {
+          "value": "full",
+          "label": "Full width"
+        }
+      ],
+      "default": "full"
+    },
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    {
+      "type": "range",
+      "id": "min_height_desktop",
+      "label": "Desktop minimum height",
+      "min": 20,
+      "max": 120,
+      "step": 2,
+      "unit": "px",
+      "default": 40
+    },
+    {
+      "type": "range",
+      "id": "min_height_mobile",
+      "label": "Mobile minimum height",
+      "min": 20,
+      "max": 100,
+      "step": 2,
+      "unit": "px",
+      "default": 36
+    },
+    {
+      "type": "range",
+      "id": "padding_y_desktop",
+      "label": "Desktop vertical padding",
+      "min": 0,
+      "max": 24,
+      "step": 1,
+      "unit": "px",
+      "default": 6
+    },
+    {
+      "type": "range",
+      "id": "padding_y_mobile",
+      "label": "Mobile vertical padding",
+      "min": 0,
+      "max": 20,
+      "step": 1,
+      "unit": "px",
+      "default": 6
+    },
+    {
+      "type": "range",
+      "id": "padding_x_desktop",
+      "label": "Desktop horizontal padding",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "padding_x_mobile",
+      "label": "Mobile horizontal padding",
+      "min": 0,
+      "max": 24,
+      "step": 1,
+      "unit": "px",
+      "default": 12
+    },
+    {
+      "type": "select",
+      "id": "text_alignment",
+      "label": "Text alignment",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "checkbox",
+      "id": "sticky",
+      "label": "Sticky announcement bar",
+      "info": "Keeps the bar above Spider's sticky header and exposes its live height through --sp-announcement-bar-height.",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "show_bottom_border",
+      "label": "Show bottom border",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "border_thickness",
+      "label": "Border thickness",
+      "min": 1,
+      "max": 3,
+      "step": 1,
+      "unit": "px",
+      "default": 1
+    },
+    {
+      "type": "header",
+      "content": "Typography"
+    },
+    {
+      "type": "range",
+      "id": "font_size_desktop",
+      "label": "Desktop font size",
+      "min": 10,
+      "max": 22,
+      "step": 1,
+      "unit": "px",
+      "default": 13
+    },
+    {
+      "type": "range",
+      "id": "font_size_mobile",
+      "label": "Mobile font size",
+      "min": 10,
+      "max": 20,
+      "step": 1,
+      "unit": "px",
+      "default": 12
+    },
+    {
+      "type": "select",
+      "id": "font_weight",
+      "label": "Font weight",
+      "options": [
+        {
+          "value": "400",
+          "label": "Normal"
+        },
+        {
+          "value": "500",
+          "label": "Medium"
+        },
+        {
+          "value": "600",
+          "label": "Semi-bold"
+        },
+        {
+          "value": "700",
+          "label": "Bold"
+        }
+      ],
+      "default": "500"
+    },
+    {
+      "type": "range",
+      "id": "letter_spacing",
+      "label": "Letter spacing",
+      "min": 0,
+      "max": 2,
+      "step": 0.1,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "select",
+      "id": "text_transform",
+      "label": "Text transform",
+      "options": [
+        {
+          "value": "none",
+          "label": "None"
+        },
+        {
+          "value": "uppercase",
+          "label": "Uppercase"
+        }
+      ],
+      "default": "none"
+    },
+    {
+      "type": "header",
+      "content": "Colors"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_custom_color_overrides",
+      "label": "Override Spider color scheme colors",
+      "default": false,
+      "info": "Off uses the selected Spider color scheme. Turn on to use the custom color settings below."
+    },
+    {
+      "type": "select",
+      "id": "background_type",
+      "label": "Background type",
+      "options": [
+        {
+          "value": "color",
+          "label": "Color"
+        },
+        {
+          "value": "gradient",
+          "label": "Gradient"
+        }
+      ],
+      "default": "color"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Background color",
+      "default": "#111111"
+    },
+    {
+      "type": "color_background",
+      "id": "background_gradient",
+      "label": "Background gradient",
+      "default": "linear-gradient(90deg, rgba(17, 17, 17, 1), rgba(45, 45, 45, 1) 100%)"
+    },
+    {
+      "type": "range",
+      "id": "background_opacity",
+      "label": "Background opacity",
+      "min": 0,
+      "max": 100,
+      "step": 5,
+      "unit": "%",
+      "default": 100
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text color",
+      "default": "#FFFFFF"
+    },
+    {
+      "type": "color",
+      "id": "link_color",
+      "label": "Link color",
+      "default": "#FFFFFF"
+    },
+    {
+      "type": "color",
+      "id": "link_hover_color",
+      "label": "Link hover color",
+      "default": "#E6E6E6"
+    },
+    {
+      "type": "color",
+      "id": "highlight_color",
+      "label": "Default highlight color",
+      "default": "#FFD166"
+    },
+    {
+      "type": "color",
+      "id": "border_color",
+      "label": "Border color",
+      "default": "#333333"
+    },
+    {
+      "type": "header",
+      "content": "Slider"
+    },
+    {
+      "type": "select",
+      "id": "slider_transition",
+      "label": "Transition effect",
+      "options": [
+        {
+          "value": "fade",
+          "label": "Fade"
+        },
+        {
+          "value": "slide",
+          "label": "Slide"
+        },
+        {
+          "value": "fade_slide",
+          "label": "Fade + Slide"
+        }
+      ],
+      "default": "fade"
+    },
+    {
+      "type": "range",
+      "id": "slider_transition_speed",
+      "label": "Transition speed",
+      "min": 100,
+      "max": 1000,
+      "step": 50,
+      "unit": "ms",
+      "default": 300
+    },
+    {
+      "type": "checkbox",
+      "id": "slider_autoplay",
+      "label": "Enable autoplay",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_motion_control",
+      "label": "Show pause/resume control",
+      "default": true,
+      "info": "Shown for slider autoplay and marquee modes. It is not shown in static mode."
+    },
+    {
+      "type": "range",
+      "id": "slider_autoplay_interval",
+      "label": "Change every",
+      "min": 2,
+      "max": 30,
+      "step": 1,
+      "unit": "s",
+      "default": 5
+    },
+    {
+      "type": "checkbox",
+      "id": "slider_pause_hover",
+      "label": "Pause autoplay on hover",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "slider_show_navigation",
+      "label": "Show slider navigation",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "slider_show_navigation_mobile",
+      "label": "Show slider arrows on mobile",
+      "default": false
+    },
+    {
+      "type": "header",
+      "content": "Marquee"
+    },
+    {
+      "type": "select",
+      "id": "marquee_direction",
+      "label": "Direction",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ],
+      "default": "left"
+    },
+    {
+      "type": "range",
+      "id": "marquee_speed",
+      "label": "Seconds per cycle",
+      "min": 10,
+      "max": 100,
+      "step": 5,
+      "unit": "s",
+      "default": 30
+    },
+    {
+      "type": "range",
+      "id": "marquee_item_gap",
+      "label": "Item spacing",
+      "min": 0,
+      "max": 100,
+      "step": 5,
+      "unit": "px",
+      "default": 30
+    },
+    {
+      "type": "checkbox",
+      "id": "marquee_pause_hover",
+      "label": "Pause marquee on hover",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "marquee_separator",
+      "label": "Separator",
+      "options": [
+        {
+          "value": "none",
+          "label": "None"
+        },
+        {
+          "value": "dot",
+          "label": "Dot"
+        },
+        {
+          "value": "custom",
+          "label": "Custom image"
+        }
+      ],
+      "default": "dot"
+    },
+    {
+      "type": "image_picker",
+      "id": "marquee_separator_image",
+      "label": "Custom separator image"
+    },
+    {
+      "type": "range",
+      "id": "marquee_separator_width",
+      "label": "Separator width",
+      "min": 6,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "default": 14
+    },
+    {
+      "type": "header",
+      "content": "Close button"
+    },
+    {
+      "type": "select",
+      "id": "close_mode",
+      "label": "Close button",
+      "options": [
+        {
+          "value": "disabled",
+          "label": "Disabled"
+        },
+        {
+          "value": "icon",
+          "label": "Icon only"
+        },
+        {
+          "value": "icon_text",
+          "label": "Icon + text"
+        },
+        {
+          "value": "text",
+          "label": "Text only"
+        }
+      ],
+      "default": "icon"
+    },
+    {
+      "type": "select",
+      "id": "remember_dismissal",
+      "label": "Remember dismissal",
+      "options": [
+        {
+          "value": "none",
+          "label": "Do not remember"
+        },
+        {
+          "value": "session",
+          "label": "Current session"
+        },
+        {
+          "value": "1_day",
+          "label": "1 day"
+        },
+        {
+          "value": "7_days",
+          "label": "7 days"
+        },
+        {
+          "value": "30_days",
+          "label": "30 days"
+        }
+      ],
+      "default": "session"
+    },
+    {
+      "type": "range",
+      "id": "dismissal_version",
+      "label": "Dismissal version",
+      "min": 1,
+      "max": 20,
+      "step": 1,
+      "default": 1,
+      "info": "Increase this when a new important announcement should reappear for previously dismissed visitors."
+    }
+  ],
+  "blocks": [
+    {
+      "type": "announcement",
+      "name": "Announcement",
+      "settings": [
+        {
+          "type": "checkbox",
+          "id": "enabled",
+          "label": "Enable announcement",
+          "default": true
+        },
+        {
+          "type": "inline_richtext",
+          "id": "text",
+          "label": "Text",
+          "default": "Free shipping on orders over $60",
+          "info": "Optional placeholders: [countdown], [highlight], [arrow]."
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "Link"
+        },
+        {
+          "type": "checkbox",
+          "id": "open_new_tab",
+          "label": "Open link in new tab",
+          "default": false
+        },
+        {
+          "type": "select",
+          "id": "text_decoration",
+          "label": "Link/Text decoration",
+          "options": [
+            {
+              "value": "none",
+              "label": "None"
+            },
+            {
+              "value": "underline",
+              "label": "Underline"
+            },
+            {
+              "value": "border",
+              "label": "Bottom border"
+            }
+          ],
+          "default": "none"
+        },
+        {
+          "type": "color",
+          "id": "custom_text_color",
+          "label": "Custom text color"
+        },
+        {
+          "type": "header",
+          "content": "Countdown"
+        },
+        {
+          "type": "text",
+          "id": "countdown_end",
+          "label": "End date and time",
+          "placeholder": "2026-12-31 23:59:59",
+          "info": "Use YYYY-MM-DD HH:MM:SS or ISO 8601. The simple format uses the visitor's local time."
+        },
+        {
+          "type": "text",
+          "id": "countdown_days_label",
+          "label": "Days label",
+          "default": "days"
+        },
+        {
+          "type": "checkbox",
+          "id": "countdown_hide_complete",
+          "label": "Hide countdown when complete",
+          "default": true
+        },
+        {
+          "type": "checkbox",
+          "id": "countdown_hide_announcement",
+          "label": "Hide announcement when complete",
+          "default": false
+        },
+        {
+          "type": "header",
+          "content": "Highlight"
+        },
+        {
+          "type": "text",
+          "id": "highlight_text",
+          "label": "Highlight text",
+          "placeholder": "70% OFF"
+        },
+        {
+          "type": "range",
+          "id": "highlight_size_desktop",
+          "label": "Desktop highlight size",
+          "min": 12,
+          "max": 36,
+          "step": 1,
+          "unit": "px",
+          "default": 18
+        },
+        {
+          "type": "range",
+          "id": "highlight_size_mobile",
+          "label": "Mobile highlight size",
+          "min": 11,
+          "max": 28,
+          "step": 1,
+          "unit": "px",
+          "default": 15
+        },
+        {
+          "type": "color",
+          "id": "highlight_color",
+          "label": "Highlight color"
+        },
+        {
+          "type": "select",
+          "id": "highlight_weight",
+          "label": "Highlight font weight",
+          "options": [
+            {
+              "value": "400",
+              "label": "Normal"
+            },
+            {
+              "value": "500",
+              "label": "Medium"
+            },
+            {
+              "value": "600",
+              "label": "Semi-bold"
+            },
+            {
+              "value": "700",
+              "label": "Bold"
+            }
+          ],
+          "default": "700"
+        },
+        {
+          "type": "header",
+          "content": "CTA"
+        },
+        {
+          "type": "checkbox",
+          "id": "show_cta_arrow",
+          "label": "Enable [arrow] placeholder",
+          "default": true
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Announcement Bar",
+      "blocks": [
+        {
+          "type": "announcement",
+          "settings": {
+            "text": "Free shipping on orders over $60"
+          }
+        },
+        {
+          "type": "announcement",
+          "settings": {
+            "text": "Weekend offer — Save [highlight] today [arrow]",
+            "highlight_text": "20% OFF"
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

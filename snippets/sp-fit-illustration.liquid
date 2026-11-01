@@ -1,0 +1,44 @@
+{%- liquid
+  assign image_desktop = section.settings.measurement_image
+  assign image_mobile = section.settings.measurement_image_mobile
+-%}
+<div class="sp-fit__illustration">
+  {% if image_desktop != blank or image_mobile != blank %}
+    <picture>
+      {% if image_mobile != blank %}<source media="(max-width: 749px)" srcset="{{ image_mobile | image_url: width: 480 }} 480w, {{ image_mobile | image_url: width: 720 }} 720w" sizes="(max-width: 749px) 100vw, 40vw">{% endif %}
+      {% assign image_to_show = image_desktop | default: image_mobile %}
+      {{ image_to_show | image_url: width: 900 | image_tag: widths: '320,480,640,900', sizes: '(max-width: 749px) 100vw, 40vw', loading: 'lazy', alt: section.settings.measurement_image_alt }}
+    </picture>
+  {% else %}
+    <svg class="sp-fit__diagram" viewBox="0 0 420 520" role="img" aria-labelledby="SpFitDiagramTitle-{{ section.id }} SpFitDiagramDesc-{{ section.id }}" xmlns="http://www.w3.org/2000/svg">
+      <title id="SpFitDiagramTitle-{{ section.id }}">{{ section.settings.measurement_image_alt | default: 'Body measurement guide' | escape }}</title>
+      <desc id="SpFitDiagramDesc-{{ section.id }}">Illustration showing where to measure chest, waist and hips.</desc>
+      <g class="sp-fit__diagram-outline" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M165 32C165 12 180 4 198 4s33 9 33 29v22c0 18-13 34-27 41-5 3-12 3-17 0-14-8-27-24-27-41Z"/>
+        <path d="M176 91l-3 16c-10 10-25 16-43 23-15 6-22 20-27 41l-17 69c-2 9 2 16 10 18 7 2 13-3 15-11l16-54-3 72-5 38c-1 8 4 14 12 15l7 65 5 63c1 10 7 17 14 17 7 0 10-7 10-16l-2-64 13-57h20l13 57-2 64c0 9 3 16 10 16 7 0 13-7 14-17l5-63 7-65c8-1 13-7 12-15l-5-38-3-72 16 54c2 8 8 13 15 11 8-2 12-9 10-18l-17-69c-5-21-12-35-27-41-18-7-33-13-43-23l-3-16"/>
+        <path d="M173 107c8 9 16 13 25 13s17-4 25-13"/>
+        <path d="M130 130c12 16 27 23 42 24m52-24c-12 16-27 23-42 24"/>
+        <path d="M126 184c22 10 46 14 72 14s50-4 72-14"/>
+        <path d="M124 284c22 7 47 11 74 11s52-4 74-11"/>
+        <path d="M122 300c22 9 49 13 76 13s54-4 76-13"/>
+        <path d="M128 365c18 7 42 10 70 10s52-3 70-10"/>
+        <path d="M177 375l-4 31m46-31 4 31"/>
+        <path d="M91 249l-3 17c-2 7 2 13 7 17l7 7c3 3 7 1 6-3l-6-13m220-25 3 17c2 7-2 13-7 17l-7 7c-3 3-7 1-6-3l6-13"/>
+      </g>
+      <g class="sp-fit__diagram-measure" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <path d="M119 188c35 8 67 10 81 10s46-2 81-10" stroke-dasharray="7 7"/>
+        <path d="M124 268c28 7 54 9 76 9s48-2 76-9" stroke-dasharray="7 7"/>
+        <path d="M126 337c27 7 51 9 74 9s47-2 74-9" stroke-dasharray="7 7"/>
+        <circle cx="119" cy="188" r="3.5"/><circle cx="281" cy="188" r="3.5"/>
+        <circle cx="124" cy="268" r="3.5"/><circle cx="276" cy="268" r="3.5"/>
+        <circle cx="126" cy="337" r="3.5"/><circle cx="274" cy="337" r="3.5"/>
+      </g>
+      <g class="sp-fit__diagram-labels" fill="currentColor" font-family="inherit" font-size="15" font-weight="600">
+        <text x="300" y="193">Chest</text>
+        <text x="300" y="273">Waist</text>
+        <text x="300" y="342">Hips</text>
+      </g>
+    </svg>
+  {% endif %}
+  {% render 'sp-fit-instructions', section: section %}
+</div>

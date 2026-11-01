@@ -1,0 +1,4 @@
+{% comment %}Intentional merchant-controlled custom output, isolated at the end of body.{% endcomment %}
+{% if settings.apps_css_overrides != blank %}<style data-spider-app-overrides>{{ settings.apps_css_overrides }}</style>{% endif %}
+{% if settings.sp_custom_liquid != blank %}<div class="sp-custom-liquid" data-spider-custom-liquid>{{ settings.sp_custom_liquid }}</div>{% endif %}
+{% comment %}Legacy settings-based JavaScript is intentionally not executed. Use a reviewed asset or app extension.{% endcomment %}

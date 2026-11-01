@@ -1,0 +1,20 @@
+{% comment %}Native Search sort form that preserves query, type and active Shopify filters.{% endcomment %}
+{% assign current_sort = search.sort_by | default: search.default_sort_by %}
+<form class="sp-search-sort" action="{{ routes.search_url }}" method="get" data-search-sort-form>
+  <input type="hidden" name="q" value="{{ search.terms | escape }}">
+  <input type="hidden" name="type" value="{{ current_type_value | escape }}">
+  <input type="hidden" name="options[prefix]" value="last">
+  {% for filter in search.filters %}
+    {% for value in filter.active_values %}
+      <input type="hidden" name="{{ value.param_name }}" value="{{ value.value | escape }}">
+    {% endfor %}
+    {% if filter.min_value.value %}<input type="hidden" name="{{ filter.min_value.param_name }}" value="{{ filter.min_value.value | money_without_currency | replace: ',', '' | strip }}">{% endif %}
+    {% if filter.max_value.value %}<input type="hidden" name="{{ filter.max_value.param_name }}" value="{{ filter.max_value.value | money_without_currency | replace: ',', '' | strip }}">{% endif %}
+  {% endfor %}
+  <label for="SearchSort-{{ section.id }}">{{ 'collections.sorting.sort_by' | t }}</label>
+  <select id="SearchSort-{{ section.id }}" name="sort_by" data-search-sort>
+    {% for option in search.sort_options %}
+      <option value="{{ option.value | escape }}"{% if option.value == current_sort %} selected{% endif %}>{{ option.name | escape }}</option>
+    {% endfor %}
+  </select>
+</form>

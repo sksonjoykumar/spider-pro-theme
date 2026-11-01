@@ -1,0 +1,38 @@
+{% comment %}
+  Spider Announcement marquee rendering.
+  Parameters:
+  - section
+  - countdown_label
+{% endcomment %}
+
+
+<div class="sp-announcement-marquee" data-sp-announcement-marquee data-direction="{{ section.settings.marquee_direction }}">
+  <div class="sp-announcement-marquee__viewport" data-sp-announcement-marquee-viewport>
+    <div class="sp-announcement-marquee__track" data-sp-announcement-marquee-track>
+      {% for sp_copy in (1..2) %}
+        {% assign sp_is_duplicate = false %}
+        {% if sp_copy == 2 %}{% assign sp_is_duplicate = true %}{% endif %}
+        <div class="sp-announcement-marquee__group"{% if sp_is_duplicate %} aria-hidden="true" data-sp-announcement-marquee-duplicate{% endif %}>
+          {% assign sp_rendered_item_count = 0 %}
+          {% for block in section.blocks %}
+            {% assign sp_should_render = block.settings.enabled %}
+            {% if request.design_mode and sp_is_duplicate == false %}{% assign sp_should_render = true %}{% endif %}
+            {% if sp_should_render %}
+              {% if sp_rendered_item_count > 0 and section.settings.marquee_separator != 'none' %}
+                <span class="sp-announcement-marquee__separator sp-announcement-marquee__separator--{{ section.settings.marquee_separator }}" aria-hidden="true">
+                  {% if section.settings.marquee_separator == 'custom' and section.settings.marquee_separator_image != blank %}
+                    {{ section.settings.marquee_separator_image | image_url: width: 80 | image_tag: loading: 'lazy', class: 'sp-announcement-marquee__separator-image', widths: '20,40,80', sizes: '40px', alt: '' }}
+                  {% endif %}
+                </span>
+              {% endif %}
+              <div class="sp-announcement-marquee__item" data-sp-announcement-marquee-item data-block-id="{{ block.id }}"{% if sp_copy == 2 %} aria-hidden="true"{% endif %}>
+                {% render 'sp-announcement-item', block: block, is_active: true, duplicate: sp_is_duplicate, countdown_label: countdown_label %}
+              </div>
+              {% assign sp_rendered_item_count = sp_rendered_item_count | plus: 1 %}
+            {% endif %}
+          {% endfor %}
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>

@@ -1,0 +1,49 @@
+{% comment %}Single server-processed Shopify contact form. Optional fields are configured through flat section blocks. {% endcomment %}
+{%- assign sp_form_id = 'sp-wholesale-form-' | append: section.id -%}
+{%- assign sp_form_native_id = sp_form_id | append: '-native' -%}
+<div class="sp-wholesale__form-panel" id="{{ sp_form_id }}" data-sp-wholesale-form-panel>
+  <h3 class="sp-wholesale__form-heading">{{ section.settings.form_heading | escape }}</h3>
+  {%- if section.settings.form_description != blank -%}<div class="sp-wholesale__form-intro rte">{{ section.settings.form_description }}</div>{%- endif -%}
+  {%- form 'contact', id: sp_form_native_id, class: 'sp-wholesale__form' -%}
+    <input type="hidden" name="contact[Wholesale application]" value="Wholesale/B2B inquiry">
+    {%- if form.posted_successfully? -%}
+      <p class="sp-wholesale__form-message" role="status">{{ section.settings.success_message | escape }}</p>
+    {%- endif -%}
+    {%- if form.errors -%}<div class="sp-wholesale__form-error" role="alert">{{ section.settings.error_message | escape }} {{ form.errors | default_errors }}</div>{%- endif -%}
+    <div class="sp-wholesale__field sp-wholesale__field--full">
+      <label for="sp-wholesale-email-{{ section.id }}">{{ section.settings.email_label | escape }} <span aria-hidden="true">*</span></label>
+      <input id="sp-wholesale-email-{{ section.id }}" name="contact[email]" type="email" autocomplete="email" required value="{{ form.email | default: customer.email | escape }}" {% if form.errors contains 'email' %}aria-invalid="true"{% endif %}>
+    </div>
+    {%- for block in section.blocks -%}
+      {%- if block.type == 'application_field' -%}
+        {%- assign field_key = block.settings.field_type -%}
+        {%- unless field_key == 'email' -%}
+          <div class="sp-wholesale__field sp-wholesale__field--{{ block.settings.field_width }}" {{ block.shopify_attributes }}>
+            {%- if field_key == 'consent' -%}
+              <label class="sp-wholesale__checklabel" for="sp-wholesale-field-{{ block.id }}"><input id="sp-wholesale-field-{{ block.id }}" name="contact[Consent - {{ block.id }}]" type="checkbox" value="Yes" {% if block.settings.required %}required{% endif %}><span>{{ block.settings.label | escape }}{% if block.settings.required %} *{% endif %}</span></label>
+            {%- else -%}
+              <label for="sp-wholesale-field-{{ block.id }}">{{ block.settings.label | escape }}{% if block.settings.required %} <span aria-hidden="true">*</span>{% endif %}</label>
+              {%- if field_key == 'message' -%}
+                <textarea id="sp-wholesale-field-{{ block.id }}" name="contact[{{ block.settings.label | escape }} - {{ block.id }}]" placeholder="{{ block.settings.placeholder | escape }}" rows="4" {% if block.settings.required %}required{% endif %}></textarea>
+              {%- else -%}
+                {%- assign native_type = 'text' -%}
+                {%- assign native_autocomplete = 'off' -%}
+                {%- case field_key -%}
+                  {%- when 'phone' -%}{%- assign native_type = 'tel' -%}{%- assign native_autocomplete = 'tel' -%}
+                  {%- when 'website' -%}{%- assign native_type = 'url' -%}{%- assign native_autocomplete = 'url' -%}
+                  {%- when 'contact_name' -%}{%- assign native_autocomplete = 'name' -%}
+                  {%- when 'company' -%}{%- assign native_autocomplete = 'organization' -%}
+                  {%- when 'country' -%}{%- assign native_autocomplete = 'country-name' -%}
+                {%- endcase -%}
+                <input id="sp-wholesale-field-{{ block.id }}" name="contact[{{ block.settings.label | escape }} - {{ block.id }}]" type="{{ native_type }}" autocomplete="{{ native_autocomplete }}" placeholder="{{ block.settings.placeholder | escape }}" {% if block.settings.required %}required{% endif %}>
+              {%- endif -%}
+            {%- endif -%}
+            {%- if block.settings.help_text != blank -%}<small class="sp-wholesale__hint">{{ block.settings.help_text | escape }}</small>{%- endif -%}
+          </div>
+        {%- endunless -%}
+      {%- endif -%}
+    {%- endfor -%}
+    <button class="sp-wholesale__form-submit sp-button sp-button--primary" type="submit">{{ section.settings.submit_label | escape }}</button>
+  {%- endform -%}
+  <p class="sp-wholesale__form-note">{{ section.settings.form_disclaimer | escape }}</p>
+</div>

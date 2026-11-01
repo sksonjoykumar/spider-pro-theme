@@ -1,0 +1,675 @@
+{{ 'sp-main-contact.css' | asset_url | stylesheet_tag }}
+{% render 'sp-section-color-scheme', section: section %}
+
+{%- liquid
+  assign support_email = section.settings.support_email | default: shop.email
+  assign contact_heading = section.settings.heading | default: page.title | default: 'Contact Us'
+  assign contact_form_id = 'ContactForm-' | append: section.id
+  assign cta_link = section.settings.support_cta_link
+  if cta_link == blank
+    assign cta_link = '#' | append: contact_form_id
+  endif
+-%}
+
+<section class="sp-section sp-contact" data-section-id="{{ section.id }}">
+  <div class="sp-container sp-contact__container">
+    <header class="sp-contact__header">
+      <h1 class="sp-contact__title">{{ contact_heading | escape }}</h1>
+      {%- if section.settings.intro_text != blank -%}
+        <p class="sp-contact__intro">{{ section.settings.intro_text | escape | newline_to_br }}</p>
+      {%- endif -%}
+    </header>
+
+    <div class="sp-contact__layout">
+      <div class="sp-contact__form-card">
+        <div class="sp-contact__panel-head">
+          <h2 class="sp-contact__panel-title">{{ section.settings.form_heading | escape }}</h2>
+          {%- if section.settings.form_description != blank -%}
+            <p class="sp-contact__panel-text">{{ section.settings.form_description | escape }}</p>
+          {%- endif -%}
+        </div>
+
+        {%- form 'contact', id: contact_form_id, class: 'sp-contact__form' -%}
+          {%- if form.posted_successfully? -%}
+            <div class="sp-contact__status" role="status" aria-live="polite">
+              {{ section.settings.success_message | escape }}
+            </div>
+          {%- endif -%}
+
+          {%- if form.errors -%}
+            <div class="sp-contact__errors" role="alert">
+              <p>{{ 'contact.form.error_heading' | t }}</p>
+              {{ form.errors | default_errors }}
+            </div>
+          {%- endif -%}
+
+          {%- if section.settings.show_name -%}
+            <div class="sp-field">
+              <label for="ContactName-{{ section.id }}">{{ 'contact.form.name' | t }}</label>
+              <input
+                id="ContactName-{{ section.id }}"
+                name="contact[name]"
+                type="text"
+                autocomplete="name"
+                value="{% if form.name %}{{ form.name | escape }}{% elsif customer %}{{ customer.name | escape }}{% endif %}"
+                placeholder="{{ 'contact.form.name_placeholder' | t | escape }}"
+              >
+            </div>
+          {%- endif -%}
+
+          <div class="sp-field">
+            <label for="ContactEmail-{{ section.id }}">
+              {{ 'contact.form.email' | t }}
+              <span class="sp-contact__required">{{ 'contact.form.required' | t }}</span>
+            </label>
+            <input
+              id="ContactEmail-{{ section.id }}"
+              name="contact[email]"
+              type="email"
+              autocomplete="email"
+              autocapitalize="off"
+              spellcheck="false"
+              required
+              value="{% if form.email %}{{ form.email | escape }}{% elsif customer %}{{ customer.email | escape }}{% endif %}"
+              placeholder="{{ 'contact.form.email_placeholder' | t | escape }}"
+              {%- if form.errors contains 'email' %} aria-invalid="true"{% endif -%}
+            >
+          </div>
+
+          {%- if section.settings.show_phone -%}
+            <div class="sp-field">
+              <label for="ContactPhone-{{ section.id }}">{{ 'contact.form.phone' | t }}</label>
+              <input
+                id="ContactPhone-{{ section.id }}"
+                name="contact[phone]"
+                type="tel"
+                autocomplete="tel"
+                value="{{ form.phone | escape }}"
+                placeholder="{{ 'contact.form.phone_placeholder' | t | escape }}"
+                pattern="[0-9+() .-]*"
+              >
+            </div>
+          {%- endif -%}
+
+          {%- if section.settings.show_subject -%}
+            <div class="sp-field">
+              <label for="ContactSubject-{{ section.id }}">{{ 'contact.form.subject' | t }}</label>
+              <input
+                id="ContactSubject-{{ section.id }}"
+                name="contact[Subject]"
+                type="text"
+                autocomplete="off"
+                placeholder="{{ 'contact.form.subject_placeholder' | t | escape }}"
+              >
+            </div>
+          {%- endif -%}
+
+          {%- if section.settings.show_order_number -%}
+            <div class="sp-field">
+              <label for="ContactOrder-{{ section.id }}">{{ 'contact.form.order_number' | t }}</label>
+              <input
+                id="ContactOrder-{{ section.id }}"
+                name="contact[Order number]"
+                type="text"
+                inputmode="text"
+                autocomplete="off"
+                placeholder="{{ 'contact.form.order_number_placeholder' | t | escape }}"
+              >
+            </div>
+          {%- endif -%}
+
+          <div class="sp-field">
+            <label for="ContactMessage-{{ section.id }}">
+              {{ 'contact.form.message' | t }}
+              <span class="sp-contact__required">{{ 'contact.form.required' | t }}</span>
+            </label>
+            <textarea
+              id="ContactMessage-{{ section.id }}"
+              name="contact[body]"
+              rows="6"
+              required
+              placeholder="{{ 'contact.form.message_placeholder' | t | escape }}"
+              {%- if form.errors contains 'body' %} aria-invalid="true"{% endif -%}
+            >{{ form.body | escape }}</textarea>
+          </div>
+
+          <button class="sp-button sp-button--primary sp-contact__submit" type="submit">
+            {{ section.settings.submit_label | escape }}
+          </button>
+
+          {%- if section.settings.response_note != blank -%}
+            <p class="sp-contact__response-note">{{ section.settings.response_note | escape }}</p>
+          {%- endif -%}
+        {%- endform -%}
+      </div>
+
+      <aside class="sp-contact__info" aria-label="{{ 'contact.support_information' | t | escape }}">
+        {%- if section.settings.show_email_card -%}
+          <article class="sp-contact-card">
+            <div class="sp-contact-card__icon">{% render 'sp-contact-icon', name: 'email' %}</div>
+            <div class="sp-contact-card__body">
+              <h3 class="sp-contact-card__title">{{ section.settings.email_card_heading | escape }}</h3>
+              {%- if section.settings.email_card_text != blank -%}
+                <p class="sp-contact-card__text">{{ section.settings.email_card_text | escape }}</p>
+              {%- endif -%}
+              {%- if support_email != blank -%}
+                <a class="sp-contact-card__link" href="mailto:{{ support_email | escape }}">{{ support_email | escape }}</a>
+              {%- endif -%}
+              {%- if section.settings.email_response_time != blank -%}
+                <p class="sp-contact-card__note">{{ section.settings.email_response_time | escape }}</p>
+              {%- endif -%}
+            </div>
+          </article>
+        {%- endif -%}
+
+        {%- if section.settings.show_hours_card -%}
+          <article class="sp-contact-card">
+            <div class="sp-contact-card__icon">{% render 'sp-contact-icon', name: 'clock' %}</div>
+            <div class="sp-contact-card__body">
+              <h3 class="sp-contact-card__title">{{ section.settings.hours_card_heading | escape }}</h3>
+              {%- if section.settings.hours_card_text != blank -%}
+                <p class="sp-contact-card__text">{{ section.settings.hours_card_text | escape }}</p>
+              {%- endif -%}
+              {%- if section.settings.business_hours != blank -%}
+                <div class="sp-contact-card__meta">{{ section.settings.business_hours | escape | newline_to_br }}</div>
+              {%- endif -%}
+              {%- if section.settings.hours_response_time != blank -%}
+                <p class="sp-contact-card__note">{{ section.settings.hours_response_time | escape }}</p>
+              {%- endif -%}
+            </div>
+          </article>
+        {%- endif -%}
+
+        {%- if section.settings.show_social_card -%}
+          <article class="sp-contact-card">
+            <div class="sp-contact-card__icon">{% render 'sp-contact-icon', name: 'share' %}</div>
+            <div class="sp-contact-card__body">
+              <h3 class="sp-contact-card__title">{{ section.settings.social_card_heading | escape }}</h3>
+              {%- if section.settings.social_card_text != blank -%}
+                <p class="sp-contact-card__text">{{ section.settings.social_card_text | escape }}</p>
+              {%- endif -%}
+              <ul class="sp-contact-socials" role="list">
+                {%- assign social_networks = 'instagram,facebook,tiktok,youtube,pinterest,twitter,linkedin' | split: ',' -%}
+                {%- for network in social_networks -%}
+                  {%- assign social_key = 'social_' | append: network -%}
+                  {%- assign social_url = settings[social_key] -%}
+                  {%- if social_url != blank -%}
+                    <li>
+                      <a
+                        class="sp-contact-socials__link"
+                        href="{{ social_url }}"
+                        aria-label="{{ network | capitalize | escape }}"
+                        {%- if settings.social_new_tab %} target="_blank" rel="noopener noreferrer"{% endif -%}
+                      >
+                        {% render 'sp-contact-icon', name: network %}
+                      </a>
+                    </li>
+                  {%- endif -%}
+                {%- endfor -%}
+              </ul>
+            </div>
+          </article>
+        {%- endif -%}
+      </aside>
+    </div>
+
+    {%- if section.blocks.size > 0 -%}
+      <section class="sp-contact-help" aria-labelledby="ContactHelpTitle-{{ section.id }}">
+        <h2 class="sp-contact__section-title" id="ContactHelpTitle-{{ section.id }}">{{ section.settings.help_heading | escape }}</h2>
+        <div class="sp-contact-help__grid">
+          {%- for block in section.blocks -%}
+            <article class="sp-contact-help__card" {{ block.shopify_attributes }}>
+              <div class="sp-contact-help__icon">{% render 'sp-contact-icon', name: block.settings.icon %}</div>
+              <h3 class="sp-contact-help__title">{{ block.settings.heading | escape }}</h3>
+              {%- if block.settings.text != blank -%}
+                <p class="sp-contact-help__text">{{ block.settings.text | escape }}</p>
+              {%- endif -%}
+              {%- assign help_link = block.settings.link | default: cta_link -%}
+              {%- if block.settings.link_label != blank -%}
+                <a class="sp-contact-help__link" href="{{ help_link }}">
+                  {{ block.settings.link_label | escape }}
+                  <span class="sp-contact-help__arrow" aria-hidden="true">→</span>
+                </a>
+              {%- endif -%}
+            </article>
+          {%- endfor -%}
+        </div>
+      </section>
+    {%- endif -%}
+
+    {%- if section.settings.enable_support_cta -%}
+      <section class="sp-contact-support" aria-labelledby="ContactSupportTitle-{{ section.id }}">
+        <div class="sp-contact-support__icon">{% render 'sp-contact-icon', name: 'headset' %}</div>
+        <div class="sp-contact-support__content">
+          <h3 class="sp-contact-support__title" id="ContactSupportTitle-{{ section.id }}">{{ section.settings.support_cta_heading | escape }}</h3>
+          {%- if section.settings.support_cta_text != blank -%}
+            <p class="sp-contact-support__text">{{ section.settings.support_cta_text | escape }}</p>
+          {%- endif -%}
+        </div>
+        {%- if section.settings.support_cta_label != blank -%}
+          {% render 'button', label: section.settings.support_cta_label, href: cta_link, style: 'primary', class: 'sp-contact-support__button' %}
+        {%- endif -%}
+      </section>
+    {%- endif -%}
+
+    {%- if section.settings.enable_location -%}
+      <section class="sp-contact-location" aria-labelledby="ContactLocationTitle-{{ section.id }}">
+        <div class="sp-contact-location__media">
+          {%- if section.settings.location_map_embed_url != blank -%}
+            <iframe
+              class="sp-contact-location__iframe"
+              src="{{ section.settings.location_map_embed_url | escape }}"
+              title="{{ section.settings.location_heading | default: 'Map' | escape }}"
+              loading="lazy"
+              referrerpolicy="no-referrer-when-downgrade"
+              allowfullscreen
+            ></iframe>
+          {%- else -%}
+            {%- if section.settings.location_link != blank -%}<a class="sp-contact-location__media-link" href="{{ section.settings.location_link }}" aria-label="{{ 'contact.open_location' | t | escape }}">{%- endif -%}
+              {%- if section.settings.location_image != blank -%}
+                {%- assign location_alt = section.settings.location_image_alt | default: section.settings.location_heading -%}
+                {{ section.settings.location_image
+                  | image_url: width: 1600
+                  | image_tag:
+                    widths: '480, 720, 960, 1200, 1600',
+                    sizes: '(min-width: 990px) 62vw, (min-width: 750px) 55vw, 100vw',
+                    loading: 'lazy',
+                    class: 'sp-contact-location__image',
+                    alt: location_alt
+                }}
+              {%- else -%}
+                {{ 'lifestyle-2' | placeholder_svg_tag: 'sp-contact-location__placeholder placeholder-svg' }}
+              {%- endif -%}
+            {%- if section.settings.location_link != blank -%}</a>{%- endif -%}
+          {%- endif -%}
+        </div>
+
+        <div class="sp-contact-location__details">
+          <div class="sp-contact-location__head">
+            <h2 class="sp-contact-location__title" id="ContactLocationTitle-{{ section.id }}">{{ section.settings.location_heading | escape }}</h2>
+            {%- if section.settings.location_description != blank -%}
+              <p class="sp-contact-location__description">{{ section.settings.location_description | escape }}</p>
+            {%- endif -%}
+          </div>
+
+          <ul class="sp-contact-location__list" role="list">
+            {%- if section.settings.location_address != blank -%}
+              <li class="sp-contact-location__item">
+                <span class="sp-contact-location__item-icon">{% render 'sp-contact-icon', name: 'pin' %}</span>
+                <span>{{ section.settings.location_address | escape | newline_to_br }}</span>
+              </li>
+            {%- endif -%}
+
+            {%- if section.settings.location_phone != blank -%}
+              <li class="sp-contact-location__item">
+                <span class="sp-contact-location__item-icon">{% render 'sp-contact-icon', name: 'phone' %}</span>
+                <a href="tel:{{ section.settings.location_phone | escape }}">{{ section.settings.location_phone | escape }}</a>
+              </li>
+            {%- endif -%}
+
+            {%- assign location_email = section.settings.location_email | default: shop.email -%}
+            {%- if location_email != blank -%}
+              <li class="sp-contact-location__item">
+                <span class="sp-contact-location__item-icon">{% render 'sp-contact-icon', name: 'email' %}</span>
+                <a href="mailto:{{ location_email | escape }}">{{ location_email | escape }}</a>
+              </li>
+            {%- endif -%}
+
+            {%- if section.settings.location_website != blank -%}
+              <li class="sp-contact-location__item">
+                <span class="sp-contact-location__item-icon">{% render 'sp-contact-icon', name: 'globe' %}</span>
+                <a href="{{ section.settings.location_website }}">{{ section.settings.location_website }}</a>
+              </li>
+            {%- endif -%}
+          </ul>
+
+          {%- if section.settings.location_hours != blank -%}
+            <div class="sp-contact-location__hours">{{ section.settings.location_hours | escape | newline_to_br }}</div>
+          {%- endif -%}
+        </div>
+      </section>
+    {%- endif -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Main contact",
+  "max_blocks": 8,
+  "settings": [
+    {
+      "type": "header",
+      "content": "General"
+    },
+    {
+      "type": "color_scheme",
+      "id": "sp_color_scheme",
+      "label": "Color scheme",
+      "default": "scheme-1",
+      "info": "Uses the shared Spider color scheme system."
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Page heading",
+      "default": "Contact Us"
+    },
+    {
+      "type": "textarea",
+      "id": "intro_text",
+      "label": "Intro text",
+      "default": "Have a question, need help with an order, or just want to say hello?\nOur team is here and ready to help."
+    },
+    {
+      "type": "header",
+      "content": "Contact form"
+    },
+    {
+      "type": "text",
+      "id": "form_heading",
+      "label": "Form heading",
+      "default": "Send Us a Message"
+    },
+    {
+      "type": "textarea",
+      "id": "form_description",
+      "label": "Form description",
+      "default": "Fill out the form below and we’ll get back to you as soon as possible."
+    },
+    {
+      "type": "checkbox",
+      "id": "show_name",
+      "label": "Show full name",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_subject",
+      "label": "Show subject",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_order_number",
+      "label": "Show order number",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_phone",
+      "label": "Show phone number",
+      "default": false
+    },
+    {
+      "type": "text",
+      "id": "submit_label",
+      "label": "Submit button text",
+      "default": "Send Message"
+    },
+    {
+      "type": "text",
+      "id": "response_note",
+      "label": "Response note",
+      "default": "We typically respond within 24 hours."
+    },
+    {
+      "type": "text",
+      "id": "success_message",
+      "label": "Success message",
+      "default": "Thanks for contacting us. We’ll get back to you as soon as possible."
+    },
+    {
+      "type": "header",
+      "content": "Email support card"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_email_card",
+      "label": "Show email card",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "email_card_heading",
+      "label": "Heading",
+      "default": "Email Support"
+    },
+    {
+      "type": "textarea",
+      "id": "email_card_text",
+      "label": "Description",
+      "default": "Our friendly team is here to help."
+    },
+    {
+      "type": "text",
+      "id": "support_email",
+      "label": "Support email",
+      "info": "Leave blank to use the store email."
+    },
+    {
+      "type": "text",
+      "id": "email_response_time",
+      "label": "Response time",
+      "default": "We typically reply within 24 hours."
+    },
+    {
+      "type": "header",
+      "content": "Business hours card"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_hours_card",
+      "label": "Show business hours card",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "hours_card_heading",
+      "label": "Heading",
+      "default": "Business Hours"
+    },
+    {
+      "type": "textarea",
+      "id": "hours_card_text",
+      "label": "Description",
+      "default": "We’re here to help during our business hours."
+    },
+    {
+      "type": "textarea",
+      "id": "business_hours",
+      "label": "Business hours",
+      "default": "Monday – Friday\n9:00 AM – 6:00 PM"
+    },
+    {
+      "type": "text",
+      "id": "hours_response_time",
+      "label": "Additional text",
+      "default": "We typically reply within 24 hours."
+    },
+    {
+      "type": "header",
+      "content": "Social card"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_social_card",
+      "label": "Show social card",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "social_card_heading",
+      "label": "Heading",
+      "default": "Follow Us"
+    },
+    {
+      "type": "textarea",
+      "id": "social_card_text",
+      "label": "Description",
+      "default": "Follow us on social media for updates, news, and more."
+    },
+    {
+      "type": "header",
+      "content": "How can we help"
+    },
+    {
+      "type": "text",
+      "id": "help_heading",
+      "label": "Section heading",
+      "default": "How Can We Help?"
+    },
+    {
+      "type": "header",
+      "content": "Support CTA"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_support_cta",
+      "label": "Show support CTA",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "support_cta_heading",
+      "label": "Heading",
+      "default": "Still need help?"
+    },
+    {
+      "type": "textarea",
+      "id": "support_cta_text",
+      "label": "Text",
+      "default": "Our support team is ready to assist you with anything you need."
+    },
+    {
+      "type": "text",
+      "id": "support_cta_label",
+      "label": "Button label",
+      "default": "Talk to Support"
+    },
+    {
+      "type": "url",
+      "id": "support_cta_link",
+      "label": "Button link",
+      "info": "Leave blank to link to the contact form."
+    },
+    {
+      "type": "header",
+      "content": "Location"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_location",
+      "label": "Show location section",
+      "default": false,
+      "info": "Enable only if you have a public location or contact point to show."
+    },
+    {
+      "type": "textarea",
+      "id": "location_map_embed_url",
+      "label": "Google Maps embed URL",
+      "info": "Paste only the Google Maps iframe src URL (for example, https://www.google.com/maps/embed?pb=...). When set, it displays an interactive map instead of the image."
+    },
+    {
+      "type": "image_picker",
+      "id": "location_image",
+      "label": "Map or location image",
+      "info": "Fallback image used when no Google Maps embed URL is provided."
+    },
+    {
+      "type": "text",
+      "id": "location_image_alt",
+      "label": "Image alt text",
+      "default": "Map showing our office location"
+    },
+    {
+      "type": "url",
+      "id": "location_link",
+      "label": "Map/location link",
+      "info": "If set, the location image becomes clickable."
+    },
+    {
+      "type": "text",
+      "id": "location_heading",
+      "label": "Heading",
+      "default": "Visit Our Office"
+    },
+    {
+      "type": "textarea",
+      "id": "location_description",
+      "label": "Description"
+    },
+    {
+      "type": "textarea",
+      "id": "location_address",
+      "label": "Address"
+    },
+    {
+      "type": "text",
+      "id": "location_phone",
+      "label": "Phone"
+    },
+    {
+      "type": "text",
+      "id": "location_email",
+      "label": "Email",
+      "info": "Leave blank to use the store email."
+    },
+    {
+      "type": "url",
+      "id": "location_website",
+      "label": "Website"
+    },
+    {
+      "type": "textarea",
+      "id": "location_hours",
+      "label": "Business hours"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "help_card",
+      "name": "Help card",
+      "settings": [
+        {
+          "type": "select",
+          "id": "icon",
+          "label": "Icon",
+          "default": "truck",
+          "options": [
+            { "value": "truck", "label": "Shipping / truck" },
+            { "value": "box", "label": "Package / box" },
+            { "value": "chat", "label": "Chat / message" },
+            { "value": "question", "label": "Question mark" },
+            { "value": "email", "label": "Email" },
+            { "value": "clock", "label": "Clock" },
+            { "value": "headset", "label": "Support / headset" }
+          ]
+        },
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "Heading",
+          "default": "Shipping & Returns"
+        },
+        {
+          "type": "textarea",
+          "id": "text",
+          "label": "Text",
+          "default": "Learn about our shipping options and return policy."
+        },
+        {
+          "type": "text",
+          "id": "link_label",
+          "label": "Link label",
+          "default": "Learn More"
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "Link"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

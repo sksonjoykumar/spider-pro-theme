@@ -1,0 +1,136 @@
+{%- liquid
+  assign st = block.settings
+  assign source = st.value_source | default: 'manual_text'
+  assign allowed = true
+  if source == 'manual_text' or source == 'manual_rich_text'
+    unless st.enable_specification or request.design_mode
+      assign allowed = false
+    endunless
+  endif
+  assign formatted_value = ''
+  assign is_rich = false
+  assign current_variant = spec_product.selected_or_first_available_variant
+  if allowed
+    case source
+      when 'manual_text'
+        assign formatted_value = st.manual_value | escape
+      when 'manual_rich_text'
+        assign formatted_value = st.manual_rich_value
+        assign is_rich = true
+      when 'product_field'
+        if spec_product != blank
+          case st.product_field
+            when 'vendor'
+              assign formatted_value = spec_product.vendor | escape
+            when 'product_type'
+              assign formatted_value = spec_product.type | escape
+            when 'sku'
+              assign formatted_value = current_variant.sku | escape
+            when 'barcode'
+              assign formatted_value = current_variant.barcode | escape
+            when 'variant_title'
+              unless current_variant.title == 'Default Title'
+                assign formatted_value = current_variant.title | escape
+              endunless
+            when 'weight'
+              if current_variant.weight > 0
+                assign formatted_value = current_variant.weight | weight_with_unit
+              endif
+            when 'weight_unit'
+              assign formatted_value = current_variant.weight_unit | escape
+          endcase
+        endif
+      when 'product_metafield'
+        if spec_product != blank and st.metafield_namespace != blank and st.metafield_key != blank
+          assign mf = spec_product.metafields[st.metafield_namespace][st.metafield_key]
+          if mf != blank
+            case mf.type
+              when 'single_line_text_field', 'multi_line_text_field', 'number_integer', 'number_decimal', 'boolean', 'date', 'date_time', 'color', 'url'
+                assign formatted_value = mf.value | escape
+              when 'rich_text_field', 'dimension', 'weight', 'volume', 'rating', 'money'
+                capture formatted_value
+                  echo mf | metafield_tag
+                endcapture
+                assign is_rich = true
+              when 'file_reference'
+                assign file_reference = mf.value
+                if file_reference.url != blank
+                  capture formatted_value
+                    echo '<a href="'
+                    echo file_reference.url | escape
+                    echo '" target="_blank" rel="noopener noreferrer">View file</a>'
+                  endcapture
+                endif
+              when 'list.single_line_text_field', 'list.number_integer', 'list.number_decimal'
+                capture formatted_value
+                  for item in mf.value
+                    unless forloop.first
+                      echo ', '
+                    endunless
+                    echo item | escape
+                  endfor
+                endcapture
+              when 'list.product_reference', 'list.page_reference'
+                capture formatted_value
+                  for item in mf.value
+                    unless forloop.first
+                      echo ', '
+                    endunless
+                    if item.url != blank
+                      echo '<a href="'
+                      echo item.url | escape
+                      echo '">'
+                      echo item.title | escape
+                      echo '</a>'
+                    endif
+                  endfor
+                endcapture
+              when 'page_reference', 'product_reference'
+                assign referenced_item = mf.value
+                if referenced_item.url != blank
+                  capture formatted_value
+                    echo '<a href="'
+                    echo referenced_item.url | escape
+                    echo '">'
+                    echo referenced_item.title | escape
+                    echo '</a>'
+                  endcapture
+                endif
+              else
+                assign formatted_value = ''
+            endcase
+          endif
+        endif
+    endcase
+    if formatted_value == blank and st.manual_value != blank and source != 'manual_text' and source != 'manual_rich_text' and st.enable_specification
+      assign formatted_value = st.manual_value | escape
+    endif
+  endif
+  assign cleaned_value = formatted_value | strip_html | strip
+  assign should_render_row = false
+  if allowed and st.label != blank
+    if cleaned_value != blank
+      assign should_render_row = true
+    elsif st.hide_when_empty == false
+      assign should_render_row = true
+    endif
+  endif
+-%}
+{%- if should_render_row -%}
+  {%- if mode == 'cards' -%}
+    <article class="sp-specs__value-card{% if st.highlight_row %} is-highlighted{% endif %}" data-sp-spec-row="{{ block.id }}" {{ block.shopify_attributes }}>
+      <h4 class="sp-specs__value-label">{{ st.label | escape }}</h4>
+      <div class="sp-specs__value{% if is_rich %} rte{% endif %}">{{ formatted_value }}</div>
+      {%- if st.additional_note != blank -%}<small>{{ st.additional_note | escape }}</small>{%- endif -%}
+    </article>
+  {%- elsif mode == 'definition' -%}
+    <div class="sp-specs__definition-pair{% if st.highlight_row %} is-highlighted{% endif %}" data-sp-spec-row="{{ block.id }}" {{ block.shopify_attributes }}>
+      <dt>{{ st.label | escape }}</dt><dd>{{ formatted_value }}{% if st.additional_note != blank %}<small>{{ st.additional_note | escape }}</small>{% endif %}</dd>
+    </div>
+  {%- else -%}
+    <tr class="sp-specs__table-row{% if st.highlight_row %} is-highlighted{% endif %}" data-sp-spec-row="{{ block.id }}" {{ block.shopify_attributes }}>
+      <th scope="row">{{ st.label | escape }}</th>
+      <td><div class="sp-specs__cell-value{% if is_rich %} rte{% endif %}">{{ formatted_value }}</div>{% if st.additional_note != blank %}<small>{{ st.additional_note | escape }}</small>{% endif %}</td>
+    </tr>
+  {%- endif -%}
+{%- endif -%}

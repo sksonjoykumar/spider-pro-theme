@@ -1,0 +1,13 @@
+{% comment %}Selected variant pickup availability. Parameters: product, variant.{% endcomment %}
+{% assign current_variant = variant | default: product.selected_or_first_available_variant %}
+{% assign availabilities = current_variant.store_availabilities | where: 'pick_up_enabled', true %}
+<div class="sp-product-pickup" data-product-pickup data-variant-id="{{ current_variant.id }}">
+  {% if availabilities.size > 0 %}
+    <div class="sp-product-pickup__heading">{% render 'icon', name: 'truck' %}<strong>{{ 'products.product.pickup_available' | t }}</strong></div>
+    <ul>
+      {% for availability in availabilities limit: 5 %}
+        <li><span>{{ availability.location.name | escape }}</span><span>{% if availability.available %}{{ availability.pick_up_time | escape }}{% else %}{{ 'products.product.pickup_unavailable' | t }}{% endif %}</span></li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+</div>

@@ -1,0 +1,6 @@
+{% if section.settings.show_unit_toggle %}
+<fieldset class="sp-fit__units" data-sp-unit-picker><legend class="sp-fit-sr-only">Measurement unit</legend>
+<label><input type="radio" name="sp-fit-unit-{{ section.id }}" value="in" {% if section.settings.unit_default == 'in' %}checked{% endif %}><span>IN</span></label>
+<label><input type="radio" name="sp-fit-unit-{{ section.id }}" value="cm" {% if section.settings.unit_default == 'cm' %}checked{% endif %}><span>CM</span></label>
+</fieldset>
+{% endif %}

@@ -1,0 +1,718 @@
+{% render 'sp-section-color-scheme', section: section %}
+{{ 'sp-slideshow.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'sp-slideshow.js' | asset_url }}" defer></script>
+
+{%- liquid
+  assign heading_tag = section.settings.heading_tag
+  assign content_justify = 'flex-start'
+  case section.settings.content_position
+    when 'center'
+      assign content_justify = 'center'
+    when 'right'
+      assign content_justify = 'flex-end'
+  endcase
+
+  assign actions_justify = 'flex-start'
+  case section.settings.text_alignment
+    when 'center'
+      assign actions_justify = 'center'
+    when 'right'
+      assign actions_justify = 'flex-end'
+  endcase
+
+  assign mobile_actions_justify = 'flex-start'
+  case section.settings.mobile_text_alignment
+    when 'center'
+      assign mobile_actions_justify = 'center'
+    when 'right'
+      assign mobile_actions_justify = 'flex-end'
+  endcase
+
+  assign content_align = 'center'
+  case section.settings.content_vertical
+    when 'top'
+      assign content_align = 'flex-start'
+    when 'bottom'
+      assign content_align = 'flex-end'
+  endcase
+
+  assign mobile_content_justify = 'flex-start'
+  case section.settings.mobile_content_position
+    when 'center'
+      assign mobile_content_justify = 'center'
+    when 'right'
+      assign mobile_content_justify = 'flex-end'
+  endcase
+
+  assign mobile_content_align = 'center'
+  case section.settings.mobile_content_vertical
+    when 'top'
+      assign mobile_content_align = 'flex-start'
+    when 'bottom'
+      assign mobile_content_align = 'flex-end'
+  endcase
+
+  assign first_slide_loading = 'lazy'
+  assign first_slide_priority = 'auto'
+  if section.location == 'template' and section.index == 1
+    assign first_slide_loading = 'eager'
+    assign first_slide_priority = 'high'
+  endif
+-%}
+
+<sp-slideshow
+  id="SpSlideshow-{{ section.id }}"
+  class="sp-slideshow sp-slideshow--overlay-{{ section.settings.overlay_style }} sp-slideshow--text-{{ section.settings.text_color_mode }}{% if section.settings.stack_buttons_mobile %} sp-slideshow--stack-buttons-mobile{% endif %}"
+  data-section-id="{{ section.id }}"
+  data-autoplay="{{ section.settings.autoplay }}"
+  data-interval="{{ section.settings.autoplay_interval | times: 1000 }}"
+  data-pause-hover="{{ section.settings.pause_on_hover }}"
+  data-design-mode="{{ request.design_mode }}"
+  role="region"
+  aria-roledescription="carousel"
+  aria-label="{{ section.settings.accessibility_label | escape }}"
+  style="
+    --sp-slideshow-height-desktop: {{ section.settings.height_desktop }}px;
+    --sp-slideshow-height-mobile: {{ section.settings.height_mobile }}px;
+    --sp-slideshow-content-width: {{ section.settings.content_width }}px;
+    --sp-slideshow-content-width-mobile: {{ section.settings.mobile_content_width }}px;
+    --sp-slideshow-description-width: {{ section.settings.description_width }}px;
+    --sp-slideshow-heading-size: {{ section.settings.heading_size }}px;
+    --sp-slideshow-heading-size-mobile: {{ section.settings.heading_size_mobile }}px;
+    --sp-slideshow-description-size: {{ section.settings.description_size }}px;
+    --sp-slideshow-description-size-mobile: {{ section.settings.description_size_mobile }}px;
+    --sp-slideshow-content-justify: {{ content_justify }};
+    --sp-slideshow-content-align: {{ content_align }};
+    --sp-slideshow-text-align: {{ section.settings.text_alignment }};
+    --sp-slideshow-actions-justify: {{ actions_justify }};
+    --sp-slideshow-actions-justify-mobile: {{ mobile_actions_justify }};
+    --sp-slideshow-mobile-content-justify: {{ mobile_content_justify }};
+    --sp-slideshow-mobile-content-align: {{ mobile_content_align }};
+    --sp-slideshow-mobile-text-align: {{ section.settings.mobile_text_alignment }};
+    --sp-slideshow-padding-x: {{ section.settings.content_padding_x }}px;
+    --sp-slideshow-padding-y: {{ section.settings.content_padding_y }}px;
+    --sp-slideshow-padding-x-mobile: {{ section.settings.mobile_content_padding_x }}px;
+    --sp-slideshow-padding-y-mobile: {{ section.settings.mobile_content_padding_y }}px;
+    --sp-slideshow-arrow-size: {{ section.settings.arrow_size }}px;
+    --sp-slideshow-arrow-inset: {{ section.settings.arrow_inset }}px;
+    --sp-slideshow-dots-bottom: {{ section.settings.dots_bottom }}px;
+    --sp-slideshow-overlay-rgb: {{ section.settings.overlay_color | color_extract: 'red' }}, {{ section.settings.overlay_color | color_extract: 'green' }}, {{ section.settings.overlay_color | color_extract: 'blue' }};
+    --sp-slideshow-overlay-opacity: {{ section.settings.overlay_opacity | divided_by: 100.0 }};
+  "
+>
+  <div id="SpSlideshowSlides-{{ section.id }}" class="sp-slideshow__slides" aria-live="{% if section.settings.autoplay %}off{% else %}polite{% endif %}">
+    {% for block in section.blocks %}
+      {%- liquid
+        assign slide_image = block.settings.image
+        if slide_image == blank
+          assign slide_image = block.settings.mobile_image
+        endif
+        assign slide_loading = 'lazy'
+        assign slide_priority = 'auto'
+        if forloop.first
+          assign slide_loading = first_slide_loading
+          assign slide_priority = first_slide_priority
+        endif
+        assign mobile_image_position = block.settings.mobile_image_position
+        assign show_primary_button = false
+        if block.settings.primary_button_label != blank and block.settings.primary_button_link != blank
+          assign show_primary_button = true
+        endif
+        assign show_secondary_button = false
+        if block.settings.secondary_button_label != blank and block.settings.secondary_button_link != blank
+          assign show_secondary_button = true
+        endif
+      -%}
+      <article
+        class="sp-slideshow__slide{% if forloop.first %} is-active{% endif %}"
+        data-slide-index="{{ forloop.index0 }}"
+        role="group"
+        aria-roledescription="slide"
+        aria-label="{{ forloop.index }} of {{ section.blocks.size }}"
+        aria-hidden="{% if forloop.first %}false{% else %}true{% endif %}"
+        {{ block.shopify_attributes }}
+        style="--sp-slideshow-image-position: {{ block.settings.image_position }}; --sp-slideshow-image-position-mobile: {{ mobile_image_position }};"
+      >
+        <div class="sp-slideshow__media" aria-hidden="true">
+          {% if slide_image != blank %}
+            <picture>
+              {% if block.settings.mobile_image != blank %}
+                <source
+                  media="(max-width: 749px)"
+                  srcset="{{ block.settings.mobile_image | image_url: width: 480 }} 480w, {{ block.settings.mobile_image | image_url: width: 750 }} 750w, {{ block.settings.mobile_image | image_url: width: 1100 }} 1100w, {{ block.settings.mobile_image | image_url: width: 1400 }} 1400w"
+                  sizes="100vw"
+                >
+              {% endif %}
+              <img
+                class="sp-slideshow__image"
+                src="{{ slide_image | image_url: width: 2000 }}"
+                srcset="{{ slide_image | image_url: width: 480 }} 480w, {{ slide_image | image_url: width: 750 }} 750w, {{ slide_image | image_url: width: 1100 }} 1100w, {{ slide_image | image_url: width: 1500 }} 1500w, {{ slide_image | image_url: width: 1920 }} 1920w, {{ slide_image | image_url: width: 2400 }} 2400w"
+                sizes="100vw"
+                width="{{ slide_image.width }}"
+                height="{{ slide_image.height }}"
+                loading="{{ slide_loading }}"
+                fetchpriority="{{ slide_priority }}"
+                alt=""
+                draggable="false"
+              >
+            </picture>
+          {% endif %}
+        </div>
+
+        <div class="sp-slideshow__overlay" aria-hidden="true"></div>
+
+        <div class="sp-slideshow__inner">
+          <div class="sp-slideshow__content">
+            {% if block.settings.eyebrow != blank %}
+              <p class="sp-slideshow__eyebrow">{{ block.settings.eyebrow | escape }}</p>
+            {% endif %}
+
+            {% if block.settings.heading != blank %}
+              <{{ heading_tag }} class="sp-slideshow__heading">{{ block.settings.heading | escape }}</{{ heading_tag }}>
+            {% endif %}
+
+            {% if block.settings.description != blank %}
+              <div class="sp-slideshow__description rte">{{ block.settings.description }}</div>
+            {% endif %}
+
+            {% if show_primary_button or show_secondary_button %}
+              <div class="sp-slideshow__actions">
+                {% if block.settings.primary_button_label != blank and block.settings.primary_button_link != blank %}
+                  {% render 'button', label: block.settings.primary_button_label, href: block.settings.primary_button_link, style: 'primary', class: 'sp-slideshow__button' %}
+                {% endif %}
+                {% if block.settings.secondary_button_label != blank and block.settings.secondary_button_link != blank %}
+                  {% render 'button', label: block.settings.secondary_button_label, href: block.settings.secondary_button_link, style: 'secondary', class: 'sp-slideshow__button sp-slideshow__button--secondary' %}
+                {% endif %}
+              </div>
+            {% endif %}
+          </div>
+        </div>
+      </article>
+    {% endfor %}
+  </div>
+
+  {% if section.blocks.size > 1 %}
+    {% if section.settings.show_arrows %}
+      <button class="sp-slideshow__arrow sp-slideshow__arrow--previous" type="button" data-slideshow-prev aria-label="Previous slide" aria-controls="SpSlideshowSlides-{{ section.id }}">
+        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" aria-hidden="true" focusable="false">
+          <path d="M15 5 8 12l7 7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+      </button>
+      <button class="sp-slideshow__arrow sp-slideshow__arrow--next" type="button" data-slideshow-next aria-label="Next slide" aria-controls="SpSlideshowSlides-{{ section.id }}">
+        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" aria-hidden="true" focusable="false">
+          <path d="m9 5 7 7-7 7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+      </button>
+    {% endif %}
+
+    {% if section.settings.show_dots %}
+      <div class="sp-slideshow__pagination" role="group" aria-label="Choose a slide">
+        {% for block in section.blocks %}
+          <button
+            class="sp-slideshow__dot{% if forloop.first %} is-active{% endif %}"
+            type="button"
+            data-slideshow-dot="{{ forloop.index0 }}"
+            aria-label="Go to slide {{ forloop.index }}"
+            aria-controls="SpSlideshowSlides-{{ section.id }}"
+            aria-current="{% if forloop.first %}true{% else %}false{% endif %}"
+          ><span class="sp-slideshow__dot-indicator" aria-hidden="true"></span></button>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endif %}
+</sp-slideshow>
+
+{% schema %}
+{
+  "name": "Slideshow",
+  "disabled_on": {
+    "groups": ["header", "footer", "custom.system"]
+  },
+  "settings": [
+    {
+      "type": "header",
+      "content": "Global design system"
+    },
+    {
+      "type": "color_scheme",
+      "id": "sp_color_scheme",
+      "label": "Color scheme",
+      "default": "scheme-1",
+      "info": "Uses the shared Spider color panel from Theme settings."
+    },
+    {
+      "type": "select",
+      "id": "heading_tag",
+      "label": "Heading HTML tag",
+      "default": "h1",
+      "options": [
+        { "value": "h1", "label": "H1" },
+        { "value": "h2", "label": "H2" },
+        { "value": "h3", "label": "H3" }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "text_color_mode",
+      "label": "Text color",
+      "default": "scheme",
+      "options": [
+        { "value": "scheme", "label": "Follow color scheme" },
+        { "value": "dark", "label": "Dark text" },
+        { "value": "light", "label": "Light text" }
+      ]
+    },
+    {
+      "type": "text",
+      "id": "accessibility_label",
+      "label": "Accessibility label",
+      "default": "Homepage slideshow"
+    },
+    {
+      "type": "header",
+      "content": "Desktop layout"
+    },
+    {
+      "type": "range",
+      "id": "height_desktop",
+      "label": "Desktop height",
+      "min": 480,
+      "max": 1000,
+      "step": 20,
+      "unit": "px",
+      "default": 900
+    },
+    {
+      "type": "range",
+      "id": "content_width",
+      "label": "Content maximum width",
+      "min": 420,
+      "max": 1000,
+      "step": 20,
+      "unit": "px",
+      "default": 760
+    },
+    {
+      "type": "range",
+      "id": "description_width",
+      "label": "Description maximum width",
+      "min": 300,
+      "max": 900,
+      "step": 20,
+      "unit": "px",
+      "default": 620
+    },
+    {
+      "type": "select",
+      "id": "content_position",
+      "label": "Horizontal content position",
+      "default": "left",
+      "options": [
+        { "value": "left", "label": "Left" },
+        { "value": "center", "label": "Center" },
+        { "value": "right", "label": "Right" }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "content_vertical",
+      "label": "Vertical content position",
+      "default": "center",
+      "options": [
+        { "value": "top", "label": "Top" },
+        { "value": "center", "label": "Center" },
+        { "value": "bottom", "label": "Bottom" }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "text_alignment",
+      "label": "Desktop text alignment",
+      "default": "left",
+      "options": [
+        { "value": "left", "label": "Left" },
+        { "value": "center", "label": "Center" },
+        { "value": "right", "label": "Right" }
+      ]
+    },
+    {
+      "type": "range",
+      "id": "content_padding_x",
+      "label": "Horizontal content padding",
+      "min": 24,
+      "max": 216,
+      "step": 8,
+      "unit": "px",
+      "default": 144
+    },
+    {
+      "type": "range",
+      "id": "content_padding_y",
+      "label": "Vertical content padding",
+      "min": 24,
+      "max": 160,
+      "step": 8,
+      "unit": "px",
+      "default": 64
+    },
+    {
+      "type": "range",
+      "id": "heading_size",
+      "label": "Heading size",
+      "min": 40,
+      "max": 88,
+      "step": 2,
+      "unit": "px",
+      "default": 64
+    },
+    {
+      "type": "range",
+      "id": "description_size",
+      "label": "Description size",
+      "min": 14,
+      "max": 24,
+      "step": 1,
+      "unit": "px",
+      "default": 20
+    },
+    {
+      "type": "header",
+      "content": "Mobile layout"
+    },
+    {
+      "type": "range",
+      "id": "height_mobile",
+      "label": "Mobile height",
+      "min": 420,
+      "max": 900,
+      "step": 20,
+      "unit": "px",
+      "default": 680
+    },
+    {
+      "type": "range",
+      "id": "mobile_content_width",
+      "label": "Mobile content maximum width",
+      "min": 280,
+      "max": 700,
+      "step": 20,
+      "unit": "px",
+      "default": 500
+    },
+    {
+      "type": "select",
+      "id": "mobile_content_position",
+      "label": "Mobile horizontal content position",
+      "default": "left",
+      "options": [
+        { "value": "left", "label": "Left" },
+        { "value": "center", "label": "Center" },
+        { "value": "right", "label": "Right" }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "mobile_content_vertical",
+      "label": "Mobile vertical content position",
+      "default": "center",
+      "options": [
+        { "value": "top", "label": "Top" },
+        { "value": "center", "label": "Center" },
+        { "value": "bottom", "label": "Bottom" }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "mobile_text_alignment",
+      "label": "Mobile text alignment",
+      "default": "left",
+      "options": [
+        { "value": "left", "label": "Left" },
+        { "value": "center", "label": "Center" },
+        { "value": "right", "label": "Right" }
+      ]
+    },
+    {
+      "type": "range",
+      "id": "mobile_content_padding_x",
+      "label": "Mobile horizontal padding",
+      "min": 12,
+      "max": 48,
+      "step": 4,
+      "unit": "px",
+      "default": 24
+    },
+    {
+      "type": "range",
+      "id": "mobile_content_padding_y",
+      "label": "Mobile vertical padding",
+      "min": 16,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "default": 40
+    },
+    {
+      "type": "range",
+      "id": "heading_size_mobile",
+      "label": "Mobile heading size",
+      "min": 28,
+      "max": 52,
+      "step": 2,
+      "unit": "px",
+      "default": 40
+    },
+    {
+      "type": "range",
+      "id": "description_size_mobile",
+      "label": "Mobile description size",
+      "min": 14,
+      "max": 20,
+      "step": 1,
+      "unit": "px",
+      "default": 16
+    },
+    {
+      "type": "checkbox",
+      "id": "stack_buttons_mobile",
+      "label": "Stack buttons on mobile",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Image overlay"
+    },
+    {
+      "type": "select",
+      "id": "overlay_style",
+      "label": "Overlay style",
+      "default": "gradient",
+      "options": [
+        { "value": "none", "label": "None" },
+        { "value": "gradient", "label": "Left-to-right gradient" },
+        { "value": "solid", "label": "Solid overlay" }
+      ]
+    },
+    {
+      "type": "color",
+      "id": "overlay_color",
+      "label": "Overlay color",
+      "default": "#FFFFFF"
+    },
+    {
+      "type": "range",
+      "id": "overlay_opacity",
+      "label": "Overlay opacity",
+      "min": 0,
+      "max": 80,
+      "step": 5,
+      "unit": "%",
+      "default": 30
+    },
+    {
+      "type": "header",
+      "content": "Navigation"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_arrows",
+      "label": "Show previous/next arrows",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_dots",
+      "label": "Show pagination dots",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "arrow_size",
+      "label": "Arrow button size",
+      "min": 36,
+      "max": 68,
+      "step": 4,
+      "unit": "px",
+      "default": 52
+    },
+    {
+      "type": "range",
+      "id": "arrow_inset",
+      "label": "Arrow edge inset",
+      "min": 8,
+      "max": 80,
+      "step": 4,
+      "unit": "px",
+      "default": 32
+    },
+    {
+      "type": "range",
+      "id": "dots_bottom",
+      "label": "Pagination bottom spacing",
+      "min": 8,
+      "max": 60,
+      "step": 4,
+      "unit": "px",
+      "default": 24
+    },
+    {
+      "type": "header",
+      "content": "Autoplay"
+    },
+    {
+      "type": "checkbox",
+      "id": "autoplay",
+      "label": "Enable autoplay",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "autoplay_interval",
+      "label": "Slide interval",
+      "min": 3,
+      "max": 10,
+      "step": 1,
+      "unit": "s",
+      "default": 5
+    },
+    {
+      "type": "checkbox",
+      "id": "pause_on_hover",
+      "label": "Pause autoplay on hover",
+      "default": true
+    }
+  ],
+  "blocks": [
+    {
+      "type": "slide",
+      "name": "Slide",
+      "limit": 8,
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Desktop background image"
+        },
+        {
+          "type": "image_picker",
+          "id": "mobile_image",
+          "label": "Mobile background image",
+          "info": "Optional. If blank, the desktop image is used."
+        },
+        {
+          "type": "select",
+          "id": "image_position",
+          "label": "Desktop image focal position",
+          "default": "center center",
+          "options": [
+            { "value": "center center", "label": "Center" },
+            { "value": "center top", "label": "Top center" },
+            { "value": "center bottom", "label": "Bottom center" },
+            { "value": "left center", "label": "Left center" },
+            { "value": "right center", "label": "Right center" },
+            { "value": "left top", "label": "Top left" },
+            { "value": "right top", "label": "Top right" },
+            { "value": "left bottom", "label": "Bottom left" },
+            { "value": "right bottom", "label": "Bottom right" }
+          ]
+        },
+        {
+          "type": "select",
+          "id": "mobile_image_position",
+          "label": "Mobile image focal position",
+          "default": "center center",
+          "options": [
+            { "value": "center center", "label": "Center" },
+            { "value": "center top", "label": "Top center" },
+            { "value": "center bottom", "label": "Bottom center" },
+            { "value": "left center", "label": "Left center" },
+            { "value": "right center", "label": "Right center" },
+            { "value": "left top", "label": "Top left" },
+            { "value": "right top", "label": "Top right" },
+            { "value": "left bottom", "label": "Bottom left" },
+            { "value": "right bottom", "label": "Bottom right" }
+          ]
+        },
+        {
+          "type": "text",
+          "id": "eyebrow",
+          "label": "Eyebrow text",
+          "default": "LIVE A MORE MINDFUL LIFE"
+        },
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "Heading",
+          "default": "Everyday Essentials for a Better You"
+        },
+        {
+          "type": "richtext",
+          "id": "description",
+          "label": "Description",
+          "default": "<p>Thoughtfully designed products to bring more simplicity, comfort, and balance into your daily routine.</p>"
+        },
+        {
+          "type": "text",
+          "id": "primary_button_label",
+          "label": "Primary button label",
+          "default": "Shop the Collection"
+        },
+        {
+          "type": "url",
+          "id": "primary_button_link",
+          "label": "Primary button link"
+        },
+        {
+          "type": "text",
+          "id": "secondary_button_label",
+          "label": "Secondary button label",
+          "default": "Learn More"
+        },
+        {
+          "type": "url",
+          "id": "secondary_button_link",
+          "label": "Secondary button link"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Slideshow",
+      "category": "01. Hero",
+      "blocks": [
+        {
+          "type": "slide",
+          "settings": {
+            "eyebrow": "LIVE A MORE MINDFUL LIFE",
+            "heading": "Everyday Essentials for a Better You",
+            "description": "<p>Thoughtfully designed products to bring more simplicity, comfort, and balance into your daily routine.</p>",
+            "primary_button_label": "Shop the Collection",
+            "secondary_button_label": "Learn More"
+          }
+        },
+        {
+          "type": "slide",
+          "settings": {
+            "eyebrow": "MADE FOR YOUR EVERYDAY",
+            "heading": "Thoughtful Design. Everyday Comfort.",
+            "description": "<p>Discover considered essentials designed to bring ease and quality to the moments that matter.</p>",
+            "primary_button_label": "Explore Essentials",
+            "secondary_button_label": "Our Story"
+          }
+        },
+        {
+          "type": "slide",
+          "settings": {
+            "eyebrow": "LIVE WITH INTENTION",
+            "heading": "Make Every Day Feel Better",
+            "description": "<p>Find simple, beautifully designed essentials that fit naturally into your daily routine.</p>",
+            "primary_button_label": "Shop Now",
+            "secondary_button_label": "Learn More"
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

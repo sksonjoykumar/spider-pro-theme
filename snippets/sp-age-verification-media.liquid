@@ -1,0 +1,23 @@
+{%- liquid
+  assign desktop_image = section.settings.image
+  assign mobile_image = section.settings.image_mobile | default: desktop_image
+  assign image_alt = ''
+  if section.settings.image_alt_mode == 'informative'
+    assign image_alt = section.settings.image_alt | default: desktop_image.alt | default: mobile_image.alt
+  endif
+-%}
+{%- if desktop_image != blank or mobile_image != blank -%}
+  <div class="sp-age-verification__media" style="--sp-age-image-fit:{{ section.settings.image_fit }};--sp-age-image-position-d:{{ section.settings.desktop_image_position }};--sp-age-image-position-m:{{ section.settings.mobile_image_position }}" {% if section.settings.image_alt_mode == 'decorative' %}aria-hidden="true"{% endif %}>
+    <picture class="sp-age-verification__picture">
+      {%- if mobile_image != blank -%}
+        <source media="(max-width: 749px)" srcset="{{ mobile_image | image_url: width: 360 }} 360w, {{ mobile_image | image_url: width: 540 }} 540w, {{ mobile_image | image_url: width: 750 }} 750w, {{ mobile_image | image_url: width: 900 }} 900w" sizes="(max-width: 749px) 100vw, 50vw">
+      {%- endif -%}
+      {%- if desktop_image != blank -%}
+        {{ desktop_image | image_url: width: 1400 | image_tag: loading: loading, widths: '480,640,800,1000,1200,1400', sizes: '(min-width: 990px) 49vw, 100vw', alt: image_alt, class: 'sp-age-verification__image' }}
+      {%- elsif mobile_image != blank -%}
+        {{ mobile_image | image_url: width: 900 | image_tag: loading: loading, widths: '360,540,750,900', sizes: '100vw', alt: image_alt, class: 'sp-age-verification__image' }}
+      {%- endif -%}
+    </picture>
+    <span class="sp-age-verification__media-overlay" aria-hidden="true"></span>
+  </div>
+{%- endif -%}

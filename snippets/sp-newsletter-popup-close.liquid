@@ -1,0 +1,11 @@
+{%- if section.settings.show_close -%}
+  <button
+    type="button"
+    class="sp-newsletter-popup__close sp-newsletter-popup__close--{{ section.settings.close_style }}"
+    aria-label="Close newsletter popup"
+    data-sp-newsletter-popup-close
+    data-sp-no-loader
+  >
+    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M6.5 6.5 17.5 17.5M17.5 6.5 6.5 17.5"></path></svg>
+  </button>
+{%- endif -%}

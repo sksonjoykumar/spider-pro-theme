@@ -1,0 +1,8 @@
+{%- comment -%}Countdown is populated only after JS validates a real merchant deadline. Preview mode is editor-only.{%- endcomment -%}
+{%- assign ss = section.settings -%}
+<div class="sp-campaign__timer" aria-hidden="true" data-sp-timer aria-live="off" hidden>
+  {%- if ss.show_days -%}<div class="sp-campaign__unit" data-sp-unit="days"><strong data-sp-value="days">--</strong><span data-sp-unit-label="days">{{ ss.days_label | escape }}</span></div>{%- endif -%}
+  {%- if ss.show_hours -%}<div class="sp-campaign__unit" data-sp-unit="hours"><strong data-sp-value="hours">--</strong><span data-sp-unit-label="hours">{{ ss.hours_label | escape }}</span></div>{%- endif -%}
+  {%- if ss.show_minutes -%}<div class="sp-campaign__unit" data-sp-unit="minutes"><strong data-sp-value="minutes">--</strong><span data-sp-unit-label="minutes">{{ ss.minutes_label | escape }}</span></div>{%- endif -%}
+  {%- if ss.show_seconds -%}<div class="sp-campaign__unit" data-sp-unit="seconds"><strong data-sp-value="seconds">--</strong><span data-sp-unit-label="seconds">{{ ss.seconds_label | escape }}</span></div>{%- endif -%}
+</div>

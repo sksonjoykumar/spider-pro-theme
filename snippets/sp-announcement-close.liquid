@@ -1,0 +1,26 @@
+{% comment %}
+  Spider Announcement close control.
+  Parameters:
+  - mode: disabled | icon | icon_text | text
+  - close_label: visible localized/fallback label
+  - close_aria_label: accessible localized/fallback label
+{% endcomment %}
+
+{% assign sp_close_mode = mode | default: 'disabled' %}
+{% unless sp_close_mode == 'disabled' %}
+  <button
+    class="sp-announcement-bar__close sp-announcement-bar__close--{{ sp_close_mode | escape }}"
+    type="button"
+    data-sp-announcement-close
+    aria-label="{{ close_aria_label | default: 'Close announcement bar' | escape }}"
+  >
+    {% unless sp_close_mode == 'text' %}
+      <span class="sp-announcement-bar__close-icon" aria-hidden="true">
+        {% render 'icon', name: 'close', class: 'sp-announcement-bar__icon-svg' %}
+      </span>
+    {% endunless %}
+    {% if sp_close_mode == 'icon_text' or sp_close_mode == 'text' %}
+      <span class="sp-announcement-bar__close-text">{{ close_label | default: 'Close' | escape }}</span>
+    {% endif %}
+  </button>
+{% endunless %}

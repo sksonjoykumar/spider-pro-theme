@@ -1,0 +1,13 @@
+<div class="sp-pf__localization" {{ block.shopify_attributes }}>
+  {% assign has_language = false %}
+  {% assign has_country = false %}
+  {% if block.settings.show_language and localization.available_languages.size > 1 %}{% assign has_language = true %}{% endif %}
+  {% if block.settings.show_country and localization.available_countries.size > 1 %}{% assign has_country = true %}{% endif %}
+  {% render 'sp-footer-localization-form', block: block, variant: 'premium', has_language: has_language, has_country: has_country %}
+</div>
+{% schema %}
+{"name":"Footer language & region","tag":null,"settings":[
+ {"type":"checkbox","id":"show_language","label":"Enable language selector","default":true},
+ {"type":"checkbox","id":"show_country","label":"Enable country/currency selector","default":true}
+ ],"presets":[{"name":"Footer language & region"}]}
+{% endschema %}

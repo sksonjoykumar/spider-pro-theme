@@ -1,0 +1,45 @@
+<div class="sp-cookies__bottom">
+  {% if section.settings.display_mode != 'notice_only' %}
+  <div class="sp-cookies__consent-area">
+    <div class="sp-cookies__cards" role="group" aria-label="Cookie categories">
+      <div class="sp-cookies__category sp-cookies__category--necessary">
+        <label class="sp-cookies__category-inner">
+          <span class="sp-cookies__switch sp-cookies__switch--locked"><input type="checkbox" checked disabled aria-label="Necessary cookies are always active"><span aria-hidden="true"></span></span>
+          <span class="sp-cookies__category-copy"><strong>{{ section.settings.necessary_title | escape }} <svg viewBox="0 0 24 24" width="12" height="12" aria-label="Locked" role="img"><rect x="5" y="10" width="14" height="11" rx="2" fill="currentColor"/><path d="M8 10V7a4 4 0 0 1 8 0v3" fill="none" stroke="currentColor" stroke-width="2"/></svg></strong><small>{{ section.settings.necessary_description | escape }}</small></span>
+        </label>
+      </div>
+      {% if section.settings.enable_analytics_category %}
+      <label class="sp-cookies__category">
+        <span class="sp-cookies__switch"><input type="checkbox" data-sp-cookies-card="analytics" aria-label="Allow analytics cookies"><span aria-hidden="true"></span></span>
+        <span class="sp-cookies__category-copy"><strong>{{ section.settings.analytics_title | escape }}</strong><small>{{ section.settings.analytics_description | escape }}</small></span>
+      </label>
+      {% endif %}
+      {% if section.settings.enable_marketing_category %}
+      <label class="sp-cookies__category">
+        <span class="sp-cookies__switch"><input type="checkbox" data-sp-cookies-card="marketing" aria-label="Allow marketing cookies"><span aria-hidden="true"></span></span>
+        <span class="sp-cookies__category-copy"><strong>{{ section.settings.marketing_title | escape }}</strong><small>{{ section.settings.marketing_description | escape }}</small></span>
+      </label>
+      {% endif %}
+      {% if section.settings.enable_preference_category %}
+      <label class="sp-cookies__category">
+        <span class="sp-cookies__switch"><input type="checkbox" data-sp-cookies-card="preferences" aria-label="Allow preference cookies"><span aria-hidden="true"></span></span>
+        <span class="sp-cookies__category-copy"><strong>{{ section.settings.preferences_title | escape }}</strong><small>{{ section.settings.preferences_description | escape }}</small></span>
+      </label>
+      {% endif %}
+    </div>
+    <p class="sp-cookies__unsaved" data-sp-cookies-unsaved hidden role="status" aria-live="polite">{{ section.settings.card_pending_label | escape }}</p>
+  </div>
+  {% endif %}
+  <div class="sp-cookies__actions-wrap sp-cookies__actions-wrap--{{ section.settings.desktop_button_alignment }}">
+    {% assign policy_url = section.settings.more_info_url %}
+    {% if policy_url == blank and shop.policies.privacy_policy != blank %}{% assign policy_url = shop.policies.privacy_policy.url %}{% endif %}
+    {% if section.settings.more_info_position == 'before_buttons' and policy_url != blank and section.settings.more_info_label != blank %}<a class="sp-cookies__more sp-cookies__more--action" href="{{ policy_url }}">{{ section.settings.more_info_label | escape }}</a>{% endif %}
+    <div class="sp-cookies__actions sp-cookies__actions--{{ section.settings.action_order }}">
+      {% capture decline_button %}{% if section.settings.show_decline_button %}<button type="button" class="sp-cookies__button sp-cookies__decline" data-sp-cookies-decline>{{ section.settings.decline_label | escape }}</button>{% endif %}{% endcapture %}
+      {% capture manage_button %}{% if section.settings.enable_preferences and section.settings.display_mode != 'notice_only' %}<button type="button" class="sp-cookies__button sp-cookies__manage" data-sp-cookies-manage>{{ section.settings.manage_label | escape }}</button>{% endif %}{% endcapture %}
+      {% capture accept_button %}<button type="button" class="sp-cookies__button sp-cookies__accept" data-sp-cookies-accept>{{ section.settings.accept_label | escape }}</button>{% endcapture %}
+      {% if section.settings.action_order == 'accept_decline' %}{{ accept_button }}{{ manage_button }}{{ decline_button }}{% else %}{{ decline_button }}{{ manage_button }}{{ accept_button }}{% endif %}
+    </div>
+    {% if section.settings.more_info_position == 'below_buttons' and policy_url != blank and section.settings.more_info_label != blank %}<a class="sp-cookies__more sp-cookies__more--below" href="{{ policy_url }}">{{ section.settings.more_info_label | escape }}</a>{% endif %}
+  </div>
+</div>

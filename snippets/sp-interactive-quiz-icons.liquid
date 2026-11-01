@@ -1,0 +1,11 @@
+{% comment %} Spider Interactive Quiz icon helper. Keep all symbols decorative. {% endcomment %}
+{%- case name -%}
+  {%- when 'organization' -%}
+    <svg class="sp-iq__answer-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+  {%- when 'sparkle' -%}
+    <svg class="sp-iq__answer-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none"><path d="m12 2 2.5 7.5L22 12l-7.5 2.5L12 22l-2.5-7.5L2 12l7.5-2.5L12 2Z"/></svg>
+  {%- when 'clock' -%}
+    <svg class="sp-iq__answer-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+  {%- else -%}
+    {% render 'sp-content-icon', name: name, class: 'sp-iq__answer-icon' %}
+{%- endcase -%}

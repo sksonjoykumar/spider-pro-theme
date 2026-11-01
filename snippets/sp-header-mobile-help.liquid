@@ -1,0 +1,48 @@
+{% comment %}Spider mobile drawer help/contact area. Params: section, contact_block{% endcomment %}
+{%- liquid
+  assign help_heading = section.settings.mobile_help_heading | default: 'Need help ?'
+  assign help_email = section.settings.mobile_help_email
+  assign help_phone = section.settings.mobile_help_phone
+  assign help_text = section.settings.mobile_help_text
+  assign help_url = section.settings.mobile_help_url
+  assign help_url_label = section.settings.mobile_help_url_label | default: 'Get support'
+  if help_email == blank and contact_block
+    assign help_email = contact_block.settings.email
+  endif
+  if help_phone == blank and contact_block
+    assign help_phone = contact_block.settings.phone
+  endif
+  if help_text == blank and contact_block
+    assign help_text = contact_block.settings.supporting_text
+  endif
+  if help_url == blank and contact_block
+    assign help_url = contact_block.settings.support_link
+    assign help_url_label = contact_block.settings.support_label | default: help_url_label
+  endif
+  assign phone_href = help_phone | replace: ' ', '' | replace: '(', '' | replace: ')', '' | replace: '-', '' | replace: '.', ''
+-%}
+{% if section.settings.mobile_drawer_show_help %}
+  <section class="sp-header-mobile-help" aria-labelledby="SpMobileHelpTitle-{{ section.id }}">
+    {% if help_heading != blank %}
+      <h3 id="SpMobileHelpTitle-{{ section.id }}">{{ help_heading | escape }}</h3>
+    {% endif %}
+    {% if help_text != blank %}
+      <p class="sp-header-mobile-help__text">{{ help_text | escape }}</p>
+    {% endif %}
+    {% if section.settings.mobile_help_show_email and help_email != blank %}
+      <p class="sp-header-mobile-help__line">
+        <span>Email:</span>
+        <a href="mailto:{{ help_email | escape }}"><strong>{{ help_email | escape }}</strong></a>
+      </p>
+    {% endif %}
+    {% if section.settings.mobile_help_show_phone and help_phone != blank %}
+      <p class="sp-header-mobile-help__line">
+        <span>Phone:</span>
+        <a href="tel:{{ phone_href | escape }}"><strong>{{ help_phone | escape }}</strong></a>
+      </p>
+    {% endif %}
+    {% if help_url != blank %}
+      <a class="sp-header-mobile-help__support" href="{{ help_url }}">{{ help_url_label | escape }}</a>
+    {% endif %}
+  </section>
+{% endif %}

@@ -1,0 +1,24 @@
+<div class="sp-product-extras">
+  {% if settings.show_shipping_info %}
+    <p>
+      {% if settings.shipping_info_page != blank %}
+        <a href="{{ settings.shipping_info_page.url }}">{{ settings.shipping_info_page.title | escape }}</a>
+      {% else %}
+        {{ 'products.product.shipping_policy_html' | t }}
+      {% endif %}
+    </p>
+  {% endif %}
+  {% if settings.show_trust_badge and settings.product_trust_image != blank %}
+    {% render 'responsive-image', image: settings.product_trust_image, class: 'sp-product-trust-image', widths: '320,480,640,960', sizes: '(min-width: 990px) 35vw, 100vw', alt: settings.product_trust_image.alt %}
+  {% endif %}
+</div>
+{% if settings.show_product_upsell and settings.product_upsells != blank %}
+  <aside class="sp-product-upsells" aria-labelledby="ProductUpsells-{{ section.id }}">
+    <h2 id="ProductUpsells-{{ section.id }}">{{ 'products.product.you_may_also_like' | t }}</h2>
+    <div class="sp-product-upsells__grid">
+      {% for upsell_product in settings.product_upsells limit: 4 %}
+        {% unless upsell_product.id == product.id %}{% render 'product-card', card_product: upsell_product %}{% endunless %}
+      {% endfor %}
+    </div>
+  </aside>
+{% endif %}

@@ -1,0 +1,50 @@
+{% comment %}
+  Spider Announcement slider rendering.
+  Parameters:
+  - section
+  - enabled_count
+  - previous_label
+  - next_label
+  - countdown_label
+{% endcomment %}
+
+{% liquid
+  assign sp_first_enabled_found = false
+  assign sp_show_navigation = false
+  if section.settings.slider_show_navigation and enabled_count > 1
+    assign sp_show_navigation = true
+  endif
+%}
+
+<div class="sp-announcement-slider{% if sp_show_navigation %} has-navigation{% endif %}{% if sp_show_navigation and section.settings.slider_show_navigation_mobile %} show-navigation-mobile{% endif %}" data-sp-announcement-slider>
+  {% if sp_show_navigation %}
+    <div class="sp-announcement-slider__control sp-announcement-slider__control--previous">
+      <button class="sp-announcement-bar__nav-button" type="button" data-sp-announcement-previous aria-label="{{ previous_label | escape }}">
+        {% render 'icon', name: 'chevron-left', class: 'sp-announcement-bar__icon-svg' %}
+      </button>
+    </div>
+  {% endif %}
+
+  <div class="sp-announcement-bar__viewport" data-sp-announcement-viewport>
+    <div class="sp-announcement-bar__track" data-sp-announcement-track>
+      {% for block in section.blocks %}
+        {% liquid
+          assign sp_item_active = false
+          if block.settings.enabled and sp_first_enabled_found == false
+            assign sp_item_active = true
+            assign sp_first_enabled_found = true
+          endif
+        %}
+        {% render 'sp-announcement-item', block: block, is_active: sp_item_active, duplicate: false, countdown_label: countdown_label %}
+      {% endfor %}
+    </div>
+  </div>
+
+  {% if sp_show_navigation %}
+    <div class="sp-announcement-slider__control sp-announcement-slider__control--next">
+      <button class="sp-announcement-bar__nav-button" type="button" data-sp-announcement-next aria-label="{{ next_label | escape }}">
+        {% render 'icon', name: 'chevron-right', class: 'sp-announcement-bar__icon-svg' %}
+      </button>
+    </div>
+  {% endif %}
+</div>

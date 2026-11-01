@@ -1,0 +1,120 @@
+{%- comment -%}
+  Renders one Product Information Tabs panel.
+  Required: block, info_product, section.
+{%- endcomment -%}
+{%- liquid
+  assign source = block.settings.content_source
+  assign panel_image = block.settings.image
+  if panel_image == blank and info_product != blank
+    assign panel_image = info_product.featured_image
+  endif
+  assign has_text_content = false
+  if block.settings.content_heading != blank or block.settings.content_text != blank or block.settings.feature_list != blank or block.settings.button_label != blank
+    assign has_text_content = true
+  endif
+  if source != 'custom_content'
+    assign has_text_content = true
+  endif
+  assign metafield_value = blank
+  if source == 'product_metafield' and info_product != blank and block.settings.metafield_namespace != blank and block.settings.metafield_key != blank
+    assign metafield_value = info_product.metafields[block.settings.metafield_namespace][block.settings.metafield_key]
+  endif
+-%}
+
+<div class="sp-product-information-tabs__panel-layout sp-product-information-tabs__panel-layout--image-{{ block.settings.image_position }}{% if panel_image == blank %} sp-product-information-tabs__panel-layout--no-image{% endif %}">
+  <div class="sp-product-information-tabs__copy">
+    {%- if block.settings.content_heading != blank -%}
+      <h3 class="sp-product-information-tabs__content-heading sp-heading--h4">{{ block.settings.content_heading | escape }}</h3>
+    {%- endif -%}
+
+    <div class="sp-product-information-tabs__richtext rte sp-product-information-tabs__richtext--{{ source }}">
+      {%- case source -%}
+        {%- when 'product_description' -%}
+          {%- if info_product != blank and info_product.description != blank -%}
+            {{ info_product.description }}
+          {%- elsif request.design_mode -%}
+            <p>Select a product with a description to preview this content.</p>
+          {%- endif -%}
+
+        {%- when 'selected_page' -%}
+          {%- if block.settings.page != blank -%}
+            {{ block.settings.page.content }}
+          {%- elsif request.design_mode -%}
+            <p>Select a page to display its content.</p>
+          {%- endif -%}
+
+        {%- when 'product_metafield' -%}
+          {%- if metafield_value != blank -%}
+            {{ metafield_value | metafield_tag }}
+          {%- elsif request.design_mode -%}
+            <p>Add a valid product metafield namespace and key to display its value.</p>
+          {%- endif -%}
+
+        {%- when 'custom_liquid' -%}
+          {{ block.settings.custom_liquid }}
+
+        {%- when 'reviews_app' -%}
+          {%- assign rendered_app = false -%}
+          {%- for app_block in section.blocks -%}
+            {%- if app_block.type == '@app' -%}
+              {%- assign rendered_app = true -%}
+              <div class="sp-product-information-tabs__app" {{ app_block.shopify_attributes }}>
+                {% render app_block %}
+              </div>
+            {%- endif -%}
+          {%- endfor -%}
+          {%- unless rendered_app -%}
+            {%- if request.design_mode -%}<p>Add a reviews app block to this section to display verified review content.</p>{%- endif -%}
+          {%- endunless -%}
+
+        {%- else -%}
+          {{ block.settings.content_text }}
+      {%- endcase -%}
+    </div>
+
+    {%- if section.settings.show_feature_lists and block.settings.feature_list != blank -%}
+      {%- assign feature_lines = block.settings.feature_list | newline_to_br | split: '<br />' -%}
+      <ul class="sp-product-information-tabs__features" role="list">
+        {%- for feature in feature_lines -%}
+          {%- assign clean_feature = feature | strip -%}
+          {%- if clean_feature != blank -%}
+            <li>
+              {%- if section.settings.feature_icon != 'none' -%}
+                <span class="sp-product-information-tabs__feature-icon" aria-hidden="true">
+                  {% render 'icon', name: section.settings.feature_icon %}
+                </span>
+              {%- endif -%}
+              <span>{{ clean_feature | escape }}</span>
+            </li>
+          {%- endif -%}
+        {%- endfor -%}
+      </ul>
+    {%- endif -%}
+
+    {%- if block.settings.button_label != blank and block.settings.button_link != blank -%}
+      <a class="sp-button sp-product-information-tabs__button" href="{{ block.settings.button_link }}">
+        {{ block.settings.button_label | escape }}
+      </a>
+    {%- endif -%}
+  </div>
+
+  {%- if panel_image != blank -%}
+    {%- liquid
+      assign image_alt = block.settings.image_alt | default: panel_image.alt | default: info_product.title
+      assign image_sizes = '(min-width: 1200px) 48vw, (min-width: 750px) 48vw, 100vw'
+    -%}
+    <div class="sp-product-information-tabs__media sp-product-information-tabs__media--{{ block.settings.image_ratio }}">
+      {{ panel_image
+        | image_url: width: 1800
+        | image_tag:
+          widths: '360, 540, 720, 900, 1200, 1500, 1800',
+          sizes: image_sizes,
+          loading: 'lazy',
+          alt: image_alt,
+          class: 'sp-product-information-tabs__image'
+      }}
+    </div>
+  {%- elsif request.design_mode and source == 'custom_content' and has_text_content == false -%}
+    <div class="sp-product-information-tabs__empty">Add content or select a content source for this tab.</div>
+  {%- endif -%}
+</div>

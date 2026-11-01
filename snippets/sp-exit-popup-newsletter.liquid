@@ -1,0 +1,42 @@
+{%- assign form_id = 'SpExitNewsletter-' | append: section.id | append: '-' | append: block.id -%}
+<div class="sp-exit-popup__newsletter" {{ block.shopify_attributes }}>
+  {% form 'customer', id: form_id, class: 'sp-exit-popup__newsletter-form', data-sp-exit-popup-newsletter: '' %}
+    <input type="hidden" name="contact[tags]" value="newsletter">
+    <div class="sp-exit-popup__newsletter-row">
+      <div class="sp-exit-popup__newsletter-field">
+        <label class="visually-hidden" for="{{ form_id }}-email">Email address</label>
+        <svg class="sp-exit-popup__newsletter-mail" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="4.5" width="19" height="15" rx="1.5"/><path d="m3.5 6 8.5 7 8.5-7"/></svg>
+        <input
+          id="{{ form_id }}-email"
+          class="sp-exit-popup__newsletter-input"
+          type="email"
+          name="contact[email]"
+          autocomplete="email"
+          autocapitalize="off"
+          spellcheck="false"
+          required
+          placeholder="{{ block.settings.placeholder | default: 'Enter your email' | escape }}"
+          {% if form.errors %}aria-invalid="true" aria-describedby="{{ form_id }}-errors"{% endif %}
+        >
+      </div>
+      <button class="sp-exit-popup__button sp-exit-popup__button--{{ block.settings.button_style }} sp-exit-popup__button--{{ block.settings.button_size }}" type="submit">
+        <span>{{ block.settings.button_label | default: 'Subscribe' | escape }}</span>
+        <svg class="sp-exit-popup__newsletter-arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12h16m-7-7 7 7-7 7"/></svg>
+      </button>
+    </div>
+
+    {%- if block.settings.agreement -%}
+      <label class="sp-exit-popup__agreement">
+        <input type="checkbox" name="contact[accepts_marketing]" value="true" required>
+        <span>{{ block.settings.agreement_text }}</span>
+      </label>
+    {%- endif -%}
+
+    {%- if form.posted_successfully? -%}
+      <p class="sp-exit-popup__newsletter-success" role="status" data-sp-exit-popup-newsletter-success>Thank you for subscribing.</p>
+    {%- endif -%}
+    {%- if form.errors -%}
+      <div id="{{ form_id }}-errors" class="sp-exit-popup__newsletter-error" role="alert">{{ form.errors | default_errors }}</div>
+    {%- endif -%}
+  {% endform %}
+</div>

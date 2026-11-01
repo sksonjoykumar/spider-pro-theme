@@ -1,0 +1,16 @@
+{%- if display_type == 'boolean' -%}
+  {%- if boolean_value -%}
+    <span class="sp-product-comparison__boolean sp-product-comparison__boolean--yes">
+      {% render 'sp-product-comparison-icon', name: 'check' %}
+      <span class="visually-hidden">{{ yes_label | default: 'Yes' | escape }}</span>
+    </span>
+  {%- else -%}
+    <span class="sp-product-comparison__boolean sp-product-comparison__boolean--no" aria-hidden="true">—</span>
+    <span class="visually-hidden">{{ no_label | default: 'No' | escape }}</span>
+  {%- endif -%}
+{%- elsif text_value != blank -%}
+  {{ text_value | escape }}
+{%- else -%}
+  <span class="sp-product-comparison__empty-value" aria-hidden="true">—</span>
+  <span class="visually-hidden">{{ empty_label | default: 'Not specified' | escape }}</span>
+{%- endif -%}

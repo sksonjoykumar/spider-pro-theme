@@ -1,0 +1,2 @@
+{% comment %}LiquidDoc: Dialog shell. Parameters: id, label, content required.{% endcomment %}
+<dialog id="{{ id }}" class="sp-dialog" aria-label="{{ label | escape }}"><button class="sp-dialog__close" type="button" data-dialog-close aria-label="{{ 'header.navigation.close_menu' | t }}">{% render 'icon', name: 'close' %}</button>{{ content }}</dialog>

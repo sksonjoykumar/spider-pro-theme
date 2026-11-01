@@ -1,0 +1,345 @@
+{%- comment -%}
+  Spider Shop Protect v2. Settings remain within the existing System Group component.
+  Uses global scheme for section compatibility; no visible popup or banner.
+{%- endcomment -%}
+{% render 'sp-section-color-scheme', section: section %}
+{%- if section.settings.enable_shop_protect -%}
+  {{ 'sp-shop-protect.css' | asset_url | stylesheet_tag }}
+  <script src="{{ 'sp-shop-protect.js' | asset_url }}" defer></script>
+  <sp-shop-protect class="sp-shop-protect__runtime" hidden aria-hidden="true"
+    data-section-id="{{ section.id }}"
+    data-design-mode="{{ request.design_mode }}"
+    data-editor-preview="{{ section.settings.editor_preview }}"
+    data-page-type="{{ request.page_type | escape }}"
+    data-protection-mode="{{ section.settings.protection_mode | default: 'custom' | escape }}"
+    data-protection-scope="{{ section.settings.protection_scope | default: 'product' | escape }}"
+    data-disable-image-copy="{{ section.settings.disable_img_copy }}"
+    data-disable-image-drag="{{ section.settings.disable_img_drag }}"
+    data-disable-text-copy="{{ section.settings.disable_text_copy }}"
+    data-context-menu="{{ section.settings.context_menu | default: 'images' | escape }}"
+    data-protect-gallery="{{ section.settings.protect_gallery }}"
+    data-protect-cards="{{ section.settings.protect_cards }}"
+    data-protect-quick-view="{{ section.settings.protect_quick_view }}"
+    data-protect-background-images="{{ section.settings.protect_background_images }}"
+    data-enable-desktop="{{ section.settings.enable_desktop }}"
+    data-enable-mobile="{{ section.settings.enable_mobile }}"
+    data-allow-coupon-copy="{{ section.settings.allow_coupon_copy }}"
+    data-allow-sku-copy="{{ section.settings.allow_sku_copy }}"
+    data-allow-contact-copy="{{ section.settings.allow_contact_copy }}"
+    data-allow-tracking-copy="{{ section.settings.allow_tracking_copy }}"
+    data-disable-best-seller="{{ section.settings.disable_best_seller }}"
+    data-sanitize-sort-url="{{ section.settings.sanitize_sort_url }}"
+    data-show-home="{{ section.settings.show_home }}"
+    data-show-product="{{ section.settings.show_product }}"
+    data-show-collection="{{ section.settings.show_collection }}"
+    data-show-search="{{ section.settings.show_search }}"
+    data-show-blog="{{ section.settings.show_blog }}"
+    data-show-article="{{ section.settings.show_article }}"
+    data-show-other="{{ section.settings.show_other }}"
+    data-exclude-selectors="{{ section.settings.exclude_selectors | escape }}"
+    data-debug="{{ section.settings.debug_mode }}"
+  ></sp-shop-protect>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "🛡️ Shop protect",
+  "tag": "section",
+  "class": "sp-shop-protect",
+  "limit": 1,
+  "enabled_on": {
+    "groups": [
+      "custom.system"
+    ]
+  },
+  "settings": [
+    {
+      "type": "header",
+      "content": "Spider global design"
+    },
+    {
+      "type": "color_scheme",
+      "id": "sp_color_scheme",
+      "label": "Color scheme",
+      "default": "scheme-1",
+      "info": "Preserved for consistency with Spider global settings."
+    },
+    {
+      "type": "header",
+      "content": "General"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_shop_protect",
+      "label": "Enable Shop Protect",
+      "default": true,
+      "info": "When disabled, no protective runtime is loaded."
+    },
+    {
+      "type": "paragraph",
+      "content": "Discourages casual copying only. It cannot prevent screenshots, browser tools, downloads or determined scraping."
+    },
+    {
+      "type": "select",
+      "id": "protection_mode",
+      "label": "Protection preset",
+      "default": "custom",
+      "options": [
+        {
+          "value": "custom",
+          "label": "Custom (preserve saved settings)"
+        },
+        {
+          "value": "product",
+          "label": "Product protection (recommended)"
+        },
+        {
+          "value": "image",
+          "label": "Images only"
+        },
+        {
+          "value": "store",
+          "label": "Entire storefront"
+        },
+        {
+          "value": "off",
+          "label": "Disabled"
+        }
+      ],
+      "info": "Custom preserves existing scope/copy settings; choose Product protection for the recommended selective mode."
+    },
+    {
+      "type": "select",
+      "id": "protection_scope",
+      "label": "Protection scope",
+      "default": "product",
+      "options": [
+        {
+          "value": "store",
+          "label": "Entire storefront"
+        },
+        {
+          "value": "product",
+          "label": "Product media & content"
+        },
+        {
+          "value": "images",
+          "label": "Images only"
+        }
+      ],
+      "info": "Used in Custom preset; legacy values are preserved."
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_desktop",
+      "label": "Enable on desktop and tablet",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_mobile",
+      "label": "Enable on mobile",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Image protection"
+    },
+    {
+      "type": "checkbox",
+      "id": "disable_img_copy",
+      "label": "Disable images copy",
+      "default": true,
+      "info": "Works through the selected context-menu policy; context menu Off always wins."
+    },
+    {
+      "type": "checkbox",
+      "id": "disable_img_drag",
+      "label": "Disable images drag & drop",
+      "default": true,
+      "info": "Only for eligible images; gallery touch swiping remains unaffected."
+    },
+    {
+      "type": "checkbox",
+      "id": "protect_gallery",
+      "label": "Protect product gallery",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "protect_cards",
+      "label": "Protect product cards",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "protect_quick_view",
+      "label": "Protect Quick View media",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "protect_background_images",
+      "label": "Protect CSS background images",
+      "default": true,
+      "info": "Only checks eligible elements during context-menu actions."
+    },
+    {
+      "type": "header",
+      "content": "Text and context menu"
+    },
+    {
+      "type": "checkbox",
+      "id": "disable_text_copy",
+      "label": "Disable text copy",
+      "default": false,
+      "info": "Optional. Prevents copying selected protected text; never blocks editing or pasting."
+    },
+    {
+      "type": "select",
+      "id": "context_menu",
+      "label": "Context menu protection",
+      "default": "images",
+      "options": [
+        {
+          "value": "off",
+          "label": "Off"
+        },
+        {
+          "value": "images",
+          "label": "Images only"
+        },
+        {
+          "value": "protected",
+          "label": "Protected content"
+        },
+        {
+          "value": "store",
+          "label": "Entire storefront"
+        }
+      ],
+      "info": "Off guarantees the normal browser context menu, independent of image settings."
+    },
+    {
+      "type": "checkbox",
+      "id": "allow_coupon_copy",
+      "label": "Allow coupon code copying",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "allow_sku_copy",
+      "label": "Allow SKU copying",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "allow_contact_copy",
+      "label": "Allow contact information copying",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "allow_tracking_copy",
+      "label": "Allow tracking number copying",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Collection options"
+    },
+    {
+      "type": "checkbox",
+      "id": "disable_best_seller",
+      "label": "Disable best selling",
+      "default": false,
+      "info": "Optional UI restriction; it does not secure Shopify sales data."
+    },
+    {
+      "type": "checkbox",
+      "id": "sanitize_sort_url",
+      "label": "Clean best-selling URLs",
+      "default": true,
+      "info": "Only when Disable best selling is enabled; preserves other URL filters."
+    },
+    {
+      "type": "header",
+      "content": "Page targeting"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_home",
+      "label": "Enable on homepage",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_product",
+      "label": "Enable on product pages",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_collection",
+      "label": "Enable on collection pages",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_search",
+      "label": "Enable on search pages",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_blog",
+      "label": "Enable on blog pages",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_article",
+      "label": "Enable on articles",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_other",
+      "label": "Enable on other content pages",
+      "default": false
+    },
+    {
+      "type": "paragraph",
+      "content": "Cart, checkout and customer account pages are always excluded for usability."
+    },
+    {
+      "type": "header",
+      "content": "Advanced"
+    },
+    {
+      "type": "textarea",
+      "id": "exclude_selectors",
+      "label": "Custom exclusion selectors",
+      "info": "Optional CSS selectors separated by commas or lines. Invalid selectors are ignored."
+    },
+    {
+      "type": "checkbox",
+      "id": "editor_preview",
+      "label": "Enable in Theme Editor preview",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "debug_mode",
+      "label": "Debug mode",
+      "default": false,
+      "info": "Write concise diagnostics to the browser console."
+    }
+  ],
+  "presets": [
+    {
+      "name": "🛡️ Shop protect"
+    }
+  ]
+}
+{% endschema %}

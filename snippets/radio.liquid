@@ -1,0 +1,2 @@
+{% comment %}LiquidDoc: Radio primitive. Parameters: id, name, label, value required.{% endcomment %}
+<label class="sp-check" for="{{ id }}"><input id="{{ id }}" name="{{ name }}" type="radio" value="{{ value | escape }}"{% if checked %} checked{% endif %}> <span>{{ label }}</span></label>

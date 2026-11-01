@@ -1,0 +1,2 @@
+{% comment %}LiquidDoc: Accessible input primitive. Parameters: id, name, label required; type, value, required optional.{% endcomment %}
+<div class="sp-field"><label for="{{ id }}">{{ label }}</label><input id="{{ id }}" name="{{ name }}" type="{{ type | default: 'text' }}" value="{{ value | escape }}"{% if required %} required aria-required="true"{% endif %} {{ attributes }}></div>

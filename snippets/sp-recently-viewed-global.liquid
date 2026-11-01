@@ -1,0 +1,16 @@
+{%- comment -%}
+  Spider Recently Viewed global tracker.
+  Render once from layout/theme.liquid, preferably immediately after sp-product-system-global.
+  Tracks only valid product pages and stores minimal browser-local references.
+{%- endcomment -%}
+{%- if request.page_type == 'product' and product != blank -%}
+  <span
+    hidden
+    data-sp-recently-viewed-current-product
+    data-product-id="{{ product.id }}"
+    data-product-handle="{{ product.handle | escape }}"
+    data-variant-id="{{ product.selected_or_first_available_variant.id }}"
+    data-design-mode="{{ request.design_mode }}"
+  ></span>
+{%- endif -%}
+<script src="{{ 'sp-recently-viewed-core.js' | asset_url }}" defer></script>

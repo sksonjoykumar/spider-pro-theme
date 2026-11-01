@@ -1,0 +1,13 @@
+{% comment %}
+  Spider Premium Header — menu badge resolver.
+  Params: title (required), section (required)
+{% endcomment %}
+{% assign sp_badge_target = title | strip | downcase %}
+{% for sp_badge_block in section.blocks %}
+  {% if sp_badge_block.type == 'menu_badge' %}
+    {% assign sp_badge_name = sp_badge_block.settings.menu_item | strip | downcase %}
+    {% if sp_badge_name != blank and sp_badge_name == sp_badge_target and sp_badge_block.settings.badge_text != blank %}
+      <span class="sp-header-menu-badge" style="--sp-header-badge-bg: {{ sp_badge_block.settings.badge_bg | default: '#ef4444' }}; --sp-header-badge-color: {{ sp_badge_block.settings.badge_text_color | default: '#ffffff' }};">{{ sp_badge_block.settings.badge_text | escape }}</span>
+    {% endif %}
+  {% endif %}
+{% endfor %}

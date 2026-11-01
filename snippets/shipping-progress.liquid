@@ -1,0 +1,46 @@
+{% comment %}
+  Shared Main Cart free-shipping progress.
+  Source of truth: Theme settings → Cart Settings.
+  Parameters: cart optional (global cart is used when omitted).
+{% endcomment %}
+{%- liquid
+  assign shipping_goal_major = settings.cart_shipping_goal | default: 0 | plus: 0
+  assign shipping_goal = shipping_goal_major | times: 100
+  assign shipping_current = cart.total_price | default: 0
+  assign shipping_progress = 0
+  assign shipping_remaining = shipping_goal | minus: shipping_current
+
+  if shipping_goal > 0
+    assign shipping_progress = shipping_current | times: 100.0 | divided_by: shipping_goal
+  endif
+  if shipping_progress < 0
+    assign shipping_progress = 0
+  endif
+  if shipping_progress > 100
+    assign shipping_progress = 100
+  endif
+-%}
+
+{% if settings.cart_shipping_bar and shipping_goal > 0 %}
+  <div class="sp-shipping-progress" data-shipping-progress>
+    <div class="sp-shipping-progress__message">
+      {% if shipping_remaining > 0 %}
+        {% assign shipping_remaining_money = shipping_remaining | money %}
+        {% assign shipping_message = settings.cart_shipping_before | default: 'You are [amount] away from free shipping.' | replace: '[amount]', shipping_remaining_money %}
+        <p>{{ shipping_message | escape }}</p>
+      {% else %}
+        <p class="sp-shipping-progress__success">{{ settings.cart_shipping_after | default: 'You unlocked free shipping!' | escape }}</p>
+      {% endif %}
+    </div>
+    <div
+      class="sp-shipping-progress__track"
+      role="progressbar"
+      aria-label="Free shipping progress"
+      aria-valuemin="0"
+      aria-valuemax="100"
+      aria-valuenow="{{ shipping_progress | round }}"
+    >
+      <span class="sp-shipping-progress__value" style="--sp-cart-shipping-progress: {{ shipping_progress }}%"></span>
+    </div>
+  </div>
+{% endif %}

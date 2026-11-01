@@ -1,0 +1,7 @@
+{% if localization.available_countries.size > 1 or localization.available_languages.size > 1 %}
+  {% form 'localization', class: 'sp-localization' %}
+    {% if localization.available_countries.size > 1 %}<label>{{ 'general.localization.country_region' | t }}<select name="country_code">{% for country in localization.available_countries %}<option value="{{ country.iso_code }}"{% if country.iso_code == localization.country.iso_code %} selected{% endif %}>{{ country.name }} ({{ country.currency.iso_code }})</option>{% endfor %}</select></label>{% endif %}
+    {% if localization.available_languages.size > 1 %}<label>{{ 'general.localization.language' | t }}<select name="locale_code">{% for language in localization.available_languages %}<option value="{{ language.iso_code }}"{% if language.iso_code == localization.language.iso_code %} selected{% endif %}>{{ language.endonym_name }}</option>{% endfor %}</select></label>{% endif %}
+    <button type="submit">{{ 'general.localization.update_preferences' | t }}</button>
+  {% endform %}
+{% endif %}

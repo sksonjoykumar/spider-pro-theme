@@ -1,0 +1,243 @@
+{% render 'sp-section-color-scheme', section: section %}
+{{ 'sp-order-tracking.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'sp-order-tracking.js' | asset_url }}" defer></script>
+
+{%- liquid
+  assign sp_ot_container_class = 'sp-container sp-order-tracking__container'
+  if section.settings.container_width == 'wide'
+    assign sp_ot_container_class = 'sp-container--wide sp-order-tracking__container'
+  elsif section.settings.container_width == 'full'
+    assign sp_ot_container_class = 'sp-order-tracking__container sp-order-tracking__container--full'
+  endif
+-%}
+
+<section
+  id="sp-order-tracking-{{ section.id }}"
+  class="sp-order-tracking"
+  data-sp-order-tracking
+  data-sp-section-id="{{ section.id }}"
+  data-sp-tracking-endpoint="{{ section.settings.tracking_endpoint | escape }}"
+  data-sp-design-mode="{{ request.design_mode }}"
+  data-sp-endpoint-missing="{{ section.settings.endpoint_missing_message | escape }}"
+  data-sp-request-error="{{ section.settings.request_error_message | escape }}"
+  style="--sp-ot-padding-top: {{ section.settings.padding_top }}px; --sp-ot-padding-bottom: {{ section.settings.padding_bottom }}px; --sp-ot-padding-top-mobile: {{ section.settings.padding_top_mobile }}px; --sp-ot-padding-bottom-mobile: {{ section.settings.padding_bottom_mobile }}px;{% if section.settings.card_radius > 0 %} --sp-ot-card-radius: {{ section.settings.card_radius }}px;{% endif %}"
+>
+  <div class="{{ sp_ot_container_class }}">
+    <header class="sp-order-tracking__header">
+      {% if section.settings.eyebrow != blank %}
+        <p class="sp-order-tracking__eyebrow">{{ section.settings.eyebrow | escape }}</p>
+      {% endif %}
+      {% if section.settings.heading != blank %}
+        <h2 class="sp-order-tracking__heading">{{ section.settings.heading | escape }}</h2>
+      {% endif %}
+      {% if section.settings.description != blank %}
+        <div class="sp-order-tracking__intro">{{ section.settings.description | escape | newline_to_br }}</div>
+      {% endif %}
+    </header>
+
+    <div class="sp-order-tracking__dashboard">
+      <div class="sp-order-tracking__lookup-card">
+        <div class="sp-order-tracking__lookup-copy">
+          <h3>{{ section.settings.form_heading | escape }}</h3>
+          {% if section.settings.form_description != blank %}
+            <p>{{ section.settings.form_description | escape }}</p>
+          {% endif %}
+        </div>
+
+        <form class="sp-order-tracking__form" data-sp-tracking-form>
+          <div class="sp-order-tracking__field">
+            <label for="sp-order-number-{{ section.id }}">{{ section.settings.order_label | escape }}</label>
+            <div class="sp-order-tracking__input-wrap">
+              <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m12 3 8 4.2v9.6L12 21l-8-4.2V7.2L12 3Z"/><path d="m4.4 7.3 7.6 4 7.6-4M12 21v-9.7M8 5.1l7.8 4.1"/></svg>
+              <input id="sp-order-number-{{ section.id }}" name="orderNumber" type="text" placeholder="{{ section.settings.order_placeholder | escape }}" autocomplete="off" required aria-required="true" data-sp-order-number>
+            </div>
+          </div>
+
+          <div class="sp-order-tracking__field">
+            <label for="sp-order-email-{{ section.id }}">{{ section.settings.email_label | escape }}</label>
+            <div class="sp-order-tracking__input-wrap">
+              <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m4 7 8 6 8-6"/></svg>
+              <input id="sp-order-email-{{ section.id }}" name="email" type="email" placeholder="{{ section.settings.email_placeholder | escape }}" autocomplete="email" required aria-required="true" data-sp-order-email>
+            </div>
+          </div>
+
+          <button class="sp-button sp-button--primary sp-order-tracking__submit" type="submit" data-sp-submit>
+            <span data-sp-submit-label>{{ section.settings.submit_label | escape }}</span>
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+          </button>
+          <p class="sp-order-tracking__feedback" data-sp-feedback role="status" aria-live="polite" hidden></p>
+        </form>
+
+        <div class="sp-order-tracking__support">
+          <span>{{ section.settings.support_text | escape }}</span>
+          <a href="{{ section.settings.support_url | default: routes.contact_url }}">{{ section.settings.support_link_text | escape }} <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M5 12h14M13 5l7 7-7 7"/></svg></a>
+        </div>
+      </div>
+
+      <div class="sp-order-tracking__results-panel" data-sp-results-panel>
+        <div class="sp-order-tracking__empty-state" data-sp-empty-state {% if request.design_mode %}hidden{% endif %}>
+          <span class="sp-order-tracking__empty-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" focusable="false"><path d="m12 3 8 4.2v9.6L12 21l-8-4.2V7.2L12 3Z"/><path d="m4.4 7.3 7.6 4 7.6-4M12 21v-9.7"/></svg>
+          </span>
+          <h3>{{ section.settings.empty_heading | escape }}</h3>
+          <p>{{ section.settings.empty_description | escape }}</p>
+        </div>
+
+        <div class="sp-order-tracking__result-view" data-sp-result-view {% unless request.design_mode %}hidden{% endunless %}>
+          <div class="sp-order-tracking__order-summary">
+            <div class="sp-order-tracking__package-art" aria-hidden="true">
+              <svg viewBox="0 0 64 64" focusable="false"><path d="m32 8 22 11.5v25L32 56 10 44.5v-25L32 8Z" fill="#D7B184"/><path d="m10 19.5 22 12 22-12M32 31.5V56" fill="none" stroke="#B88A59" stroke-width="1.7"/><path d="m22 13.2 22 11.5-12 6.8-22-12Z" fill="#F1D4AB"/><path d="M29 33.5v10l6-3v-10" fill="#F6E5CB"/><path d="m32 8 22 11.5-22 12-22-12L32 8Z" fill="none" stroke="#B88A59" stroke-width="1.3"/></svg>
+            </div>
+            <div class="sp-order-tracking__order-main">
+              <h3>Order <span data-sp-field="orderNumber">#SP-2048</span></h3>
+              <p data-sp-field="orderDate">Placed on May 10, 2024</p>
+              <p><span data-sp-field="itemCount">3 items</span><span class="sp-order-tracking__summary-dot">•</span><span data-sp-field="total">$129.00</span></p>
+            </div>
+            <span class="sp-order-tracking__status-badge"><span aria-hidden="true"></span><span data-sp-field="statusText">In transit</span></span>
+          </div>
+
+          <ol class="sp-order-tracking__timeline" data-sp-timeline aria-label="Shipment progress">
+            <li class="sp-order-tracking__step is-complete" data-sp-step="placed">
+              <span class="sp-order-tracking__step-node"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m5 12 4 4L19 6"/></svg></span>
+              <span class="sp-order-tracking__step-label">Order placed</span>
+              <span class="sp-order-tracking__step-date" data-sp-step-date>May 10, 2024</span>
+            </li>
+            <li class="sp-order-tracking__step is-complete" data-sp-step="packed">
+              <span class="sp-order-tracking__step-node"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m5 12 4 4L19 6"/></svg></span>
+              <span class="sp-order-tracking__step-label">Packed</span>
+              <span class="sp-order-tracking__step-date" data-sp-step-date>May 11, 2024</span>
+            </li>
+            <li class="sp-order-tracking__step is-complete" data-sp-step="shipped">
+              <span class="sp-order-tracking__step-node"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m5 12 4 4L19 6"/></svg></span>
+              <span class="sp-order-tracking__step-label">Shipped</span>
+              <span class="sp-order-tracking__step-date" data-sp-step-date>May 12, 2024</span>
+            </li>
+            <li class="sp-order-tracking__step is-complete" data-sp-step="out_for_delivery">
+              <span class="sp-order-tracking__step-node"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m5 12 4 4L19 6"/></svg></span>
+              <span class="sp-order-tracking__step-label">Out for delivery</span>
+              <span class="sp-order-tracking__step-date" data-sp-step-date>May 14, 2024</span>
+            </li>
+            <li class="sp-order-tracking__step" data-sp-step="delivered">
+              <span class="sp-order-tracking__step-node"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m5 12 4 4L19 6"/></svg></span>
+              <span class="sp-order-tracking__step-label">Delivered</span>
+              <span class="sp-order-tracking__step-date" data-sp-step-date>Pending</span>
+            </li>
+          </ol>
+
+          <div class="sp-order-tracking__shipment-details">
+            <div class="sp-order-tracking__detail-column">
+              <div class="sp-order-tracking__detail-item">
+                <span class="sp-order-tracking__detail-icon" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><rect x="3.5" y="5" width="17" height="16" rx="2"/><path d="M7.5 3v4M16.5 3v4M4 9.5h16M8 13h2M14 13h2M8 17h2"/></svg></span>
+                <div><span class="sp-order-tracking__detail-label">Estimated delivery</span><strong data-sp-field="estimatedDelivery">Thu, May 16, 2024 – Sat, May 18, 2024</strong></div>
+              </div>
+              <div class="sp-order-tracking__detail-item">
+                <span class="sp-order-tracking__detail-icon" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M3 6h11v11H3zM14 10h4l3 3v4h-7z"/><circle cx="7" cy="19" r="2"/><circle cx="17" cy="19" r="2"/></svg></span>
+                <div><span class="sp-order-tracking__detail-label">Carrier</span><strong data-sp-field="carrier">UPS</strong></div>
+              </div>
+            </div>
+            <div class="sp-order-tracking__detail-column">
+              <div class="sp-order-tracking__detail-item">
+                <span class="sp-order-tracking__detail-icon" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M20 10c0 5-8 12-8 12S4 15 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/></svg></span>
+                <div><span class="sp-order-tracking__detail-label">Current location</span><strong data-sp-field="currentLocation">Los Angeles, CA, USA</strong><span class="sp-order-tracking__detail-note" data-sp-field="locationNote">Arrived at regional facility</span></div>
+              </div>
+              <div class="sp-order-tracking__detail-item">
+                <span class="sp-order-tracking__detail-icon" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M4 4v16M7 4v9M10 4v16M14 4v8M17 4v16M20 4v10"/></svg></span>
+                <div class="sp-order-tracking__tracking-number-wrap"><span class="sp-order-tracking__detail-label">Tracking number</span><strong data-sp-field="trackingNumber">1Z999AA10123456784</strong></div>
+                <button class="sp-order-tracking__copy" type="button" data-sp-copy aria-label="Copy tracking number" title="Copy tracking number"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3"/></svg></button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {% if section.settings.show_features and section.blocks.size > 0 %}
+      <div class="sp-order-tracking__features" aria-label="Order tracking benefits">
+        {% for block in section.blocks %}
+          {% if block.type == 'feature' %}
+            <article class="sp-order-tracking__feature" {{ block.shopify_attributes }}>
+              <span class="sp-order-tracking__feature-icon" aria-hidden="true">
+                {% case block.settings.icon %}
+                  {% when 'activity' %}<svg viewBox="0 0 24 24" focusable="false"><circle cx="12" cy="12" r="3"/><path d="M8.5 8.5a5 5 0 0 0 0 7M15.5 8.5a5 5 0 0 1 0 7M5.5 5.5a9 9 0 0 0 0 13M18.5 5.5a9 9 0 0 1 0 13"/></svg>
+                  {% when 'truck' %}<svg viewBox="0 0 24 24" focusable="false"><path d="M3 6h11v11H3zM14 10h4l3 3v4h-7z"/><circle cx="7" cy="19" r="2"/><circle cx="17" cy="19" r="2"/></svg>
+                  {% when 'headset' %}<svg viewBox="0 0 24 24" focusable="false"><path d="M4 13v-1a8 8 0 0 1 16 0v1"/><path d="M4 13h3v6H5a1 1 0 0 1-1-1v-5ZM20 13h-3v6h2a1 1 0 0 0 1-1v-5ZM17 19c0 1.1-.9 2-2 2h-3"/></svg>
+                  {% else %}<svg viewBox="0 0 24 24" focusable="false"><path d="M12 3 20 6v5c0 5-3.4 8.6-8 10-4.6-1.4-8-5-8-10V6l8-3Z"/><path d="m8.5 12 2.2 2.2 4.8-5"/></svg>
+                {% endcase %}
+              </span>
+              <div class="sp-order-tracking__feature-copy">
+                {% if block.settings.heading != blank %}<h3>{{ block.settings.heading | escape }}</h3>{% endif %}
+                {% if block.settings.description != blank %}<p>{{ block.settings.description | escape }}</p>{% endif %}
+              </div>
+            </article>
+          {% endif %}
+        {% endfor %}
+      </div>
+    {% endif %}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Order Tracking",
+  "tag": "section",
+  "class": "sp-section sp-section-order-tracking",
+  "disabled_on": {
+    "groups": ["header", "footer", "custom.system"]
+  },
+  "settings": [
+    { "type": "color_scheme", "id": "sp_color_scheme", "label": "Color scheme", "default": "scheme-1" },
+    { "type": "header", "content": "Section heading" },
+    { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "ORDER TRACKING" },
+    { "type": "text", "id": "heading", "label": "Heading", "default": "Track Your Order" },
+    { "type": "textarea", "id": "description", "label": "Description", "default": "Stay updated on your delivery in real time. Enter your order number and email to view the latest shipping status." },
+    { "type": "header", "content": "Order lookup form" },
+    { "type": "text", "id": "form_heading", "label": "Form heading", "default": "Track your order" },
+    { "type": "textarea", "id": "form_description", "label": "Form description", "default": "Enter your order number and email address to view your latest shipping status." },
+    { "type": "text", "id": "order_label", "label": "Order number label", "default": "Order number" },
+    { "type": "text", "id": "order_placeholder", "label": "Order number placeholder", "default": "e.g. SP-2048" },
+    { "type": "text", "id": "email_label", "label": "Email label", "default": "Email address" },
+    { "type": "text", "id": "email_placeholder", "label": "Email placeholder", "default": "you@example.com" },
+    { "type": "text", "id": "submit_label", "label": "Submit button label", "default": "Track order" },
+    { "type": "text", "id": "support_text", "label": "Support prompt", "default": "Need help?" },
+    { "type": "text", "id": "support_link_text", "label": "Support link label", "default": "Contact support" },
+    { "type": "url", "id": "support_url", "label": "Support link URL" },
+    { "type": "header", "content": "Tracking integration" },
+    { "type": "text", "id": "tracking_endpoint", "label": "Tracking API endpoint", "info": "Optional. Configure a secure endpoint that accepts a POST JSON body with orderNumber and email, and returns verified shipment data. Leave blank until a real integration is available." },
+    { "type": "text", "id": "endpoint_missing_message", "label": "Not connected message", "default": "Order tracking is not connected yet. Please contact support for help with your order." },
+    { "type": "text", "id": "request_error_message", "label": "Request error message", "default": "We could not find tracking details for those details. Please check your order number and email, then try again." },
+    { "type": "text", "id": "empty_heading", "label": "Empty results heading", "default": "Your tracking details will appear here" },
+    { "type": "textarea", "id": "empty_description", "label": "Empty results description", "default": "Enter your order number and email address to securely view your latest shipping status." },
+    { "type": "header", "content": "Layout and spacing" },
+    { "type": "select", "id": "container_width", "label": "Container width", "options": [{ "value": "standard", "label": "Theme standard" }, { "value": "wide", "label": "Wide" }, { "value": "full", "label": "Full width" }], "default": "wide" },
+    { "type": "range", "id": "padding_top", "label": "Desktop top padding", "min": 0, "max": 120, "step": 4, "default": 48, "unit": "px" },
+    { "type": "range", "id": "padding_bottom", "label": "Desktop bottom padding", "min": 0, "max": 120, "step": 4, "default": 48, "unit": "px" },
+    { "type": "range", "id": "padding_top_mobile", "label": "Mobile top padding", "min": 0, "max": 80, "step": 4, "default": 36, "unit": "px" },
+    { "type": "range", "id": "padding_bottom_mobile", "label": "Mobile bottom padding", "min": 0, "max": 80, "step": 4, "default": 36, "unit": "px" },
+    { "type": "range", "id": "card_radius", "label": "Card radius (0 uses global setting)", "min": 0, "max": 24, "step": 2, "default": 0, "unit": "px" },
+    { "type": "checkbox", "id": "show_features", "label": "Show feature cards", "default": true }
+  ],
+  "blocks": [
+    {
+      "type": "feature",
+      "name": "Feature card",
+      "settings": [
+        { "type": "select", "id": "icon", "label": "Icon", "options": [{ "value": "activity", "label": "Real-time activity" }, { "value": "truck", "label": "Delivery truck" }, { "value": "headset", "label": "Support headset" }], "default": "activity" },
+        { "type": "text", "id": "heading", "label": "Heading", "default": "Real-time updates" },
+        { "type": "textarea", "id": "description", "label": "Description", "default": "Get the latest shipping status as soon as it happens." }
+      ]
+    }
+  ],
+  "max_blocks": 6,
+  "presets": [
+    {
+      "name": "Order Tracking",
+      "category": "07. Store & Support",
+      "blocks": [
+        { "type": "feature", "settings": { "icon": "activity", "heading": "Real-time updates", "description": "Get the latest shipping status as soon as it happens." } },
+        { "type": "feature", "settings": { "icon": "truck", "heading": "Trusted delivery partners", "description": "Reliable delivery information to help you follow your shipment." } },
+        { "type": "feature", "settings": { "icon": "headset", "heading": "Easy support", "description": "Have a question? Our team is here to help anytime." } }
+      ]
+    }
+  ]
+}
+{% endschema %}

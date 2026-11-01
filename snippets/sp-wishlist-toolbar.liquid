@@ -1,0 +1,27 @@
+{%- if section.settings.show_item_count or section.settings.show_clear -%}
+  <div class="sp-wishlist-meta" data-sp-wishlist-meta hidden>
+    <div class="sp-wishlist-meta__summary">
+      {%- if section.settings.show_item_count -%}
+        <span class="sp-wishlist-meta__count" data-sp-wishlist-page-count>0 items</span>
+      {%- endif -%}
+
+      {%- if section.settings.show_item_count and section.settings.show_clear -%}
+        <span class="sp-wishlist-meta__divider" aria-hidden="true">•</span>
+      {%- endif -%}
+
+      {%- if section.settings.show_clear -%}
+        <button type="button" class="sp-wishlist-meta__clear" data-sp-wishlist-clear>Clear wishlist</button>
+      {%- endif -%}
+    </div>
+
+    {%- if section.settings.show_clear -%}
+      <div class="sp-wishlist-clear-confirm" data-sp-wishlist-clear-confirm hidden role="group" aria-label="Clear wishlist confirmation">
+        <span>Remove all saved products?</span>
+        <div class="sp-wishlist-clear-confirm__actions">
+          <button type="button" data-sp-wishlist-clear-confirm-yes>Clear all</button>
+          <button type="button" data-sp-wishlist-clear-cancel>Cancel</button>
+        </div>
+      </div>
+    {%- endif -%}
+  </div>
+{%- endif -%}

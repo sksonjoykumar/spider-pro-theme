@@ -1,0 +1,31 @@
+<div class="sp-wishlist-card__media-shell sp-product-card__media-shell">
+  <a class="sp-wishlist-card__media sp-product-card__media" data-sp-wishlist-media-link href="{{ routes.all_products_collection_url }}">
+    <img
+      class="sp-wishlist-card__image sp-wishlist-card__image--primary sp-product-card__image sp-product-card__image--primary"
+      data-sp-wishlist-image
+      src=""
+      alt=""
+      width="720"
+      height="900"
+      loading="lazy"
+      hidden
+    >
+    <img
+      class="sp-wishlist-card__image sp-wishlist-card__image--secondary sp-product-card__image sp-product-card__image--secondary"
+      data-sp-wishlist-secondary-image
+      src=""
+      alt=""
+      width="720"
+      height="900"
+      loading="lazy"
+      hidden
+    >
+    <span class="sp-wishlist-card__image-placeholder sp-product-card__placeholder" aria-hidden="true">
+      <svg viewBox="0 0 48 48"><path d="M8 10h32v28H8zM11 34l9-10 7 7 5-5 5 8M31 18a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>
+    </span>
+  </a>
+  <span class="sp-wishlist-card__badges sp-product-card__badges" data-sp-wishlist-badges></span>
+  {%- if media_actions -%}
+    {% render 'sp-wishlist-card-actions', mode: 'media' %}
+  {%- endif -%}
+</div>

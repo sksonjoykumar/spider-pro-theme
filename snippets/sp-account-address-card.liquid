@@ -1,0 +1,16 @@
+{% comment %}Parameters: address, customer, index{% endcomment %}
+<article class="sp-account-address-card">
+  <div class="sp-account-address-card__head">
+    <span class="sp-account-address-card__icon" aria-hidden="true">{% render 'sp-account-icon', name: 'home' %}</span>
+    {% if address == customer.default_address %}<span class="sp-account-badge sp-account-badge--default">{{ 'customer.spider.default_address' | t }}</span>{% endif %}
+  </div>
+  <div class="sp-account-address-card__body rte">{{ address | format_address }}</div>
+  <div class="sp-account-address-card__actions">
+    <button class="sp-button sp-button--outline sp-button--compact" type="button" data-details-open="AddressEdit-{{ address.id }}">
+      {% render 'sp-account-icon', name: 'edit' %}{{ 'customer.addresses.edit' | t }}
+    </button>
+    <button class="sp-account-link-danger" type="button" data-details-open="AddressDelete-{{ address.id }}">
+      {% render 'sp-account-icon', name: 'trash' %}{{ 'customer.addresses.delete' | t }}
+    </button>
+  </div>
+</article>

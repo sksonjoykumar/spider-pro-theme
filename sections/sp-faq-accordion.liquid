@@ -1,0 +1,233 @@
+{%- liquid
+  assign faq_count = 0
+  for block in section.blocks
+    if block.type == 'faq' and block.settings.question != blank
+      assign faq_count = faq_count | plus: 1
+    endif
+  endfor
+  assign container_class = 'sp-container'
+  if section.settings.faq_max_width == 'narrow'
+    assign container_class = 'sp-container sp-container--narrow'
+  elsif section.settings.faq_max_width == 'wide'
+    assign container_class = 'sp-container sp-container--wide'
+  endif
+-%}
+
+{% render 'sp-section-color-scheme', section: section %}
+{{ 'sp-faq-accordion.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'sp-faq-accordion.js' | asset_url }}" defer="defer"></script>
+
+<section
+  id="SpFaqAccordion-{{ section.id }}"
+  class="sp-section sp-faq-section sp-faq-section--{{ section.settings.layout_style }}"
+  data-section-id="{{ section.id }}"
+  style="
+    --sp-faq-header-width:{{ section.settings.header_max_width }}px;
+    --sp-faq-description-width:{{ section.settings.description_width }}px;
+    --sp-faq-header-gap:{{ section.settings.header_to_content_gap }}px;
+    --sp-faq-item-gap-d:{{ section.settings.item_gap_desktop }}px;
+    --sp-faq-item-gap-t:{{ section.settings.item_gap_tablet }}px;
+    --sp-faq-item-gap-m:{{ section.settings.item_gap_mobile }}px;
+    --sp-faq-answer-gap:{{ section.settings.question_answer_gap }}px;
+    --sp-faq-card-radius:{{ section.settings.card_border_radius }}px;
+    --sp-faq-border-width:{{ section.settings.card_border_width }}px;
+    --sp-faq-active-width:{{ section.settings.active_border_width }}px;
+    --sp-faq-card-pad-d:{{ section.settings.card_padding_desktop }}px;
+    --sp-faq-card-pad-m:{{ section.settings.card_padding_mobile }}px;
+    --sp-faq-toggle-size:{{ section.settings.toggle_icon_size }}px;
+    --sp-faq-duration:{{ section.settings.animation_duration }}ms;
+    --sp-faq-easing:{{ section.settings.animation_easing }};
+    --sp-faq-pad-top:{{ section.settings.padding_top }}px;
+    --sp-faq-pad-bottom:{{ section.settings.padding_bottom }}px;
+    --sp-faq-pad-top-t:{{ section.settings.padding_top_tablet }}px;
+    --sp-faq-pad-bottom-t:{{ section.settings.padding_bottom_tablet }}px;
+    --sp-faq-pad-top-m:{{ section.settings.padding_top_mobile }}px;
+    --sp-faq-pad-bottom-m:{{ section.settings.padding_bottom_mobile }}px;
+    --sp-faq-card-bg:{% if section.settings.use_scheme_card %}var(--sp-section-card,#fff){% else %}{{ section.settings.card_background }}{% endif %};
+    --sp-faq-card-border:{% if section.settings.use_scheme_border %}var(--sp-section-border,#e4e4e7){% else %}{{ section.settings.card_border_color }}{% endif %};
+    --sp-faq-toggle-bg:{% if section.settings.use_scheme_toggle %}color-mix(in srgb,var(--sp-section-accent,#415dff) 10%,transparent){% else %}{{ section.settings.toggle_icon_background }}{% endif %};
+  "
+>
+  <div class="{{ container_class }}">
+    {%- capture section_header -%}
+      {%- if section.settings.show_header -%}
+        <header class="sp-faq__header sp-faq__header--{{ section.settings.heading_alignment }}">
+          {%- if section.settings.eyebrow != blank -%}<p class="sp-faq__eyebrow sp-eyebrow">{{ section.settings.eyebrow | escape }}</p>{%- endif -%}
+          {%- if section.settings.heading != blank -%}<h2 class="sp-faq__heading sp-heading--{{ section.settings.heading_size }}">{{ section.settings.heading | escape }}</h2>{%- endif -%}
+          {%- if section.settings.description != blank -%}<div class="sp-faq__description rte">{{ section.settings.description }}</div>{%- endif -%}
+          {%- if section.settings.show_contact_button and section.settings.contact_button_label != blank and section.settings.contact_button_link != blank -%}
+            <a class="sp-button{% if section.settings.contact_button_style == 'secondary' or section.settings.contact_button_style == 'outline' %} sp-button--secondary{% endif %}{% if section.settings.contact_button_style == 'outline' %} sp-faq__contact--outline{% endif %} sp-faq__contact" href="{{ section.settings.contact_button_link }}"{% if section.settings.contact_button_new_tab %} target="_blank" rel="noopener noreferrer"{% endif %}>{{ section.settings.contact_button_label | escape }}</a>
+          {%- endif -%}
+        </header>
+      {%- endif -%}
+    {%- endcapture -%}
+
+    {%- unless section.settings.layout_style == 'style_5' -%}{{ section_header }}{%- endunless -%}
+
+    {%- if faq_count > 0 -%}
+      <sp-faq-accordion
+        class="sp-faq sp-faq--{{ section.settings.layout_style }} sp-faq--icon-{{ section.settings.icon_position }} sp-faq--question-{{ section.settings.question_alignment }} sp-faq--answer-{{ section.settings.answer_alignment }} sp-faq--category-{{ section.settings.category_navigation_style }} sp-faq--mobile-category-{{ section.settings.mobile_category_layout }} sp-faq--active-{{ section.settings.active_border_style }} sp-faq--shadow-{{ section.settings.card_shadow }} sp-faq--animation-{{ section.settings.animation_style }}{% unless section.settings.card_equal_style %} sp-faq--free-cards{% endunless %}{% unless section.settings.enable_animation %} sp-faq--no-animation{% endunless %}"
+        data-sp-faq
+        data-sp-mode="{{ section.settings.accordion_mode }}"
+        data-sp-allow-closed="{{ section.settings.allow_all_closed }}"
+        data-sp-close-others="{{ section.settings.close_other_items }}"
+        data-sp-scroll-open="{{ section.settings.scroll_open_item_into_view }}"
+        data-sp-default-category="{{ section.settings.default_category | handleize }}"
+      >
+        <div class="sp-faq__layout{% if section.settings.layout_style == 'style_3' and section.settings.sidebar_position == 'right' %} sp-faq__layout--reverse{% endif %}{% if section.settings.layout_style == 'style_5' and section.settings.support_panel_position == 'right' %} sp-faq__layout--reverse{% endif %}{% if section.settings.layout_style == 'style_5' and section.settings.mobile_support_position == 'last' %} sp-faq__layout--mobile-reverse{% endif %}">
+          {%- if section.settings.layout_style == 'style_5' -%}
+            <aside class="sp-faq__support{% if section.settings.support_sticky %} sp-faq__support--sticky{% endif %}">
+              {%- if section.settings.support_image != blank -%}
+                {{ section.settings.support_image | image_url: width: 900 | image_tag: widths: '320,480,640,900', sizes: '(min-width: 990px) 38vw, 100vw', loading: 'lazy', alt: section.settings.support_image_alt, class: 'sp-faq__support-image' }}
+              {%- elsif section.settings.show_support_icon -%}
+                <span class="sp-faq__support-icon" aria-hidden="true">{% render 'icon', name: section.settings.support_icon %}</span>
+              {%- endif -%}
+              {{ section_header }}
+              {%- if section.settings.support_heading != blank -%}<h3 class="sp-faq__support-heading sp-heading--h4">{{ section.settings.support_heading | escape }}</h3>{%- endif -%}
+              {%- if section.settings.support_text != blank -%}<div class="sp-faq__support-text rte">{{ section.settings.support_text }}</div>{%- endif -%}
+              <div class="sp-faq__support-links">
+                {%- if section.settings.support_email != blank -%}<a href="mailto:{{ section.settings.support_email | escape }}">{{ section.settings.support_email | escape }}</a>{%- endif -%}
+                {%- if section.settings.support_phone != blank -%}<a href="tel:{{ section.settings.support_phone | replace: ' ', '' | escape }}">{{ section.settings.support_phone | escape }}</a>{%- endif -%}
+              </div>
+            </aside>
+          {%- endif -%}
+
+          {%- if section.settings.layout_style == 'style_3' and section.settings.show_categories -%}
+            <nav class="sp-faq__categories" aria-label="FAQ categories">
+              <div class="sp-faq__category-list sp-faq__category-list--{{ section.settings.category_alignment }}" role="group">
+                {%- if section.settings.show_all_category -%}<button type="button" class="sp-faq__category is-active" data-sp-faq-category="all" aria-pressed="true">{{ section.settings.all_category_label | escape }}</button>{%- endif -%}
+                {%- assign category_keys = '|' -%}
+                {%- for block in section.blocks -%}
+                  {%- if block.type == 'faq' and block.settings.question != blank and block.settings.category != blank -%}
+                    {%- assign category_key = block.settings.category | handleize -%}
+                    {%- assign category_marker = category_key | prepend: '|' | append: '|' -%}
+                    {%- unless category_keys contains category_marker -%}
+                      <button type="button" class="sp-faq__category" data-sp-faq-category="{{ category_key }}" aria-pressed="false">{{ block.settings.category | escape }}</button>
+                      {%- assign category_keys = category_keys | append: category_key | append: '|' -%}
+                    {%- endunless -%}
+                  {%- endif -%}
+                {%- endfor -%}
+              </div>
+            </nav>
+          {%- endif -%}
+
+          <div class="sp-faq__main">
+            {%- if section.settings.enable_search -%}
+              <div class="sp-faq__search">
+                <label class="visually-hidden" for="SpFaqSearch-{{ section.id }}">{{ section.settings.search_placeholder | escape }}</label>
+                <input id="SpFaqSearch-{{ section.id }}" type="search" placeholder="{{ section.settings.search_placeholder | escape }}" autocomplete="off" data-sp-faq-search>
+                <button type="button" data-sp-faq-clear aria-label="Clear FAQ search" hidden>{% render 'icon', name: 'close' %}</button>
+              </div>
+            {%- endif -%}
+            <div class="sp-faq__items" data-sp-faq-items style="--sp-faq-cols-d:{{ section.settings.desktop_columns }};--sp-faq-cols-t:{{ section.settings.tablet_columns }};">
+              {%- assign opened_one = false -%}
+              {%- for block in section.blocks -%}
+                {%- if block.type == 'faq' and block.settings.question != blank -%}
+                  {%- assign should_open = false -%}
+                  {%- if section.settings.accordion_mode == 'multiple' -%}
+                    {%- if block.settings.open_by_default -%}{%- assign should_open = true -%}{%- endif -%}
+                    {%- if section.settings.first_item_open and opened_one == false -%}{%- assign should_open = true -%}{%- endif -%}
+                    {%- if should_open -%}{%- assign opened_one = true -%}{%- endif -%}
+                  {%- elsif opened_one == false -%}
+                    {%- if block.settings.open_by_default or section.settings.first_item_open -%}
+                      {%- assign should_open = true -%}
+                      {%- assign opened_one = true -%}
+                    {%- endif -%}
+                  {%- endif -%}
+                  {%- assign category_key = block.settings.category | handleize | default: 'uncategorized' -%}
+                  <details class="sp-faq__item{% if block.settings.highlight_item %} sp-faq__item--highlight{% endif %}" data-sp-faq-item data-sp-block-id="{{ block.id }}" data-sp-category="{{ category_key }}" data-sp-search-text="{{ block.settings.question | append: ' ' | append: block.settings.answer | strip_html | downcase | escape }}"{% if should_open %} open{% endif %} {{ block.shopify_attributes }}>
+                    <summary id="SpFaqQuestion-{{ section.id }}-{{ block.id }}" aria-controls="SpFaqAnswer-{{ section.id }}-{{ block.id }}" aria-expanded="{% if should_open %}true{% else %}false{% endif %}">
+                      {%- if section.settings.icon_position == 'left' -%}<span class="sp-faq__item-icon" aria-hidden="true">{%- if block.settings.custom_icon != blank -%}{{ block.settings.custom_icon | image_url: width: 80 | image_tag: widths: '40,60,80', sizes: '24px', loading: 'lazy', alt: '' }}{%- elsif block.settings.icon != 'none' -%}{% render 'icon', name: block.settings.icon %}{%- endif -%}</span>{%- endif -%}
+                      <span class="sp-faq__question">{{ block.settings.question | escape }}</span>
+                      {%- if section.settings.show_toggle_icon -%}
+                        <span class="sp-faq__toggle" aria-hidden="true">
+                          {%- if section.settings.open_icon == 'plus' -%}
+                            <span class="sp-faq__toggle-symbol"></span>
+                          {%- else -%}
+                            <span class="sp-faq__toggle-chevron">{% render 'icon', name: 'chevron' %}</span>
+                          {%- endif -%}
+                        </span>
+                      {%- endif -%}
+                    </summary>
+                    <div id="SpFaqAnswer-{{ section.id }}-{{ block.id }}" class="sp-faq__answer" role="region" aria-labelledby="SpFaqQuestion-{{ section.id }}-{{ block.id }}">
+                      {%- if block.settings.answer != blank -%}<div class="sp-faq__answer-inner rte">{{ block.settings.answer }}{%- if block.settings.question_link != blank -%}<p><a href="{{ block.settings.question_link }}">Learn more</a></p>{%- endif -%}</div>{%- endif -%}
+                    </div>
+                  </details>
+                {%- endif -%}
+              {%- endfor -%}
+            </div>
+            <div class="sp-faq__no-results" data-sp-faq-empty role="status" aria-live="polite" hidden><strong>{{ section.settings.no_results_heading | escape }}</strong><span>{{ section.settings.no_results_text | escape }}</span></div>
+          </div>
+        </div>
+      </sp-faq-accordion>
+    {%- elsif request.design_mode -%}<div class="sp-faq__empty">Add FAQ blocks to this section.</div>{%- endif -%}
+  </div>
+</section>
+
+{%- if section.settings.enable_faq_schema and faq_count > 0 -%}
+  <script type="application/ld+json" id="SpFaqSchema-{{ section.id }}">
+    {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[
+      {%- assign schema_first = true -%}
+      {%- for block in section.blocks -%}
+        {%- if block.type == 'faq' and block.settings.question != blank and block.settings.answer != blank -%}
+          {%- unless schema_first -%},{%- endunless -%}{"@type":"Question","name":{{ block.settings.question | json }},"acceptedAnswer":{"@type":"Answer","text":{{ block.settings.answer | strip_html | strip | json }}}{%- assign schema_first = false -%}
+        {%- endif -%}
+      {%- endfor -%}
+    ]}
+  </script>
+{%- endif -%}
+
+{% schema %}
+{
+  "name":"FAQ accordion","tag":"section","class":"sp-faq-accordion-wrapper","max_blocks":20,
+  "disabled_on":{"groups":["header","footer","custom.system"]},
+  "settings":[
+    {"type":"header","content":"Content"},{"type":"checkbox","id":"show_header","label":"Show header","default":true},{"type":"text","id":"eyebrow","label":"Eyebrow","default":"NEED HELP?"},{"type":"text","id":"heading","label":"Heading","default":"Frequently Asked Questions"},{"type":"richtext","id":"description","label":"Description","default":"<p>Find quick answers to common questions about orders, shipping, returns, and more.</p>"},{"type":"select","id":"heading_alignment","label":"Heading alignment","default":"center","options":[{"value":"left","label":"Left"},{"value":"center","label":"Center"},{"value":"right","label":"Right"}]},{"type":"select","id":"heading_size","label":"Heading size","default":"h2","options":[{"value":"h1","label":"H1"},{"value":"h2","label":"H2"},{"value":"h3","label":"H3"}]},{"type":"range","id":"description_width","label":"Description width","min":320,"max":900,"step":20,"unit":"px","default":700},{"type":"range","id":"header_max_width","label":"Header maximum width","min":400,"max":1100,"step":20,"unit":"px","default":900},{"type":"range","id":"header_to_content_gap","label":"Header to content gap","min":16,"max":80,"step":4,"unit":"px","default":40},
+    {"type":"checkbox","id":"show_contact_button","label":"Show contact button","default":true},{"type":"text","id":"contact_button_label","label":"Contact button label","default":"Contact support"},{"type":"url","id":"contact_button_link","label":"Contact button link"},{"type":"select","id":"contact_button_style","label":"Contact button style","default":"secondary","options":[{"value":"primary","label":"Primary"},{"value":"secondary","label":"Secondary"},{"value":"outline","label":"Accent outline"}]},{"type":"checkbox","id":"contact_button_new_tab","label":"Open button in new tab","default":false},
+    {"type":"header","content":"Layout Style"},{"type":"select","id":"layout_style","label":"Layout style","default":"style_1","options":[{"value":"style_1","label":"Classic Card Accordion"},{"value":"style_2","label":"Minimal Divider Accordion"},{"value":"style_3","label":"Category Sidebar FAQ"},{"value":"style_4","label":"Two-Column FAQ Grid"},{"value":"style_5","label":"Support Split FAQ"}]},{"type":"select","id":"faq_max_width","label":"FAQ maximum width","default":"container","options":[{"value":"narrow","label":"Narrow"},{"value":"container","label":"Theme container"},{"value":"wide","label":"Wide"}]},{"type":"select","id":"sidebar_position","label":"Sidebar position","default":"left","options":[{"value":"left","label":"Left"},{"value":"right","label":"Right"}],"visible_if":"{{ section.settings.layout_style == 'style_3' }}"},{"type":"select","id":"support_panel_position","label":"Support panel position","default":"left","options":[{"value":"left","label":"Left"},{"value":"right","label":"Right"}],"visible_if":"{{ section.settings.layout_style == 'style_5' }}"},{"type":"select","id":"mobile_support_position","label":"Mobile support position","default":"first","options":[{"value":"first","label":"First"},{"value":"last","label":"Last"}],"visible_if":"{{ section.settings.layout_style == 'style_5' }}"},
+    {"type":"header","content":"FAQ Behavior"},{"type":"select","id":"accordion_mode","label":"Accordion mode","default":"single","options":[{"value":"single","label":"Single open"},{"value":"multiple","label":"Multiple open"}]},{"type":"checkbox","id":"first_item_open","label":"Open first item initially","default":true},{"type":"checkbox","id":"allow_all_closed","label":"Allow all items to close","default":true},{"type":"checkbox","id":"close_other_items","label":"Close other items when opening","default":true},{"type":"checkbox","id":"scroll_open_item_into_view","label":"Scroll opened item into view","default":false},
+    {"type":"header","content":"Categories"},{"type":"checkbox","id":"show_categories","label":"Show categories","default":true},{"type":"select","id":"category_navigation_style","label":"Category navigation style","default":"buttons","options":[{"value":"buttons","label":"Buttons"},{"value":"pills","label":"Pills"}]},{"type":"text","id":"default_category","label":"Default category","info":"Enter a category name used by FAQ blocks."},{"type":"checkbox","id":"show_all_category","label":"Show all questions category","default":true},{"type":"text","id":"all_category_label","label":"All category label","default":"All questions"},{"type":"select","id":"category_alignment","label":"Category alignment","default":"left","options":[{"value":"left","label":"Left"},{"value":"center","label":"Center"}]},{"type":"select","id":"mobile_category_layout","label":"Mobile category layout","default":"scroll","options":[{"value":"scroll","label":"Horizontal scroll"},{"value":"wrap","label":"Wrap"}]},
+    {"type":"header","content":"Search"},{"type":"checkbox","id":"enable_search","label":"Enable FAQ search","default":false},{"type":"text","id":"search_placeholder","label":"Search placeholder","default":"Search questions"},{"type":"text","id":"no_results_heading","label":"No-results heading","default":"No answers found"},{"type":"text","id":"no_results_text","label":"No-results text","default":"Try another search term or category."},
+    {"type":"header","content":"Support Panel"},{"type":"text","id":"support_heading","label":"Support heading","default":"Still need help?"},{"type":"richtext","id":"support_text","label":"Support text","default":"<p>Contact our support team for help with your order.</p>"},{"type":"image_picker","id":"support_image","label":"Support image"},{"type":"text","id":"support_image_alt","label":"Support image alt text"},{"type":"text","id":"support_email","label":"Support email"},{"type":"text","id":"support_phone","label":"Support phone"},{"type":"checkbox","id":"show_support_icon","label":"Show support icon","default":true},{"type":"select","id":"support_icon","label":"Support icon","default":"account","options":[{"value":"account","label":"Account"},{"value":"heart","label":"Heart"},{"value":"shield","label":"Shield"}]},{"type":"checkbox","id":"support_sticky","label":"Sticky support panel on desktop","default":false},
+    {"type":"header","content":"Accordion Design"},{"type":"range","id":"desktop_columns","label":"Desktop columns","min":1,"max":3,"step":1,"default":2},{"type":"range","id":"tablet_columns","label":"Tablet columns","min":1,"max":3,"step":1,"default":1},{"type":"range","id":"item_gap_desktop","label":"Desktop item gap","min":0,"max":32,"step":2,"unit":"px","default":12},{"type":"range","id":"item_gap_tablet","label":"Tablet item gap","min":0,"max":28,"step":2,"unit":"px","default":12},{"type":"range","id":"item_gap_mobile","label":"Mobile item gap","min":0,"max":24,"step":2,"unit":"px","default":10},{"type":"range","id":"question_answer_gap","label":"Question to answer gap","min":4,"max":32,"step":2,"unit":"px","default":12},{"type":"select","id":"question_alignment","label":"Question alignment","default":"left","options":[{"value":"left","label":"Left"},{"value":"center","label":"Center"}]},{"type":"select","id":"answer_alignment","label":"Answer alignment","default":"left","options":[{"value":"left","label":"Left"},{"value":"center","label":"Center"}]},{"type":"checkbox","id":"card_equal_style","label":"Use consistent card styling","default":true},{"type":"range","id":"card_border_width","label":"Card border width","min":0,"max":4,"step":1,"unit":"px","default":1},{"type":"range","id":"card_border_radius","label":"Card border radius","min":0,"max":32,"step":2,"unit":"px","default":12},{"type":"select","id":"card_shadow","label":"Card shadow","default":"soft","options":[{"value":"none","label":"None"},{"value":"soft","label":"Soft"},{"value":"medium","label":"Medium"}]},{"type":"range","id":"card_padding_desktop","label":"Desktop card padding","min":12,"max":40,"step":2,"unit":"px","default":24},{"type":"range","id":"card_padding_mobile","label":"Mobile card padding","min":10,"max":28,"step":2,"unit":"px","default":16},{"type":"select","id":"active_border_style","label":"Active border style","default":"side","options":[{"value":"side","label":"Side border"},{"value":"top","label":"Top border"},{"value":"outline","label":"Outline"},{"value":"none","label":"None"}]},{"type":"range","id":"active_border_width","label":"Active border width","min":2,"max":6,"step":1,"unit":"px","default":4},
+    {"type":"header","content":"Toggle Icon"},{"type":"checkbox","id":"show_toggle_icon","label":"Show toggle icon","default":true},{"type":"select","id":"open_icon","label":"Toggle icon","default":"plus","options":[{"value":"plus","label":"Plus / minus"},{"value":"chevron","label":"Chevron"}]},{"type":"select","id":"icon_position","label":"Item icon position","default":"none","options":[{"value":"none","label":"Hidden"},{"value":"left","label":"Left"}]},{"type":"range","id":"toggle_icon_size","label":"Toggle icon size","min":32,"max":56,"step":2,"unit":"px","default":42},
+    {"type":"header","content":"Colors"},{"type":"color_scheme","id":"sp_color_scheme","label":"Color scheme","default":"scheme-1"},{"type":"checkbox","id":"use_scheme_card","label":"Use scheme card color","default":true},{"type":"color","id":"card_background","label":"Custom card background","default":"#FFFFFF","visible_if":"{{ section.settings.use_scheme_card == false }}"},{"type":"checkbox","id":"use_scheme_border","label":"Use scheme border color","default":true},{"type":"color","id":"card_border_color","label":"Custom border color","default":"#E4E4E7","visible_if":"{{ section.settings.use_scheme_border == false }}"},{"type":"checkbox","id":"use_scheme_toggle","label":"Use scheme toggle background","default":true},{"type":"color","id":"toggle_icon_background","label":"Custom toggle background","default":"#EEF4E8","visible_if":"{{ section.settings.use_scheme_toggle == false }}"},
+    {"type":"header","content":"Desktop Spacing"},{"type":"range","id":"padding_top","label":"Top padding","min":0,"max":160,"step":8,"unit":"px","default":80},{"type":"range","id":"padding_bottom","label":"Bottom padding","min":0,"max":160,"step":8,"unit":"px","default":80},
+    {"type":"header","content":"Tablet Spacing"},{"type":"range","id":"padding_top_tablet","label":"Top padding","min":0,"max":120,"step":8,"unit":"px","default":64},{"type":"range","id":"padding_bottom_tablet","label":"Bottom padding","min":0,"max":120,"step":8,"unit":"px","default":64},
+    {"type":"header","content":"Mobile Spacing"},{"type":"range","id":"padding_top_mobile","label":"Top padding","min":0,"max":96,"step":8,"unit":"px","default":48},{"type":"range","id":"padding_bottom_mobile","label":"Bottom padding","min":0,"max":96,"step":8,"unit":"px","default":48},
+    {"type":"header","content":"Accessibility"},{"type":"paragraph","content":"Native details and summary controls keep answers accessible without JavaScript."},
+    {"type":"header","content":"SEO"},{"type":"checkbox","id":"enable_faq_schema","label":"Enable FAQPage structured data","default":false,"info":"Enable only when this visible content meets Google's FAQ guidelines. Rich-result eligibility is not guaranteed."},
+    {"type":"header","content":"Advanced"},{"type":"checkbox","id":"enable_animation","label":"Enable animation","default":true},{"type":"select","id":"animation_style","label":"Animation style","default":"fade","options":[{"value":"none","label":"None"},{"value":"fade","label":"Fade"},{"value":"slide","label":"Fade and slide"}]},{"type":"range","id":"animation_duration","label":"Animation duration","min":100,"max":500,"step":50,"unit":"ms","default":200},{"type":"select","id":"animation_easing","label":"Animation easing","default":"ease","options":[{"value":"ease","label":"Ease"},{"value":"ease-in-out","label":"Ease in/out"},{"value":"linear","label":"Linear"}]}
+  ],
+  "blocks":[{"type":"faq","name":"FAQ item","settings":[{"type":"text","id":"question","label":"Question","default":"How long does shipping take?"},{"type":"richtext","id":"answer","label":"Answer","default":"<p>Replace this text with your store's current shipping estimate and delivery terms.</p>"},{"type":"text","id":"category","label":"Category","default":"Shipping"},{"type":"select","id":"icon","label":"Icon","default":"none","options":[{"value":"none","label":"None"},{"value":"truck","label":"Truck"},{"value":"return","label":"Return"},{"value":"shield","label":"Shield"},{"value":"account","label":"Account"}]},{"type":"image_picker","id":"custom_icon","label":"Custom icon"},{"type":"checkbox","id":"open_by_default","label":"Open by default","default":false},{"type":"checkbox","id":"highlight_item","label":"Highlight item","default":false},{"type":"url","id":"question_link","label":"Optional learn-more link"}]}],
+  "presets":[
+    {
+      "name":"FAQ Accordion",
+      "settings":{
+        "layout_style":"style_1",
+        "faq_max_width":"container",
+        "heading_alignment":"center",
+        "description_width":900,
+        "contact_button_style":"outline",
+        "contact_button_link":"/pages/contact",
+        "first_item_open":true,
+        "accordion_mode":"single",
+        "card_shadow":"none",
+        "active_border_style":"side",
+        "card_border_radius":12,
+        "use_scheme_card":true,
+        "use_scheme_border":true,
+        "use_scheme_toggle":true
+      },
+      "category": "04. Content",
+      "blocks":[
+        {"type":"faq","settings":{"question":"How long does shipping take?","answer":"<p>Standard shipping usually takes 3–7 business days. Express options are available at checkout.</p>","category":"Shipping","open_by_default":true}},
+        {"type":"faq","settings":{"question":"Can I change or cancel my order?","answer":"<p>Contact our support team as soon as possible if you need to change or cancel an order. Requests may depend on the order's fulfilment status.</p>","category":"Orders"}},
+        {"type":"faq","settings":{"question":"What is your return policy?","answer":"<p>Please review our return policy for eligibility, time limits, and instructions before sending an item back.</p>","category":"Returns"}},
+        {"type":"faq","settings":{"question":"How can I track my order?","answer":"<p>When your order ships, use the tracking link in your shipping confirmation email to follow its progress.</p>","category":"Orders"}},
+        {"type":"faq","settings":{"question":"Do you ship internationally?","answer":"<p>Available destinations and delivery options are shown during checkout. Please check the shipping information for your destination.</p>","category":"Shipping"}}
+      ]
+    }
+  ]
+}
+{% endschema %}

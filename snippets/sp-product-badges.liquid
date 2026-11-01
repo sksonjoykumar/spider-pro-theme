@@ -1,0 +1,28 @@
+{%- liquid
+  assign show_sale = settings.badge_sale
+  assign show_sold = settings.badge_sold_out
+  assign badge_position = settings.badge_position | default: 'top-left'
+  assign show_new = false
+  assign show_best = false
+  if design == '2' or design == '8'
+    if product.tags contains 'new' or product.tags contains 'New'
+      assign show_new = true
+    endif
+  endif
+  if design == '5'
+    if product.tags contains 'bestseller' or product.tags contains 'Best Seller'
+      assign show_best = true
+    endif
+  endif
+-%}
+{%- if show_new or show_best or show_sale or show_sold -%}
+  <span class="sp-product-card__badges sp-product-card__badges--{{ badge_position }}">
+    {%- if product.available == false and show_sold -%}
+      <span class="sp-product-card__badge sp-product-card__badge--sold">Sold out</span>
+    {%- else -%}
+      {%- if show_new -%}<span class="sp-product-card__badge sp-product-card__badge--new">New</span>{%- endif -%}
+      {%- if show_best -%}<span class="sp-product-card__badge sp-product-card__badge--best">Best seller</span>{%- endif -%}
+      {%- if on_sale and show_sale -%}<span class="sp-product-card__badge sp-product-card__badge--sale">{% if sale_percent > 0 %}-{{ sale_percent }}%{% else %}Sale{% endif %}</span>{%- endif -%}
+    {%- endif -%}
+  </span>
+{%- endif -%}

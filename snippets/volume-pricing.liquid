@@ -1,0 +1,23 @@
+{% comment %}
+  Variant-aware Shopify quantity price-break table.
+  Parameters: product, variant. All variant tables are server-rendered and the Product Page
+  controller only toggles the matching table, preserving Shopify's price-break source of truth.
+{% endcomment %}
+{% assign current_variant = variant | default: product.selected_or_first_available_variant %}
+<div class="sp-volume-pricing" data-volume-pricing-root{% if current_variant.quantity_price_breaks.size == 0 %} hidden{% endif %}>
+  {% for price_variant in product.variants %}
+    {% if price_variant.quantity_price_breaks.size > 0 %}
+      <div data-volume-pricing-variant="{{ price_variant.id }}"{% unless price_variant.id == current_variant.id %} hidden{% endunless %}>
+        <table>
+          <caption class="visually-hidden">{{ 'products.product.quantity.label' | t }}</caption>
+          <thead><tr><th>{{ 'products.product.quantity.label' | t }}</th><th>{{ 'products.product.price.regular_price' | t }}</th></tr></thead>
+          <tbody>
+            {% for price_break in price_variant.quantity_price_breaks %}
+              <tr><td>{{ price_break.minimum_quantity }}+</td><td>{{ price_break.price | money }}</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% endif %}
+  {% endfor %}
+</div>

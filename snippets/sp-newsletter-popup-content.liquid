@@ -1,0 +1,48 @@
+<div class="sp-newsletter-popup__content-inner">
+  {% if section.settings.layout_mode == 'reference_split' and section.settings.show_eyebrow and section.settings.eyebrow_text != blank %}
+    <p class="sp-newsletter-popup__eyebrow">{{ section.settings.eyebrow_text | escape }}</p>
+  {% endif %}
+
+  {% if section.settings.heading != blank %}
+    <h2 id="SpNewsletterPopupHeading-{{ section.id }}" class="sp-newsletter-popup__heading">{{ section.settings.heading }}</h2>
+  {% else %}
+    <h2 id="SpNewsletterPopupHeading-{{ section.id }}" class="sp-newsletter-popup__visually-hidden">Newsletter signup</h2>
+  {% endif %}
+
+  {% if section.settings.description != blank %}
+    <div id="SpNewsletterPopupDescription-{{ section.id }}" class="sp-newsletter-popup__description">{{ section.settings.description }}</div>
+  {% endif %}
+
+  {% if section.settings.layout_mode == 'reference_split' and section.settings.show_offer_card and section.settings.offer_title != blank %}
+    <div class="sp-newsletter-popup__offer">
+      <span class="sp-newsletter-popup__offer-icon" aria-hidden="true">
+        {% render 'sp-newsletter-popup-benefits', icon: section.settings.offer_icon, icon_only: true %}
+      </span>
+      <div class="sp-newsletter-popup__offer-copy">
+        <strong>{{ section.settings.offer_title | escape }}</strong>
+        {% if section.settings.offer_description != blank %}<span>{{ section.settings.offer_description | escape }}</span>{% endif %}
+      </div>
+    </div>
+  {% endif %}
+
+  {% render 'sp-newsletter-popup-form', section: section %}
+
+  {% if section.settings.layout_mode == 'reference_split' and section.settings.show_no_thanks and section.settings.no_thanks_text != blank %}
+    <button type="button" class="sp-newsletter-popup__no-thanks" data-sp-newsletter-popup-no-thanks data-sp-no-loader>{{ section.settings.no_thanks_text | escape }}</button>
+  {% endif %}
+
+  {% if section.settings.layout_mode == 'reference_split' and section.settings.show_benefits %}
+    {% render 'sp-newsletter-popup-benefits', section: section %}
+  {% endif %}
+
+  {% if section.settings.show_privacy_note and section.settings.privacy_note != blank %}
+    <div class="sp-newsletter-popup__privacy">{{ section.settings.privacy_note }}</div>
+  {% endif %}
+
+  {% if section.settings.show_do_not_show and section.settings.do_not_show_label != blank %}
+    <button type="button" class="sp-newsletter-popup__dismiss" data-sp-newsletter-popup-permanent-dismiss data-sp-no-loader>
+      <span class="sp-newsletter-popup__dismiss-check" aria-hidden="true"></span>
+      <span>{{ section.settings.do_not_show_label | escape }}</span>
+    </button>
+  {% endif %}
+</div>

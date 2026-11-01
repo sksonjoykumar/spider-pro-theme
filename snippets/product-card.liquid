@@ -1,0 +1,27 @@
+{% comment %}
+  Backwards-compatible Spider product-card adapter.
+  All commerce/product presentation is owned by sp-product-card.liquid.
+  Existing Collection, Search-related helpers, cart upsells and product extras can keep calling this legacy name.
+{% endcomment %}
+{%- assign sp_legacy_section_id = section.id | default: 'global' -%}
+{%- assign sp_legacy_instance = instance_id | default: 'legacy' -%}
+{% render 'sp-product-card', product: card_product, context: context, default: '(min-width: 1200px) 25vw, (min-width: 750px) 33vw, 50vw', section_id: sp_legacy_section_id, instance_id: sp_legacy_instance, sizes: sizes %}
+{% comment %}
+
+This file has been rewritten to preserve the original behavior.
+
+---
+Changes:
+- from: |-
+    {% render 'sp-product-card',
+      product: card_product,
+      context: context | default: 'global-product-grid',
+      section_id: sp_legacy_section_id,
+      instance_id: sp_legacy_instance,
+      sizes: sizes | default: '(min-width: 1200px) 25vw, (min-width: 750px) 33vw, 50vw'
+    %}
+  to: "{% render 'sp-product-card', product: card_product, context: context, default:
+    '(min-width: 1200px) 25vw, (min-width: 750px) 33vw, 50vw', section_id: sp_legacy_section_id,
+    instance_id: sp_legacy_instance, sizes: sizes %}"
+  position: 406..626
+{% endcomment %}

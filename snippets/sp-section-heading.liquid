@@ -1,0 +1,34 @@
+{%- liquid
+  assign sp_heading_tag = heading_tag | default: heading_settings.heading_tag | default: 'h2'
+  assign sp_design = design | default: heading_settings.design | default: '1'
+  assign sp_align = alignment | default: heading_settings.alignment | default: heading_settings.heading_alignment | default: 'center'
+  assign sp_mobile_align = mobile_alignment | default: heading_settings.mobile_alignment | default: heading_settings.heading_alignment_mobile | default: 'center'
+  assign sp_heading = heading | default: heading_settings.heading
+  assign sp_subheading = subheading | default: heading_settings.subheading | default: heading_settings.description
+  assign sp_heading_gap = heading_gap | default: heading_settings.heading_gap | default: heading_settings.heading_description_gap | default: 8
+  assign sp_heading_mb = bottom_spacing | default: heading_settings.margin_bottom | default: heading_settings.heading_bottom_spacing | default: 30
+  assign sp_typography_source = typography_source | default: heading_settings.typography_source | default: 'global'
+  assign sp_global_level = sp_heading_tag | downcase
+  unless sp_global_level == 'h1' or sp_global_level == 'h2' or sp_global_level == 'h3' or sp_global_level == 'h4' or sp_global_level == 'h5' or sp_global_level == 'h6'
+    assign sp_global_level = 'h2'
+  endunless
+  assign sp_heading_size_d = heading_size_desktop | default: heading_settings.heading_size_desktop | default: 32
+  assign sp_heading_size_t = heading_size_tablet | default: heading_settings.heading_size_tablet | default: 28
+  assign sp_heading_size_m = heading_size_mobile | default: heading_settings.heading_size_mobile | default: 24
+  assign sp_heading_weight = heading_weight | default: heading_settings.heading_weight | default: 600
+  assign sp_heading_line = heading_line_height | default: heading_settings.heading_line_height | default: 115
+  assign sp_heading_letter = heading_letter_spacing | default: heading_settings.heading_letter_spacing | default: 0
+  assign sp_sub_size = subheading_size | default: heading_settings.subheading_size | default: heading_settings.description_size | default: 15
+-%}
+<header
+  class="sp-section-heading sp-section-heading--design-{{ sp_design }} sp-section-heading--type-{{ sp_typography_source }} sp-section-heading--global-{{ sp_global_level }}{% if heading_settings.horizontal %} sp-section-heading--horizontal{% endif %} sp-section-heading--{{ sp_align }} sp-section-heading--mobile-{{ sp_mobile_align }}"
+  style="--sp-heading-gap:{{ sp_heading_gap }}px;--sp-heading-mb:{{ sp_heading_mb }}px;{% if sp_typography_source == 'custom' %}--sp-heading-size-d:{{ sp_heading_size_d }}px;--sp-heading-size-t:{{ sp_heading_size_t }}px;--sp-heading-size-m:{{ sp_heading_size_m }}px;--sp-heading-weight:{{ sp_heading_weight }};--sp-heading-line:{{ sp_heading_line | divided_by: 100.0 }};--sp-heading-letter:{{ sp_heading_letter }}px;{% else %}--sp-heading-size-d:var(--sp-{{ sp_global_level }}-size-d);--sp-heading-size-t:var(--sp-{{ sp_global_level }}-size-t);--sp-heading-size-m:var(--sp-{{ sp_global_level }}-size-m);--sp-heading-weight:var(--sp-{{ sp_global_level }}-weight);--sp-heading-line:var(--sp-{{ sp_global_level }}-line);--sp-heading-letter:var(--sp-{{ sp_global_level }}-tracking);--sp-heading-transform:var(--sp-{{ sp_global_level }}-transform);{% endif %}--sp-sub-size:{{ sp_sub_size }}px;"
+  {% if shopify_attributes != blank %}{{ shopify_attributes }}{% endif %}
+>
+  <div class="sp-section-heading__copy">
+    {% if heading_settings.icon != blank %}<div class="sp-section-heading__icon" aria-hidden="true">{{ heading_settings.icon | image_url: width: 160 | image_tag: widths: '48,80,120,160', sizes: '64px', loading: 'lazy', alt: '' }}</div>{% endif %}
+    {% if sp_heading != blank %}<{{ sp_heading_tag }} class="sp-section-heading__title">{{ sp_heading | escape }}</{{ sp_heading_tag }}>{% endif %}
+    {% if sp_subheading != blank %}<div class="sp-section-heading__subtitle rte">{{ sp_subheading }}</div>{% endif %}
+  </div>
+  {% if heading_settings.button_label != blank and heading_settings.button_link != blank %}<a class="sp-button sp-section-heading__button" href="{{ heading_settings.button_link }}" {% if heading_settings.button_new_tab %}target="_blank" rel="noopener noreferrer"{% endif %}>{{ heading_settings.button_label | escape }}<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h11M11 6l4 4-4 4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></a>{% endif %}
+</header>

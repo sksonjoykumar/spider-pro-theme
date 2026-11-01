@@ -1,0 +1,88 @@
+{%- liquid
+  assign b = block.settings
+  assign valid = false
+  if b.before_image != blank and b.after_image != blank
+    assign valid = true
+  elsif request.design_mode
+    assign valid = true
+  endif
+  assign start_position = b.initial_position
+  if b.use_section_initial_position
+    assign start_position = section.settings.initial_position
+  endif
+  assign before_alt = b.before_image_alt | default: b.before_image.alt | default: b.before_label | default: 'Before'
+  assign after_alt = b.after_image_alt | default: b.after_image.alt | default: b.after_label | default: 'After'
+  assign before_caption = b.before_caption
+  assign after_caption = b.after_caption
+  assign image_sizes = '(min-width: 1440px) 1440px, (min-width: 750px) 92vw, 94vw'
+  assign image_load = 'lazy'
+  if comparison_index == 0 and section.settings.eager_first_image
+    assign image_load = 'eager'
+  endif
+-%}
+{%- if valid -%}
+<article class="sp-ba__comparison{% if b.featured_comparison %} sp-ba__comparison--featured{% endif %}" data-sp-ba-comparison data-sp-ba-index="{{ comparison_index }}" data-sp-ba-state="before" {{ block.shopify_attributes }} style="--sp-ba-image-position:{{ b.image_position | default: 'center center' }};--sp-ba-position: {{ start_position }}%;--sp-ba-natural-ratio:{{ b.before_image.aspect_ratio | default: 2.8 }};">
+  {%- if b.comparison_heading != blank or b.comparison_description != blank -%}
+    <div class="sp-ba__item-header">
+      {%- if b.comparison_heading != blank -%}<h3>{{ b.comparison_heading | escape }}</h3>{%- endif -%}
+      {%- if b.comparison_description != blank -%}<div class="rte">{{ b.comparison_description }}</div>{%- endif -%}
+    </div>
+  {%- endif -%}
+  <div class="sp-ba__frame" data-sp-ba-frame>
+    <div class="sp-ba__layers">
+      <div class="sp-ba__layer sp-ba__layer--before" data-sp-ba-before>
+        {%- if b.before_image != blank -%}
+          <picture>
+            {%- if b.before_mobile_image != blank -%}
+              <source media="(max-width: 749px)" srcset="{{ b.before_mobile_image | image_url: width: 360 }} 360w, {{ b.before_mobile_image | image_url: width: 540 }} 540w, {{ b.before_mobile_image | image_url: width: 750 }} 750w, {{ b.before_mobile_image | image_url: width: 1000 }} 1000w" sizes="{{ image_sizes }}">
+            {%- endif -%}
+            {{ b.before_image | image_url: width: 1800 | image_tag: widths: '360,540,750,1000,1200,1440,1800', sizes: image_sizes, alt: before_alt, loading: image_load, class: 'sp-ba__image' }}
+          </picture>
+        {%- else -%}
+          {{ 'product-1' | placeholder_svg_tag: 'sp-ba__placeholder' }}
+        {%- endif -%}
+      </div>
+      <div class="sp-ba__layer sp-ba__layer--after" data-sp-ba-after>
+        {%- if b.after_image != blank -%}
+          <picture>
+            {%- if b.after_mobile_image != blank -%}
+              <source media="(max-width: 749px)" srcset="{{ b.after_mobile_image | image_url: width: 360 }} 360w, {{ b.after_mobile_image | image_url: width: 540 }} 540w, {{ b.after_mobile_image | image_url: width: 750 }} 750w, {{ b.after_mobile_image | image_url: width: 1000 }} 1000w" sizes="{{ image_sizes }}">
+            {%- endif -%}
+            {{ b.after_image | image_url: width: 1800 | image_tag: widths: '360,540,750,1000,1200,1440,1800', sizes: image_sizes, alt: after_alt, loading: image_load, class: 'sp-ba__image' }}
+          </picture>
+        {%- else -%}
+          {{ 'product-2' | placeholder_svg_tag: 'sp-ba__placeholder' }}
+        {%- endif -%}
+      </div>
+    </div>
+    {%- if section.settings.show_labels -%}
+      <span class="sp-ba__label sp-ba__label--before" data-sp-ba-label-before>{{ b.before_label | default: 'BEFORE' | escape }}</span>
+      <span class="sp-ba__label sp-ba__label--after" data-sp-ba-label-after>{{ b.after_label | default: 'AFTER' | escape }}</span>
+    {%- endif -%}
+    {%- unless section.settings.layout_style == 'style_3' or section.settings.layout_style == 'style_5' -%}
+      <div class="sp-ba__divider" aria-hidden="true"><span class="sp-ba__handle" aria-hidden="true">
+        {%- if section.settings.show_direction_arrows -%}
+          <span class="sp-ba__arrows">{% render 'icon', name: 'chevron-left' %}{% render 'icon', name: 'chevron-right' %}</span>
+        {%- endif -%}
+      </span></div>
+      <input class="sp-ba__range" type="range" min="0" max="100" step="1" value="{{ start_position }}" aria-label="{{ b.comparison_heading | default: 'Before and after image comparison' | escape }}" aria-valuetext="{{ start_position }} percent before, {{ 100 | minus: start_position }} percent after" aria-describedby="sp-ba-help-{{ section.id }}-{{ block.id }}" {% if is_vertical %}aria-orientation="vertical"{% endif %} data-sp-ba-range>
+      <span id="sp-ba-help-{{ section.id }}-{{ block.id }}" class="visually-hidden">Use arrow keys to compare before and after. Press Home for all after, or End for all before.</span>
+    {%- endunless -%}
+    {%- if section.settings.layout_style == 'style_5' -%}
+      <div class="sp-ba__toggle" role="group" aria-label="Choose image to view">
+        <button type="button" class="sp-ba__toggle-button" data-sp-ba-toggle="before" aria-pressed="true">{{ b.before_label | default: 'Before' | escape }}</button>
+        <button type="button" class="sp-ba__toggle-button" data-sp-ba-toggle="after" aria-pressed="false">{{ b.after_label | default: 'After' | escape }}</button>
+      </div>
+    {%- endif -%}
+  </div>
+  {%- if before_caption != blank or after_caption != blank -%}
+    <div class="sp-ba__captions">
+      {%- if before_caption != blank -%}<p><strong>{{ b.before_label | default: 'Before' | escape }}:</strong> {{ before_caption | escape }}</p>{%- endif -%}
+      {%- if after_caption != blank -%}<p><strong>{{ b.after_label | default: 'After' | escape }}:</strong> {{ after_caption | escape }}</p>{%- endif -%}
+    </div>
+  {%- endif -%}
+  {%- if b.link_label != blank and b.link_url != blank -%}
+    <a class="sp-ba__comparison-link" href="{{ b.link_url }}"{% if b.open_in_new_tab %} target="_blank" rel="noopener noreferrer"{% endif %}>{{ b.link_label | escape }} <span aria-hidden="true">→</span></a>
+  {%- endif -%}
+</article>
+{%- endif -%}

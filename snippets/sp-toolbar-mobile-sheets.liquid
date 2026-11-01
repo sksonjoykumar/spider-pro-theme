@@ -1,0 +1,66 @@
+{% comment %}
+  Spider Toolbar additional navigation sheets. Only real Shopify destinations are rendered.
+  Menus are native Shopify link_list settings. Accessible interactions owned by sp-toolbar-mobile.js.
+{% endcomment %}
+{% if section.settings.enable_categories_sheet or section.settings.enable_quick_actions %}
+  <div class="sp-mobile-toolbar__sheet-backdrop" data-sp-sheet-backdrop hidden></div>
+{% endif %}
+{% if section.settings.enable_categories_sheet %}
+  <div class="sp-mobile-toolbar__sheet sp-mobile-toolbar__sheet--categories" id="SpToolbarCategories-{{ section.id }}" role="dialog" aria-modal="true" aria-label="{{ section.settings.categories_title | default: 'Explore' | escape }}" tabindex="-1" data-sp-sheet="categories" hidden>
+    <span class="sp-mobile-toolbar__sheet-handle" aria-hidden="true"></span>
+    <button class="sp-mobile-toolbar__sheet-close" type="button" data-sp-sheet-close aria-label="Close categories">×</button>
+    <div class="sp-mobile-toolbar__sheet-content">
+      <div class="sp-mobile-toolbar__sheet-grid">
+        <a class="sp-mobile-toolbar__sheet-tile" href="{{ routes.root_url }}"><span class="sp-mobile-toolbar__sheet-tile-icon">{% render 'sp-toolbar-mobile-icon', name: 'home' %}</span><span>Home</span></a>
+        <a class="sp-mobile-toolbar__sheet-tile" href="{{ routes.all_products_collection_url }}"><span class="sp-mobile-toolbar__sheet-tile-icon">{% render 'sp-toolbar-mobile-icon', name: 'shop' %}</span><span>{{ section.settings.categories_shop_label | default: 'Shop' | escape }}</span></a>
+        <a class="sp-mobile-toolbar__sheet-tile is-accent" href="{{ routes.collections_url | default: '/collections' }}"><span class="sp-mobile-toolbar__sheet-tile-icon">{% render 'sp-toolbar-mobile-icon', name: 'categories' %}</span><span>Categories</span></a>
+        <a class="sp-mobile-toolbar__sheet-tile" href="{{ routes.collections_url | default: '/collections' }}"><span class="sp-mobile-toolbar__sheet-tile-icon">{% render 'sp-toolbar-mobile-icon', name: 'collections' %}</span><span>{{ section.settings.categories_collections_label | default: 'Collections' | escape }}</span></a>
+        <a class="sp-mobile-toolbar__sheet-tile" href="{{ routes.account_url }}"><span class="sp-mobile-toolbar__sheet-tile-icon">{% render 'sp-toolbar-mobile-icon', name: 'account' %}</span><span>{{ section.settings.categories_account_label | default: 'Account' | escape }}</span></a>
+        {% assign sp_orders_destination = section.settings.orders_url | default: routes.account_url %}
+        <a class="sp-mobile-toolbar__sheet-tile" href="{{ sp_orders_destination }}"><span class="sp-mobile-toolbar__sheet-tile-icon">{% render 'sp-toolbar-mobile-icon', name: 'orders' %}</span><span>{{ section.settings.categories_orders_label | default: 'Orders' | escape }}</span></a>
+        {% if section.settings.support_url != blank %}
+          <a class="sp-mobile-toolbar__sheet-tile" href="{{ section.settings.support_url }}"><span class="sp-mobile-toolbar__sheet-tile-icon">{% render 'sp-toolbar-mobile-icon', name: 'support' %}</span><span>{{ section.settings.categories_support_label | default: 'Support' | escape }}</span></a>
+        {% endif %}
+        {% if section.settings.enable_quick_actions %}
+          <button type="button" class="sp-mobile-toolbar__sheet-tile" data-sp-toolbar-action="more"><span class="sp-mobile-toolbar__sheet-tile-icon">{% render 'sp-toolbar-mobile-icon', name: 'more' %}</span><span>More</span></button>
+        {% endif %}
+      </div>
+      {% if section.settings.categories_menu != blank and section.settings.categories_menu.links.size > 0 %}
+        <div class="sp-mobile-toolbar__menu-links" aria-label="Shop categories">
+          <h3 class="sp-mobile-toolbar__menu-heading">{{ section.settings.categories_title | default: 'Explore' | escape }}</h3>
+          <div class="sp-mobile-toolbar__menu-link-grid">
+            {% for link in section.settings.categories_menu.links %}
+              <a class="sp-mobile-toolbar__menu-link" href="{{ link.url }}">{{ link.title | escape }}<span aria-hidden="true">›</span></a>
+              {% if link.links.size > 0 %}
+                {% for child in link.links %}
+                  <a class="sp-mobile-toolbar__menu-link sp-mobile-toolbar__menu-link--child" href="{{ child.url }}">{{ child.title | escape }}<span aria-hidden="true">›</span></a>
+                {% endfor %}
+              {% endif %}
+            {% endfor %}
+          </div>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+{% endif %}
+{% if section.settings.enable_quick_actions %}
+  <div class="sp-mobile-toolbar__sheet sp-mobile-toolbar__sheet--quick" id="SpToolbarQuick-{{ section.id }}" role="dialog" aria-modal="true" aria-label="{{ section.settings.quick_actions_title | default: 'Quick actions' | escape }}" tabindex="-1" data-sp-sheet="quick" hidden>
+    <span class="sp-mobile-toolbar__sheet-handle" aria-hidden="true"></span>
+    <button class="sp-mobile-toolbar__sheet-close" type="button" data-sp-sheet-close aria-label="Close quick actions">×</button>
+    <div class="sp-mobile-toolbar__sheet-content">
+      <a class="sp-mobile-toolbar__quick-row" href="{{ routes.account_url }}"><span class="sp-mobile-toolbar__quick-icon">{% render 'sp-toolbar-mobile-icon', name: 'account' %}</span><span>My Account</span><span aria-hidden="true">›</span></a>
+      <a class="sp-mobile-toolbar__quick-row" href="{{ sp_orders_destination | default: routes.account_url }}"><span class="sp-mobile-toolbar__quick-icon">{% render 'sp-toolbar-mobile-icon', name: 'orders' %}</span><span>My Orders</span><span aria-hidden="true">›</span></a>
+      {% if section.settings.show_quick_wishlist %}
+        <a class="sp-mobile-toolbar__quick-row" href="" data-sp-toolbar-wishlist-link hidden><span class="sp-mobile-toolbar__quick-icon">{% render 'sp-toolbar-mobile-icon', name: 'wishlist' %}</span><span>My Wishlist</span><span class="sp-mobile-toolbar__quick-badge" data-sp-toolbar-count="wishlist" hidden></span><span aria-hidden="true">›</span></a>
+      {% endif %}
+      {% if section.settings.support_url != blank %}
+        <a class="sp-mobile-toolbar__quick-row" href="{{ section.settings.support_url }}"><span class="sp-mobile-toolbar__quick-icon">{% render 'sp-toolbar-mobile-icon', name: 'support' %}</span><span>Help &amp; Support</span><span aria-hidden="true">›</span></a>
+      {% endif %}
+      {% if section.settings.quick_actions_menu != blank %}
+        {% for link in section.settings.quick_actions_menu.links %}
+          <a class="sp-mobile-toolbar__quick-row" href="{{ link.url }}"><span class="sp-mobile-toolbar__quick-icon">{% render 'sp-toolbar-mobile-icon', name: 'collections' %}</span><span>{{ link.title | escape }}</span><span aria-hidden="true">›</span></a>
+        {% endfor %}
+      {% endif %}
+    </div>
+  </div>
+{% endif %}

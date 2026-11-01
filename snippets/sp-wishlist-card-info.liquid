@@ -1,0 +1,31 @@
+{%- liquid
+  assign sp_wishlist_show_quick_add = section.settings.show_quick_add
+  if section.settings.use_global_product_settings
+    assign sp_wishlist_show_quick_add = settings.card_quick_add
+  endif
+  if design == '7'
+    assign sp_wishlist_show_quick_add = true
+  endif
+
+  assign sp_primary_button_class = 'sp-button sp-button--secondary'
+  if design == '7'
+    assign sp_primary_button_class = 'sp-button sp-button--primary'
+  endif
+-%}
+<div class="sp-wishlist-card__content sp-product-card__content">
+  <small class="sp-wishlist-card__vendor sp-product-card__vendor" data-sp-wishlist-vendor hidden></small>
+  <h3 class="sp-wishlist-card__title sp-product-card__title"><a data-sp-wishlist-title href="{{ routes.all_products_collection_url }}">Product</a></h3>
+  <div class="sp-wishlist-card__rating sp-product-card__rating" data-sp-wishlist-rating hidden></div>
+  <div class="sp-wishlist-card__price sp-product-card__price" data-sp-wishlist-price data-sp-product-card-price></div>
+  {% render 'sp-wishlist-card-swatches' %}
+
+  <div class="sp-product-card__content-secondary-actions sp-wishlist-card__secondary-actions">
+    {% render 'sp-wishlist-card-actions', mode: 'content' %}
+  </div>
+
+  {%- if content_cta and sp_wishlist_show_quick_add -%}
+    <div class="sp-product-card__action sp-wishlist-card__purchase-action">
+      <button type="button" class="sp-wishlist-card__quick-add sp-product-card__quick-add {{ sp_primary_button_class }}" data-sp-wishlist-quick-add data-sp-product-quick-add>Choose options</button>
+    </div>
+  {%- endif -%}
+</div>

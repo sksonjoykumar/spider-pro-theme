@@ -1,0 +1,59 @@
+{%- assign sp_fit_choices = 'slim,regular,relaxed' | split: ',' -%}
+{%- assign sp_fit_axes = 'chest,waist,hips,height,inseam,shoulder' | split: ',' -%}
+{%- comment -%}Single functional form, rendered once in the selected section layout. All data stays in browser memory.{%- endcomment -%}
+<div class="sp-fit-finder" data-sp-finder>
+  <header class="sp-fit-finder__header"><h3>{{ section.settings.form_heading | escape }}</h3><div class="rte">{{ section.settings.form_description }}</div></header>
+  <form class="sp-fit-form" data-sp-form novalidate>
+    {%- if section.settings.layout_style == 'style_3' -%}
+      <div class="sp-fit-wizard-progress" data-sp-wizard-progress aria-label="Fit finder progress"><span data-sp-progress-text>Step 1 of 4</span><div class="sp-fit-wizard-progress__track"><span data-sp-progress-bar></span></div></div>
+      <div data-sp-wizard-step="0" class="sp-fit-wizard-unit"><h4>Choose measurement units</h4><p>Use the unit selector above, then continue to measurements.</p></div>
+    {%- endif -%}
+    <div data-sp-wizard-step="1" class="sp-fit-form__measure">
+      <div class="sp-fit-fields">
+      {%- for axis in sp_fit_axes -%}
+        {%- liquid
+          assign show_key = 'show_' | append: axis
+          assign required_key = 'required_' | append: axis
+          assign label_key = 'label_' | append: axis
+        -%}
+        {%- if section.settings[show_key] -%}
+        <div class="sp-fit-field">
+          <label for="SpFit-{{ section.id }}-{{ axis }}">{{ section.settings[label_key] | escape }} (<span data-sp-unit-label>cm</span>){% if section.settings[required_key] %} <span aria-hidden="true">*</span>{% endif %}</label>
+          <input id="SpFit-{{ section.id }}-{{ axis }}" data-sp-measure="{{ axis }}" type="number" inputmode="decimal" step="any" min="0" max="500" aria-describedby="SpFitError-{{ section.id }}-{{ axis }}" {% if section.settings[required_key] %}required aria-required="true"{% endif %} autocomplete="off">
+          <span class="sp-fit-field__error" id="SpFitError-{{ section.id }}-{{ axis }}" data-sp-error="{{ axis }}"></span>
+        </div>
+        {%- endif -%}
+      {%- endfor -%}
+      </div>
+    </div>
+    <div data-sp-wizard-step="2" class="sp-fit-form__preferences">
+      {% if section.settings.show_fit_preference %}
+        <fieldset class="sp-fit-choices"><legend>Preferred fit</legend><div class="sp-fit-choices__options">
+          {% for fit in sp_fit_choices %}
+            {%- liquid
+              assign i = forloop.index
+              assign label_key = 'fit_option_' | append: i | append: '_label'
+            -%}
+            <label class="sp-fit-choice"><input type="radio" name="sp-fit-choice-{{ section.id }}" value="{{ fit }}" {% if section.settings.default_fit_preference == fit %}checked{% endif %}><span>{{ section.settings[label_key] | escape }}</span></label>
+          {% endfor %}
+        </div></fieldset>
+      {% endif %}
+    </div>
+    <div data-sp-wizard-step="3" class="sp-fit-wizard-result-step">
+      <p>Review your recommendation below, or change your answers.</p>
+    </div>
+    {%- if section.settings.layout_style == 'style_3' -%}
+      <div class="sp-fit-wizard-nav" data-sp-wizard-controls><button type="button" class="sp-button sp-button--secondary" data-sp-wizard-back hidden>← Back</button><button type="button" class="sp-button sp-button--primary" data-sp-wizard-next disabled>Continue →</button></div>
+    {%- else -%}
+      <button class="sp-fit-form__submit sp-button sp-button--primary" data-sp-submit type="submit" disabled>{{ section.settings.button_label | escape }}</button>
+    {%- endif -%}
+    <div class="sp-fit-result" data-sp-result data-sp-state="initial" aria-live="polite" aria-atomic="true" hidden>
+      <p class="sp-fit-result__eyebrow">YOUR RECOMMENDED SIZE</p>
+      <div class="sp-fit-result__body"><strong class="sp-fit-result__size" data-sp-result-size aria-label="Recommended size"></strong><div><strong data-sp-result-title></strong><p data-sp-result-message></p><button type="button" class="sp-fit-result__chart-link" data-sp-open-chart>View full size chart →</button></div></div>
+    </div>
+    {%- unless section.settings.approve_size_rules -%}
+      {% unless request.design_mode %}<p class="sp-fit-form__notice" role="note">{{ section.settings.unapproved_text | escape }}</p>{% else %}<p class="sp-fit-form__notice" role="note">Editor preview: example ranges are not approved for the storefront.</p>{% endunless %}
+    {%- endunless -%}
+    <noscript><p class="sp-fit-form__notice">JavaScript is required for recommendations. Use the size chart for measurement ranges.</p></noscript>
+  </form>
+</div>

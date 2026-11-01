@@ -1,0 +1,1653 @@
+{% render 'sp-section-color-scheme', section: section %}
+{{ 'sp-section-heading.css' | asset_url | stylesheet_tag }}
+{{ 'sp-retail-locations.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'sp-retail-locations.js' | asset_url }}" defer></script>
+
+{%- liquid
+  assign sp_valid_count = 0
+  assign sp_first_valid_id = ''
+  assign sp_featured_id = ''
+  assign sp_valid_coords = 0
+  for block in section.blocks
+    if block.type == 'location' and block.settings.location_name != blank
+      assign sp_store_address = block.settings.address_line_1 | default: block.settings.city | default: block.settings.country
+      if sp_store_address != blank
+        assign sp_valid_count = sp_valid_count | plus: 1
+        if sp_first_valid_id == blank
+          assign sp_first_valid_id = block.id
+        endif
+        if block.settings.featured_location and sp_featured_id == blank
+          assign sp_featured_id = block.id
+        endif
+        if block.settings.latitude != blank and block.settings.longitude != blank
+          assign sp_lat = block.settings.latitude | plus: 0
+          assign sp_lng = block.settings.longitude | plus: 0
+          if sp_lat >= -90 and sp_lat <= 90 and sp_lng >= -180 and sp_lng <= 180
+            assign sp_valid_coords = sp_valid_coords | plus: 1
+          endif
+        endif
+      endif
+    endif
+  endfor
+  if sp_featured_id == blank
+    assign sp_featured_id = sp_first_valid_id
+  endif
+  assign sp_map_available = false
+  if section.settings.map_mode == 'static_image' and section.settings.static_map_image != blank
+    assign sp_map_available = true
+  elsif section.settings.map_mode == 'external_embed' and section.settings.external_embed_url != blank
+    assign sp_map_available = true
+  endif
+  if section.settings.layout_style == 'style_2' or section.settings.layout_style == 'style_4' or section.settings.layout_style == 'style_5'
+    assign sp_map_available = false
+  endif
+  assign sp_container_class = 'sp-container'
+  if section.settings.section_max_width == 'wide'
+    assign sp_container_class = 'sp-container sp-container--wide'
+  elsif section.settings.section_max_width == 'full'
+    assign sp_container_class = 'sp-rl__container--full'
+  endif
+  assign sp_header_desktop_size = 44
+  assign sp_header_tablet_size = 36
+  assign sp_header_mobile_size = 28
+  if section.settings.heading_size == 'medium'
+    assign sp_header_desktop_size = 34
+    assign sp_header_tablet_size = 30
+    assign sp_header_mobile_size = 26
+  elsif section.settings.heading_size == 'extra'
+    assign sp_header_desktop_size = 60
+    assign sp_header_tablet_size = 46
+    assign sp_header_mobile_size = 34
+  endif
+  assign sp_section_id = 'sp-rl-' | append: section.id
+  assign sp_regions = '|'
+  assign sp_region_list = ''
+  if section.settings.layout_style == 'style_4'
+    for block in section.blocks
+      if block.type == 'location' and block.settings.location_name != blank
+        assign sp_store_address = block.settings.address_line_1 | default: block.settings.city | default: block.settings.country
+        if sp_store_address != blank
+          assign sp_region_name = block.settings.region_filter | default: block.settings.state_region | default: block.settings.country | default: 'Other locations'
+          assign sp_region_token = '|' | append: sp_region_name | append: '|'
+          unless sp_regions contains sp_region_token
+            assign sp_regions = sp_regions | append: sp_region_name | append: '|'
+            assign sp_region_list = sp_region_list | append: sp_region_name | append: '||'
+          endunless
+        endif
+      endif
+    endfor
+  endif
+-%}
+<section
+  id="{{ sp_section_id }}"
+  class="sp-rl sp-rl--{{ section.settings.layout_style }} sp-rl--featured-button-{{ section.settings.featured_button_style }}{% unless sp_map_available %} sp-rl--no-map{% endunless %} sp-rl--map-{{ section.settings.map_mode }} sp-rl--marker-{{ section.settings.marker_style }} sp-rl--cluster-{{ section.settings.marker_cluster_style }}{% unless section.settings.card_equal_height %} sp-rl--cards-natural{% endunless %} sp-rl--featured-ratio-{{ section.settings.featured_image_ratio }} sp-rl--featured-align-{{ section.settings.featured_content_alignment }} sp-rl--mobile-filter-{{ section.settings.mobile_filter_style }} sp-rl--shadow-{{ section.settings.card_shadow }} sp-rl--filter-{{ section.settings.filter_style }} sp-rl--featured-{{ section.settings.featured_position }} sp-rl--featured-mobile-{{ section.settings.mobile_featured_position }} sp-rl--image-{{ section.settings.location_image_ratio }}"
+  data-sp-retail-locations
+  data-sp-section-id="{{ section.id }}"
+  data-sp-search-mode="{{ section.settings.search_mode }}"
+  data-sp-search-fields="{{ section.settings.search_fields }}"
+  data-sp-min-chars="{{ section.settings.search_minimum_characters }}"
+  data-sp-default-region="{{ section.settings.default_region | escape }}"
+  data-sp-all-option="{{ section.settings.show_all_option }}"
+  data-sp-all-label="{{ section.settings.all_locations_label | escape }}"
+  data-sp-no-results="{{ section.settings.no_results_text | escape }}"
+  data-sp-has-map="{{ sp_map_available }}"
+  data-sp-mobile-view="{{ section.settings.default_mobile_view }}"
+  data-sp-remember-view="{{ section.settings.remember_mobile_view }}"
+  data-sp-distance-unit="{{ section.settings.distance_unit }}"
+  data-sp-sort-distance="{{ section.settings.sort_by_distance }}"
+  data-sp-show-numbers="{{ section.settings.show_marker_numbers }}"
+  data-sp-valid-coords="{{ sp_valid_coords }}"
+  style="
+  --sp-rl-pad-d:{{ section.settings.padding_top }}px {{ section.settings.padding_bottom }}px;
+  --sp-rl-pt-d:{{ section.settings.padding_top }}px;--sp-rl-pb-d:{{ section.settings.padding_bottom }}px;
+  --sp-rl-pt-t:{{ section.settings.padding_top_tablet }}px;--sp-rl-pb-t:{{ section.settings.padding_bottom_tablet }}px;
+  --sp-rl-pt-m:{{ section.settings.padding_top_mobile }}px;--sp-rl-pb-m:{{ section.settings.padding_bottom_mobile }}px;
+  --sp-rl-locator-height:{{ section.settings.locator_height_desktop }}px;--sp-rl-locator-height-tablet:{{ section.settings.locator_height_tablet }}px;
+  --sp-rl-list-width:{{ section.settings.list_panel_width }}%;--sp-rl-header-width:{{ section.settings.header_max_width }}px;
+  --sp-rl-description-width:{{ section.settings.description_width }}px;
+  --sp-rl-card-radius:{{ section.settings.card_border_radius }}px;
+  --sp-rl-card-border-width:{{ section.settings.card_border_width }}px;
+  --sp-rl-selected-border:{{ section.settings.selected_border_width }}px;
+  --sp-rl-card-pad:{{ section.settings.card_padding_desktop }}px;--sp-rl-card-pad-mobile:{{ section.settings.card_padding_mobile }}px;
+  --sp-rl-gap:{{ section.settings.location_card_gap }}px;--sp-rl-search-gap:{{ section.settings.search_to_results_spacing }}px;
+  --sp-rl-header-gap:{{ section.settings.header_to_locator_spacing }}px;--sp-rl-results-height:{{ section.settings.results_max_height }}px;
+  --sp-rl-desktop-columns:{{ section.settings.desktop_columns }};--sp-rl-tablet-columns:{{ section.settings.tablet_columns }};--sp-rl-mobile-columns:{{ section.settings.mobile_columns }};
+  --sp-rl-grid-gap-d:{{ section.settings.grid_gap_desktop }}px;--sp-rl-grid-gap-t:{{ section.settings.grid_gap_tablet }}px;--sp-rl-grid-gap-m:{{ section.settings.grid_gap_mobile }}px;
+  --sp-rl-support-cols:{{ section.settings.supporting_location_columns }};
+  --sp-rl-marker-size:{{ section.settings.marker_size }}px;
+  {% if section.settings.marker_color != blank %}--sp-rl-marker-color:{{ section.settings.marker_color }};{% endif %}
+  {% if section.settings.marker_active_color != blank %}--sp-rl-marker-active:{{ section.settings.marker_active_color }};{% endif %}
+  {% if section.settings.card_background != blank %}--sp-rl-card-custom:{{ section.settings.card_background }};{% endif %}
+  {% if section.settings.card_border_color != blank %}--sp-rl-border-custom:{{ section.settings.card_border_color }};{% endif %}
+  {% if section.settings.map_panel_position == 'left' %}--sp-rl-map-order:-1;{% endif %}
+  ">
+  <div class="sp-rl__container {{ sp_container_class }}">
+    {% if section.settings.show_header %}
+      <div class="sp-rl__header sp-rl__header--{{ section.settings.heading_alignment }}" style="--sp-rl-header-bottom:{{ section.settings.header_bottom_spacing }}px">
+        {% if section.settings.eyebrow != blank %}<p class="sp-rl__eyebrow">{{ section.settings.eyebrow | escape }}</p>{% endif %}
+        {% capture sp_description %}<p>{{ section.settings.description | escape | newline_to_br }}</p>{% endcapture %}
+        {% render 'sp-section-heading', heading: section.settings.heading, subheading: sp_description, heading_tag: 'h2', alignment: section.settings.heading_alignment, mobile_alignment: section.settings.heading_alignment, typography_source: 'custom', heading_size_desktop: sp_header_desktop_size, heading_size_tablet: sp_header_tablet_size, heading_size_mobile: sp_header_mobile_size, heading_weight: 750, heading_line_height: 112, bottom_spacing: 0 %}
+      </div>
+    {% endif %}
+
+    <div class="sp-rl__shell">
+      {% if section.settings.enable_search or section.settings.enable_region_filter or section.settings.enable_location_type_filter or section.settings.enable_geolocation %}
+        <form class="sp-rl__search" data-sp-form role="search">
+          {% if section.settings.enable_search %}
+            <div class="sp-rl__search-field">
+              <label class="sp-rl__sr-only" for="{{ sp_section_id }}-search">Search stores by city, name or address</label>
+              <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M12 21s7-7 7-12a7 7 0 1 0-14 0c0 5 7 12 7 12Z"/><circle cx="12" cy="9" r="2.5"/></svg>
+              <input id="{{ sp_section_id }}-search" name="query" type="search" data-sp-query placeholder="{{ section.settings.search_placeholder | escape }}" autocomplete="off">
+              {% if section.settings.show_clear_search %}<button type="button" class="sp-rl__clear" data-sp-clear aria-label="Clear search" hidden>×</button>{% endif %}
+            </div>
+          {% endif %}
+          {% if section.settings.enable_geolocation %}
+            <button type="button" class="sp-rl__geo" data-sp-geolocate{% if sp_valid_coords == 0 %} disabled title="Add valid store coordinates to enable location searching"{% endif %}{% if section.settings.geolocation_privacy_text != blank %} aria-describedby="{{ sp_section_id }}-geo-privacy"{% endif %}>
+              <svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="6"/><path d="M12 2v4m0 12v4M2 12h4m12 0h4"/><circle cx="12" cy="12" r="2"/></svg>
+              <span>{{ section.settings.geolocation_button_label | escape }}</span>
+            </button>
+          {% endif %}
+          {% if section.settings.enable_region_filter %}
+            <div class="sp-rl__filter-wrap"><label class="sp-rl__sr-only" for="{{ sp_section_id }}-region">Filter stores by region</label><select id="{{ sp_section_id }}-region" class="sp-rl__filter" data-sp-region-select><option value="">{{ section.settings.all_locations_label | escape }}</option></select></div>
+          {% endif %}
+          {% if section.settings.enable_location_type_filter %}
+            <div class="sp-rl__filter-wrap"><label class="sp-rl__sr-only" for="{{ sp_section_id }}-type">Filter by store type</label><select id="{{ sp_section_id }}-type" class="sp-rl__filter" data-sp-type-select><option value="">All store types</option></select></div>
+          {% endif %}
+          {% if section.settings.enable_search %}<button class="sp-rl__submit" type="submit">{{ section.settings.search_button_label | escape }}</button>{% endif %}
+        </form>
+      {% endif %}
+      {% if section.settings.enable_geolocation and section.settings.geolocation_privacy_text != blank %}
+        <p id="{{ sp_section_id }}-geo-privacy" class="sp-rl__sr-only">{{ section.settings.geolocation_privacy_text | escape }}</p>
+      {% endif %}
+      {% if section.settings.enable_geolocation %}
+        <p class="sp-rl__geo-feedback" data-sp-geo-feedback role="status" aria-live="polite" hidden></p>
+      {% endif %}
+      {% if sp_map_available and section.settings.show_mobile_view_toggle %}
+        <div class="sp-rl__view-toggle" aria-label="Location view" data-sp-view-toggle>
+          <button type="button" data-sp-view-button="list" aria-pressed="true">{{ section.settings.list_view_label | escape }}</button>
+          <button type="button" data-sp-view-button="map" aria-pressed="false">{{ section.settings.map_view_label | escape }}</button>
+        </div>
+      {% endif %}
+      <div class="sp-rl__workspace">
+        <div class="sp-rl__results" data-sp-results role="region" aria-label="{{ section.settings.results_aria_label | escape }}" tabindex="0">
+          {% if section.settings.layout_style == 'style_4' %}
+            <div class="sp-rl__directory">
+              {% assign sp_split_regions = sp_region_list | split: '||' %}
+              {% for sp_group in sp_split_regions %}
+                {% if sp_group != blank %}
+                  <details class="sp-rl__region" data-sp-region-group open>
+                    <summary class="sp-rl__region-title">{{ sp_group | escape }} <span aria-hidden="true">⌄</span></summary>
+                    <ul class="sp-rl__cards sp-rl__region-cards" role="list" data-sp-card-list>
+                      {%- assign sp_index = 0 -%}
+                      {% for block in section.blocks %}
+                        {% assign sp_addr = block.settings.address_line_1 | default: block.settings.city | default: block.settings.country %}
+                        {% assign sp_group_check = block.settings.region_filter | default: block.settings.state_region | default: block.settings.country | default: 'Other locations' %}
+                        {% if block.type == 'location' and block.settings.location_name != blank and sp_addr != blank and sp_group_check == sp_group %}
+                          {% assign sp_index = sp_index | plus: 1 %}
+                          {% render 'sp-retail-location-card', block: block, index: sp_index, settings: section.settings, section_id: section.id %}
+                        {% endif %}
+                      {% endfor %}
+                    </ul>
+                  </details>
+                {% endif %}
+              {% endfor %}
+            </div>
+          {% else %}
+            <ul class="sp-rl__cards" role="list" data-sp-card-list>
+              {%- assign sp_index = 0 -%}
+              {% if section.settings.layout_style == 'style_5' and sp_featured_id != blank %}
+                {% for block in section.blocks %}
+                  {% if block.id == sp_featured_id %}
+                    {% assign sp_index = sp_index | plus: 1 %}
+                    {% render 'sp-retail-location-card', block: block, index: sp_index, is_featured: true, settings: section.settings, section_id: section.id %}
+                  {% endif %}
+                {% endfor %}
+              {% endif %}
+              {% for block in section.blocks %}
+                {% assign sp_addr = block.settings.address_line_1 | default: block.settings.city | default: block.settings.country %}
+                {% if block.type == 'location' and block.settings.location_name != blank and sp_addr != blank %}
+                  {% unless section.settings.layout_style == 'style_5' and block.id == sp_featured_id %}
+                    {% assign sp_index = sp_index | plus: 1 %}
+                    {% render 'sp-retail-location-card', block: block, index: sp_index, settings: section.settings, section_id: section.id %}
+                  {% endunless %}
+                {% endif %}
+              {% endfor %}
+            </ul>
+          {% endif %}
+          <div class="sp-rl__empty" data-sp-empty{% if sp_valid_count > 0 %} hidden{% endif %}>
+            <h3>{{ section.settings.no_results_heading | escape }}</h3><p>{% if sp_valid_count == 0 %}{% if request.design_mode %}Add a store name and address to a location block to preview your locator.{% else %}Store locations will appear here when available.{% endif %}{% else %}{{ section.settings.no_results_text | escape }}{% endif %}</p>
+          </div>
+          <p class="sp-rl__sr-only" aria-live="polite" aria-atomic="true" data-sp-count></p>
+        </div>
+        {% if sp_map_available %}
+          <div class="sp-rl__map-panel" data-sp-map-panel>
+            <div class="sp-rl__desktop-map-toggle" aria-label="Desktop map or list view">
+              <button type="button" data-sp-desktop-view-button="map" aria-pressed="true">{{ section.settings.map_view_label | escape }}</button>
+              <button type="button" data-sp-desktop-view-button="list" aria-pressed="false">{{ section.settings.list_view_label | escape }}</button>
+            </div>
+            {% render 'sp-retail-location-map', section: section, settings: section.settings %}
+          </div>
+        {% elsif request.design_mode and section.settings.layout_style != 'style_2' and section.settings.layout_style != 'style_4' and section.settings.layout_style != 'style_5' %}
+          <p class="sp-rl__setup-help">To display a map, upload a static map image or configure a supported iframe embed. Until then, the store list is displayed.</p>
+        {% endif %}
+      </div>
+      {% if section.settings.show_holiday_disclaimer and section.settings.holiday_disclaimer != blank %}
+        <p class="sp-rl__holiday-note">{{ section.settings.holiday_disclaimer | escape }}</p>
+      {% endif %}
+      {% if sp_map_available and section.settings.map_mode == 'external_embed' %}
+        <p class="sp-rl__embed-hint">Map pins are controlled by the external provider. Store cards remain searchable independently.</p>
+      {% endif %}
+    </div>
+  </div>
+
+  {% if section.settings.enable_location_schema %}
+    {% for block in section.blocks %}
+      {% assign sp_record = block.settings %}
+      {% if block.type == 'location' and sp_record.location_name != blank and sp_record.address_line_1 != blank and sp_record.city != blank and sp_record.country != blank %}
+        <script type="application/ld+json">{
+          "@context": "https://schema.org",
+          "@type": "LocalBusiness",
+          "name": {{ sp_record.location_name | json }},
+          "address": {
+            "@type": "PostalAddress",
+            "streetAddress": {{ sp_record.address_line_1 | json }},
+            "addressLocality": {{ sp_record.city | json }},
+            "addressRegion": {{ sp_record.state_region | json }},
+            "postalCode": {{ sp_record.postal_code | json }},
+            "addressCountry": {{ sp_record.country | json }}
+          }{% if sp_record.phone != blank %},"telephone": {{ sp_record.phone | json }}{% endif %}{% if sp_record.details_page.url != blank %},"url": {{ sp_record.details_page.url | json }}{% endif %}
+        }</script>
+      {% endif %}
+    {% endfor %}
+  {% endif %}
+</section>
+{% schema %}
+{
+  "name": "Retail Locations",
+  "tag": "section",
+  "class": "sp-section sp-section-retail-locations",
+  "max_blocks": 30,
+   "disabled_on": {
+    "groups": [
+      "header",
+      "footer",
+      "custom.system"
+    ]
+  },
+  "settings": [
+    {
+      "type": "header",
+      "content": "Content"
+    },
+    {
+      "type": "color_scheme",
+      "id": "sp_color_scheme",
+      "label": "Color scheme",
+      "default": "scheme-1"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_header",
+      "label": "Show section heading",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Eyebrow",
+      "default": "VISIT US"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Find a Store Near You"
+    },
+    {
+      "type": "textarea",
+      "id": "description",
+      "label": "Description",
+      "default": "Explore our retail locations and experience the collection in person."
+    },
+    {
+      "type": "select",
+      "id": "heading_alignment",
+      "label": "Heading alignment",
+      "options": [
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "select",
+      "id": "heading_size",
+      "label": "Heading size",
+      "options": [
+        {
+          "value": "medium",
+          "label": "Medium"
+        },
+        {
+          "value": "large",
+          "label": "Large"
+        },
+        {
+          "value": "extra",
+          "label": "Extra large"
+        }
+      ],
+      "default": "extra"
+    },
+    {
+      "type": "range",
+      "id": "description_width",
+      "label": "Description maximum width",
+      "min": 400,
+      "max": 1000,
+      "step": 20,
+      "default": 760,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "header_max_width",
+      "label": "Heading maximum width",
+      "min": 500,
+      "max": 1200,
+      "step": 20,
+      "default": 960,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "header_bottom_spacing",
+      "label": "Heading bottom spacing",
+      "min": 8,
+      "max": 80,
+      "step": 4,
+      "default": 36,
+      "unit": "px"
+    },
+    {
+      "type": "header",
+      "content": "Layout style"
+    },
+    {
+      "type": "select",
+      "id": "layout_style",
+      "label": "Layout style",
+      "options": [
+        {
+          "value": "style_1",
+          "label": "Map & Location List"
+        },
+        {
+          "value": "style_2",
+          "label": "Location Card Grid"
+        },
+        {
+          "value": "style_3",
+          "label": "Full-Width Map Locator"
+        },
+        {
+          "value": "style_4",
+          "label": "Region Directory"
+        },
+        {
+          "value": "style_5",
+          "label": "Flagship Store Showcase"
+        }
+      ],
+      "default": "style_1"
+    },
+    {
+      "type": "select",
+      "id": "section_max_width",
+      "label": "Section width",
+      "options": [
+        {
+          "value": "default",
+          "label": "Theme container"
+        },
+        {
+          "value": "wide",
+          "label": "Wide"
+        },
+        {
+          "value": "full",
+          "label": "Full width"
+        }
+      ],
+      "default": "wide"
+    },
+    {
+      "type": "select",
+      "id": "map_panel_position",
+      "label": "Map position",
+      "options": [
+        {
+          "value": "right",
+          "label": "Right"
+        },
+        {
+          "value": "left",
+          "label": "Left"
+        }
+      ],
+      "default": "right"
+    },
+    {
+      "type": "range",
+      "id": "locator_height_desktop",
+      "label": "Locator height desktop",
+      "min": 400,
+      "max": 900,
+      "step": 10,
+      "default": 570,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "locator_height_tablet",
+      "label": "Locator height tablet",
+      "min": 340,
+      "max": 800,
+      "step": 10,
+      "default": 530,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "list_panel_width",
+      "label": "List panel width",
+      "min": 30,
+      "max": 60,
+      "step": 1,
+      "default": 38,
+      "unit": "%"
+    },
+    {
+      "type": "range",
+      "id": "results_max_height",
+      "label": "Results maximum height",
+      "min": 300,
+      "max": 840,
+      "step": 10,
+      "default": 570,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "search_to_results_spacing",
+      "label": "Search to results spacing",
+      "min": 8,
+      "max": 36,
+      "step": 2,
+      "default": 18,
+      "unit": "px"
+    },
+    {
+      "type": "header",
+      "content": "Search"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_search",
+      "label": "Enable search",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "search_placeholder",
+      "label": "Search placeholder",
+      "default": "Enter city, postcode, or address"
+    },
+    {
+      "type": "text",
+      "id": "search_button_label",
+      "label": "Search button label",
+      "default": "Search"
+    },
+    {
+      "type": "select",
+      "id": "search_fields",
+      "label": "Searchable fields",
+      "options": [
+        {
+          "value": "all",
+          "label": "All fields"
+        },
+        {
+          "value": "address",
+          "label": "Name and address"
+        },
+        {
+          "value": "city",
+          "label": "Name, city, region, postcode"
+        }
+      ],
+      "default": "all"
+    },
+    {
+      "type": "select",
+      "id": "search_mode",
+      "label": "Search behavior",
+      "options": [
+        {
+          "value": "submit",
+          "label": "When clicking Search"
+        },
+        {
+          "value": "live",
+          "label": "Live while typing"
+        }
+      ],
+      "default": "submit"
+    },
+    {
+      "type": "range",
+      "id": "search_minimum_characters",
+      "label": "Minimum search characters",
+      "min": 1,
+      "max": 5,
+      "step": 1,
+      "default": 1
+    },
+    {
+      "type": "checkbox",
+      "id": "show_clear_search",
+      "label": "Show clear-search button",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "no_results_heading",
+      "label": "No results heading",
+      "default": "No locations found"
+    },
+    {
+      "type": "text",
+      "id": "no_results_text",
+      "label": "No results description",
+      "default": "Try another address, city, or filter."
+    },
+    {
+      "type": "header",
+      "content": "Filters"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_region_filter",
+      "label": "Enable region filter",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_location_type_filter",
+      "label": "Enable store type filter",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "show_all_option",
+      "label": "Show all locations option",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "all_locations_label",
+      "label": "All locations label",
+      "default": "All locations"
+    },
+    {
+      "type": "text",
+      "id": "default_region",
+      "label": "Default region (optional)"
+    },
+    {
+      "type": "select",
+      "id": "filter_style",
+      "label": "Desktop filter style",
+      "options": [
+        {
+          "value": "select",
+          "label": "Select"
+        },
+        {
+          "value": "buttons",
+          "label": "Buttons"
+        },
+        {
+          "value": "tabs",
+          "label": "Tabs"
+        }
+      ],
+      "default": "select"
+    },
+    {
+      "type": "select",
+      "id": "mobile_filter_style",
+      "label": "Mobile filter style",
+      "options": [
+        {
+          "value": "select",
+          "label": "Select"
+        },
+        {
+          "value": "buttons",
+          "label": "Buttons"
+        }
+      ],
+      "default": "select"
+    },
+    {
+      "type": "header",
+      "content": "Geolocation"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_geolocation",
+      "label": "Enable Use my location",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "geolocation_button_label",
+      "label": "Geolocation button label",
+      "default": "Use my location"
+    },
+    {
+      "type": "select",
+      "id": "distance_unit",
+      "label": "Distance unit",
+      "options": [
+        {
+          "value": "miles",
+          "label": "Miles"
+        },
+        {
+          "value": "kilometers",
+          "label": "Kilometers"
+        }
+      ],
+      "default": "miles"
+    },
+    {
+      "type": "checkbox",
+      "id": "sort_by_distance",
+      "label": "Sort stores by proximity",
+      "default": true
+    },
+    {
+      "type": "textarea",
+      "id": "geolocation_privacy_text",
+      "label": "Privacy description",
+      "default": "Your location is used locally only after you click the location button."
+    },
+    {
+      "type": "header",
+      "content": "Map"
+    },
+    {
+      "type": "select",
+      "id": "map_mode",
+      "label": "Map mode",
+      "options": [
+        {
+          "value": "none",
+          "label": "No map"
+        },
+        {
+          "value": "static_image",
+          "label": "Uploaded static map"
+        },
+        {
+          "value": "existing_theme_provider",
+          "label": "Existing provider (integration required)"
+        },
+        {
+          "value": "external_embed",
+          "label": "External iframe embed"
+        }
+      ],
+      "default": "static_image",
+      "info": "Use an uploaded static map image or an approved HTTPS iframe embed. Existing provider integration must be implemented separately. The section falls back to a list when no usable map is configured."
+    },
+    {
+      "type": "image_picker",
+      "id": "static_map_image",
+      "label": "Map image desktop"
+    },
+    {
+      "type": "image_picker",
+      "id": "static_map_image_mobile",
+      "label": "Map image mobile"
+    },
+    {
+      "type": "text",
+      "id": "static_map_alt",
+      "label": "Map image alt text",
+      "default": "Retail store locations map"
+    },
+    {
+      "type": "url",
+      "id": "external_embed_url",
+      "label": "Approved iframe URL",
+      "info": "Supports HTTPS Google Maps and OpenStreetMap embeds. Requires customer preference consent."
+    },
+    {
+      "type": "text",
+      "id": "external_map_title",
+      "label": "Map title",
+      "default": "Store locations on map"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_map_zoom_controls",
+      "label": "Show static-map zoom controls",
+      "default": true,
+      "info": "Displays accessible zoom in/out controls over an uploaded static map. Does not apply to embedded maps."
+    },
+    {
+      "type": "checkbox",
+      "id": "show_mobile_view_toggle",
+      "label": "Enable mobile Map/List toggle",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "default_mobile_view",
+      "label": "Default mobile view",
+      "options": [
+        {
+          "value": "list",
+          "label": "List"
+        },
+        {
+          "value": "map",
+          "label": "Map"
+        }
+      ],
+      "default": "list"
+    },
+    {
+      "type": "text",
+      "id": "map_view_label",
+      "label": "Map label",
+      "default": "Map"
+    },
+    {
+      "type": "text",
+      "id": "list_view_label",
+      "label": "List label",
+      "default": "List"
+    },
+    {
+      "type": "checkbox",
+      "id": "remember_mobile_view",
+      "label": "Remember mobile view on device",
+      "default": false
+    },
+    {
+      "type": "header",
+      "content": "Map markers"
+    },
+    {
+      "type": "select",
+      "id": "marker_style",
+      "label": "Marker shape",
+      "options": [
+        {
+          "value": "numbered",
+          "label": "Numbered pin"
+        },
+        {
+          "value": "pin",
+          "label": "Pin"
+        },
+        {
+          "value": "circle",
+          "label": "Circle"
+        },
+        {
+          "value": "custom_icon",
+          "label": "Location dot"
+        }
+      ],
+      "default": "numbered"
+    },
+    {
+      "type": "range",
+      "id": "marker_size",
+      "label": "Marker size",
+      "min": 32,
+      "max": 64,
+      "step": 2,
+      "default": 44,
+      "unit": "px"
+    },
+    {
+      "type": "color",
+      "id": "marker_color",
+      "label": "Marker color override"
+    },
+    {
+      "type": "color",
+      "id": "marker_active_color",
+      "label": "Selected marker color override"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_marker_numbers",
+      "label": "Show marker numbers",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "marker_cluster_style",
+      "label": "Marker overlap",
+      "options": [
+        {
+          "value": "none",
+          "label": "Normal markers"
+        },
+        {
+          "value": "spread",
+          "label": "Spread overlapped markers"
+        }
+      ],
+      "default": "spread",
+      "info": "Spread applies a small offset for overlapping points, not geographic clustering."
+    },
+    {
+      "type": "header",
+      "content": "Location cards"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_location_image",
+      "label": "Show store images",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "show_address",
+      "label": "Show address",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_distance",
+      "label": "Show approximate distance",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_phone",
+      "label": "Show phone",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_email",
+      "label": "Show email",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_hours",
+      "label": "Show business hours",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_status",
+      "label": "Show open status",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_details_button",
+      "label": "Show details button",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_directions_button",
+      "label": "Show directions button",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "location_card_clickable",
+      "label": "Allow card selection",
+      "default": false
+    },
+    {
+      "type": "text",
+      "id": "details_button_label",
+      "label": "Details button label",
+      "default": "View details"
+    },
+    {
+      "type": "range",
+      "id": "location_card_gap",
+      "label": "Location card gap",
+      "min": 8,
+      "max": 32,
+      "step": 2,
+      "default": 14,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "card_border_radius",
+      "label": "Card corner radius",
+      "min": 0,
+      "max": 28,
+      "step": 2,
+      "default": 12,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "card_border_width",
+      "label": "Card border width",
+      "min": 0,
+      "max": 3,
+      "step": 1,
+      "default": 1,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "selected_border_width",
+      "label": "Selected left border",
+      "min": 2,
+      "max": 8,
+      "step": 1,
+      "default": 4,
+      "unit": "px"
+    },
+    {
+      "type": "select",
+      "id": "card_shadow",
+      "label": "Card shadow",
+      "options": [
+        {
+          "value": "none",
+          "label": "None"
+        },
+        {
+          "value": "soft",
+          "label": "Soft"
+        },
+        {
+          "value": "medium",
+          "label": "Medium"
+        }
+      ],
+      "default": "soft"
+    },
+    {
+      "type": "range",
+      "id": "card_padding_desktop",
+      "label": "Card padding desktop",
+      "min": 12,
+      "max": 36,
+      "step": 2,
+      "default": 24,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "card_padding_mobile",
+      "label": "Card padding mobile",
+      "min": 12,
+      "max": 28,
+      "step": 2,
+      "default": 16,
+      "unit": "px"
+    },
+    {
+      "type": "header",
+      "content": "Business hours"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_business_hours",
+      "label": "Display entered hours",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_open_status",
+      "label": "Display manual open status",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "status_display_mode",
+      "label": "Status display",
+      "options": [
+        {
+          "value": "text",
+          "label": "Text and dot"
+        },
+        {
+          "value": "text_only",
+          "label": "Text only"
+        }
+      ],
+      "default": "text"
+    },
+    {
+      "type": "text",
+      "id": "default_status_text",
+      "label": "Fallback status text",
+      "default": "Hours may vary"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_holiday_disclaimer",
+      "label": "Show holiday-hours disclaimer",
+      "default": false
+    },
+    {
+      "type": "text",
+      "id": "holiday_disclaimer",
+      "label": "Holiday hours disclaimer",
+      "default": "Hours may vary on holidays."
+    },
+    {
+      "type": "header",
+      "content": "Directions"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_directions_link",
+      "label": "Enable directions link",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "directions_label",
+      "label": "Directions label",
+      "default": "Directions"
+    },
+    {
+      "type": "select",
+      "id": "directions_provider",
+      "label": "Directions provider",
+      "options": [
+        {
+          "value": "google_maps",
+          "label": "Google Maps"
+        },
+        {
+          "value": "apple_maps",
+          "label": "Apple Maps"
+        },
+        {
+          "value": "address_query",
+          "label": "Google search"
+        },
+        {
+          "value": "merchant_url",
+          "label": "Merchant URL only"
+        }
+      ],
+      "default": "google_maps"
+    },
+    {
+      "type": "checkbox",
+      "id": "open_directions_new_tab",
+      "label": "Directions open in new tab",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Card grid"
+    },
+    {
+      "type": "range",
+      "id": "desktop_columns",
+      "label": "Desktop grid columns",
+      "min": 2,
+      "max": 4,
+      "step": 1,
+      "default": 3
+    },
+    {
+      "type": "range",
+      "id": "tablet_columns",
+      "label": "Tablet grid columns",
+      "min": 1,
+      "max": 3,
+      "step": 1,
+      "default": 2
+    },
+    {
+      "type": "range",
+      "id": "mobile_columns",
+      "label": "Mobile grid columns",
+      "min": 1,
+      "max": 3,
+      "step": 1,
+      "default": 1
+    },
+    {
+      "type": "range",
+      "id": "grid_gap_desktop",
+      "label": "Grid Gap Desktop",
+      "min": 8,
+      "max": 36,
+      "step": 2,
+      "default": 20,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "grid_gap_tablet",
+      "label": "Grid Gap Tablet",
+      "min": 8,
+      "max": 36,
+      "step": 2,
+      "default": 16,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "grid_gap_mobile",
+      "label": "Grid Gap Mobile",
+      "min": 8,
+      "max": 36,
+      "step": 2,
+      "default": 12,
+      "unit": "px"
+    },
+    {
+      "type": "checkbox",
+      "id": "card_equal_height",
+      "label": "Equal-height grid cards",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "location_image_ratio",
+      "label": "Card image ratio",
+      "options": [
+        {
+          "value": "square",
+          "label": "Square"
+        },
+        {
+          "value": "landscape",
+          "label": "Landscape"
+        },
+        {
+          "value": "wide",
+          "label": "Wide"
+        }
+      ],
+      "default": "landscape"
+    },
+    {
+      "type": "header",
+      "content": "Flagship store"
+    },
+    {
+      "type": "select",
+      "id": "featured_position",
+      "label": "Featured image position",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ],
+      "default": "left"
+    },
+    {
+      "type": "select",
+      "id": "mobile_featured_position",
+      "label": "Mobile featured position",
+      "options": [
+        {
+          "value": "first",
+          "label": "First"
+        },
+        {
+          "value": "last",
+          "label": "Last"
+        }
+      ],
+      "default": "first"
+    },
+    {
+      "type": "select",
+      "id": "featured_image_ratio",
+      "label": "Flagship image ratio",
+      "options": [
+        {
+          "value": "square",
+          "label": "Square"
+        },
+        {
+          "value": "landscape",
+          "label": "Landscape"
+        },
+        {
+          "value": "portrait",
+          "label": "Portrait"
+        }
+      ],
+      "default": "landscape"
+    },
+    {
+      "type": "select",
+      "id": "featured_content_alignment",
+      "label": "Flagship content alignment",
+      "options": [
+        {
+          "value": "start",
+          "label": "Top"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_featured_description",
+      "label": "Show featured description",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "featured_button_style",
+      "label": "Featured button style",
+      "options": [
+        {
+          "value": "primary",
+          "label": "Solid"
+        },
+        {
+          "value": "outline",
+          "label": "Outline"
+        }
+      ],
+      "default": "primary"
+    },
+    {
+      "type": "range",
+      "id": "supporting_location_columns",
+      "label": "Supporting store columns",
+      "min": 1,
+      "max": 3,
+      "step": 1,
+      "default": 2
+    },
+    {
+      "type": "header",
+      "content": "Colors"
+    },
+    {
+      "type": "color",
+      "id": "card_background",
+      "label": "Card background override"
+    },
+    {
+      "type": "color",
+      "id": "card_border_color",
+      "label": "Card border override"
+    },
+    {
+      "type": "header",
+      "content": "Desktop spacing"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "Padding top desktop",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "default": 64,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "Padding bottom desktop",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "default": 72,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "header_to_locator_spacing",
+      "label": "Header to locator spacing",
+      "min": 8,
+      "max": 96,
+      "step": 4,
+      "default": 32,
+      "unit": "px"
+    },
+    {
+      "type": "header",
+      "content": "Tablet spacing"
+    },
+    {
+      "type": "range",
+      "id": "padding_top_tablet",
+      "label": "Padding top tablet",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "default": 48,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom_tablet",
+      "label": "Padding bottom tablet",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "default": 48,
+      "unit": "px"
+    },
+    {
+      "type": "header",
+      "content": "Mobile spacing"
+    },
+    {
+      "type": "range",
+      "id": "padding_top_mobile",
+      "label": "Padding top mobile",
+      "min": 0,
+      "max": 96,
+      "step": 4,
+      "default": 36,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom_mobile",
+      "label": "Padding bottom mobile",
+      "min": 0,
+      "max": 96,
+      "step": 4,
+      "default": 44,
+      "unit": "px"
+    },
+    {
+      "type": "header",
+      "content": "SEO"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_location_schema",
+      "label": "LocalBusiness structured data",
+      "default": false,
+      "info": "Only complete genuine merchant locations. Turn off if location schema exists elsewhere."
+    },
+    {
+      "type": "header",
+      "content": "Advanced"
+    },
+    {
+      "type": "text",
+      "id": "results_aria_label",
+      "label": "Results accessibility label",
+      "default": "Store search results"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "location",
+      "name": "Store location",
+      "settings": [
+        {
+          "type": "header",
+          "content": "Store details"
+        },
+        {
+          "type": "text",
+          "id": "location_name",
+          "label": "Location name"
+        },
+        {
+          "type": "select",
+          "id": "location_type",
+          "label": "Location type",
+          "options": [
+            {
+              "value": "retail",
+              "label": "Retail store"
+            },
+            {
+              "value": "flagship",
+              "label": "Flagship store"
+            },
+            {
+              "value": "showroom",
+              "label": "Showroom"
+            },
+            {
+              "value": "outlet",
+              "label": "Outlet"
+            },
+            {
+              "value": "pickup",
+              "label": "Pickup point"
+            }
+          ],
+          "default": "retail"
+        },
+        {
+          "type": "image_picker",
+          "id": "location_image",
+          "label": "Location photo"
+        },
+        {
+          "type": "text",
+          "id": "location_image_alt",
+          "label": "Photo alt text"
+        },
+        {
+          "type": "textarea",
+          "id": "featured_description",
+          "label": "Featured store description"
+        },
+        {
+          "type": "text",
+          "id": "address_line_1",
+          "label": "Street address"
+        },
+        {
+          "type": "text",
+          "id": "address_line_2",
+          "label": "Address line 2"
+        },
+        {
+          "type": "text",
+          "id": "city",
+          "label": "City"
+        },
+        {
+          "type": "text",
+          "id": "state_region",
+          "label": "State / region"
+        },
+        {
+          "type": "text",
+          "id": "postal_code",
+          "label": "Postal code"
+        },
+        {
+          "type": "text",
+          "id": "country",
+          "label": "Country"
+        },
+        {
+          "type": "text",
+          "id": "latitude",
+          "label": "Latitude (-90 to 90)"
+        },
+        {
+          "type": "text",
+          "id": "longitude",
+          "label": "Longitude (-180 to 180)"
+        },
+        {
+          "type": "text",
+          "id": "region_filter",
+          "label": "Region filter label"
+        },
+        {
+          "type": "text",
+          "id": "phone",
+          "label": "Phone"
+        },
+        {
+          "type": "text",
+          "id": "email",
+          "label": "Email"
+        },
+        {
+          "type": "textarea",
+          "id": "business_hours",
+          "label": "Business hours text"
+        },
+        {
+          "type": "select",
+          "id": "open_status_mode",
+          "label": "Opening status",
+          "options": [
+            {
+              "value": "hidden",
+              "label": "Hidden"
+            },
+            {
+              "value": "manual_open",
+              "label": "Manually open"
+            },
+            {
+              "value": "manual_closed",
+              "label": "Manually closed"
+            },
+            {
+              "value": "manual_custom",
+              "label": "Custom status text"
+            },
+            {
+              "value": "structured_hours",
+              "label": "Hours only (no automatic status)"
+            }
+          ],
+          "default": "hidden"
+        },
+        {
+          "type": "checkbox",
+          "id": "manual_status",
+          "label": "Manual availability indicator",
+          "default": false
+        },
+        {
+          "type": "text",
+          "id": "manual_status_text",
+          "label": "Manual status text"
+        },
+        {
+          "type": "page",
+          "id": "details_page",
+          "label": "Details page"
+        },
+        {
+          "type": "url",
+          "id": "custom_details_url",
+          "label": "Custom details link"
+        },
+        {
+          "type": "url",
+          "id": "directions_url",
+          "label": "Custom directions link"
+        },
+        {
+          "type": "checkbox",
+          "id": "featured_location",
+          "label": "Feature this location",
+          "default": false
+        },
+        {
+          "type": "text",
+          "id": "map_marker_label",
+          "label": "Map marker label"
+        },
+        {
+          "type": "range",
+          "id": "static_map_x",
+          "label": "Marker horizontal position",
+          "min": 0,
+          "max": 100,
+          "step": 1,
+          "default": 50,
+          "unit": "%"
+        },
+        {
+          "type": "range",
+          "id": "static_map_y",
+          "label": "Marker vertical position",
+          "min": 0,
+          "max": 100,
+          "step": 1,
+          "default": 50,
+          "unit": "%"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Retail Locations",
+      "settings": {
+        "layout_style": "style_1"
+      },
+      "category": "07. Store & Support",
+      "blocks": [
+        {
+          "type": "location"
+        },
+        {
+          "type": "location"
+        },
+        {
+          "type": "location"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

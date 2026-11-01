@@ -1,0 +1,10 @@
+{% if settings.cart_upsell and settings.cart_upsell_products != blank %}
+  <aside class="sp-cart-upsells" aria-labelledby="CartUpsells-{{ section.id }}">
+    <h3 id="CartUpsells-{{ section.id }}">{{ 'products.product.you_may_also_like' | t }}</h3>
+    <div class="sp-cart-upsells__grid">
+      {% for upsell_product in settings.cart_upsell_products limit: 4 %}
+        {% render 'product-card', card_product: upsell_product %}
+      {% endfor %}
+    </div>
+  </aside>
+{% endif %}

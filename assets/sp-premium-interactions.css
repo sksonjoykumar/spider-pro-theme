@@ -1,0 +1,26 @@
+/* Spider Premium Interactions v1. Does not override product-specific card architecture. */
+.sp-button {
+  min-height: var(--sp-ui-button-height, 50px);
+  transition: background-color var(--sp-ui-button-duration, 225ms) var(--sp-ui-ease, ease), color var(--sp-ui-button-duration, 225ms) var(--sp-ui-ease, ease), border-color var(--sp-ui-button-duration, 225ms) var(--sp-ui-ease, ease), box-shadow var(--sp-ui-button-duration, 225ms) var(--sp-ui-ease, ease), transform var(--sp-ui-button-duration, 225ms) var(--sp-ui-ease, ease);
+}
+@media (hover:hover) and (pointer:fine) and (prefers-reduced-motion:no-preference) {
+  /* Lift applies only to Spider buttons, never third-party/accelerated checkout. */
+  html.sp-ui-hover-lift .sp-button:not(:disabled):not([aria-disabled="true"]):hover { transform: translateY(calc(-1 * var(--sp-ui-button-lift, 1px))); }
+  html.sp-ui-card-hover-subtle .sp-content-card:hover { box-shadow: var(--sp-shadow-soft, 0 8px 24px rgb(0 0 0 / .08)); transform: translateY(-1px); }
+  html.sp-ui-card-hover-border .sp-content-card:hover { border-color: var(--sp-color-accent, #415dff); }
+}
+.sp-content-card { transition: box-shadow var(--sp-ui-card-duration, 275ms) var(--sp-ui-ease,ease), border-color var(--sp-ui-card-duration, 275ms) ease, transform var(--sp-ui-card-duration, 275ms) var(--sp-ui-ease,ease); }
+
+/* Native dialog drawer — animation states are controlled by sp-drawer.js. */
+dialog.sp-drawer { --sp-drawer-offscreen: 100%; transition: transform var(--sp-ui-drawer-duration, 300ms) var(--sp-ui-ease, ease); }
+dialog.sp-drawer.sp-drawer--left { --sp-drawer-offscreen: -100%; }
+dialog.sp-drawer[open] { transform: translate3d(var(--sp-drawer-offscreen), 0, 0); }
+dialog.sp-drawer[open].sp-drawer--entered { transform: translate3d(0,0,0); }
+dialog.sp-drawer[open][data-sp-drawer-closing] { transform: translate3d(var(--sp-drawer-offscreen),0,0); pointer-events: none; }
+dialog.sp-drawer.sp-cart-drawer::backdrop, dialog.sp-drawer::backdrop { opacity: 0; transition: opacity var(--sp-ui-drawer-duration, 300ms) ease; }
+dialog.sp-drawer.sp-drawer--entered::backdrop { opacity: var(--sp-cart-drawer-backdrop-opacity, var(--sp-ui-overlay-opacity, .45)); }
+dialog.sp-drawer[data-sp-drawer-closing]::backdrop { opacity: 0; }
+@media (prefers-reduced-motion: reduce) {
+  dialog.sp-drawer, dialog.sp-drawer::backdrop, .sp-button { transition-duration: .01ms; }
+  .sp-button { transform: none; }
+}

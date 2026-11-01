@@ -1,0 +1,13 @@
+{% liquid
+  assign classes = 'sp-layout-' | append: settings.sp_layout_style
+  if settings.sp_motion_enable
+    assign classes = classes | append: ' sp-motion-enabled'
+  endif
+  if settings.a11y_high_contrast
+    assign classes = classes | append: ' sp-high-contrast'
+  endif
+  if settings.header_sticky
+    assign classes = classes | append: ' sp-has-sticky-header'
+  endif
+  echo classes | strip
+%}

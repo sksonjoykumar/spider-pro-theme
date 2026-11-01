@@ -1,0 +1,2 @@
+{% comment %}LiquidDoc: Renders a neutral placeholder SVG. Parameters: name and class optional.{% endcomment %}
+{{ name | default: 'image' | placeholder_svg_tag: class | default: 'sp-placeholder' }}

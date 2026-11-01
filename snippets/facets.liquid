@@ -1,0 +1,13 @@
+<form class="sp-facets" action="{{ collection.url }}" method="get" data-facets-form data-section-id="{{ section.id }}">
+  {% render 'active-facets' %}
+  {% for filter in collection.filters %}
+    <details class="sp-facet"><summary>{{ filter.label | escape }}</summary><div>
+      {% case filter.type %}
+        {% when 'list' %}{% for value in filter.values %}<label class="sp-check"><input type="checkbox" name="{{ value.param_name }}" value="{{ value.value | escape }}"{% if value.active %} checked{% endif %}{% if value.count == 0 and value.active == false %} disabled{% endif %}> <span>{{ value.label | escape }} ({{ value.count }})</span></label>{% endfor %}
+        {% when 'price_range' %}<div class="sp-price-range"><label>{{ 'products.facets.from' | t }}<input type="number" name="{{ filter.min_value.param_name }}" value="{{ filter.min_value.value | money_without_currency | replace: ',', '' }}" min="0" max="{{ filter.range_max | money_without_currency | replace: ',', '' }}"></label><label>{{ 'products.facets.to' | t }}<input type="number" name="{{ filter.max_value.param_name }}" value="{{ filter.max_value.value | money_without_currency | replace: ',', '' }}" min="0" max="{{ filter.range_max | money_without_currency | replace: ',', '' }}"></label></div>
+      {% endcase %}
+    </div></details>
+  {% endfor %}
+  {% if settings.collection_sorting %}{% render 'sort-by' %}{% endif %}
+  <button class="sp-button sp-button--secondary" type="submit">{{ 'collections.filtering.apply_filters' | t }}</button>
+</form>

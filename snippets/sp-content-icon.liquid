@@ -1,0 +1,56 @@
+{% comment %}
+  Spider reusable content icon renderer.
+  Parameters:
+  - name: icon key
+  - class: optional class name
+  Icons are decorative by default; surrounding content provides the accessible label.
+{% endcomment %}
+{%- assign icon_name = name | default: 'check' -%}
+{%- assign icon_class = class | default: 'sp-content-icon' -%}
+<svg class="{{ icon_class }}" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+  {%- case icon_name -%}
+    {%- when 'users' -%}
+      <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+      <circle cx="9" cy="7" r="4" stroke="currentColor" stroke-width="1.7"/>
+      <path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+    {%- when 'shield' -%}
+      <path d="M12 3 20 6v5c0 5-3.4 8.6-8 10-4.6-1.4-8-5-8-10V6l8-3Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
+      <path d="m8.5 12 2.2 2.2 4.8-5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+    {%- when 'truck' -%}
+      <path d="M3 6h11v10H3zM14 10h4l3 3v3h-7z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
+      <circle cx="7" cy="18" r="2" stroke="currentColor" stroke-width="1.7"/>
+      <circle cx="17" cy="18" r="2" stroke="currentColor" stroke-width="1.7"/>
+    {%- when 'return' -%}
+      <path d="M8 7H4V3M4.5 7A8 8 0 1 1 5 17" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+    {%- when 'package-return' -%}
+      <path d="M4.5 7 12 3.5 19.5 7 12 10.5 4.5 7Z" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M4.5 7v9L12 20l3-1.5M12 10.5V20M19.5 7v4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M17 16a3 3 0 1 1 .9 2.2M17 19v-3h3" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+    {%- when 'diamond' -%}
+      <path d="m3 9 4-5h10l4 5-9 11L3 9Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
+      <path d="M3 9h18M8 4l4 16 4-16" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
+    {%- when 'leaf' -%}
+      <path d="M20 4c-8.5.2-13.8 3.5-15 9.5-.8 4.1 2 6.5 5.2 6.5C16 20 20 13.9 20 4Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
+      <path d="M4 21c2.3-5.4 6.1-9.3 12-12" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+    {%- when 'heart' -%}
+      <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
+    {%- when 'bag' -%}
+      <path d="M5 8h14l-1 13H6L5 8Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
+      <path d="M9 9V6a3 3 0 0 1 6 0v3" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+    {%- when 'headset' -%}
+      <path d="M4 13v-1a8 8 0 0 1 16 0v1" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+      <path d="M4 13h3v6H5a1 1 0 0 1-1-1v-5ZM20 13h-3v6h2a1 1 0 0 0 1-1v-5ZM17 19c0 1.1-.9 2-2 2h-3" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+    {%- when 'card' -%}
+      <rect x="3" y="5" width="18" height="14" rx="2" stroke="currentColor" stroke-width="1.7"/>
+      <path d="M3 9h18M7 15h4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+    {%- when 'chat' -%}
+      <path d="M21 11.5a8.4 8.4 0 0 1-9 8.5 9.8 9.8 0 0 1-4-.9L3 21l1.7-4.6A8.5 8.5 0 1 1 21 11.5Z" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+    {%- when 'star' -%}
+      <path d="m12 3 2.7 5.5 6.1.9-4.4 4.3 1 6.1-5.4-2.9-5.4 2.9 1-6.1-4.4-4.3 6.1-.9L12 3Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
+    {%- when 'check' -%}
+      <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.7"/>
+      <path d="m8 12.2 2.5 2.5L16 9.2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+    {%- else -%}
+      <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.7"/>
+  {%- endcase -%}
+</svg>

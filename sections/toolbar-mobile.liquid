@@ -1,0 +1,914 @@
+{% render 'sp-section-color-scheme', section: section %}
+{{ 'sp-toolbar-mobile.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'sp-toolbar-mobile.js' | asset_url }}" defer></script>
+
+{%- liquid
+  assign sp_toolbar_breakpoint = 749
+  assign sp_toolbar_bg_alpha = section.settings.background_opacity | default: 100 | divided_by: 100.0
+  assign sp_toolbar_overlay_alpha = section.settings.sheet_overlay_opacity | default: 40 | divided_by: 100.0
+-%}
+
+{%- if section.blocks.size > 0 -%}
+  {% style %}
+    #SpMobileToolbar-{{ section.id }} {
+      --sp-toolbar-height: {{ section.settings.toolbar_height | default: 64 }}px;
+      --sp-toolbar-item-min-width: {{ section.settings.item_min_width | default: 48 }}px;
+      --sp-toolbar-item-count: {{ section.blocks.size }};
+      --sp-toolbar-icon-size: {{ section.settings.icon_size | default: 24 }}px;
+      --sp-toolbar-label-size: {{ section.settings.label_size | default: 12 }}px;
+      --sp-toolbar-label-weight: {{ section.settings.label_weight | default: '500' }};
+      --sp-toolbar-item-gap: {{ section.settings.item_gap | default: 4 }}px;
+      --sp-toolbar-bg: {{ section.settings.background | default: '#ffffff' }};
+      --sp-toolbar-bg-opacity: {{ sp_toolbar_bg_alpha }};
+      --sp-toolbar-text: {{ section.settings.text_color | default: '#171717' }};
+      --sp-toolbar-active: {{ section.settings.active_color | default: '#415DFF' }};
+      --sp-toolbar-active-bg: {% if section.settings.enable_active_background %}{{ section.settings.active_background | default: '#E8F0FF' }}{% else %}transparent{% endif %};
+      --sp-toolbar-border: {{ section.settings.border_color | default: '#e5e5e5' }};
+      --sp-toolbar-border-width: {{ section.settings.border_width | default: 1 }}px;
+      --sp-toolbar-radius: {{ section.settings.toolbar_radius | default: 0 }}px;
+      --sp-toolbar-item-radius: {{ section.settings.item_radius | default: 8 }}px;
+      --sp-toolbar-blur: {{ section.settings.blur_strength | default: 8 }}px;
+      --sp-toolbar-badge-bg: {{ section.settings.badge_background | default: '#EF3340' }};
+      --sp-toolbar-badge-text: {{ section.settings.badge_text | default: '#ffffff' }};
+      --sp-toolbar-badge-size: {{ section.settings.badge_size | default: 18 }}px;
+      --sp-toolbar-badge-x: {{ section.settings.badge_x | default: -7 }}px;
+      --sp-toolbar-badge-y: {{ section.settings.badge_y | default: -6 }}px;
+      --sp-toolbar-active-circle: {{ section.settings.active_circle_size | default: 54 }}px;
+      --sp-toolbar-sheet-radius: {{ section.settings.sheet_radius | default: 24 }}px;
+      --sp-toolbar-backdrop-opacity: {{ sp_toolbar_overlay_alpha }};
+      --sp-toolbar-sheet-cols: {{ section.settings.categories_columns | default: '4' }};
+      --sp-toolbar-focus: var(--sp-focus-color, var(--sp-color-accent, #415DFF));
+      --sp-toolbar-menu-duration: var(--sp-drawer-duration, 300ms);
+      {% if section.settings.use_global_colors %}
+      --sp-toolbar-bg: var(--sp-color-background, #FFFFFF);
+      --sp-toolbar-text: var(--sp-color-heading, var(--sp-color-text, #171717));
+      --sp-toolbar-active: var(--sp-color-accent, #415DFF);
+      --sp-toolbar-border: var(--sp-color-border, #E4E4E7);
+      --sp-toolbar-badge-bg: var(--sp-color-error, #EF3340);
+      {% endif %}
+      {% case section.settings.toolbar_color_mode %}
+        {% when 'dark' %}
+          --sp-toolbar-bg: #171717;
+          --sp-toolbar-text: #F4F4F5;
+          --sp-toolbar-border: #34343B;
+          --sp-toolbar-active-bg: rgba(65, 93, 255, .2);
+        {% when 'light' %}
+          --sp-toolbar-bg: #FFFFFF;
+          --sp-toolbar-text: #171717;
+          --sp-toolbar-border: #E4E4E7;
+      {% endcase %}
+    }
+
+    #SpMobileToolbarSpacer-{{ section.id }} {
+      --sp-toolbar-height: {{ section.settings.toolbar_height | default: 64 }}px;
+    }
+
+    @media (max-width: {{ sp_toolbar_breakpoint }}px) {
+      #SpMobileToolbar-{{ section.id }},
+      #SpMobileToolbarSpacer-{{ section.id }} { display: block; }
+    }
+  {% endstyle %}
+
+  <sp-mobile-toolbar
+    id="SpMobileToolbar-{{ section.id }}"
+    class="sp-mobile-toolbar sp-mobile-toolbar--shadow-{{ section.settings.shadow }}{% if section.settings.top_border %} has-top-border{% endif %}{% if section.settings.enable_blur %} has-blur{% endif %}"
+    data-section-id="{{ section.id }}"
+    data-page-type="{{ request.page_type }}"
+    data-breakpoint="{{ sp_toolbar_breakpoint }}"
+    data-behaviour="{{ section.settings.behaviour }}"
+    data-scroll-threshold="{{ section.settings.scroll_threshold | default: 10 }}"
+    data-active-circle="{{ section.settings.active_circle }}"
+    data-toolbar-color-mode="{{ section.settings.toolbar_color_mode | default: 'global' }}"
+    data-show-cart-badge="{{ section.settings.show_cart_badge }}"
+    data-show-wishlist-badge="{{ section.settings.show_wishlist_badge }}"
+    data-label-position="{{ section.settings.label_position }}"
+    data-show-labels="{{ section.settings.show_labels }}"
+    data-hide-zero="{{ section.settings.hide_zero_count }}"
+    data-cap-count="{{ section.settings.cap_count }}"
+    data-design-mode="{% if request.design_mode %}true{% else %}false{% endif %}"
+    aria-label="Mobile toolbar">
+    <div class="sp-mobile-toolbar__surface" aria-hidden="true"></div>
+    {% render 'sp-toolbar-mobile-sheets', section: section %}
+    <nav class="sp-mobile-toolbar__scroller" aria-label="Quick navigation">
+      <div class="sp-mobile-toolbar__inner">
+        {%- for block in section.blocks -%}
+          {% render 'sp-toolbar-mobile-item', block: block, section: section %}
+        {%- endfor -%}
+      </div>
+    </nav>
+  </sp-mobile-toolbar>
+
+  <div id="SpMobileToolbarSpacer-{{ section.id }}" class="sp-mobile-toolbar__spacer" aria-hidden="true"></div>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Toolbar mobile",
+  "tag": "section",
+  "class": "sp-section-group sp-section-toolbar-mobile",
+  "limit": 1,
+  "enabled_on": {
+    "groups": [
+      "custom.system"
+    ]
+  },
+  "max_blocks": 12,
+  "settings": [
+    {
+      "type": "header",
+      "content": "Global design system"
+    },
+    {
+      "type": "color_scheme",
+      "id": "sp_color_scheme",
+      "label": "Color scheme",
+      "default": "scheme-1",
+      "info": "Shared Spider color panel. Edit schemes once in Theme settings → Spider Color Schemes."
+    },
+    {
+      "type": "header",
+      "content": "GENERAL"
+    },
+    {
+      "type": "range",
+      "id": "toolbar_height",
+      "label": "Toolbar height",
+      "min": 48,
+      "max": 84,
+      "step": 2,
+      "unit": "px",
+      "default": 64
+    },
+    {
+      "type": "range",
+      "id": "item_min_width",
+      "label": "Minimum item width",
+      "min": 48,
+      "max": 100,
+      "step": 2,
+      "unit": "px",
+      "default": 48
+    },
+    {
+      "type": "header",
+      "content": "LABELS & ICONS"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_labels",
+      "label": "Show labels",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "label_position",
+      "label": "Label position",
+      "options": [
+        {
+          "value": "below",
+          "label": "Below icon"
+        },
+        {
+          "value": "beside",
+          "label": "Beside icon"
+        }
+      ],
+      "default": "below"
+    },
+    {
+      "type": "range",
+      "id": "label_size",
+      "label": "Label font size",
+      "min": 9,
+      "max": 16,
+      "step": 1,
+      "unit": "px",
+      "default": 12
+    },
+    {
+      "type": "select",
+      "id": "label_weight",
+      "label": "Label font weight",
+      "options": [
+        {
+          "value": "400",
+          "label": "Normal"
+        },
+        {
+          "value": "500",
+          "label": "Medium"
+        },
+        {
+          "value": "600",
+          "label": "Semibold"
+        }
+      ],
+      "default": "500"
+    },
+    {
+      "type": "range",
+      "id": "icon_size",
+      "label": "Icon size",
+      "min": 16,
+      "max": 32,
+      "step": 1,
+      "unit": "px",
+      "default": 24
+    },
+    {
+      "type": "range",
+      "id": "item_gap",
+      "label": "Icon / label gap",
+      "min": 0,
+      "max": 12,
+      "step": 1,
+      "unit": "px",
+      "default": 5
+    },
+    {
+      "type": "header",
+      "content": "APPEARANCE"
+    },
+    {
+      "type": "color",
+      "id": "background",
+      "label": "Background",
+      "default": "#ffffff"
+    },
+    {
+      "type": "range",
+      "id": "background_opacity",
+      "label": "Background opacity",
+      "min": 0,
+      "max": 100,
+      "step": 5,
+      "unit": "%",
+      "default": 100
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text / icon color",
+      "default": "#171717"
+    },
+    {
+      "type": "color",
+      "id": "active_color",
+      "label": "Active item color",
+      "default": "#415DFF"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_active_background",
+      "label": "Enable active item background",
+      "default": true
+    },
+    {
+      "type": "color",
+      "id": "active_background",
+      "label": "Active item background",
+      "default": "#E8F0FF"
+    },
+    {
+      "type": "checkbox",
+      "id": "top_border",
+      "label": "Show top border",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "border_width",
+      "label": "Border width",
+      "min": 1,
+      "max": 4,
+      "step": 1,
+      "unit": "px",
+      "default": 1
+    },
+    {
+      "type": "color",
+      "id": "border_color",
+      "label": "Border color",
+      "default": "#e5e5e5"
+    },
+    {
+      "type": "select",
+      "id": "shadow",
+      "label": "Shadow",
+      "options": [
+        {
+          "value": "none",
+          "label": "None"
+        },
+        {
+          "value": "soft",
+          "label": "Soft"
+        },
+        {
+          "value": "medium",
+          "label": "Medium"
+        },
+        {
+          "value": "strong",
+          "label": "Strong"
+        }
+      ],
+      "default": "soft"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_blur",
+      "label": "Enable backdrop blur",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "blur_strength",
+      "label": "Blur strength",
+      "min": 0,
+      "max": 20,
+      "step": 1,
+      "unit": "px",
+      "default": 8
+    },
+    {
+      "type": "range",
+      "id": "toolbar_radius",
+      "label": "Toolbar top radius",
+      "min": 0,
+      "max": 30,
+      "step": 1,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "item_radius",
+      "label": "Item radius",
+      "min": 0,
+      "max": 20,
+      "step": 1,
+      "unit": "px",
+      "default": 16
+    },
+    {
+      "type": "header",
+      "content": "COUNT BADGES"
+    },
+    {
+      "type": "color",
+      "id": "badge_background",
+      "label": "Badge background",
+      "default": "#EF3340"
+    },
+    {
+      "type": "color",
+      "id": "badge_text",
+      "label": "Badge text",
+      "default": "#ffffff"
+    },
+    {
+      "type": "range",
+      "id": "badge_size",
+      "label": "Badge size",
+      "min": 14,
+      "max": 28,
+      "step": 1,
+      "unit": "px",
+      "default": 18
+    },
+    {
+      "type": "range",
+      "id": "badge_x",
+      "label": "Badge horizontal offset",
+      "min": -16,
+      "max": 16,
+      "step": 1,
+      "unit": "px",
+      "default": -7
+    },
+    {
+      "type": "range",
+      "id": "badge_y",
+      "label": "Badge vertical offset",
+      "min": -16,
+      "max": 16,
+      "step": 1,
+      "unit": "px",
+      "default": -6
+    },
+    {
+      "type": "checkbox",
+      "id": "hide_zero_count",
+      "label": "Hide zero count",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "cap_count",
+      "label": "Show 99+ for large counts",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Spider premium integration"
+    },
+    {
+      "type": "checkbox",
+      "id": "use_global_colors",
+      "label": "Follow global theme colors",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "toolbar_color_mode",
+      "label": "Toolbar color mode",
+      "options": [
+        {
+          "value": "global",
+          "label": "Follow global color scheme"
+        },
+        {
+          "value": "light",
+          "label": "Light override"
+        },
+        {
+          "value": "dark",
+          "label": "Dark override"
+        }
+      ],
+      "default": "global"
+    },
+    {
+      "type": "checkbox",
+      "id": "active_circle",
+      "label": "Show soft circular active icon background",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "active_circle_size",
+      "label": "Active circle diameter",
+      "min": 44,
+      "max": 64,
+      "step": 2,
+      "unit": "px",
+      "default": 54
+    },
+    {
+      "type": "range",
+      "id": "scroll_threshold",
+      "label": "Scroll direction sensitivity",
+      "min": 6,
+      "max": 30,
+      "step": 2,
+      "unit": "px",
+      "default": 10
+    },
+    {
+      "type": "header",
+      "content": "Categories bottom sheet"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_categories_sheet",
+      "label": "Enable Categories sheet",
+      "default": true
+    },
+    {
+      "type": "link_list",
+      "id": "categories_menu",
+      "label": "Categories Shopify menu",
+      "info": "Link items appear in the expanded sheet; create links in Content → Menus."
+    },
+    {
+      "type": "select",
+      "id": "categories_columns",
+      "label": "Quick navigation columns",
+      "options": [
+        {
+          "value": "3",
+          "label": "3 columns"
+        },
+        {
+          "value": "4",
+          "label": "4 columns"
+        }
+      ],
+      "default": "4"
+    },
+    {
+      "type": "text",
+      "id": "categories_title",
+      "label": "Categories menu title",
+      "default": "Explore"
+    },
+    {
+      "type": "text",
+      "id": "categories_shop_label",
+      "label": "Shop shortcut label",
+      "default": "Shop"
+    },
+    {
+      "type": "text",
+      "id": "categories_collections_label",
+      "label": "Collections shortcut label",
+      "default": "Collections"
+    },
+    {
+      "type": "text",
+      "id": "categories_account_label",
+      "label": "Account shortcut label",
+      "default": "Account"
+    },
+    {
+      "type": "text",
+      "id": "categories_orders_label",
+      "label": "Orders shortcut label",
+      "default": "Orders"
+    },
+    {
+      "type": "url",
+      "id": "orders_url",
+      "label": "Orders shortcut URL (optional)"
+    },
+    {
+      "type": "text",
+      "id": "categories_support_label",
+      "label": "Support shortcut label",
+      "default": "Support"
+    },
+    {
+      "type": "url",
+      "id": "support_url",
+      "label": "Support page URL (optional)"
+    },
+    {
+      "type": "range",
+      "id": "sheet_radius",
+      "label": "Sheet top radius",
+      "min": 12,
+      "max": 36,
+      "step": 2,
+      "unit": "px",
+      "default": 24
+    },
+    {
+      "type": "range",
+      "id": "sheet_overlay_opacity",
+      "label": "Sheet backdrop opacity",
+      "min": 0,
+      "max": 75,
+      "step": 5,
+      "unit": "%",
+      "default": 40
+    },
+    {
+      "type": "header",
+      "content": "Quick actions sheet"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_quick_actions",
+      "label": "Enable Quick Actions sheet",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "quick_actions_title",
+      "label": "Quick Actions heading",
+      "default": "Quick actions"
+    },
+    {
+      "type": "link_list",
+      "id": "quick_actions_menu",
+      "label": "Additional quick actions menu"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_quick_wishlist",
+      "label": "Include actual Wishlist link",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Badge visibility"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_cart_badge",
+      "label": "Show Cart badge",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_wishlist_badge",
+      "label": "Show Wishlist badge when count available",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "BEHAVIOUR"
+    },
+    {
+      "type": "select",
+      "id": "behaviour",
+      "label": "Toolbar behaviour",
+      "options": [
+        {
+          "value": "always",
+          "label": "Always visible"
+        },
+        {
+          "value": "hide_scroll",
+          "label": "Hide on scroll down / show on scroll up"
+        }
+      ],
+      "default": "hide_scroll"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "home",
+      "name": "Home",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "text",
+          "id": "label",
+          "label": "Label",
+          "default": "Home"
+        }
+      ]
+    },
+    {
+      "type": "shop",
+      "name": "Shop",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "text",
+          "id": "label",
+          "label": "Label",
+          "default": "Shop"
+        },
+        {
+          "type": "collection",
+          "id": "collection",
+          "label": "Collection"
+        }
+      ]
+    },
+    {
+      "type": "search",
+      "name": "Search",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "text",
+          "id": "label",
+          "label": "Label",
+          "default": "Search"
+        },
+        {
+          "type": "select",
+          "id": "behaviour",
+          "label": "Search behaviour",
+          "options": [
+            {
+              "value": "drawer",
+              "label": "Open Spider Search Drawer with page fallback"
+            },
+            {
+              "value": "page",
+              "label": "Go to Search page"
+            }
+          ],
+          "default": "drawer"
+        }
+      ]
+    },
+    {
+      "type": "categories",
+      "name": "Categories menu",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "text",
+          "id": "label",
+          "label": "Toolbar label",
+          "default": "Categories"
+        }
+      ]
+    },
+    {
+      "type": "account",
+      "name": "Account",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "text",
+          "id": "label",
+          "label": "Label",
+          "default": "Account"
+        }
+      ]
+    },
+    {
+      "type": "wishlist",
+      "name": "Wishlist",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "text",
+          "id": "label",
+          "label": "Label",
+          "default": "Wishlist"
+        },
+        {
+          "type": "url",
+          "id": "fallback_url",
+          "label": "Wishlist URL (optional)",
+          "info": "Leave blank to auto-detect an existing Spider Wishlist/Header link. The item stays hidden if no real Wishlist dependency is found."
+        }
+      ]
+    },
+    {
+      "type": "cart",
+      "name": "Cart",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "text",
+          "id": "label",
+          "label": "Label",
+          "default": "Cart"
+        },
+        {
+          "type": "checkbox",
+          "id": "open_drawer",
+          "label": "Open existing Cart Drawer",
+          "default": true
+        }
+      ]
+    },
+    {
+      "type": "compare",
+      "name": "Compare",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "text",
+          "id": "label",
+          "label": "Label",
+          "default": "Compare"
+        },
+        {
+          "type": "url",
+          "id": "fallback_url",
+          "label": "Compare URL (optional)",
+          "info": "Leave blank to auto-detect an existing Spider Compare link. The item stays hidden if no real Compare dependency is found."
+        }
+      ]
+    },
+    {
+      "type": "blog",
+      "name": "Blog",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "text",
+          "id": "label",
+          "label": "Label",
+          "default": "Blog"
+        },
+        {
+          "type": "blog",
+          "id": "blog",
+          "label": "Blog"
+        }
+      ]
+    },
+    {
+      "type": "nav",
+      "name": "Menu",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "text",
+          "id": "label",
+          "label": "Label",
+          "default": "Menu"
+        }
+      ]
+    },
+    {
+      "type": "filter",
+      "name": "Filter",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "text",
+          "id": "label",
+          "label": "Label",
+          "default": "Filter"
+        },
+        {
+          "type": "paragraph",
+          "content": "Shown only when an existing Spider filter/facets drawer trigger is detected."
+        }
+      ]
+    },
+    {
+      "type": "sidebar",
+      "name": "Sidebar",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "text",
+          "id": "label",
+          "label": "Label",
+          "default": "Sidebar"
+        },
+        {
+          "type": "paragraph",
+          "content": "Shown only when an existing Spider contextual sidebar trigger/drawer is detected."
+        }
+      ]
+    },
+    {
+      "type": "link",
+      "name": "Custom link",
+      "settings": [
+        {
+          "type": "text",
+          "id": "label",
+          "label": "Label",
+          "default": "Custom"
+        },
+        {
+          "type": "url",
+          "id": "url",
+          "label": "URL"
+        },
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Custom image / icon"
+        },
+        {
+          "type": "range",
+          "id": "image_width",
+          "label": "Custom icon width",
+          "min": 16,
+          "max": 48,
+          "step": 1,
+          "unit": "px",
+          "default": 24
+        },
+        {
+          "type": "checkbox",
+          "id": "new_tab",
+          "label": "Open in new tab",
+          "default": false
+        }
+      ]
+    },
+    {
+      "type": "more",
+      "name": "Quick Actions",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "text",
+          "id": "label",
+          "label": "Toolbar label",
+          "default": "More"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Toolbar mobile",
+      "blocks": [
+        {
+          "type": "home"
+        },
+        {
+          "type": "search"
+        },
+        {
+          "type": "categories"
+        },
+        {
+          "type": "wishlist"
+        },
+        {
+          "type": "cart"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

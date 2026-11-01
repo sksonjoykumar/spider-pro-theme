@@ -1,0 +1,19 @@
+<dialog class="sp-social-gallery__dialog" data-sp-dialog aria-label="Social gallery media viewer">
+  <div class="sp-social-gallery__dialog-shell">
+    <button type="button" class="sp-social-gallery__dialog-close" data-sp-dialog-close aria-label="Close gallery">{% render 'icon', name: 'close' %}</button>
+    <div class="sp-social-gallery__dialog-visual" data-sp-dialog-visual></div>
+    <div class="sp-social-gallery__dialog-details">
+      <p data-sp-dialog-caption></p><p data-sp-dialog-creator></p>
+      <div class="sp-social-gallery__dialog-product" data-sp-dialog-product hidden>
+        <span data-sp-dialog-product-title></span><span data-sp-dialog-product-price></span>
+        <a data-sp-dialog-product-link href="">View product <span aria-hidden="true">→</span></a>
+      </div>
+    </div>
+    {%- if section.settings.lightbox_show_navigation -%}
+      <nav class="sp-social-gallery__dialog-navigation" aria-label="Gallery media navigation">
+        <button type="button" data-sp-dialog-prev aria-label="Previous image">{% render 'icon', name: 'chevron-left' %}</button>
+        <button type="button" data-sp-dialog-next aria-label="Next image">{% render 'icon', name: 'chevron-right' %}</button>
+      </nav>
+    {%- endif -%}
+  </div>
+</dialog>

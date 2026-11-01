@@ -1,0 +1,107 @@
+{%- liquid
+  assign sp_rp_product = block.settings.product
+  assign sp_rp_image = sp_rp_product.featured_image | default: block.settings.custom_product_image
+  assign sp_rp_title = sp_rp_product.title | default: block.settings.custom_product_title
+  assign sp_rp_href = sp_rp_product.url | default: block.settings.custom_product_url
+  assign sp_rp_alt = block.settings.custom_product_image_alt | default: sp_rp_image.alt | default: sp_rp_title
+  assign sp_rp_can_show = false
+  if sp_rp_product != blank or sp_rp_title != blank
+    assign sp_rp_can_show = true
+  endif
+  if request.design_mode
+    assign sp_rp_can_show = true
+  endif
+
+  assign sp_rp_is_event = false
+  if source_mode == 'manual_confirmed_events' and block.settings.display_mode == 'anonymized_purchase' and block.settings.merchant_confirms_genuine_event and block.settings.merchant_confirms_display_consent
+    assign sp_rp_is_event = true
+  endif
+
+  if source_mode == 'manual_confirmed_events' and sp_rp_is_event == false and request.design_mode == false
+    assign sp_rp_can_show = false
+  endif
+
+  assign sp_rp_name = 'A customer'
+  assign sp_rp_avatar_text = blank
+  if sp_rp_is_event and settings.show_buyer
+    if settings.buyer_display_style == 'initials' and block.settings.buyer_initials != blank
+      assign sp_rp_name = block.settings.buyer_initials
+      assign sp_rp_avatar_text = block.settings.buyer_initials | upcase | truncate: 3, ''
+    elsif settings.buyer_display_style == 'first_name_last_initial' and block.settings.buyer_display_name != blank
+      assign sp_rp_name_parts = block.settings.buyer_display_name | strip | split: ' '
+      assign sp_rp_first = sp_rp_name_parts | first
+      assign sp_rp_last = sp_rp_name_parts | last
+      assign sp_rp_last_initial = sp_rp_last | slice: 0, 1
+      if sp_rp_first != blank and sp_rp_last_initial != blank and sp_rp_first != sp_rp_last
+        assign sp_rp_name = sp_rp_first | append: ' ' | append: sp_rp_last_initial | append: '.'
+        assign sp_rp_first_initial = sp_rp_first | slice: 0, 1
+        assign sp_rp_avatar_text = sp_rp_first_initial | append: sp_rp_last_initial | upcase
+      endif
+    endif
+  endif
+-%}
+{%- if sp_rp_can_show -%}
+<li class="sp-recent-purchased__item" data-sp-rp-item data-sp-rp-block-id="{{ block.id }}" {% if block != blank %}{{ block.shopify_attributes }}{% endif %}>
+  <article class="sp-recent-purchased__card{% if featured %} sp-recent-purchased__card--featured{% endif %}">
+    {% if settings.show_product_image %}
+      <div class="sp-recent-purchased__media" style="--sp-rp-img-fit:{{ settings.image_fit }}">
+        {% if sp_rp_image != blank %}
+          {% if sp_rp_href != blank %}<a href="{{ sp_rp_href }}" class="sp-recent-purchased__media-link" aria-label="{{ sp_rp_title | default: 'View product' | escape }}">{% endif %}
+            {{ sp_rp_image | image_url: width: 850 | image_tag: widths: '180,260,360,500,680,850', sizes: '(min-width: 1200px) 25vw, (min-width: 750px) 50vw, 90vw', loading: 'lazy', alt: sp_rp_alt, class: 'sp-recent-purchased__image' }}
+          {% if sp_rp_href != blank %}</a>{% endif %}
+        {% elsif request.design_mode %}
+          {{ 'product-1' | placeholder_svg_tag: 'sp-recent-purchased__placeholder' }}
+        {% endif %}
+      </div>
+    {% endif %}
+    <div class="sp-recent-purchased__card-body">
+      {% if sp_rp_is_event %}
+        <div class="sp-recent-purchased__activity">
+          {% if settings.show_buyer %}
+            <span class="sp-recent-purchased__avatar" aria-hidden="true">
+              {% if sp_rp_avatar_text != blank %}
+                {{ sp_rp_avatar_text | escape }}
+              {% else %}
+                <svg viewBox="0 0 24 24" focusable="false"><circle cx="12" cy="8" r="3.2" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M5.5 20c.6-3.5 2.9-5.4 6.5-5.4s5.9 1.9 6.5 5.4" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+              {% endif %}
+            </span>
+          {% endif %}
+          <span class="sp-recent-purchased__activity-text">{{ sp_rp_name | escape }} purchased</span>
+          {% if settings.show_verified_icon %}
+            <span class="sp-recent-purchased__verified" title="Merchant-confirmed purchase event" aria-label="Merchant-confirmed purchase event">
+              <svg viewBox="0 0 24 24" focusable="false"><path d="M12 1.7 14.8 3l3.1-.1 1.4 2.8 2.4 2-1 3 .6 3-2.5 2-1.4 2.8-3.1-.1-2.8 1.3-2.8-1.3-3.1.1-1.4-2.8-2.4-2 1-3-.6-3 2.5-2 1.4-2.8 3.1.1L12 1.7Z" fill="currentColor"/><path d="m8.2 11.8 2.3 2.3 5.3-5.3" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </span>
+          {% endif %}
+        </div>
+      {% elsif settings.show_status_on_cards %}
+        <div class="sp-recent-purchased__activity sp-recent-purchased__activity--neutral"><span>{{ settings.product_highlight_label | escape }}</span></div>
+      {% endif %}
+      {% if settings.show_product_title %}<h3 class="sp-recent-purchased__product-title">{{ sp_rp_title | default: 'Select a product' | escape }}</h3>{% endif %}
+      {% if settings.show_vendor and sp_rp_product.vendor != blank %}<p class="sp-recent-purchased__vendor">{{ sp_rp_product.vendor | escape }}</p>{% endif %}
+      {% if settings.show_price and sp_rp_product != blank %}
+        <div class="sp-recent-purchased__price">{% if settings.show_compare_at_price %}{% render 'sp-product-price', product: sp_rp_product %}{% else %}{{ sp_rp_product.price | money }}{% endif %}</div>
+        {% unless sp_rp_product.available %}<span class="sp-recent-purchased__sold-out">Sold out</span>{% endunless %}
+      {% endif %}
+      {% if sp_rp_is_event %}
+        {% if settings.show_location and block.settings.broad_location != blank or settings.show_purchase_time and block.settings.activity_time_text != blank %}
+          <p class="sp-recent-purchased__meta">
+            {% if settings.show_purchase_time and block.settings.activity_time_text != blank %}
+              <span class="sp-recent-purchased__meta-item">
+                <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 7v5l3.2 2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <span>{{ block.settings.activity_time_text | escape }}</span>
+              </span>
+            {% endif %}
+            {% if settings.show_location and block.settings.broad_location != blank %}
+              <span class="sp-recent-purchased__meta-item">
+                <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M19 10.2c0 5.1-7 11-7 11s-7-5.9-7-11a7 7 0 1 1 14 0Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><circle cx="12" cy="10" r="2.2" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>
+                <span>{{ block.settings.broad_location | escape }}</span>
+              </span>
+            {% endif %}
+          </p>
+        {% endif %}
+      {% endif %}
+      {% if settings.show_product_link and sp_rp_href != blank %}<a class="sp-recent-purchased__link" href="{{ sp_rp_href }}">{{ settings.product_link_label | escape }} <span aria-hidden="true">→</span></a>{% endif %}
+    </div>
+  </article>
+</li>
+{%- endif -%}

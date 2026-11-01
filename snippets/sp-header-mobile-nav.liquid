@@ -1,0 +1,145 @@
+{% if section.settings.sp_mobile_nav_mode == 'drilldown' %}
+{% comment %}
+  Spider mobile Level 1/2/3 navigation.
+  Every submenu panel is a sibling view, so hidden levels cannot remain focusable.
+  Params: section, menu
+{% endcomment %}
+<nav class="sp-header-mobile-nav" aria-label="Mobile navigation">
+  <div class="sp-header-mobile-nav__view" data-sp-mobile-view="root" aria-hidden="false">
+    <ul class="sp-header-mobile-nav__level sp-header-mobile-nav__level--root" role="list">
+      {% for link in menu.links %}
+        <li class="sp-header-mobile-nav__item">
+          <div class="sp-header-mobile-nav__row">
+            <a href="{{ link.url }}"{% if link.current %} aria-current="page"{% endif %}>
+              <span>{{ link.title | escape }}</span>
+              {% render 'sp-header-badge', title: link.title, section: section %}
+            </a>
+            {% if link.links != blank %}
+              <button
+                type="button"
+                data-sp-mobile-submenu-open="SpMobileSub-{{ section.id }}-{{ forloop.index }}"
+                aria-controls="SpMobileSub-{{ section.id }}-{{ forloop.index }}"
+                aria-expanded="false"
+                aria-label="Open {{ link.title | escape }} submenu">
+                {% render 'icon', name: 'chevron-right' %}
+              </button>
+            {% endif %}
+          </div>
+        </li>
+      {% endfor %}
+    </ul>
+  </div>
+
+  {% for link in menu.links %}
+    {% if link.links != blank %}
+      <div
+        id="SpMobileSub-{{ section.id }}-{{ forloop.index }}"
+        class="sp-header-mobile-nav__panel sp-header-mobile-nav__view"
+        data-sp-mobile-submenu
+        data-sp-mobile-view="SpMobileSub-{{ section.id }}-{{ forloop.index }}"
+        data-sp-mobile-parent-view="root"
+        aria-hidden="true"
+        hidden>
+        <div class="sp-header-mobile-nav__panel-head">
+          <button type="button" data-sp-mobile-submenu-back aria-label="Back to main menu">
+            {% render 'icon', name: 'chevron-left' %}
+            <span>Back</span>
+          </button>
+          <strong>{{ link.title | escape }}</strong>
+        </div>
+        <a class="sp-header-mobile-nav__parent" href="{{ link.url }}">View all {{ link.title | escape }}</a>
+        <ul role="list">
+          {% for child in link.links %}
+            <li>
+              <div class="sp-header-mobile-nav__row">
+                <a href="{{ child.url }}"{% if child.current %} aria-current="page"{% endif %}>{{ child.title | escape }}</a>
+                {% if child.links != blank %}
+                  <button
+                    type="button"
+                    data-sp-mobile-submenu-open="SpMobileSub-{{ section.id }}-{{ forloop.parentloop.index }}-{{ forloop.index }}"
+                    aria-controls="SpMobileSub-{{ section.id }}-{{ forloop.parentloop.index }}-{{ forloop.index }}"
+                    aria-expanded="false"
+                    aria-label="Open {{ child.title | escape }} submenu">
+                    {% render 'icon', name: 'chevron-right' %}
+                  </button>
+                {% endif %}
+              </div>
+            </li>
+          {% endfor %}
+        </ul>
+      </div>
+    {% endif %}
+  {% endfor %}
+
+  {% for link in menu.links %}
+    {% if link.links != blank %}
+      {% assign parent_index = forloop.index %}
+      {% for child in link.links %}
+        {% if child.links != blank %}
+          <div
+            id="SpMobileSub-{{ section.id }}-{{ parent_index }}-{{ forloop.index }}"
+            class="sp-header-mobile-nav__panel sp-header-mobile-nav__view"
+            data-sp-mobile-submenu
+            data-sp-mobile-view="SpMobileSub-{{ section.id }}-{{ parent_index }}-{{ forloop.index }}"
+            data-sp-mobile-parent-view="SpMobileSub-{{ section.id }}-{{ parent_index }}"
+            aria-hidden="true"
+            hidden>
+            <div class="sp-header-mobile-nav__panel-head">
+              <button type="button" data-sp-mobile-submenu-back aria-label="Back to {{ link.title | escape }}">
+                {% render 'icon', name: 'chevron-left' %}
+                <span>Back</span>
+              </button>
+              <strong>{{ child.title | escape }}</strong>
+            </div>
+            <a class="sp-header-mobile-nav__parent" href="{{ child.url }}">View all {{ child.title | escape }}</a>
+            <ul role="list">
+              {% for grandchild in child.links %}
+                <li>
+                  <a href="{{ grandchild.url }}"{% if grandchild.current %} aria-current="page"{% endif %}>{{ grandchild.title | escape }}</a>
+                </li>
+              {% endfor %}
+            </ul>
+          </div>
+        {% endif %}
+      {% endfor %}
+    {% endif %}
+  {% endfor %}
+</nav>
+
+{% else %}
+{% comment %}Spider Mobile Premium inline accordion navigation — native details, keyboard/touch accessible.{% endcomment %}
+<nav class="sp-header-mobile-nav sp-header-mobile-nav--accordion" aria-label="Mobile navigation">
+  <ul class="sp-header-mobile-nav__accordion-root" role="list">
+    {% for link in menu.links %}
+      <li class="sp-header-mobile-nav__accordion-item">
+        {% if link.links != blank %}
+          <details class="sp-header-mobile-nav__accordion"{% if link.active %} open{% endif %}>
+            <summary class="sp-header-mobile-nav__accordion-summary{% if link.active %} is-active{% endif %}">
+              <span>{{ link.title | escape }} {% render 'sp-header-badge', title: link.title, section: section %}</span>
+              {% render 'icon', name: 'chevron-right' %}
+            </summary>
+            <div class="sp-header-mobile-nav__accordion-children">
+              <a class="sp-header-mobile-nav__accordion-view-all" href="{{ link.url }}">View all {{ link.title | escape }}</a>
+              {% for child in link.links %}
+                {% if child.links != blank %}
+                  <details class="sp-header-mobile-nav__accordion sp-header-mobile-nav__accordion--nested"{% if child.active %} open{% endif %}>
+                    <summary class="sp-header-mobile-nav__accordion-summary{% if child.active %} is-active{% endif %}"><span>{{ child.title | escape }}</span>{% render 'icon', name: 'chevron-right' %}</summary>
+                    <div class="sp-header-mobile-nav__accordion-children">
+                      <a class="sp-header-mobile-nav__accordion-view-all" href="{{ child.url }}">View all {{ child.title | escape }}</a>
+                      {% for grandchild in child.links %}<a href="{{ grandchild.url }}"{% if grandchild.current %} aria-current="page"{% endif %}>{{ grandchild.title | escape }}</a>{% endfor %}
+                    </div>
+                  </details>
+                {% else %}
+                  <a href="{{ child.url }}"{% if child.current %} aria-current="page"{% endif %}>{{ child.title | escape }}</a>
+                {% endif %}
+              {% endfor %}
+            </div>
+          </details>
+        {% else %}
+          <a class="sp-header-mobile-nav__accordion-direct" href="{{ link.url }}"{% if link.current %} aria-current="page"{% endif %}>{{ link.title | escape }} {% render 'sp-header-badge', title: link.title, section: section %}</a>
+        {% endif %}
+      </li>
+    {% endfor %}
+  </ul>
+</nav>
+{% endif %}

@@ -1,0 +1,15 @@
+{% comment %}Parameters: order, compact{% endcomment %}
+<article class="sp-account-order-card{% if compact %} sp-account-order-card--compact{% endif %}">
+  <div class="sp-account-order-card__top">
+    <div>
+      <a class="sp-account-order-card__number" href="{{ order.customer_url }}">{{ order.name }}</a>
+      <p class="sp-account-meta">{{ order.created_at | time_tag: format: 'date' }}</p>
+    </div>
+    <strong>{{ order.total_price | money }}</strong>
+  </div>
+  <div class="sp-account-order-card__badges">
+    {% render 'sp-account-status-badge', status: order.financial_status, label: order.financial_status_label, kind: 'financial' %}
+    {% render 'sp-account-status-badge', status: order.fulfillment_status, label: order.fulfillment_status_label, kind: 'fulfillment' %}
+  </div>
+  <a class="sp-account-text-link" href="{{ order.customer_url }}">{{ 'customer.orders.view_order' | t }} {% render 'sp-account-icon', name: 'arrow-right' %}</a>
+</article>

@@ -1,0 +1,29 @@
+
+
+
+{% comment %}Real Shopify Ajax shipping-rate estimator. Does not mutate cart contents.{% endcomment %}
+<section class="sp-cart-shipping-calculator" data-cart-shipping-calculator data-root-url="{{ routes.root_url }}" data-currency="{{ cart.currency.iso_code | escape }}">
+  <div class="sp-cart-shipping-calculator__inner">
+    <div class="sp-premium-cart__shipping-intro">
+      <h2 class="sp-cart-shipping-calculator__title">{{ section.settings.shipping_calculator_heading | default: 'Calculate shipping' | escape }}</h2>
+      <p>{{ section.settings.shipping_calculator_description | escape }}</p>
+    </div>
+    <form class="sp-cart-shipping-calculator__form" data-shipping-form novalidate>
+      <div class="sp-cart-shipping-calculator__field">
+        <label for="ShippingCountry-{{ section.id }}">{{ section.settings.shipping_country_label | escape }}</label>
+        <select id="ShippingCountry-{{ section.id }}" data-shipping-country required>{{ country_option_tags }}</select>
+      </div>
+      <div class="sp-cart-shipping-calculator__field" data-shipping-province-wrap hidden>
+        <label for="ShippingProvince-{{ section.id }}">Province / state</label>
+        <select id="ShippingProvince-{{ section.id }}" data-shipping-province></select>
+      </div>
+      <div class="sp-cart-shipping-calculator__field">
+        <label for="ShippingZip-{{ section.id }}">{{ section.settings.shipping_zip_label | escape }}</label>
+        <input id="ShippingZip-{{ section.id }}" type="text" autocomplete="postal-code" data-shipping-zip required>
+      </div>
+      <button class="sp-button sp-button--secondary sp-cart-shipping-calculator__submit" type="submit" data-shipping-submit>{{ section.settings.shipping_button_label | default: 'Estimate' | escape }}</button>
+    </form>
+    <div class="sp-cart-shipping-calculator__status" role="status" aria-live="polite" data-shipping-status></div>
+    <div class="sp-cart-shipping-calculator__results" data-shipping-results hidden></div>
+  </div>
+</section>

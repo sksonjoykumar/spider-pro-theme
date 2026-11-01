@@ -1,0 +1,45 @@
+{% render 'sp-section-color-scheme', section: section %}
+{% if settings.footer_newsletter %}
+  <section class="sp-footer-newsletter" data-section-id="{{ section.id }}">
+    <div class="sp-container">
+      <h2>{{ section.settings.heading | escape }}</h2>
+      {% form 'customer', class: 'sp-newsletter-form' %}
+        <input type="hidden" name="contact[tags]" value="newsletter">
+        <label class="visually-hidden" for="Newsletter-{{ section.id }}">{{ 'footer.newsletter.email_placeholder' | t }}</label>
+        <input id="Newsletter-{{ section.id }}" type="email" name="contact[email]" autocomplete="email" required placeholder="{{ 'footer.newsletter.email_placeholder' | t }}">
+        <button class="sp-button sp-button--primary" type="submit">{{ 'footer.newsletter.subscribe' | t }}</button>
+        {% if form.posted_successfully? %}<p role="status">{{ 'footer.newsletter.success_message' | t }}</p>{% endif %}
+        {% if form.errors %}<div role="alert">{{ form.errors | default_errors }}</div>{% endif %}
+      {% endform %}
+    </div>
+  </section>
+{% endif %}
+{% schema %}
+{
+  "name": "Footer newsletter",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Global design system"
+    },
+    {
+      "type": "color_scheme",
+      "id": "sp_color_scheme",
+      "label": "Color scheme",
+      "default": "scheme-3",
+      "info": "Shared Spider color panel. Edit schemes once in Theme settings \u2192 Spider Color Schemes."
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Stay in the loop"
+    }
+  ],
+  "enabled_on": {
+    "groups": [
+      "footer"
+    ]
+  }
+}
+{% endschema %}

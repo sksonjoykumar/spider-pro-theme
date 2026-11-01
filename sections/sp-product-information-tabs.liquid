@@ -1,0 +1,1271 @@
+{%- liquid
+  assign info_product = product
+  if info_product == blank
+    assign info_product = section.settings.selected_product
+  endif
+  assign tab_count = 0
+  assign trust_count = 0
+  for block in section.blocks
+    if block.type == 'information_tab'
+      assign tab_count = tab_count | plus: 1
+    elsif block.type == 'trust_item'
+      assign trust_count = trust_count | plus: 1
+    endif
+  endfor
+  assign default_index = section.settings.default_active_tab | at_most: tab_count
+  if default_index < 1
+    assign default_index = 1
+  endif
+  assign container_class = 'sp-container'
+  if section.settings.content_max_width == 'wide'
+    assign container_class = 'sp-container sp-container--wide'
+  elsif section.settings.content_max_width == 'narrow'
+    assign container_class = 'sp-container sp-container--narrow'
+  endif
+-%}
+
+{% render 'sp-section-color-scheme', section: section %}
+{{ 'sp-product-information-tabs.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'sp-product-information-tabs.js' | asset_url }}" defer="defer"></script>
+
+<section
+  id="SpProductInformationTabs-{{ section.id }}"
+  class="sp-section sp-product-information-tabs-section{% if section.settings.use_custom_section_spacing %} sp-product-information-tabs-section--custom-spacing{% endif %}"
+  data-section-id="{{ section.id }}"
+  style="
+    --sp-pit-heading-width: {{ section.settings.description_width }}px;
+    --sp-pit-heading-mb: {{ section.settings.heading_bottom_spacing }}px;
+    --sp-pit-tab-gap: {{ section.settings.tab_gap }}px;
+    --sp-pit-tablist-width: {{ section.settings.tablist_max_width }}px;
+    --sp-pit-tab-space: {{ section.settings.tab_spacing }}px;
+    --sp-pit-indicator-width: {{ section.settings.active_indicator_width }}px;
+    --sp-pit-content-gap-d: {{ section.settings.content_gap_desktop }}px;
+    --sp-pit-content-gap-t: {{ section.settings.content_gap_tablet }}px;
+    --sp-pit-content-gap-m: {{ section.settings.content_gap_mobile }}px;
+    --sp-pit-image-width: {{ section.settings.content_image_width }}%;
+    {% unless section.settings.use_global_card_style %}
+      --sp-pit-card-border-width: {{ section.settings.card_border_width }}px;
+      --sp-pit-card-border-color: {% if section.settings.use_scheme_border %}var(--sp-section-border, #E4E4E7){% else %}{{ section.settings.card_border_color }}{% endif %};
+      --sp-pit-card-radius: {{ section.settings.card_border_radius }}px;
+    {% endunless %}
+    --sp-pit-card-padding-d: {{ section.settings.card_padding_desktop }}px;
+    --sp-pit-card-padding-t: {{ section.settings.card_padding_tablet }}px;
+    --sp-pit-card-padding-m: {{ section.settings.card_padding_mobile }}px;
+    --sp-pit-pad-top-d: {{ section.settings.padding_top_desktop }}px;
+    --sp-pit-pad-bottom-d: {{ section.settings.padding_bottom_desktop }}px;
+    --sp-pit-pad-top-t: {{ section.settings.padding_top_tablet }}px;
+    --sp-pit-pad-bottom-t: {{ section.settings.padding_bottom_tablet }}px;
+    --sp-pit-pad-top-m: {{ section.settings.padding_top_mobile }}px;
+    --sp-pit-pad-bottom-m: {{ section.settings.padding_bottom_mobile }}px;
+    --sp-pit-mobile-tab-width: {{ section.settings.mobile_tab_width }}px;
+    {% unless section.settings.use_global_card_style %}
+      --sp-pit-card-bg: {% if section.settings.use_scheme_card %}var(--sp-section-card, #fff){% else %}{{ section.settings.card_background }}{% endif %};
+    {% endunless %}
+  "
+>
+  <div class="{{ container_class }}">
+    {%- if section.settings.show_header -%}
+      <header class="sp-product-information-tabs__header sp-product-information-tabs__header--{{ section.settings.heading_alignment }}">
+        {%- if section.settings.eyebrow != blank -%}<p class="sp-eyebrow">{{ section.settings.eyebrow | escape }}</p>{%- endif -%}
+        {%- if section.settings.heading != blank -%}<h2 class="sp-product-information-tabs__heading sp-heading--{{ section.settings.heading_size }}">{{ section.settings.heading | escape }}</h2>{%- endif -%}
+        {%- if section.settings.description != blank -%}<div class="sp-product-information-tabs__description rte">{{ section.settings.description }}</div>{%- endif -%}
+      </header>
+    {%- endif -%}
+
+    {%- if tab_count > 0 -%}
+      <sp-product-information-tabs
+        class="sp-product-information-tabs sp-product-information-tabs--{{ section.settings.layout_style }} sp-product-information-tabs--layout-{{ section.settings.content_layout }} sp-product-information-tabs--indicator-{{ section.settings.active_indicator_style }} sp-product-information-tabs--content-{{ section.settings.content_alignment }} sp-product-information-tabs--text-{{ section.settings.content_text_alignment }} sp-product-information-tabs--mobile-image-{{ section.settings.mobile_image_position }}{% if section.settings.card_equal_height %} sp-product-information-tabs--equal-height{% endif %}{% if section.settings.use_global_card_style %} sp-product-information-tabs--global-card-style{% elsif section.settings.card_shadow != 'none' %} sp-product-information-tabs--shadow-{{ section.settings.card_shadow }}{% endif %}{% if trust_count > 0 %} sp-product-information-tabs--has-trust{% endif %}{% if section.settings.enable_mobile_tab_scroll %} sp-product-information-tabs--mobile-scroll{% endif %}"
+        data-sp-product-information-tabs
+        data-sp-layout="{{ section.settings.layout_style }}"
+        data-sp-orientation="{% if section.settings.layout_style == 'style_3' %}vertical{% else %}horizontal{% endif %}"
+        data-sp-mobile-scroll="{{ section.settings.enable_mobile_tab_scroll }}"
+        data-sp-accordion-multiple="{{ section.settings.accordion_multiple }}"
+      >
+        {%- if section.settings.layout_style == 'style_4' -%}
+          <div class="sp-product-information-tabs__accordion">
+            {%- assign tab_index = 0 -%}
+            {%- for block in section.blocks -%}
+              {%- if block.type == 'information_tab' -%}
+                {%- assign tab_index = tab_index | plus: 1 -%}
+                {%- assign accordion_open = block.settings.open_by_default -%}
+                {%- if section.settings.accordion_first_open and tab_index == 1 -%}{%- assign accordion_open = true -%}{%- endif -%}
+                <details class="sp-product-information-tabs__accordion-item" data-sp-accordion-item data-sp-block-id="{{ block.id }}"{% if accordion_open %} open{% endif %} {{ block.shopify_attributes }}>
+                  <summary id="SpPitSummary-{{ section.id }}-{{ block.id }}" aria-expanded="{% if accordion_open %}true{% else %}false{% endif %}" aria-controls="SpPitAccordionPanel-{{ section.id }}-{{ block.id }}">
+                    <span class="sp-product-information-tabs__tab-label">
+                      {%- if section.settings.show_tab_icons and block.settings.tab_icon != 'none' -%}<span class="sp-product-information-tabs__tab-icon" aria-hidden="true">{% render 'icon', name: block.settings.tab_icon %}</span>{%- endif -%}
+                      {{ block.settings.tab_label | escape }}
+                    </span>
+                    <span class="sp-product-information-tabs__accordion-icon" aria-hidden="true">{% render 'icon', name: 'plus' %}</span>
+                  </summary>
+                  <div id="SpPitAccordionPanel-{{ section.id }}-{{ block.id }}" class="sp-product-information-tabs__accordion-panel" role="region" aria-labelledby="SpPitSummary-{{ section.id }}-{{ block.id }}">
+                    {% render 'sp-product-information-tab-content', block: block, info_product: info_product, section: section %}
+                  </div>
+                </details>
+              {%- endif -%}
+            {%- endfor -%}
+          </div>
+        {%- else -%}
+          <div class="sp-product-information-tabs__shell{% if section.settings.layout_style == 'style_3' and section.settings.sidebar_position == 'right' %} sp-product-information-tabs__shell--sidebar-right{% endif %}">
+            <div class="sp-product-information-tabs__nav-wrap{% if section.settings.sticky_tab_navigation %} sp-product-information-tabs__nav-wrap--sticky{% endif %}">
+              <div class="sp-product-information-tabs__tablist sp-product-information-tabs__tablist--{{ section.settings.tab_alignment }} sp-product-information-tabs__tablist--text-{{ section.settings.tab_text_alignment }}" role="tablist" aria-label="{{ section.settings.tablist_label | escape }}" aria-orientation="{% if section.settings.layout_style == 'style_3' %}vertical{% else %}horizontal{% endif %}">
+                {%- assign tab_index = 0 -%}
+                {%- for block in section.blocks -%}
+                  {%- if block.type == 'information_tab' -%}
+                    {%- assign tab_index = tab_index | plus: 1 -%}
+                    {%- assign active = false -%}
+                    {%- if tab_index == default_index -%}{%- assign active = true -%}{%- endif -%}
+                    <button
+                      id="SpPitTab-{{ section.id }}-{{ block.id }}"
+                      class="sp-product-information-tabs__tab"
+                      type="button"
+                      role="tab"
+                      aria-selected="{{ active }}"
+                      aria-controls="SpPitPanel-{{ section.id }}-{{ block.id }}"
+                      tabindex="{% if active %}0{% else %}-1{% endif %}"
+                      data-sp-block-id="{{ block.id }}"
+                      {{ block.shopify_attributes }}
+                    >
+                      {%- if section.settings.show_tab_icons and block.settings.tab_icon != 'none' -%}<span class="sp-product-information-tabs__tab-icon" aria-hidden="true">{% render 'icon', name: block.settings.tab_icon %}</span>{%- endif -%}
+                      <span>{{ block.settings.tab_label | escape }}</span>
+                    </button>
+                  {%- endif -%}
+                {%- endfor -%}
+              </div>
+            </div>
+
+            <div class="sp-product-information-tabs__panels">
+              {%- assign tab_index = 0 -%}
+              {%- for block in section.blocks -%}
+                {%- if block.type == 'information_tab' -%}
+                  {%- assign tab_index = tab_index | plus: 1 -%}
+                  {%- assign active = false -%}
+                  {%- if tab_index == default_index -%}{%- assign active = true -%}{%- endif -%}
+                  <div
+                    id="SpPitPanel-{{ section.id }}-{{ block.id }}"
+                    class="sp-product-information-tabs__panel"
+                    role="tabpanel"
+                    aria-labelledby="SpPitTab-{{ section.id }}-{{ block.id }}"
+                    tabindex="0"
+                    data-sp-block-id="{{ block.id }}"
+                    {% unless active %}hidden inert{% endunless %}
+                  >
+                    {% render 'sp-product-information-tab-content', block: block, info_product: info_product, section: section %}
+                  </div>
+                {%- endif -%}
+              {%- endfor -%}
+            </div>
+          </div>
+        {%- endif -%}
+
+        {%- if trust_count > 0 -%}
+          <div class="sp-product-information-tabs__trust{% if section.settings.mobile_trust_scroll %} sp-product-information-tabs__trust--mobile-scroll{% endif %}" role="list" aria-label="{{ section.settings.trust_list_label | escape }}">
+            {%- for block in section.blocks -%}
+              {%- if block.type == 'trust_item' -%}
+                <div class="sp-product-information-tabs__trust-item" role="listitem" {{ block.shopify_attributes }}>
+                  {%- capture trust_content -%}
+                    <span class="sp-product-information-tabs__trust-icon" aria-hidden="true">
+                      {%- if block.settings.custom_icon != blank -%}
+                        {{ block.settings.custom_icon | image_url: width: 96 | image_tag: widths: '48,72,96', sizes: '28px', loading: 'lazy', alt: '' }}
+                      {%- elsif block.settings.icon != 'none' -%}
+                        {% render 'icon', name: block.settings.icon %}
+                      {%- endif -%}
+                    </span>
+                    <span class="sp-product-information-tabs__trust-copy">
+                      {%- if block.settings.heading != blank -%}<strong>{{ block.settings.heading | escape }}</strong>{%- endif -%}
+                      {%- if block.settings.text != blank -%}<span>{{ block.settings.text | escape }}</span>{%- endif -%}
+                    </span>
+                  {%- endcapture -%}
+                  {%- if block.settings.link != blank -%}
+                    <a href="{{ block.settings.link }}"{% if block.settings.open_in_new_tab %} target="_blank" rel="noopener noreferrer"{% endif %}>{{ trust_content }}</a>
+                  {%- else -%}
+                    <div>{{ trust_content }}</div>
+                  {%- endif -%}
+                </div>
+              {%- endif -%}
+            {%- endfor -%}
+          </div>
+        {%- endif -%}
+      </sp-product-information-tabs>
+    {%- elsif request.design_mode -%}
+      <div class="sp-product-information-tabs__editor-empty">Add an Information tab block to begin.</div>
+    {%- endif -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Product information tabs",
+  "tag": "section",
+  "class": "sp-product-information-tabs-wrapper",
+  "max_blocks": 16,
+  "disabled_on": {
+    "groups": [
+      "header",
+      "footer",
+      "custom.system"
+    ]
+  },
+  "settings": [
+    {
+      "type": "header",
+      "content": "Content"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_header",
+      "label": "Show section header",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Eyebrow"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Everything you need to know"
+    },
+    {
+      "type": "richtext",
+      "id": "description",
+      "label": "Description",
+      "default": "<p>Details designed to help you choose with confidence.</p>"
+    },
+    {
+      "type": "select",
+      "id": "heading_alignment",
+      "label": "Heading alignment",
+      "default": "center",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "heading_size",
+      "label": "Heading size",
+      "default": "h2",
+      "options": [
+        {
+          "value": "h1",
+          "label": "H1"
+        },
+        {
+          "value": "h2",
+          "label": "H2"
+        },
+        {
+          "value": "h3",
+          "label": "H3"
+        }
+      ]
+    },
+    {
+      "type": "range",
+      "id": "description_width",
+      "label": "Description maximum width",
+      "min": 320,
+      "max": 900,
+      "step": 20,
+      "unit": "px",
+      "default": 680
+    },
+    {
+      "type": "range",
+      "id": "heading_bottom_spacing",
+      "label": "Heading bottom spacing",
+      "min": 12,
+      "max": 80,
+      "step": 4,
+      "unit": "px",
+      "default": 28
+    },
+    {
+      "type": "header",
+      "content": "Layout Style"
+    },
+    {
+      "type": "select",
+      "id": "layout_style",
+      "label": "Layout style",
+      "default": "style_1",
+      "options": [
+        {
+          "value": "style_1",
+          "label": "Classic Horizontal Tabs"
+        },
+        {
+          "value": "style_2",
+          "label": "Premium Pill Tabs"
+        },
+        {
+          "value": "style_3",
+          "label": "Vertical Sidebar Tabs"
+        },
+        {
+          "value": "style_4",
+          "label": "Information Accordion"
+        },
+        {
+          "value": "style_5",
+          "label": "Editorial Tab Cards"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "sidebar_position",
+      "label": "Sidebar position",
+      "default": "left",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ],
+      "visible_if": "{{ section.settings.layout_style == 'style_3' }}"
+    },
+    {
+      "type": "checkbox",
+      "id": "accordion_first_open",
+      "label": "Open first item initially",
+      "default": true,
+      "visible_if": "{{ section.settings.layout_style == 'style_4' }}"
+    },
+    {
+      "type": "checkbox",
+      "id": "accordion_multiple",
+      "label": "Allow multiple open items",
+      "default": false,
+      "visible_if": "{{ section.settings.layout_style == 'style_4' }}"
+    },
+    {
+      "type": "header",
+      "content": "Product Source"
+    },
+    {
+      "type": "product",
+      "id": "selected_product",
+      "label": "Fallback product",
+      "info": "Used outside product templates. The current product always takes priority on product pages."
+    },
+    {
+      "type": "header",
+      "content": "Tab Navigation"
+    },
+    {
+      "type": "range",
+      "id": "default_active_tab",
+      "label": "Default active tab",
+      "min": 1,
+      "max": 8,
+      "step": 1,
+      "default": 1
+    },
+    {
+      "type": "select",
+      "id": "tab_alignment",
+      "label": "Tab alignment",
+      "default": "center",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ]
+    },
+    {
+      "type": "range",
+      "id": "tablist_max_width",
+      "label": "Tab navigation maximum width",
+      "min": 600,
+      "max": 1400,
+      "step": 50,
+      "unit": "px",
+      "default": 900
+    },
+    {
+      "type": "select",
+      "id": "tab_text_alignment",
+      "label": "Tab text alignment",
+      "default": "center",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        }
+      ]
+    },
+    {
+      "type": "range",
+      "id": "tab_gap",
+      "label": "Tab gap",
+      "min": 0,
+      "max": 48,
+      "step": 2,
+      "unit": "px",
+      "default": 12
+    },
+    {
+      "type": "range",
+      "id": "tab_spacing",
+      "label": "Tab horizontal padding",
+      "min": 8,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "default": 20
+    },
+    {
+      "type": "checkbox",
+      "id": "show_tab_icons",
+      "label": "Show tab icons",
+      "default": false
+    },
+    {
+      "type": "select",
+      "id": "active_indicator_style",
+      "label": "Active indicator",
+      "default": "underline",
+      "options": [
+        {
+          "value": "underline",
+          "label": "Underline"
+        },
+        {
+          "value": "top_border",
+          "label": "Top border"
+        },
+        {
+          "value": "side_border",
+          "label": "Side border"
+        },
+        {
+          "value": "background",
+          "label": "Background"
+        },
+        {
+          "value": "pill",
+          "label": "Pill"
+        }
+      ]
+    },
+    {
+      "type": "range",
+      "id": "active_indicator_width",
+      "label": "Indicator width",
+      "min": 1,
+      "max": 6,
+      "step": 1,
+      "unit": "px",
+      "default": 3
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_mobile_tab_scroll",
+      "label": "Enable mobile tab scrolling",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "mobile_tab_width",
+      "label": "Minimum mobile tab width",
+      "min": 100,
+      "max": 240,
+      "step": 10,
+      "unit": "px",
+      "default": 140
+    },
+    {
+      "type": "checkbox",
+      "id": "sticky_tab_navigation",
+      "label": "Sticky tab navigation",
+      "default": false
+    },
+    {
+      "type": "text",
+      "id": "tablist_label",
+      "label": "Accessible tab list label",
+      "default": "Product information"
+    },
+    {
+      "type": "header",
+      "content": "Content Card"
+    },
+    {
+      "type": "checkbox",
+      "id": "use_global_card_style",
+      "label": "Use Spider global card styling",
+      "default": true,
+      "info": "Recommended. Inherits Spider color-scheme borders, card surfaces, radius, and soft shadow."
+    },
+    {
+      "type": "select",
+      "id": "content_max_width",
+      "label": "Content maximum width",
+      "default": "wide",
+      "options": [
+        {
+          "value": "narrow",
+          "label": "Narrow"
+        },
+        {
+          "value": "container",
+          "label": "Theme container"
+        },
+        {
+          "value": "wide",
+          "label": "Wide"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "content_layout",
+      "label": "Content layout",
+      "default": "split",
+      "options": [
+        {
+          "value": "split",
+          "label": "Split text and image"
+        },
+        {
+          "value": "stacked",
+          "label": "Stacked text and image"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "content_alignment",
+      "label": "Content alignment",
+      "default": "center",
+      "options": [
+        {
+          "value": "start",
+          "label": "Top"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "content_text_alignment",
+      "label": "Text alignment",
+      "default": "left",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ]
+    },
+    {
+      "type": "range",
+      "id": "content_image_width",
+      "label": "Image column width",
+      "min": 30,
+      "max": 65,
+      "step": 1,
+      "unit": "%",
+      "default": 48
+    },
+    {
+      "type": "checkbox",
+      "id": "card_equal_height",
+      "label": "Use equal-height columns",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "card_border_width",
+      "label": "Border width",
+      "min": 0,
+      "max": 4,
+      "step": 1,
+      "unit": "px",
+      "default": 1,
+      "visible_if": "{{ section.settings.use_global_card_style == false }}"
+    },
+    {
+      "type": "checkbox",
+      "id": "use_scheme_border",
+      "label": "Use color-scheme border",
+      "default": true,
+      "visible_if": "{{ section.settings.use_global_card_style == false }}"
+    },
+    {
+      "type": "color",
+      "id": "card_border_color",
+      "label": "Custom border color",
+      "default": "#E4E4E7",
+      "visible_if": "{{ section.settings.use_global_card_style == false }}"
+    },
+    {
+      "type": "range",
+      "id": "card_border_radius",
+      "label": "Border radius",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "default": 16,
+      "visible_if": "{{ section.settings.use_global_card_style == false }}"
+    },
+    {
+      "type": "select",
+      "id": "card_shadow",
+      "label": "Card shadow",
+      "default": "soft",
+      "options": [
+        {
+          "value": "none",
+          "label": "None"
+        },
+        {
+          "value": "soft",
+          "label": "Soft"
+        },
+        {
+          "value": "medium",
+          "label": "Medium"
+        }
+      ],
+      "visible_if": "{{ section.settings.use_global_card_style == false }}"
+    },
+    {
+      "type": "header",
+      "content": "Images"
+    },
+    {
+      "type": "select",
+      "id": "mobile_image_position",
+      "label": "Mobile image position",
+      "default": "last",
+      "options": [
+        {
+          "value": "first",
+          "label": "First"
+        },
+        {
+          "value": "last",
+          "label": "Last"
+        }
+      ]
+    },
+    {
+      "type": "header",
+      "content": "Feature List"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_feature_lists",
+      "label": "Show feature lists",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "feature_icon",
+      "label": "Feature icon",
+      "default": "shield",
+      "options": [
+        {
+          "value": "none",
+          "label": "None"
+        },
+        {
+          "value": "shield",
+          "label": "Shield"
+        },
+        {
+          "value": "star",
+          "label": "Star"
+        },
+        {
+          "value": "heart",
+          "label": "Heart"
+        },
+        {
+          "value": "return",
+          "label": "Return"
+        }
+      ]
+    },
+    {
+      "type": "header",
+      "content": "Trust Items"
+    },
+    {
+      "type": "checkbox",
+      "id": "mobile_trust_scroll",
+      "label": "Enable mobile trust-item scrolling",
+      "default": false
+    },
+    {
+      "type": "text",
+      "id": "trust_list_label",
+      "label": "Accessible trust list label",
+      "default": "Store policies and benefits"
+    },
+    {
+      "type": "header",
+      "content": "Colors"
+    },
+    {
+      "type": "color_scheme",
+      "id": "sp_color_scheme",
+      "label": "Color scheme",
+      "default": "scheme-1",
+      "info": "Uses the shared Spider color scheme system."
+    },
+    {
+      "type": "checkbox",
+      "id": "use_scheme_card",
+      "label": "Use color-scheme card color",
+      "default": true,
+      "visible_if": "{{ section.settings.use_global_card_style == false }}"
+    },
+    {
+      "type": "color",
+      "id": "card_background",
+      "label": "Custom card background",
+      "default": "#FFFFFF",
+      "visible_if": "{{ section.settings.use_global_card_style == false }}"
+    },
+    {
+      "type": "header",
+      "content": "Spacing Behavior"
+    },
+    {
+      "type": "checkbox",
+      "id": "use_custom_section_spacing",
+      "label": "Override global section spacing",
+      "default": false,
+      "info": "Off by default so Spider's global section spacing remains in control."
+    },
+    {
+      "type": "header",
+      "content": "Desktop Spacing"
+    },
+    {
+      "type": "range",
+      "id": "content_gap_desktop",
+      "label": "Content gap",
+      "min": 16,
+      "max": 80,
+      "step": 4,
+      "unit": "px",
+      "default": 40
+    },
+    {
+      "type": "range",
+      "id": "card_padding_desktop",
+      "label": "Card padding",
+      "min": 0,
+      "max": 64,
+      "step": 4,
+      "unit": "px",
+      "default": 32
+    },
+    {
+      "type": "range",
+      "id": "padding_top_desktop",
+      "label": "Top padding",
+      "min": 0,
+      "max": 160,
+      "step": 8,
+      "unit": "px",
+      "default": 80,
+      "visible_if": "{{ section.settings.use_custom_section_spacing == true }}"
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom_desktop",
+      "label": "Bottom padding",
+      "min": 0,
+      "max": 160,
+      "step": 8,
+      "unit": "px",
+      "default": 80,
+      "visible_if": "{{ section.settings.use_custom_section_spacing == true }}"
+    },
+    {
+      "type": "header",
+      "content": "Tablet Spacing"
+    },
+    {
+      "type": "range",
+      "id": "content_gap_tablet",
+      "label": "Content gap",
+      "min": 12,
+      "max": 64,
+      "step": 4,
+      "unit": "px",
+      "default": 32
+    },
+    {
+      "type": "range",
+      "id": "card_padding_tablet",
+      "label": "Card padding",
+      "min": 0,
+      "max": 48,
+      "step": 4,
+      "unit": "px",
+      "default": 24
+    },
+    {
+      "type": "range",
+      "id": "padding_top_tablet",
+      "label": "Top padding",
+      "min": 0,
+      "max": 120,
+      "step": 8,
+      "unit": "px",
+      "default": 64,
+      "visible_if": "{{ section.settings.use_custom_section_spacing == true }}"
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom_tablet",
+      "label": "Bottom padding",
+      "min": 0,
+      "max": 120,
+      "step": 8,
+      "unit": "px",
+      "default": 64,
+      "visible_if": "{{ section.settings.use_custom_section_spacing == true }}"
+    },
+    {
+      "type": "header",
+      "content": "Mobile Spacing"
+    },
+    {
+      "type": "range",
+      "id": "content_gap_mobile",
+      "label": "Content gap",
+      "min": 8,
+      "max": 40,
+      "step": 4,
+      "unit": "px",
+      "default": 24
+    },
+    {
+      "type": "range",
+      "id": "card_padding_mobile",
+      "label": "Card padding",
+      "min": 0,
+      "max": 32,
+      "step": 2,
+      "unit": "px",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "padding_top_mobile",
+      "label": "Top padding",
+      "min": 0,
+      "max": 96,
+      "step": 8,
+      "unit": "px",
+      "default": 48,
+      "visible_if": "{{ section.settings.use_custom_section_spacing == true }}"
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom_mobile",
+      "label": "Bottom padding",
+      "min": 0,
+      "max": 96,
+      "step": 8,
+      "unit": "px",
+      "default": 48,
+      "visible_if": "{{ section.settings.use_custom_section_spacing == true }}"
+    },
+    {
+      "type": "header",
+      "content": "Accessibility"
+    },
+    {
+      "type": "paragraph",
+      "content": "Tabs use roving keyboard focus, unique labels, and linked tab panels. Accordion controls use native details/summary behavior."
+    },
+    {
+      "type": "header",
+      "content": "Advanced"
+    },
+    {
+      "type": "paragraph",
+      "content": "Custom Liquid and app output are scoped inside the active panel. Verify third-party review apps on the storefront."
+    }
+  ],
+  "blocks": [
+    {
+      "type": "information_tab",
+      "name": "Information tab",
+      "limit": 8,
+      "settings": [
+        {
+          "type": "text",
+          "id": "tab_label",
+          "label": "Tab label",
+          "default": "Description"
+        },
+        {
+          "type": "select",
+          "id": "tab_icon",
+          "label": "Tab icon",
+          "default": "none",
+          "options": [
+            {
+              "value": "none",
+              "label": "None"
+            },
+            {
+              "value": "star",
+              "label": "Star"
+            },
+            {
+              "value": "shield",
+              "label": "Shield"
+            },
+            {
+              "value": "truck",
+              "label": "Truck"
+            },
+            {
+              "value": "return",
+              "label": "Return"
+            },
+            {
+              "value": "heart",
+              "label": "Heart"
+            }
+          ]
+        },
+        {
+          "type": "select",
+          "id": "content_source",
+          "label": "Content source",
+          "default": "custom_content",
+          "options": [
+            {
+              "value": "custom_content",
+              "label": "Custom content"
+            },
+            {
+              "value": "product_description",
+              "label": "Product description"
+            },
+            {
+              "value": "selected_page",
+              "label": "Selected page"
+            },
+            {
+              "value": "product_metafield",
+              "label": "Product metafield"
+            },
+            {
+              "value": "custom_liquid",
+              "label": "Custom Liquid"
+            },
+            {
+              "value": "reviews_app",
+              "label": "Reviews app"
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "id": "content_heading",
+          "label": "Content heading",
+          "default": "Built for everyday comfort"
+        },
+        {
+          "type": "richtext",
+          "id": "content_text",
+          "label": "Content text",
+          "default": "<p>A thoughtfully designed product made to bring comfort and confidence to everyday life.</p><p>Crafted with premium materials and made to be enjoyed for years to come.</p>",
+          "info": "Used when Content source is Custom content."
+        },
+        {
+          "type": "page",
+          "id": "page",
+          "label": "Page",
+          "info": "Used when Content source is Selected page."
+        },
+        {
+          "type": "text",
+          "id": "metafield_namespace",
+          "label": "Metafield namespace",
+          "default": "custom",
+          "info": "Used when Content source is Product metafield."
+        },
+        {
+          "type": "text",
+          "id": "metafield_key",
+          "label": "Metafield key",
+          "info": "Used when Content source is Product metafield."
+        },
+        {
+          "type": "liquid",
+          "id": "custom_liquid",
+          "label": "Custom Liquid",
+          "info": "Used when Content source is Custom Liquid."
+        },
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Image"
+        },
+        {
+          "type": "text",
+          "id": "image_alt",
+          "label": "Image alt text",
+          "info": "Leave blank to use the image or product alt text."
+        },
+        {
+          "type": "select",
+          "id": "image_position",
+          "label": "Desktop image position",
+          "default": "right",
+          "options": [
+            {
+              "value": "left",
+              "label": "Left"
+            },
+            {
+              "value": "right",
+              "label": "Right"
+            }
+          ]
+        },
+        {
+          "type": "select",
+          "id": "image_ratio",
+          "label": "Image ratio",
+          "default": "landscape",
+          "options": [
+            {
+              "value": "natural",
+              "label": "Natural"
+            },
+            {
+              "value": "square",
+              "label": "Square"
+            },
+            {
+              "value": "portrait",
+              "label": "Portrait"
+            },
+            {
+              "value": "landscape",
+              "label": "Landscape"
+            }
+          ]
+        },
+        {
+          "type": "textarea",
+          "id": "feature_list",
+          "label": "Feature list",
+          "default": "Premium materials\nThoughtful design\nMade to last",
+          "info": "Add one feature per line."
+        },
+        {
+          "type": "text",
+          "id": "button_label",
+          "label": "Button label"
+        },
+        {
+          "type": "url",
+          "id": "button_link",
+          "label": "Button link"
+        },
+        {
+          "type": "checkbox",
+          "id": "open_by_default",
+          "label": "Open by default in accordion",
+          "default": false
+        }
+      ]
+    },
+    {
+      "type": "trust_item",
+      "name": "Trust item",
+      "limit": 4,
+      "settings": [
+        {
+          "type": "select",
+          "id": "icon",
+          "label": "Icon",
+          "default": "shield",
+          "options": [
+            {
+              "value": "none",
+              "label": "None"
+            },
+            {
+              "value": "truck",
+              "label": "Truck"
+            },
+            {
+              "value": "return",
+              "label": "Return"
+            },
+            {
+              "value": "shield",
+              "label": "Shield"
+            },
+            {
+              "value": "star",
+              "label": "Star"
+            }
+          ]
+        },
+        {
+          "type": "image_picker",
+          "id": "custom_icon",
+          "label": "Custom icon"
+        },
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "Heading",
+          "default": "2-year warranty"
+        },
+        {
+          "type": "text",
+          "id": "text",
+          "label": "Text"
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "Link"
+        },
+        {
+          "type": "checkbox",
+          "id": "open_in_new_tab",
+          "label": "Open link in new tab",
+          "default": false
+        }
+      ]
+    },
+    {
+      "type": "@app"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Product information tabs",
+      "settings": {
+        "layout_style": "style_1",
+        "content_max_width": "wide",
+        "content_image_width": 48,
+        "tab_alignment": "center",
+        "active_indicator_style": "underline"
+      },
+      "category": "02. Products",
+      "blocks": [
+        {
+          "type": "information_tab",
+          "settings": {
+            "tab_label": "Description",
+            "content_heading": "Built for everyday comfort",
+            "feature_list": "Premium materials\nThoughtful design\nMade to last"
+          }
+        },
+        {
+          "type": "information_tab",
+          "settings": {
+            "tab_label": "Specifications",
+            "content_heading": "Product specifications",
+            "content_text": "<p>Add dimensions, materials, care instructions, and technical details here.</p>",
+            "feature_list": ""
+          }
+        },
+        {
+          "type": "information_tab",
+          "settings": {
+            "tab_label": "Shipping & Returns",
+            "tab_icon": "truck",
+            "content_heading": "Shipping and returns",
+            "content_text": "<p>Share delivery estimates, shipping coverage, and your return policy.</p>",
+            "feature_list": "Fast dispatch\nEasy returns"
+          }
+        },
+        {
+          "type": "information_tab",
+          "settings": {
+            "tab_label": "Reviews",
+            "tab_icon": "star",
+            "content_source": "reviews_app",
+            "content_heading": "Customer reviews",
+            "feature_list": ""
+          }
+        },
+        {
+          "type": "trust_item",
+          "settings": {
+            "icon": "truck",
+            "heading": "Free shipping over $100"
+          }
+        },
+        {
+          "type": "trust_item",
+          "settings": {
+            "icon": "return",
+            "heading": "30-day easy returns"
+          }
+        },
+        {
+          "type": "trust_item",
+          "settings": {
+            "icon": "shield",
+            "heading": "2-year warranty"
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

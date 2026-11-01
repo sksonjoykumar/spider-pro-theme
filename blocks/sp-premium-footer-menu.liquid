@@ -1,0 +1,25 @@
+<div class="sp-pf__menu" data-pf-menu {{ block.shopify_attributes }}>
+  {% assign pf_accordion_icon = section.settings.mobile_accordion_icon | default: 'plus' %}
+  <details data-pf-mobile-menu>
+    <summary><span class="sp-pf__menu-label">{{ block.settings.heading | default: block.settings.menu.title | escape }}</span><span class="sp-pf__menu-icon sp-pf__menu-icon--{{ pf_accordion_icon | escape }}" aria-hidden="true">{% render 'sp-premium-footer-icon', name: pf_accordion_icon %}</span></summary>
+    <nav aria-label="{{ block.settings.heading | default: block.settings.menu.title | escape }}">
+      {% if block.settings.menu != blank %}
+        <ul role="list">
+          {% for link in block.settings.menu.links %}
+            <li><a href="{{ link.url }}"{% if link.current %} aria-current="page"{% endif %}>{{ link.title | escape }}</a>
+              {% if link.links.size > 0 %}<ul role="list" class="sp-pf__submenu">{% for child in link.links %}<li><a href="{{ child.url }}"{% if child.current %} aria-current="page"{% endif %}>{{ child.title | escape }}</a></li>{% endfor %}</ul>{% endif %}
+            </li>
+          {% endfor %}
+        </ul>
+      {% elsif request.design_mode %}
+        <p class="sp-pf__editor-hint">Select a Shopify navigation menu.</p>
+      {% endif %}
+    </nav>
+  </details>
+</div>
+{% schema %}
+{"name":"Footer navigation","tag":null,"settings":[
+ {"type":"text","id":"heading","label":"Column heading","default":"Shop"},
+ {"type":"link_list","id":"menu","label":"Shopify navigation menu"}
+ ],"presets":[{"name":"Footer navigation"}]}
+{% endschema %}

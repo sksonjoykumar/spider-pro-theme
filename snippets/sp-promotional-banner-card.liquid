@@ -1,0 +1,113 @@
+{%- comment -%} Spider promotional banner: card block, section settings, featured and slide flags. {%- endcomment -%}
+{%- liquid
+  assign s = block.settings
+  assign card_image = s.desktop_image
+  assign image_mobile = s.mobile_image | default: card_image
+  assign card_title = s.heading
+  assign card_eyebrow = s.eyebrow
+  assign card_description = s.description
+  if s.claim_requires_approval and s.approve_promotional_claim == false and request.design_mode == false
+    assign card_title = s.safe_heading | default: 'Discover our favorites'
+    assign card_eyebrow = 'FEATURED PICKS'
+    assign card_description = blank
+  endif
+
+  assign object_url = blank
+  case s.link_source
+    when 'product'
+      if s.product != blank
+        assign object_url = s.product.url
+      endif
+    when 'collection'
+      if s.collection != blank
+        assign object_url = s.collection.url
+      endif
+    when 'page'
+      if s.page != blank
+        assign object_url = s.page.url
+      endif
+    when 'custom_url'
+      assign object_url = s.custom_link
+  endcase
+  if object_url == blank and s.link_source != 'none'
+    assign object_url = s.custom_link
+  endif
+  assign primary_url = s.primary_button_link | default: object_url
+  assign secondary_url = s.secondary_button_link
+  assign primary_enabled = false
+  if s.primary_button_label != blank and primary_url != blank
+    assign primary_enabled = true
+  endif
+  assign secondary_enabled = false
+  if s.secondary_button_label != blank and secondary_url != blank
+    assign secondary_enabled = true
+  endif
+  assign card_link = false
+  if s.entire_card_link and primary_enabled == false and secondary_enabled == false and object_url != blank
+    assign card_link = true
+  endif
+  assign alt = s.image_alt | default: card_image.alt | default: card_title
+  assign image_loading = 'lazy'
+  if forloop_index == 1 and section.settings.eager_first_image
+    assign image_loading = 'eager'
+  endif
+  assign is_split = false
+  if section.settings.layout_style == 'style_3'
+    assign is_split = true
+  endif
+  assign card_overlay = s.overlay_opacity | divided_by: 100.0
+  assign content_bg_opacity = section.settings.content_background_opacity | divided_by: 100.0
+  assign card_text_color = s.text_color
+  assign card_min_height = section.settings.card_min_height_desktop
+  assign image_focal = 'center'
+  if card_image != blank and card_image.presentation != blank
+    assign image_focal = card_image.presentation.focal_point | default: 'center'
+  endif
+-%}
+<article
+  class="sp-promo__card sp-promo__card--{{ s.content_position_desktop }} sp-promo__card--m-{{ s.content_position_mobile }} sp-promo__card--{{ s.overlay_style }}{% if featured %} sp-promo__card--featured{% endif %}{% if card_image != blank %} sp-promo__card--has-image{% endif %}{% if is_split %} sp-promo__card--split{% endif %}"
+  data-sp-promo-card
+  data-sp-promo-block-id="{{ block.id }}"
+  style="--sp-promo-image-position:{{ image_focal }};--sp-promo-card-text:{{ card_text_color }};--sp-promo-overlay-color:{{ s.overlay_color }};--sp-promo-overlay-opacity:{{ card_overlay }};--sp-promo-card-content-max:{{ s.content_max_width }}px;--sp-promo-card-content-bg-alpha:{{ content_bg_opacity }};--sp-promo-card-min-height:{{ card_min_height }}px;"
+  {{ block.shopify_attributes }}
+>
+  {%- if card_link -%}
+    <a href="{{ object_url }}" class="sp-promo__card-cover" aria-label="{{ card_title | default: 'Explore promotion' | escape }}"{% if s.open_in_new_tab %} target="_blank" rel="noopener noreferrer"{% endif %}></a>
+  {%- endif -%}
+  <div class="sp-promo__media"{% if card_image == blank %} aria-hidden="true"{% endif %}>
+    {%- if card_image != blank -%}
+      <picture>
+        {%- if s.mobile_image != blank -%}
+          <source media="(max-width: 749px)" srcset="{{ s.mobile_image | image_url: width: 360 }} 360w, {{ s.mobile_image | image_url: width: 540 }} 540w, {{ s.mobile_image | image_url: width: 750 }} 750w, {{ s.mobile_image | image_url: width: 990 }} 990w" sizes="100vw">
+        {%- endif -%}
+        {{ card_image | image_url: width: 1600 | image_tag: widths: '360,540,750,990,1200,1600', sizes: '(min-width: 1200px) 50vw, (min-width: 750px) 50vw, 100vw', loading: image_loading, class: 'sp-promo__image', alt: alt }}
+      </picture>
+    {%- elsif request.design_mode -%}
+      {{ 'lifestyle-2' | placeholder_svg_tag: 'sp-promo__placeholder' }}
+    {%- endif -%}
+  </div>
+  {%- if s.show_overlay and card_image != blank and is_split == false -%}
+    <div class="sp-promo__overlay" aria-hidden="true"></div>
+  {%- endif -%}
+  {%- if card_title != blank or card_eyebrow != blank or card_description != blank or primary_enabled or secondary_enabled -%}
+    <div class="sp-promo__content sp-promo__content--{{ s.text_alignment }}{% if section.settings.show_content_background %} sp-promo__content--surface{% endif %}">
+      {%- if card_eyebrow != blank -%}<p class="sp-promo__eyebrow">{{ card_eyebrow | escape }}</p>{%- endif -%}
+      {%- if card_title != blank -%}<h3 class="sp-promo__card-title">{{ card_title | escape }}</h3>{%- endif -%}
+      {%- if card_description != blank -%}<div class="sp-promo__card-description rte">{{ card_description }}</div>{%- endif -%}
+      {%- if primary_enabled or secondary_enabled -%}
+        <div class="sp-promo__actions">
+          {%- if primary_enabled -%}
+            {%- capture primary_attributes -%}{% if s.open_in_new_tab %}target="_blank" rel="noopener noreferrer"{% endif %}{%- endcapture -%}
+            {%- capture primary_label -%}{{ s.primary_button_label | escape }} <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14m-6-6 6 6-6 6"/></svg>{%- endcapture -%}
+            {%- render 'button', label: primary_label, href: primary_url, style: s.primary_button_style, class: 'sp-promo__button', attributes: primary_attributes -%}
+          {%- endif -%}
+          {%- if secondary_enabled -%}
+            {%- capture secondary_attributes -%}{% if s.open_in_new_tab %}target="_blank" rel="noopener noreferrer"{% endif %}{%- endcapture -%}
+            {%- capture secondary_label -%}{{ s.secondary_button_label | escape }} <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14m-6-6 6 6-6 6"/></svg>{%- endcapture -%}
+            {%- render 'button', label: secondary_label, href: secondary_url, style: s.secondary_button_style, class: 'sp-promo__button', attributes: secondary_attributes -%}
+          {%- endif -%}
+        </div>
+      {%- endif -%}
+    </div>
+  {%- endif -%}
+</article>

@@ -1,0 +1,41 @@
+{% comment %}Shopify-native product media item. Parameters: media, loading, index, enable_zoom, media_ratio, image_fit.{% endcomment %}
+{% assign ratio = media_ratio | default: 'adapt' %}
+{% assign fit = image_fit | default: 'contain' %}
+{% case media.media_type %}
+  {% when 'image' %}
+    {% assign product_media_alt = media.preview_image.alt | default: product.title %}
+    {% capture product_media_image %}
+      {% if loading == 'eager' %}
+        {{ media.preview_image | image_url: width: 2000 | image_tag: widths: '480, 640, 800, 1000, 1200, 1600, 2000', sizes: '(min-width: 990px) 58vw, 100vw', loading: 'eager', fetchpriority: 'high', class: 'sp-product-media__image', alt: product_media_alt }}
+      {% else %}
+        {{ media.preview_image | image_url: width: 2000 | image_tag: widths: '480, 640, 800, 1000, 1200, 1600, 2000', sizes: '(min-width: 990px) 58vw, 100vw', loading: 'lazy', class: 'sp-product-media__image', alt: product_media_alt }}
+      {% endif %}
+    {% endcapture %}
+    {% if enable_zoom %}
+      <button
+        class="sp-product-media__surface"
+        type="button"
+        data-media-zoom
+        data-zoom-src="{{ media.preview_image | image_url: width: 2400 }}"
+        data-zoom-alt="{{ product_media_alt | escape }}"
+        aria-label="{{ 'products.product.media.zoom' | t: index: index }}"
+      >
+        {{ product_media_image }}
+        <span class="sp-product-media__zoom-indicator" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="10.7" cy="10.7" r="6.3"/><path d="m15.5 15.5 5.1 5.1M10.7 7.9v5.6M7.9 10.7h5.6"/></svg>
+        </span>
+      </button>
+    {% elsif enable_hover_zoom %}
+      <div class="sp-product-media__surface" data-media-hover-zoom data-zoom-src="{{ media.preview_image | image_url: width: 2400 }}">
+        {{ product_media_image }}
+      </div>
+    {% else %}
+      {{ product_media_image }}
+    {% endif %}
+  {% when 'video' %}
+    {% if settings.product_video %}{{ media | video_tag: controls: true, preload: 'metadata', loop: settings.product_video_loop, muted: settings.product_video_muted, image_size: '1200x' }}{% else %}<p class="sp-status">{{ 'products.product.video_disabled' | t }}</p>{% endif %}
+  {% when 'external_video' %}
+    {% if settings.product_video %}{{ media | external_video_tag }}{% else %}<p class="sp-status">{{ 'products.product.video_disabled' | t }}</p>{% endif %}
+  {% when 'model' %}
+    {{ media | model_viewer_tag: reveal: 'interaction', toggleable: true }}
+{% endcase %}

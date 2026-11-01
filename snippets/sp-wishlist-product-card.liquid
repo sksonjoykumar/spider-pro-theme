@@ -1,0 +1,51 @@
+{%- comment -%}
+  Spider Wishlist Product Card adapter.
+  Uses the same eight-style normalization as the canonical Spider Product Card.
+
+  New merchant values: 01-08.
+  Unsupported legacy values safely fall back to style 01.
+  Render one wishlist removal action over media, with secondary actions and
+  a single purchase CTA in product content. No duplicate action controls.
+{%- endcomment -%}
+{%- liquid
+  assign sp_raw_design = section.settings.card_design | default: '01' | append: '' | strip
+  if section.settings.use_global_product_settings
+    assign sp_raw_design = settings.card_style | default: '01' | append: '' | strip
+  endif
+
+  assign sp_design = '1'
+  case sp_raw_design
+    when '02', '2'
+      assign sp_design = '2'
+    when '03', '3'
+      assign sp_design = '3'
+    when '04', '4'
+      assign sp_design = '4'
+    when '05', '5'
+      assign sp_design = '5'
+    when '06', '6'
+      assign sp_design = '6'
+    when '07', '7'
+      assign sp_design = '7'
+    when '08', '8'
+      assign sp_design = '8'
+  endcase
+
+  assign sp_media_actions = true
+  assign sp_content_cta = true
+-%}
+<template data-sp-wishlist-card-template>
+  <article
+    class="sp-wishlist-card sp-product-card sp-product-card--style-{{ sp_design }} sp-product-card--context-wishlist"
+    data-sp-wishlist-card
+    data-sp-product-card
+    data-product-design="{{ sp_design }}"
+    data-product-design-source="{{ sp_raw_design | escape }}"
+    data-product-context="wishlist"
+  >
+    <div class="sp-wishlist-card__surface sp-product-card__card">
+      {% render 'sp-wishlist-card-media', section: section, media_actions: sp_media_actions, design: sp_design %}
+      {% render 'sp-wishlist-card-info', section: section, content_cta: sp_content_cta, media_actions: sp_media_actions, design: sp_design %}
+    </div>
+  </article>
+</template>

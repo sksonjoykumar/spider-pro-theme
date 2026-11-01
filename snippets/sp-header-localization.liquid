@@ -1,0 +1,96 @@
+{% comment %}
+  Native Shopify localization controls for the mobile drawer.
+  Currency is never switched independently unless Shopify itself supports it;
+  current currency is derived from localization.country.currency.
+  Params: section
+{% endcomment %}
+{%- liquid
+  assign country_mode = section.settings.mobile_country_display | default: 'name_currency'
+  assign currency_mode = section.settings.mobile_currency_mode | default: 'integrated'
+  assign language_mode = section.settings.mobile_language_display | default: 'name'
+  assign show_country = false
+  if section.settings.mobile_drawer_show_country and localization.available_countries.size > 1
+    assign show_country = true
+  endif
+  assign show_language = false
+  if section.settings.mobile_drawer_show_language and localization.available_languages.size > 1
+    assign show_language = true
+  endif
+  assign show_currency_row = false
+  if currency_mode == 'current' or currency_mode == 'native'
+    assign show_currency_row = true
+  elsif currency_mode == 'integrated' and show_country == false
+    assign show_currency_row = true
+  endif
+-%}
+{% if show_country or show_language or show_currency_row %}
+  <section class="sp-header-mobile-localization" aria-label="Localization preferences">
+    {% if show_country %}
+      {% form 'localization', class: 'sp-header-localization sp-header-mobile-localization__form' %}
+        <label class="sp-header-mobile-localization__row">
+          <span class="sp-header-mobile-localization__label">{{ 'Country / Region' | default: 'Country / Region' | escape }}</span>
+          <span class="sp-header-mobile-localization__control">
+            <select
+              name="country_code"
+              data-sp-localization-select
+              data-sp-country-select
+              data-show-flag="{{ section.settings.mobile_country_show_flag }}"
+              aria-label="{{ 'Country / Region' | default: 'Country / Region' | escape }}">
+              {% for country in localization.available_countries %}
+                <option value="{{ country.iso_code }}"{% if country.iso_code == localization.country.iso_code %} selected{% endif %}>
+                  {% case country_mode %}
+                    {% when 'name' %}
+                      {{ country.name }}
+                    {% when 'code' %}
+                      {{ country.iso_code }}
+                    {% when 'name_code' %}
+                      {{ country.name }} ({{ country.iso_code }})
+                    {% else %}
+                      {{ country.name }} — {{ country.currency.iso_code }}
+                  {% endcase %}
+                </option>
+              {% endfor %}
+            </select>
+            <span class="sp-header-mobile-localization__chevron" aria-hidden="true">{% render 'icon', name: 'chevron' %}</span>
+          </span>
+        </label>
+        <noscript><button type="submit">Update country / region</button></noscript>
+      {% endform %}
+    {% endif %}
+
+    {% if show_currency_row %}
+      <div class="sp-header-mobile-localization__row sp-header-mobile-localization__row--static">
+        <span class="sp-header-mobile-localization__label">{{ 'Currency' | default: 'Currency' | escape }}</span>
+        <span class="sp-header-mobile-localization__value">
+          {{ localization.country.currency.iso_code }}{% if localization.country.currency.symbol != blank %} {{ localization.country.currency.symbol }}{% endif %}
+        </span>
+      </div>
+    {% endif %}
+
+    {% if show_language %}
+      {% form 'localization', class: 'sp-header-localization sp-header-mobile-localization__form' %}
+        <label class="sp-header-mobile-localization__row">
+          <span class="sp-header-mobile-localization__label">{{ 'Language' | default: 'Language' | escape }}</span>
+          <span class="sp-header-mobile-localization__control">
+            <select name="locale_code" data-sp-localization-select aria-label="{{ 'Language' | default: 'Language' | escape }}">
+              {% for language in localization.available_languages %}
+                <option value="{{ language.iso_code }}"{% if language.iso_code == localization.language.iso_code %} selected{% endif %}>
+                  {% case language_mode %}
+                    {% when 'iso' %}
+                      {{ language.iso_code | upcase }}
+                    {% when 'both' %}
+                      {{ language.endonym_name }} ({{ language.iso_code | upcase }})
+                    {% else %}
+                      {{ language.endonym_name }}
+                  {% endcase %}
+                </option>
+              {% endfor %}
+            </select>
+            <span class="sp-header-mobile-localization__chevron" aria-hidden="true">{% render 'icon', name: 'chevron' %}</span>
+          </span>
+        </label>
+        <noscript><button type="submit">Update language</button></noscript>
+      {% endform %}
+    {% endif %}
+  </section>
+{% endif %}

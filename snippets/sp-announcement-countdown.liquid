@@ -1,0 +1,27 @@
+{% comment %}
+  Spider Announcement countdown placeholder.
+  Parameters:
+  - block: announcement block
+  - countdown_label: optional localized fallback label
+{% endcomment %}
+
+{% assign sp_countdown_end = block.settings.countdown_end | strip %}
+{% if sp_countdown_end != blank %}
+  <span
+    class="sp-announcement-bar__countdown"
+    data-sp-announcement-countdown
+    data-end="{{ sp_countdown_end | escape }}"
+    data-hide-complete="{{ block.settings.countdown_hide_complete }}"
+    data-hide-announcement="{{ block.settings.countdown_hide_announcement }}"
+    hidden
+  >
+    <span class="sp-announcement-bar__sr-only">{{ countdown_label | default: 'Countdown' | escape }}</span>
+    <span class="sp-announcement-bar__countdown-display" aria-hidden="true">
+      <span class="sp-announcement-bar__countdown-days" data-sp-countdown-days>00</span>
+      <span class="sp-announcement-bar__countdown-days-label">{{ block.settings.countdown_days_label | default: 'days' | escape }}</span>
+      <span class="sp-announcement-bar__countdown-clock">
+        <span data-sp-countdown-hours>00</span><span aria-hidden="true">:</span><span data-sp-countdown-minutes>00</span><span aria-hidden="true">:</span><span data-sp-countdown-seconds>00</span>
+      </span>
+    </span>
+  </span>
+{% endif %}

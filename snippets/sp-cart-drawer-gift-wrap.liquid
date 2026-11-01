@@ -1,0 +1,27 @@
+{%- if section.settings.show_gift_wrap and gift_product != blank and gift_variant != blank and gift_variant.available and gift_in_cart == false -%}
+  {%- assign gift_alt = gift_product.featured_image.alt | default: gift_product.title -%}
+  <section id="SpCartToolGift-{{ section.id }}" class="sp-cart-drawer__tool-panel" data-sp-cart-tool-panel="gift" aria-labelledby="SpCartToolGiftTitle-{{ section.id }}" hidden>
+    <div class="sp-cart-drawer__tool-panel-head">
+      <h3 id="SpCartToolGiftTitle-{{ section.id }}">Add gift wrap</h3>
+      <button type="button" class="sp-cart-drawer__tool-close" data-sp-cart-tool-close aria-label="Close gift wrap panel">{% render 'icon', name: 'close' %}</button>
+    </div>
+    <div class="sp-cart-drawer__gift-product">
+      {%- if gift_product.featured_image -%}
+        {{ gift_product.featured_image | image_url: width: 160 | image_tag: loading: 'lazy', widths: '80,120,160', sizes: '80px', alt: gift_alt }}
+      {%- endif -%}
+      <div>
+        <strong>{{ gift_product.title | escape }}</strong>
+        <span>{{ gift_variant.price | money_with_currency }}</span>
+      </div>
+    </div>
+    <form action="{{ routes.cart_add_url }}" method="post" enctype="multipart/form-data" data-product-card-form data-sp-cart-gift-form class="sp-cart-drawer__tool-form">
+      <input type="hidden" name="id" value="{{ gift_variant.id }}">
+      <input type="hidden" name="quantity" value="1">
+      <div class="sp-cart-drawer__tool-actions">
+        <button type="submit" class="sp-cart-drawer__button sp-cart-drawer__button--primary">Add gift wrap</button>
+        <button type="button" class="sp-cart-drawer__button sp-cart-drawer__button--outline" data-sp-cart-tool-close>Cancel</button>
+      </div>
+      <p class="sp-cart-drawer__tool-status" role="status" aria-live="polite" data-sp-cart-tool-status></p>
+    </form>
+  </section>
+{%- endif -%}

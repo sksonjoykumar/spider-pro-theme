@@ -1,0 +1,526 @@
+{%- liquid
+  assign sp_source_mode = section.settings.product_source | default: 'manual'
+  assign sp_products = section.settings.manual_products
+  assign sp_collection = section.settings.collection
+  assign sp_limit = 20
+
+  if sp_source_mode == 'collection'
+    assign sp_products = sp_collection.products
+    assign sp_limit = section.settings.products_to_show | default: 8
+  endif
+
+  assign sp_product_count = 0
+  if sp_products != blank
+    assign sp_product_count = sp_products.size | at_most: sp_limit
+  endif
+
+  assign sp_has_products = false
+  if sp_product_count > 0
+    assign sp_has_products = true
+  endif
+
+  assign sp_container_class = 'sp-container'
+  assign sp_container_width = settings.sp_container_width | default: 1280
+  if section.settings.section_width == 'wide'
+    assign sp_container_class = 'sp-container sp-container--wide'
+    assign sp_container_width = settings.sp_wide_width | default: 1600
+  endif
+
+  assign sp_gap_d = settings.product_grid_gap | default: 24
+  assign sp_gap_t = settings.product_grid_gap | default: 24
+  assign sp_gap_m = settings.mobile_grid_gap | default: 12
+  case section.settings.card_gap
+    when 'small'
+      assign sp_gap_d = 16
+      assign sp_gap_t = 14
+      assign sp_gap_m = 10
+    when 'medium'
+      assign sp_gap_d = 24
+      assign sp_gap_t = 20
+      assign sp_gap_m = 12
+    when 'large'
+      assign sp_gap_d = 32
+      assign sp_gap_t = 24
+      assign sp_gap_m = 16
+  endcase
+
+  assign sp_cols_d = section.settings.products_desktop | plus: 0
+  assign sp_cols_t = section.settings.products_tablet | plus: 0
+  assign sp_cols_m = section.settings.products_mobile | plus: 0
+  assign sp_desktop_gutter = settings.sp_page_gutter_d | default: 32 | times: 2
+  assign sp_tablet_gutter = settings.sp_page_gutter_d | default: 32 | times: 2
+  assign sp_mobile_gutter = settings.sp_page_gutter_m | default: 20 | times: 2
+
+  capture sp_sizes
+    echo '(min-width: 990px) calc((min(100vw - ' | append: sp_desktop_gutter | append: 'px, ' | append: sp_container_width | append: 'px)) / ' | append: sp_cols_d | append: '), '
+    echo '(min-width: 750px) calc((100vw - ' | append: sp_tablet_gutter | append: 'px) / ' | append: sp_cols_t | append: '), '
+    echo 'calc((100vw - ' | append: sp_mobile_gutter | append: 'px) / ' | append: sp_cols_m | append: ')'
+  endcapture
+
+  assign sp_autoplay_ms = section.settings.autoplay_speed | times: 1000
+  assign sp_prev_label = 'accessibility.slider.previous_slide' | t
+  assign sp_next_label = 'accessibility.slider.next_slide' | t
+  assign sp_pagination_style = 'default'
+  if section.settings.pagination_style == 'fraction'
+    assign sp_pagination_style = 'fraction'
+  endif
+
+  assign sp_view_all_url = section.settings.view_all_link
+  if sp_view_all_url == blank and sp_source_mode == 'collection' and sp_collection != blank
+    assign sp_view_all_url = sp_collection.url
+  endif
+-%}
+
+{%- if sp_has_products or request.design_mode -%}
+  {% render 'sp-section-color-scheme', section: section %}
+  {{ 'sp-product-carousel.css' | asset_url | stylesheet_tag }}
+  <script src="{{ 'sp-product-carousel.js' | asset_url }}" defer></script>
+
+  <sp-product-carousel
+    id="SpiderProductCarousel-{{ section.id }}"
+    class="sp-product-carousel sp-product-display"
+    data-sp-product-section
+    data-section-id="{{ section.id }}"
+    data-money-format="{{ shop.money_with_currency_format | escape }}"
+    data-currency="{{ cart.currency.iso_code | default: shop.currency | escape }}"
+    style="
+      --sp-product-carousel-gap-d: {{ sp_gap_d }}px;
+      --sp-product-carousel-gap-t: {{ sp_gap_t }}px;
+      --sp-product-carousel-gap-m: {{ sp_gap_m }}px;
+    "
+  >
+    <div class="{{ sp_container_class }} sp-product-carousel__container">
+      {%- if section.settings.show_header -%}
+        <div class="sp-product-carousel__header-row sp-product-carousel__header-row--{{ section.settings.text_alignment }}">
+          <header class="sp-product-carousel__header sp-product-carousel__header--{{ section.settings.text_alignment }}">
+            {%- if section.settings.show_eyebrow and section.settings.eyebrow != blank -%}
+              <p class="sp-product-carousel__eyebrow sp-text-small">{{ section.settings.eyebrow | escape }}</p>
+            {%- endif -%}
+
+            {%- if section.settings.heading != blank -%}
+              <h2 class="sp-product-carousel__heading sp-heading sp-heading--h2">{{ section.settings.heading | escape }}</h2>
+            {%- endif -%}
+
+            {%- if section.settings.description != blank -%}
+              <div class="sp-product-carousel__description rte">{{ section.settings.description }}</div>
+            {%- endif -%}
+          </header>
+
+          {%- if section.settings.show_view_all and section.settings.view_all_position == 'header' and sp_view_all_url != blank -%}
+            <div class="sp-product-carousel__header-action">
+              <a class="sp-button sp-button--secondary" href="{{ sp_view_all_url }}">{{ section.settings.view_all_label | escape }}</a>
+            </div>
+          {%- endif -%}
+        </div>
+      {%- elsif section.settings.show_view_all and section.settings.view_all_position == 'header' and sp_view_all_url != blank -%}
+        <div class="sp-product-carousel__header-action sp-product-carousel__header-action--standalone">
+          <a class="sp-button sp-button--secondary" href="{{ sp_view_all_url }}">{{ section.settings.view_all_label | escape }}</a>
+        </div>
+      {%- endif -%}
+
+      {%- if sp_has_products -%}
+        <div
+          class="sp-product-carousel__carousel sp-carousel-block{% if section.settings.show_arrows == false %} sp-product-carousel__carousel--no-arrows{% endif %}{% if section.settings.show_arrows_tablet == false %} sp-product-carousel__carousel--no-arrows-tablet{% endif %}{% if section.settings.show_arrows_mobile == false %} sp-product-carousel__carousel--no-arrows-mobile{% endif %}"
+          data-sp-product-carousel-root
+          data-cols-desktop="{{ section.settings.products_desktop }}"
+          data-cols-tablet="{{ section.settings.products_tablet }}"
+          data-cols-mobile="{{ section.settings.products_mobile }}"
+          data-peek="{{ section.settings.show_next_card_peek }}"
+          data-arrow-position="{{ section.settings.arrow_position }}"
+          data-loop="{{ section.settings.loop }}"
+          data-autoplay="{{ section.settings.autoplay }}"
+          data-autoplay-delay="{{ sp_autoplay_ms }}"
+          data-pause-hover="true"
+          data-drag="{{ section.settings.enable_drag }}"
+          data-outside-opacity="false"
+          data-design-mode="{{ request.design_mode }}"
+          data-pagination-style="{{ sp_pagination_style }}"
+          aria-roledescription="carousel"
+          aria-label="{{ section.settings.heading | default: 'Product carousel' | escape }}"
+        >
+          <div class="sp-product-carousel__stage">
+            <div
+              class="sp-product-carousel__viewport"
+              data-sp-carousel-viewport
+              tabindex="0"
+              aria-label="{{ section.settings.heading | default: 'Products' | escape }}"
+            >
+              <div class="sp-product-carousel__track sp-carousel-track" data-sp-carousel-track>
+                {%- for product in sp_products limit: sp_limit -%}
+                  {% render 'sp-product-card',
+                    product: product,
+                    context: 'product-carousel',
+                    section_id: section.id,
+                    instance_id: section.id,
+                    sizes: sp_sizes,
+                    product_index: forloop.index,
+                    section_index: section.index
+                  %}
+                {%- endfor -%}
+              </div>
+            </div>
+
+            {%- if section.settings.show_arrows -%}
+              <div class="sp-product-carousel__navigation" aria-label="Product carousel navigation">
+                {% render 'icon-button',
+                  label: sp_prev_label,
+                  icon: 'chevron-left',
+                  class: 'sp-product-carousel__arrow sp-product-carousel__arrow--prev',
+                  attributes: 'data-sp-carousel-prev'
+                %}
+                {% render 'icon-button',
+                  label: sp_next_label,
+                  icon: 'chevron-right',
+                  class: 'sp-product-carousel__arrow sp-product-carousel__arrow--next',
+                  attributes: 'data-sp-carousel-next'
+                %}
+              </div>
+            {%- endif -%}
+          </div>
+
+          {%- if section.settings.show_pagination or section.settings.autoplay -%}
+            <div class="sp-product-carousel__controls">
+              {%- if section.settings.show_pagination -%}
+                <div
+                  class="sp-product-carousel__pagination"
+                  data-sp-carousel-pagination
+                  role="group"
+                  aria-label="Product carousel pages"
+                ></div>
+              {%- endif -%}
+
+              {%- if section.settings.autoplay -%}
+                <button
+                  class="sp-product-carousel__pause"
+                  type="button"
+                  data-sp-carousel-pause
+                  aria-label="Pause autoplay"
+                  aria-pressed="false"
+                >
+                  <svg class="sp-product-carousel__pause-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5h4v14H7zM13 5h4v14h-4z" fill="currentColor"/></svg>
+                  <svg class="sp-product-carousel__play-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m8 5 11 7-11 7V5z" fill="currentColor"/></svg>
+                </button>
+              {%- endif -%}
+            </div>
+          {%- endif -%}
+        </div>
+
+        {%- if section.settings.show_view_all and section.settings.view_all_position == 'below' and sp_view_all_url != blank -%}
+          <div class="sp-product-carousel__footer">
+            <a class="sp-button sp-button--secondary" href="{{ sp_view_all_url }}">{{ section.settings.view_all_label | escape }}</a>
+          </div>
+        {%- endif -%}
+      {%- elsif request.design_mode -%}
+        <div class="sp-product-carousel__empty" role="status">
+          <div class="sp-product-carousel__empty-icon" aria-hidden="true">
+            {% render 'icon', name: 'cart' %}
+          </div>
+          <div>
+            <h3 class="sp-product-carousel__empty-title">Select products to preview this carousel</h3>
+            <p class="sp-product-carousel__empty-text">Choose manual products or select a collection in the section settings.</p>
+          </div>
+        </div>
+      {%- endif -%}
+    </div>
+  </sp-product-carousel>
+{%- else -%}
+  <style>#shopify-section-{{ section.id }}{display:none!important}</style>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Product Carousel",
+  "tag": "section",
+  "class": "sp-section sp-section-product-carousel",
+  "disabled_on": {
+    "groups": ["header", "footer", "custom.system"]
+  },
+  "settings": [
+    {
+      "type": "header",
+      "content": "General"
+    },
+    {
+      "type": "select",
+      "id": "product_source",
+      "label": "Product source",
+      "default": "manual",
+      "options": [
+        { "value": "manual", "label": "Manual products" },
+        { "value": "collection", "label": "Collection" }
+      ]
+    },
+    {
+      "type": "product_list",
+      "id": "manual_products",
+      "label": "Manual products",
+      "limit": 20,
+      "info": "Used when Product source is Manual products."
+    },
+    {
+      "type": "collection",
+      "id": "collection",
+      "label": "Collection",
+      "info": "Used when Product source is Collection."
+    },
+    {
+      "type": "range",
+      "id": "products_to_show",
+      "label": "Collection products to show",
+      "min": 4,
+      "max": 20,
+      "step": 1,
+      "default": 8
+    },
+    {
+      "type": "color_scheme",
+      "id": "sp_color_scheme",
+      "label": "Color scheme",
+      "default": "scheme-1"
+    },
+    {
+      "type": "select",
+      "id": "section_width",
+      "label": "Section width",
+      "default": "container",
+      "options": [
+        { "value": "container", "label": "Container" },
+        { "value": "wide", "label": "Wide container" }
+      ]
+    },
+    {
+      "type": "header",
+      "content": "Header"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_header",
+      "label": "Show header",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_eyebrow",
+      "label": "Show eyebrow",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Eyebrow",
+      "default": "Curated for you"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Bestselling Picks"
+    },
+    {
+      "type": "richtext",
+      "id": "description",
+      "label": "Description",
+      "default": "<p>Our community's favorites—trusted quality, everyday essentials, and little luxuries that make a big difference.</p>"
+    },
+    {
+      "type": "select",
+      "id": "text_alignment",
+      "label": "Text alignment",
+      "default": "center",
+      "options": [
+        { "value": "left", "label": "Left" },
+        { "value": "center", "label": "Center" }
+      ]
+    },
+    {
+      "type": "header",
+      "content": "Carousel"
+    },
+    {
+      "type": "select",
+      "id": "products_desktop",
+      "label": "Products per view desktop",
+      "default": "4",
+      "options": [
+        { "value": "2", "label": "2" },
+        { "value": "3", "label": "3" },
+        { "value": "4", "label": "4" },
+        { "value": "5", "label": "5" },
+        { "value": "6", "label": "6" }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "products_tablet",
+      "label": "Products per view tablet",
+      "default": "3",
+      "options": [
+        { "value": "2", "label": "2" },
+        { "value": "3", "label": "3" },
+        { "value": "4", "label": "4" }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "products_mobile",
+      "label": "Products per view mobile",
+      "default": "1",
+      "options": [
+        { "value": "1", "label": "1" },
+        { "value": "2", "label": "2" }
+      ]
+    },
+    {
+      "type": "checkbox",
+      "id": "show_next_card_peek",
+      "label": "Show next card peek",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "card_gap",
+      "label": "Card gap",
+      "default": "global",
+      "options": [
+        { "value": "global", "label": "Use global product gap" },
+        { "value": "small", "label": "Small" },
+        { "value": "medium", "label": "Medium" },
+        { "value": "large", "label": "Large" }
+      ]
+    },
+    {
+      "type": "checkbox",
+      "id": "show_arrows",
+      "label": "Show arrows",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_arrows_tablet",
+      "label": "Show arrows on tablet",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_arrows_mobile",
+      "label": "Show arrows on mobile",
+      "default": false
+    },
+    {
+      "type": "select",
+      "id": "arrow_position",
+      "label": "Arrow position",
+      "default": "outside",
+      "options": [
+        { "value": "outside", "label": "Outside edge" },
+        { "value": "inside", "label": "Inside" }
+      ]
+    },
+    {
+      "type": "checkbox",
+      "id": "show_pagination",
+      "label": "Show pagination",
+      "default": false
+    },
+    {
+      "type": "select",
+      "id": "pagination_style",
+      "label": "Pagination style",
+      "default": "dots",
+      "options": [
+        { "value": "dots", "label": "Dots" },
+        { "value": "fraction", "label": "Fraction" }
+      ]
+    },
+    {
+      "type": "checkbox",
+      "id": "loop",
+      "label": "Loop carousel",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_drag",
+      "label": "Enable mouse drag",
+      "default": true,
+      "info": "Touch swipe remains available on mobile and tablet."
+    },
+    {
+      "type": "checkbox",
+      "id": "autoplay",
+      "label": "Autoplay",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "autoplay_speed",
+      "label": "Autoplay speed",
+      "min": 3,
+      "max": 10,
+      "step": 1,
+      "unit": "s",
+      "default": 5
+    },
+    {
+      "type": "header",
+      "content": "View all"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_view_all",
+      "label": "Show View All",
+      "default": false
+    },
+    {
+      "type": "text",
+      "id": "view_all_label",
+      "label": "Label",
+      "default": "View all"
+    },
+    {
+      "type": "url",
+      "id": "view_all_link",
+      "label": "Custom link",
+      "info": "When Collection is the source and this is blank, the selected collection URL is used."
+    },
+    {
+      "type": "select",
+      "id": "view_all_position",
+      "label": "Position",
+      "default": "below",
+      "options": [
+        { "value": "header", "label": "Header right" },
+        { "value": "below", "label": "Below carousel" }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Product Carousel",
+      "category": "02. Products",
+      "settings": {
+        "product_source": "manual",
+        "show_header": true,
+        "show_eyebrow": true,
+        "eyebrow": "Curated for you",
+        "heading": "Bestselling Picks",
+        "description": "<p>Our community's favorites—trusted quality, everyday essentials, and little luxuries that make a big difference.</p>",
+        "text_alignment": "center",
+        "products_desktop": "4",
+        "products_tablet": "3",
+        "products_mobile": "1",
+        "show_next_card_peek": true,
+        "show_arrows": true,
+        "show_arrows_tablet": true,
+        "show_arrows_mobile": false,
+        "show_pagination": false,
+        "loop": false,
+        "enable_drag": true,
+        "autoplay": false,
+        "show_view_all": false,
+        "sp_color_scheme": "scheme-1"
+      }
+    }
+  ]
+}
+{% endschema %}

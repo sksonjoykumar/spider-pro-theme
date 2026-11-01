@@ -1,0 +1,238 @@
+{% render 'sp-section-color-scheme', section: section %}
+{{ 'sp-content-sections.css' | asset_url | stylesheet_tag }}
+
+{%- liquid
+  assign primary_count = 0
+  assign secondary_count = 0
+  for block in section.blocks
+    assign highlight_layout = block.settings.card_layout | default: 'auto'
+    if highlight_layout == 'secondary'
+      assign secondary_count = secondary_count | plus: 1
+    elsif highlight_layout == 'primary'
+      assign primary_count = primary_count | plus: 1
+    elsif forloop.index > 4
+      assign secondary_count = secondary_count | plus: 1
+    else
+      assign primary_count = primary_count | plus: 1
+    endif
+  endfor
+  assign header_visible = false
+  if section.settings.show_eyebrow and section.settings.eyebrow != blank
+    assign header_visible = true
+  endif
+  if section.settings.show_heading and section.settings.heading != blank
+    assign header_visible = true
+  endif
+  if section.settings.show_description and section.settings.description != blank
+    assign header_visible = true
+  endif
+-%}
+
+<section
+  class="sp-section sp-stats-highlights sp-stats-highlights--shadow-{{ section.settings.card_shadow }} sp-stats-highlights--hover-{{ section.settings.card_hover }}"
+  data-section-id="{{ section.id }}"
+  {% if section.settings.show_heading and section.settings.heading != blank %}
+    aria-labelledby="SpStatsHeading-{{ section.id }}"
+  {% else %}
+    aria-label="{{ section.settings.accessibility_label | escape }}"
+  {% endif %}
+  style="
+    --sp-stats-col-d: {{ section.settings.desktop_columns }};
+    --sp-stats-col-t: {{ section.settings.tablet_columns }};
+    --sp-stats-col-m: {{ section.settings.mobile_columns }};
+    --sp-stats-header-width: {{ section.settings.header_max_width }}px;
+    --sp-stats-gap: {% if section.settings.use_custom_gap %}{{ section.settings.grid_gap }}px{% else %}var(--sp-grid-gap, 24px){% endif %};
+    --sp-stats-gap-m: {% if section.settings.use_custom_gap %}{{ section.settings.grid_gap }}px{% else %}var(--sp-mobile-grid-gap, 12px){% endif %};
+    --sp-stats-card-padding: {{ section.settings.card_padding }}px;
+    --sp-stats-card-min-h: {{ section.settings.card_min_height }}px;
+    --sp-stats-icon-size: {{ section.settings.icon_size }}px;
+    --sp-stats-icon-circle: {{ section.settings.icon_circle_size }}px;
+    --sp-stats-card-radius: {% if section.settings.use_custom_radius %}{{ section.settings.card_radius }}px{% else %}var(--sp-radius-lg, 16px){% endif %};
+    {% if section.settings.use_custom_spacing %}
+      --sp-stats-padding-top-d: {{ section.settings.padding_top }}px;
+      --sp-stats-padding-bottom-d: {{ section.settings.padding_bottom }}px;
+      --sp-stats-padding-top-m: {{ section.settings.mobile_padding_top }}px;
+      --sp-stats-padding-bottom-m: {{ section.settings.mobile_padding_bottom }}px;
+    {% endif %}
+    {% if section.settings.use_custom_type %}
+      --sp-stats-heading-size-d: {{ section.settings.heading_size }}px;
+      --sp-stats-heading-size-m: {{ section.settings.mobile_heading_size }}px;
+      --sp-stats-value-size-d: {{ section.settings.value_size }}px;
+      --sp-stats-value-size-m: {{ section.settings.mobile_value_size }}px;
+      --sp-stats-label-size: {{ section.settings.label_size }}px;
+    {% endif %}
+  "
+>
+  <div class="sp-container sp-stats-highlights__container{% if section.settings.section_width == 'wide' %} sp-container--wide{% elsif section.settings.section_width == 'narrow' %} sp-container--narrow{% elsif section.settings.section_width == 'full' %} sp-stats-highlights__container--full{% endif %}">
+    {% if header_visible %}
+      <header class="sp-stats-highlights__header sp-stats-highlights__header--{{ section.settings.header_alignment }}">
+        {% if section.settings.show_eyebrow and section.settings.eyebrow != blank %}
+          <p class="sp-stats-highlights__eyebrow">{{ section.settings.eyebrow | escape }}</p>
+        {% endif %}
+        {% if section.settings.show_heading and section.settings.heading != blank %}
+          <h2 id="SpStatsHeading-{{ section.id }}" class="sp-stats-highlights__heading">{{ section.settings.heading | escape }}</h2>
+        {% endif %}
+        {% if section.settings.show_description and section.settings.description != blank %}
+          <p class="sp-stats-highlights__description">{{ section.settings.description | escape | newline_to_br }}</p>
+        {% endif %}
+      </header>
+    {% endif %}
+
+    {% if primary_count > 0 %}
+      <div class="sp-stats-highlights__grid" role="list">
+        {% for block in section.blocks %}
+          {%- liquid
+            assign highlight_layout = block.settings.card_layout | default: 'auto'
+            assign is_secondary = false
+            if highlight_layout == 'secondary'
+              assign is_secondary = true
+            elsif highlight_layout == 'auto' and forloop.index > 4
+              assign is_secondary = true
+            endif
+          -%}
+          {% unless is_secondary %}
+            <div class="sp-stat-highlight sp-stat-highlight--primary{% if block.settings.highlight_card %} sp-stat-highlight--featured{% endif %}" role="listitem" {{ block.shopify_attributes }}>
+              {% if block.settings.link != blank %}
+                <a class="sp-stat-highlight__inner" href="{{ block.settings.link | escape }}">
+              {% else %}
+                <div class="sp-stat-highlight__inner">
+              {% endif %}
+                {% if block.settings.show_icon %}
+                  <span class="sp-stat-highlight__icon" aria-hidden="true">{% render 'sp-content-icon', name: block.settings.icon %}</span>
+                {% endif %}
+                <span class="sp-stat-highlight__copy">
+                  {% if block.settings.main_text != blank %}<span class="sp-stat-highlight__value">{{ block.settings.main_text | escape }}</span>{% endif %}
+                  {% if block.settings.label != blank %}<span class="sp-stat-highlight__label">{{ block.settings.label | escape }}</span>{% endif %}
+                  {% if block.settings.description != blank %}<span class="sp-stat-highlight__description">{{ block.settings.description | escape }}</span>{% endif %}
+                </span>
+              {% if block.settings.link != blank %}</a>{% else %}</div>{% endif %}
+            </div>
+          {% endunless %}
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    {% if secondary_count > 0 %}
+      <div class="sp-stats-highlights__secondary" role="list">
+        {% for block in section.blocks %}
+          {%- liquid
+            assign highlight_layout = block.settings.card_layout | default: 'auto'
+            assign is_secondary = false
+            if highlight_layout == 'secondary'
+              assign is_secondary = true
+            elsif highlight_layout == 'auto' and forloop.index > 4
+              assign is_secondary = true
+            endif
+          -%}
+          {% if is_secondary %}
+            <div class="sp-stat-highlight sp-stat-highlight--secondary{% if block.settings.highlight_card %} sp-stat-highlight--featured{% endif %}" role="listitem" {{ block.shopify_attributes }}>
+              {% if block.settings.link != blank %}
+                <a class="sp-stat-highlight__inner" href="{{ block.settings.link | escape }}">
+              {% else %}
+                <div class="sp-stat-highlight__inner">
+              {% endif %}
+                {% if block.settings.show_icon %}
+                  <span class="sp-stat-highlight__icon" aria-hidden="true">{% render 'sp-content-icon', name: block.settings.icon %}</span>
+                {% endif %}
+                <span class="sp-stat-highlight__copy">
+                  {% if block.settings.main_text != blank %}<span class="sp-stat-highlight__value">{{ block.settings.main_text | escape }}</span>{% endif %}
+                  {% if block.settings.label != blank %}<span class="sp-stat-highlight__label">{{ block.settings.label | escape }}</span>{% endif %}
+                  {% if block.settings.description != blank %}<span class="sp-stat-highlight__description">{{ block.settings.description | escape }}</span>{% endif %}
+                </span>
+              {% if block.settings.link != blank %}</a>{% else %}</div>{% endif %}
+            </div>
+          {% endif %}
+        {% endfor %}
+      </div>
+    {% endif %}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Stats & highlights",
+  "disabled_on": { "groups": ["header", "footer", "custom.system"] },
+  "settings": [
+    { "type": "header", "content": "Global design system" },
+    { "type": "color_scheme", "id": "sp_color_scheme", "label": "Color scheme", "default": "scheme-2", "info": "Uses Spider's global color scheme settings." },
+    { "type": "text", "id": "accessibility_label", "label": "Section accessibility label", "default": "Brand highlights" },
+
+    { "type": "header", "content": "Section heading" },
+    { "type": "checkbox", "id": "show_eyebrow", "label": "Show eyebrow", "default": true },
+    { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "DESIGNED FOR EVERYDAY LIVING" },
+    { "type": "checkbox", "id": "show_heading", "label": "Show heading", "default": true },
+    { "type": "text", "id": "heading", "label": "Heading", "default": "Stats & Highlights" },
+    { "type": "checkbox", "id": "show_description", "label": "Show description", "default": true },
+    { "type": "textarea", "id": "description", "label": "Description", "default": "Thoughtfully designed essentials, trusted by a growing community and built to make everyday living better." },
+    { "type": "select", "id": "header_alignment", "label": "Header alignment", "default": "center", "options": [{"value":"center","label":"Center"},{"value":"left","label":"Left"}] },
+    { "type": "range", "id": "header_max_width", "label": "Header max width", "min": 520, "max": 1000, "step": 20, "default": 800, "unit": "px" },
+
+    { "type": "header", "content": "Layout" },
+    { "type": "select", "id": "section_width", "label": "Section width", "default": "wide", "options": [{"value":"default","label":"Spider default"},{"value":"wide","label":"Wide"},{"value":"narrow","label":"Narrow"},{"value":"full","label":"Full width"}] },
+    { "type": "range", "id": "desktop_columns", "label": "Desktop primary columns", "min": 2, "max": 4, "step": 1, "default": 4 },
+    { "type": "range", "id": "tablet_columns", "label": "Tablet primary columns", "min": 1, "max": 3, "step": 1, "default": 2 },
+    { "type": "range", "id": "mobile_columns", "label": "Mobile primary columns", "min": 1, "max": 3, "step": 1, "default": 2 },
+    { "type": "checkbox", "id": "use_custom_gap", "label": "Override Spider grid gap", "default": false },
+    { "type": "range", "id": "grid_gap", "label": "Card gap", "min": 8, "max": 48, "step": 2, "default": 24, "unit": "px", "visible_if": "{{ section.settings.use_custom_gap }}" },
+    { "type": "range", "id": "card_min_height", "label": "Desktop primary card min height", "min": 160, "max": 400, "step": 10, "default": 290, "unit": "px" },
+    { "type": "range", "id": "card_padding", "label": "Card padding", "min": 16, "max": 56, "step": 2, "default": 30, "unit": "px" },
+    { "type": "checkbox", "id": "use_custom_radius", "label": "Override global card radius", "default": false },
+    { "type": "range", "id": "card_radius", "label": "Card radius", "min": 0, "max": 40, "step": 2, "default": 16, "unit": "px", "visible_if": "{{ section.settings.use_custom_radius }}" },
+    { "type": "select", "id": "card_shadow", "label": "Card shadow", "default": "none", "options": [{"value":"none","label":"None"},{"value":"soft","label":"Spider soft shadow"},{"value":"hover","label":"Soft on hover"}] },
+    { "type": "select", "id": "card_hover", "label": "Card hover effect", "default": "lift", "options": [{"value":"none","label":"None"},{"value":"lift","label":"Subtle lift"}] },
+
+    { "type": "header", "content": "Icons" },
+    { "type": "range", "id": "icon_size", "label": "Icon size", "min": 24, "max": 64, "step": 2, "default": 48, "unit": "px" },
+    { "type": "range", "id": "icon_circle_size", "label": "Icon circle diameter", "min": 64, "max": 128, "step": 2, "default": 104, "unit": "px" },
+
+    { "type": "header", "content": "Typography" },
+    { "type": "checkbox", "id": "use_custom_type", "label": "Override global type sizes", "default": false },
+    { "type": "range", "id": "heading_size", "label": "Desktop heading size", "min": 32, "max": 72, "step": 2, "default": 56, "unit": "px", "visible_if": "{{ section.settings.use_custom_type }}" },
+    { "type": "range", "id": "mobile_heading_size", "label": "Mobile heading size", "min": 24, "max": 44, "step": 1, "default": 32, "unit": "px", "visible_if": "{{ section.settings.use_custom_type }}" },
+    { "type": "range", "id": "value_size", "label": "Desktop highlight value size", "min": 26, "max": 60, "step": 2, "default": 44, "unit": "px", "visible_if": "{{ section.settings.use_custom_type }}" },
+    { "type": "range", "id": "mobile_value_size", "label": "Mobile highlight value size", "min": 22, "max": 42, "step": 1, "default": 30, "unit": "px", "visible_if": "{{ section.settings.use_custom_type }}" },
+    { "type": "range", "id": "label_size", "label": "Label size", "min": 14, "max": 22, "step": 1, "default": 17, "unit": "px", "visible_if": "{{ section.settings.use_custom_type }}" },
+
+    { "type": "header", "content": "Section spacing" },
+    { "type": "checkbox", "id": "use_custom_spacing", "label": "Override Spider section spacing", "default": false },
+    { "type": "range", "id": "padding_top", "label": "Desktop top padding", "min": 0, "max": 160, "step": 4, "default": 80, "unit": "px", "visible_if": "{{ section.settings.use_custom_spacing }}" },
+    { "type": "range", "id": "padding_bottom", "label": "Desktop bottom padding", "min": 0, "max": 160, "step": 4, "default": 80, "unit": "px", "visible_if": "{{ section.settings.use_custom_spacing }}" },
+    { "type": "range", "id": "mobile_padding_top", "label": "Mobile top padding", "min": 0, "max": 100, "step": 4, "default": 48, "unit": "px", "visible_if": "{{ section.settings.use_custom_spacing }}" },
+    { "type": "range", "id": "mobile_padding_bottom", "label": "Mobile bottom padding", "min": 0, "max": 100, "step": 4, "default": 48, "unit": "px", "visible_if": "{{ section.settings.use_custom_spacing }}" }
+  ],
+  "blocks": [
+    {
+      "type": "stat",
+      "name": "Highlight",
+      "limit": 6,
+      "settings": [
+        { "type": "select", "id": "icon", "label": "Icon", "default": "users", "options": [
+          {"value":"users","label":"Customers"}, {"value":"diamond","label":"Diamond"}, {"value":"truck","label":"Shipping"}, {"value":"package-return","label":"Package & returns"},
+          {"value":"return","label":"Returns"}, {"value":"shield","label":"Shield"}, {"value":"leaf","label":"Leaf"}, {"value":"star","label":"Star"}, {"value":"heart","label":"Heart"}, {"value":"check","label":"Check"}
+        ] },
+        { "type": "text", "id": "main_text", "label": "Main text", "default": "Thoughtful" },
+        { "type": "text", "id": "label", "label": "Label", "default": "Product curation" },
+        { "type": "textarea", "id": "description", "label": "Additional description", "info": "Optional. Especially useful in the bottom horizontal highlight row." },
+        { "type": "select", "id": "card_layout", "label": "Card layout", "default": "auto", "options": [{"value":"auto","label":"Auto: first four large, last two wide"},{"value":"primary","label":"Primary vertical"},{"value":"secondary","label":"Secondary horizontal"}] },
+        { "type": "checkbox", "id": "show_icon", "label": "Show icon", "default": true },
+        { "type": "checkbox", "id": "highlight_card", "label": "Accent border", "default": false },
+        { "type": "url", "id": "link", "label": "Card link (optional)" }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Stats & highlights",
+      "category": "04. Content",
+      "blocks": [
+        {"type":"stat","settings":{"icon":"users","main_text":"Growing","label":"Happy customers"}},
+        {"type":"stat","settings":{"icon":"diamond","main_text":"Premium","label":"Materials"}},
+        {"type":"stat","settings":{"icon":"truck","main_text":"Fast","label":"Shipping"}},
+        {"type":"stat","settings":{"icon":"package-return","main_text":"Easy","label":"Returns"}},
+        {"type":"stat","settings":{"icon":"shield","main_text":"Secure checkout","label":"","description":"Shop confidently with secure checkout."}},
+        {"type":"stat","settings":{"icon":"leaf","main_text":"Thoughtful curation","label":"","description":"Handpicked essentials for a better everyday."}}
+      ]
+    }
+  ]
+}
+{% endschema %}

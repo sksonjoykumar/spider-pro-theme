@@ -1,0 +1,908 @@
+{% render 'sp-section-color-scheme', section: section %}
+{{ 'sp-section-heading.css' | asset_url | stylesheet_tag }}
+{{ 'sp-testimonials-reviews.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'sp-testimonials-reviews.js' | asset_url }}" defer="defer"></script>
+
+{%- liquid
+  assign sp_is_carousel = false
+  if section.settings.layout_style == 'style_3'
+    assign sp_is_carousel = true
+  elsif section.settings.layout_style == 'style_1' and section.settings.mobile_pagination
+    assign sp_is_carousel = true
+  endif
+
+  assign sp_has_heading = false
+  if section.settings.show_header and section.settings.heading != blank
+    assign sp_has_heading = true
+  endif
+-%}
+
+<section
+  id="SpTestimonialsReviews-{{ section.id }}"
+  class="sp-section sp-testimonials-reviews sp-testimonials-reviews--{{ section.settings.layout_style }} sp-testimonials-reviews--align-{{ section.settings.content_alignment }} sp-testimonials-reviews--text-{{ section.settings.card_text_alignment }}{% if section.settings.card_equal_height %} sp-testimonials-reviews--equal-height{% endif %}{% if section.settings.mobile_pagination %} sp-testimonials-reviews--mobile-pagination{% endif %}"
+  style="
+    --sp-testimonials-max-width: {{ section.settings.section_max_width }}px;
+    --sp-testimonials-columns-d: {{ section.settings.desktop_columns }};
+    --sp-testimonials-columns-t: {{ section.settings.tablet_columns }};
+    --sp-testimonials-columns-m: {{ section.settings.mobile_columns }};
+    --sp-testimonials-gap-d: {{ section.settings.grid_gap_desktop }}px;
+    --sp-testimonials-gap-t: {{ section.settings.grid_gap_tablet }}px;
+    --sp-testimonials-gap-m: {{ section.settings.grid_gap_mobile }}px;
+    --sp-testimonial-card-bg: {% if section.settings.card_background != blank %}{{ section.settings.card_background }}{% else %}var(--sp-color-card, #fff){% endif %};
+    --sp-testimonial-border-width: {{ section.settings.card_border_width }}px;
+    --sp-testimonial-border-color: {% if section.settings.card_border_color != blank %}{{ section.settings.card_border_color }}{% else %}var(--sp-color-border, #e4e4e7){% endif %};
+    --sp-testimonial-radius: {{ section.settings.card_border_radius }}px;
+    --sp-testimonial-padding-d: {{ section.settings.card_padding_desktop }}px;
+    --sp-testimonial-padding-m: {{ section.settings.card_padding_mobile }}px;
+    --sp-testimonial-avatar-size: {{ section.settings.customer_image_size }}px;
+    --sp-testimonials-pt-d: {{ section.settings.padding_top }}px;
+    --sp-testimonials-pb-d: {{ section.settings.padding_bottom }}px;
+    --sp-testimonials-pt-m: {{ section.settings.padding_top_mobile }}px;
+    --sp-testimonials-pb-m: {{ section.settings.padding_bottom_mobile }}px;
+    --sp-testimonials-description-width: {{ section.settings.description_width }}px;
+    --sp-testimonials-slides-d: {{ section.settings.desktop_slides }};
+    --sp-testimonials-slides-t: {{ section.settings.tablet_slides }};
+    --sp-testimonials-slides-m: {{ section.settings.mobile_slides }};
+    --sp-testimonials-shadow: {% case section.settings.card_shadow %}{% when 'small' %}0 6px 18px rgba(23,23,23,.06){% when 'medium' %}0 12px 32px rgba(23,23,23,.1){% else %}none{% endcase %};
+  "
+  data-sp-testimonials
+  data-sp-section-id="{{ section.id }}"
+  data-sp-layout="{{ section.settings.layout_style }}"
+  data-sp-carousel="{{ sp_is_carousel }}"
+  data-sp-swipe="{{ section.settings.enable_swipe }}"
+  data-sp-autoplay="{{ section.settings.enable_autoplay }}"
+  data-sp-autoplay-speed="{{ section.settings.autoplay_speed | times: 1000 }}"
+  data-sp-pause-hover="{{ section.settings.pause_on_hover }}"
+  data-sp-infinite="{{ section.settings.infinite_loop }}"
+  {% if sp_has_heading %}aria-labelledby="SpTestimonialsTitle-{{ section.id }}"{% else %}aria-label="Customer testimonials"{% endif %}
+>
+  <div class="sp-testimonials-reviews__container">
+    {% if section.settings.show_header %}
+      <div class="sp-testimonials-reviews__header sp-testimonials-reviews__header--{{ section.settings.heading_alignment }}">
+        {% if section.settings.eyebrow != blank %}<p class="sp-testimonials-reviews__eyebrow">{{ section.settings.eyebrow | escape }}</p>{% endif %}
+        {% if section.settings.heading != blank %}<h2 id="SpTestimonialsTitle-{{ section.id }}" class="sp-testimonials-reviews__title sp-testimonials-reviews__title--{{ section.settings.heading_size }}">{{ section.settings.heading | escape }}</h2>{% endif %}
+        {% if section.settings.description != blank %}<div class="sp-testimonials-reviews__description rte">{{ section.settings.description }}</div>{% endif %}
+
+        {% if section.settings.show_review_summary %}
+          <div class="sp-testimonials-reviews__summary">
+            <strong>{{ section.settings.average_rating }}</strong>
+            <span class="sp-testimonials-reviews__summary-stars" aria-label="{{ section.settings.average_rating }} out of 5 stars">
+              {% for sp_star in (1..5) %}<svg viewBox="0 0 20 20" aria-hidden="true"><path d="m10 1.4 2.67 5.4 5.96.87-4.31 4.2 1.02 5.93L10 15l-5.34 2.8 1.02-5.93-4.31-4.2 5.96-.87L10 1.4Z" fill="currentColor"/></svg>{% endfor %}
+            </span>
+            {% if section.settings.review_count != blank %}<span class="sp-testimonials-reviews__review-count">Based on {{ section.settings.review_count | escape }} reviews</span>{% endif %}
+            {% if section.settings.reviews_link_label != blank and section.settings.reviews_link != blank %}<a class="sp-button sp-button--outline" href="{{ section.settings.reviews_link }}">{{ section.settings.reviews_link_label | escape }} <span aria-hidden="true">→</span></a>{% endif %}
+          </div>
+        {% endif %}
+      </div>
+    {% endif %}
+
+    <div class="sp-testimonials-reviews__layout{% if section.settings.image_position_desktop == 'right' %} sp-testimonials-reviews__layout--image-right{% endif %}{% if section.settings.image_position_mobile == 'last' %} sp-testimonials-reviews__layout--mobile-image-last{% endif %}">
+      {% if section.settings.layout_style == 'style_4' %}
+        <div class="sp-testimonials-reviews__editorial">
+          <div class="sp-testimonials-reviews__editorial-media">
+            {% if section.settings.editorial_image != blank %}
+              {{ section.settings.editorial_image | image_url: width: 1600 | image_tag: widths: '480,720,960,1200,1600', sizes: '(min-width: 990px) 48vw, 100vw', loading: 'lazy', alt: section.settings.editorial_image_alt }}
+            {% else %}
+              {{ 'lifestyle-2' | placeholder_svg_tag: 'sp-placeholder' }}
+            {% endif %}
+          </div>
+          {% if section.settings.cta_label != blank and section.settings.cta_link != blank %}<a class="sp-button sp-button--primary sp-testimonials-reviews__cta" href="{{ section.settings.cta_link }}">{{ section.settings.cta_label | escape }}</a>{% endif %}
+        </div>
+      {% endif %}
+
+      <div class="sp-testimonials-reviews__reviews">
+        <div class="sp-testimonials-reviews__viewport"{% if sp_is_carousel %} data-sp-testimonials-viewport role="region" aria-roledescription="carousel" aria-label="Customer reviews" tabindex="0"{% endif %}>
+          <div id="SpTestimonialsTrack-{{ section.id }}" class="sp-testimonials-reviews__track" data-sp-testimonials-track>
+            {% if section.blocks.size > 0 %}
+              {% if section.settings.layout_style == 'style_2' %}
+                {% assign sp_featured_rendered = false %}
+                {% for block in section.blocks %}
+                  {% if block.settings.featured_review and sp_featured_rendered == false %}
+                    <div class="sp-testimonials-reviews__item sp-testimonials-reviews__item--featured">
+                      {% render 'sp-testimonial-card', block: block, section: section %}
+                    </div>
+                    {% assign sp_featured_rendered = true %}
+                  {% endif %}
+                {% endfor %}
+                {% for block in section.blocks %}
+                  {% unless block.settings.featured_review %}
+                    {% if sp_featured_rendered == false and forloop.first %}
+                      <div class="sp-testimonials-reviews__item sp-testimonials-reviews__item--featured">{% render 'sp-testimonial-card', block: block, section: section %}</div>
+                      {% assign sp_featured_rendered = true %}
+                    {% else %}
+                      <div class="sp-testimonials-reviews__item">{% render 'sp-testimonial-card', block: block, section: section %}</div>
+                    {% endif %}
+                  {% endunless %}
+                {% endfor %}
+              {% else %}
+                {% for block in section.blocks %}<div class="sp-testimonials-reviews__item">{% render 'sp-testimonial-card', block: block, section: section %}</div>{% endfor %}
+              {% endif %}
+            {% else %}
+              <p class="sp-testimonials-reviews__empty">Add testimonial blocks to share customer stories.</p>
+            {% endif %}
+          </div>
+        </div>
+
+        {% if sp_is_carousel and section.blocks.size > 1 %}
+          <div class="sp-testimonials-reviews__controls" data-sp-testimonials-controls>
+            {% if section.settings.show_arrows %}
+              <button type="button" class="sp-testimonials-reviews__arrow" data-sp-testimonials-prev aria-label="Previous reviews" aria-controls="SpTestimonialsTrack-{{ section.id }}"><span aria-hidden="true">←</span></button>
+            {% endif %}
+            {% if section.settings.show_dots %}
+              <div class="sp-testimonials-reviews__dots" data-sp-testimonials-dots aria-label="Choose review page">
+                {% for block in section.blocks %}<button type="button" data-sp-testimonials-dot data-index="{{ forloop.index0 }}" aria-label="Go to review page {{ forloop.index }}"{% if forloop.first %} aria-current="true"{% endif %}></button>{% endfor %}
+              </div>
+            {% endif %}
+            {% if section.settings.show_arrows %}
+              <button type="button" class="sp-testimonials-reviews__arrow" data-sp-testimonials-next aria-label="Next reviews" aria-controls="SpTestimonialsTrack-{{ section.id }}"><span aria-hidden="true">→</span></button>
+            {% endif %}
+          </div>
+          <p class="visually-hidden" data-sp-testimonials-status aria-live="polite" aria-atomic="true"></p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Testimonials & reviews",
+  "tag": "section",
+  "class": "sp-testimonials-reviews-section",
+  "disabled_on": {
+    "groups": [
+      "header",
+      "footer",
+      "custom.system"
+    ]
+  },
+  "settings": [
+    {
+      "type": "header",
+      "content": "Content"
+    },
+    {
+      "type": "color_scheme",
+      "id": "sp_color_scheme",
+      "label": "Color scheme",
+      "default": "scheme-1"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_header",
+      "label": "Show section header",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Eyebrow",
+      "default": "CUSTOMER STORIES"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Loved by thousands"
+    },
+    {
+      "type": "richtext",
+      "id": "description",
+      "label": "Description",
+      "default": "<p>Real experiences from customers who chose quality.</p>"
+    },
+    {
+      "type": "select",
+      "id": "heading_alignment",
+      "label": "Heading alignment",
+      "default": "center",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "heading_size",
+      "label": "Heading size",
+      "default": "medium",
+      "options": [
+        {
+          "value": "small",
+          "label": "Small"
+        },
+        {
+          "value": "medium",
+          "label": "Medium"
+        },
+        {
+          "value": "large",
+          "label": "Large"
+        }
+      ]
+    },
+    {
+      "type": "range",
+      "id": "description_width",
+      "label": "Description width",
+      "min": 360,
+      "max": 900,
+      "step": 20,
+      "unit": "px",
+      "default": 680
+    },
+    {
+      "type": "checkbox",
+      "id": "show_review_summary",
+      "label": "Show review summary",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "average_rating",
+      "label": "Average rating",
+      "default": "4.9"
+    },
+    {
+      "type": "text",
+      "id": "review_count",
+      "label": "Review count",
+      "default": "1,284"
+    },
+    {
+      "type": "text",
+      "id": "reviews_link_label",
+      "label": "Reviews link label",
+      "default": "Read all reviews"
+    },
+    {
+      "type": "url",
+      "id": "reviews_link",
+      "label": "Reviews link"
+    },
+    {
+      "type": "header",
+      "content": "Layout Style"
+    },
+    {
+      "type": "select",
+      "id": "layout_style",
+      "label": "Layout style",
+      "default": "style_1",
+      "options": [
+        {
+          "value": "style_1",
+          "label": "Classic 4-Card Grid"
+        },
+        {
+          "value": "style_2",
+          "label": "Featured Review"
+        },
+        {
+          "value": "style_3",
+          "label": "Review Carousel"
+        },
+        {
+          "value": "style_4",
+          "label": "Editorial Split"
+        },
+        {
+          "value": "style_5",
+          "label": "Minimal Quote Wall"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "content_alignment",
+      "label": "Content alignment",
+      "default": "center",
+      "options": [
+        {
+          "value": "start",
+          "label": "Top"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "card_text_alignment",
+      "label": "Card text alignment",
+      "default": "left",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ]
+    },
+    {
+      "type": "range",
+      "id": "section_max_width",
+      "label": "Section maximum width",
+      "min": 960,
+      "max": 1600,
+      "step": 20,
+      "unit": "px",
+      "default": 1440
+    },
+    {
+      "type": "select",
+      "id": "image_position_desktop",
+      "label": "Editorial image position (desktop)",
+      "default": "left",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "image_position_mobile",
+      "label": "Editorial image position (mobile)",
+      "default": "first",
+      "options": [
+        {
+          "value": "first",
+          "label": "First"
+        },
+        {
+          "value": "last",
+          "label": "Last"
+        }
+      ]
+    },
+    {
+      "type": "image_picker",
+      "id": "editorial_image",
+      "label": "Editorial lifestyle image"
+    },
+    {
+      "type": "text",
+      "id": "editorial_image_alt",
+      "label": "Editorial image alt text"
+    },
+    {
+      "type": "text",
+      "id": "cta_label",
+      "label": "Editorial CTA label"
+    },
+    {
+      "type": "url",
+      "id": "cta_link",
+      "label": "Editorial CTA link"
+    },
+    {
+      "type": "header",
+      "content": "Grid and Carousel"
+    },
+    {
+      "type": "range",
+      "id": "desktop_columns",
+      "label": "Desktop columns",
+      "min": 2,
+      "max": 5,
+      "step": 1,
+      "default": 4
+    },
+    {
+      "type": "range",
+      "id": "tablet_columns",
+      "label": "Tablet columns",
+      "min": 1,
+      "max": 3,
+      "step": 1,
+      "default": 2
+    },
+    {
+      "type": "select",
+      "id": "mobile_columns",
+      "label": "Mobile columns",
+      "default": "1",
+      "options": [
+        {
+          "value": "1",
+          "label": "1 column"
+        },
+        {
+          "value": "2",
+          "label": "2 columns"
+        }
+      ]
+    },
+    {
+      "type": "range",
+      "id": "grid_gap_desktop",
+      "label": "Desktop gap",
+      "min": 8,
+      "max": 48,
+      "step": 2,
+      "unit": "px",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "grid_gap_tablet",
+      "label": "Tablet gap",
+      "min": 8,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "grid_gap_mobile",
+      "label": "Mobile gap",
+      "min": 8,
+      "max": 32,
+      "step": 2,
+      "unit": "px",
+      "default": 12
+    },
+    {
+      "type": "checkbox",
+      "id": "card_equal_height",
+      "label": "Equal-height cards",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "mobile_pagination",
+      "label": "Enable mobile pagination for classic grid",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_swipe",
+      "label": "Enable touch swipe",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_arrows",
+      "label": "Show arrows",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_dots",
+      "label": "Show pagination dots",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_autoplay",
+      "label": "Enable autoplay",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "autoplay_speed",
+      "label": "Autoplay interval",
+      "min": 3,
+      "max": 10,
+      "step": 1,
+      "unit": "s",
+      "default": 5
+    },
+    {
+      "type": "checkbox",
+      "id": "pause_on_hover",
+      "label": "Pause autoplay on hover",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "infinite_loop",
+      "label": "Loop carousel",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "desktop_slides",
+      "label": "Carousel slides on desktop",
+      "min": 1,
+      "max": 5,
+      "step": 1,
+      "default": 4
+    },
+    {
+      "type": "range",
+      "id": "tablet_slides",
+      "label": "Carousel slides on tablet",
+      "min": 1,
+      "max": 3,
+      "step": 1,
+      "default": 2
+    },
+    {
+      "type": "select",
+      "id": "mobile_slides",
+      "label": "Carousel slides on mobile",
+      "default": "1",
+      "options": [
+        {
+          "value": "1",
+          "label": "1 slide"
+        },
+        {
+          "value": "2",
+          "label": "2 slides"
+        }
+      ]
+    },
+    {
+      "type": "header",
+      "content": "Colors"
+    },
+    {
+      "type": "color",
+      "id": "card_background",
+      "label": "Card background",
+      "info": "Clear to inherit the selected color scheme card color."
+    },
+    {
+      "type": "color",
+      "id": "card_border_color",
+      "label": "Card border color",
+      "info": "Clear to inherit the selected color scheme border color."
+    },
+    {
+      "type": "header",
+      "content": "Card Design"
+    },
+    {
+      "type": "range",
+      "id": "card_border_width",
+      "label": "Card border width",
+      "min": 0,
+      "max": 4,
+      "step": 1,
+      "unit": "px",
+      "default": 1
+    },
+    {
+      "type": "range",
+      "id": "card_border_radius",
+      "label": "Card border radius",
+      "min": 0,
+      "max": 32,
+      "step": 2,
+      "unit": "px",
+      "default": 10
+    },
+    {
+      "type": "select",
+      "id": "card_shadow",
+      "label": "Card shadow",
+      "default": "small",
+      "options": [
+        {
+          "value": "none",
+          "label": "None"
+        },
+        {
+          "value": "small",
+          "label": "Small"
+        },
+        {
+          "value": "medium",
+          "label": "Medium"
+        }
+      ]
+    },
+    {
+      "type": "range",
+      "id": "card_padding_desktop",
+      "label": "Desktop card padding",
+      "min": 16,
+      "max": 48,
+      "step": 2,
+      "unit": "px",
+      "default": 26
+    },
+    {
+      "type": "range",
+      "id": "card_padding_mobile",
+      "label": "Mobile card padding",
+      "min": 12,
+      "max": 32,
+      "step": 2,
+      "unit": "px",
+      "default": 20
+    },
+    {
+      "type": "checkbox",
+      "id": "show_quote_icon",
+      "label": "Show quote icon",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "show_rating",
+      "label": "Show rating",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Customer Information"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_customer_image",
+      "label": "Show customer image",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "customer_image_shape",
+      "label": "Customer image shape",
+      "default": "circle",
+      "options": [
+        {
+          "value": "circle",
+          "label": "Circle"
+        },
+        {
+          "value": "rounded",
+          "label": "Rounded"
+        },
+        {
+          "value": "square",
+          "label": "Square"
+        }
+      ]
+    },
+    {
+      "type": "range",
+      "id": "customer_image_size",
+      "label": "Customer image size",
+      "min": 40,
+      "max": 96,
+      "step": 4,
+      "unit": "px",
+      "default": 64
+    },
+    {
+      "type": "checkbox",
+      "id": "show_verified_badge",
+      "label": "Show verified-buyer badge",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_review_date",
+      "label": "Show review date",
+      "default": false
+    },
+    {
+      "type": "header",
+      "content": "Purchased Product"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_product",
+      "label": "Show purchased product",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Desktop Spacing"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "Top padding",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "px",
+      "default": 80
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "Bottom padding",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "px",
+      "default": 80
+    },
+    {
+      "type": "header",
+      "content": "Mobile Spacing"
+    },
+    {
+      "type": "range",
+      "id": "padding_top_mobile",
+      "label": "Top padding",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "default": 48
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom_mobile",
+      "label": "Bottom padding",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "default": 48
+    },
+    {
+      "type": "header",
+      "content": "Advanced"
+    },
+    {
+      "type": "paragraph",
+      "content": "Autoplay is disabled automatically for visitors who prefer reduced motion. The first featured review block controls Style 2."
+    }
+  ],
+  "blocks": [
+    {
+      "type": "testimonial",
+      "name": "Testimonial",
+      "limit": 12,
+      "settings": [
+        {
+          "type": "range",
+          "id": "rating",
+          "label": "Rating",
+          "min": 1,
+          "max": 5,
+          "step": 1,
+          "default": 5
+        },
+        {
+          "type": "text",
+          "id": "review_heading",
+          "label": "Review heading",
+          "default": "Better than I expected"
+        },
+        {
+          "type": "richtext",
+          "id": "review_text",
+          "label": "Review text",
+          "default": "<p>The quality is noticeable from the moment you open the box. It feels considered, comfortable and built to last.</p>"
+        },
+        {
+          "type": "image_picker",
+          "id": "customer_image",
+          "label": "Customer image"
+        },
+        {
+          "type": "text",
+          "id": "customer_image_alt",
+          "label": "Customer image alt text",
+          "info": "Describe the person meaningfully; defaults to the customer name."
+        },
+        {
+          "type": "text",
+          "id": "customer_name",
+          "label": "Customer name",
+          "default": "Sarah Mitchell"
+        },
+        {
+          "type": "checkbox",
+          "id": "verified_buyer",
+          "label": "Verified buyer",
+          "default": true
+        },
+        {
+          "type": "text",
+          "id": "customer_location",
+          "label": "Customer location"
+        },
+        {
+          "type": "text",
+          "id": "review_date",
+          "label": "Review date"
+        },
+        {
+          "type": "product",
+          "id": "product",
+          "label": "Purchased product"
+        },
+        {
+          "type": "image_picker",
+          "id": "custom_product_image",
+          "label": "Fallback product image"
+        },
+        {
+          "type": "text",
+          "id": "custom_product_title",
+          "label": "Fallback product title",
+          "default": "Cloud Lounge Chair"
+        },
+        {
+          "type": "url",
+          "id": "custom_product_url",
+          "label": "Fallback product link"
+        },
+        {
+          "type": "checkbox",
+          "id": "featured_review",
+          "label": "Featured review",
+          "default": false,
+          "info": "The first enabled block becomes the featured review in Style 2."
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Testimonials & reviews",
+      "category": "05. Social Proof",
+      "settings": {
+        "layout_style": "style_1",
+        "heading_alignment": "center",
+        "heading_size": "medium",
+        "desktop_columns": 4,
+        "card_border_radius": 10
+      },
+      "blocks": [
+        {
+          "type": "testimonial"
+        },
+        {
+          "type": "testimonial",
+          "settings": {
+            "review_heading": "A perfect fit for our home",
+            "customer_name": "Daniel Carter",
+            "custom_product_title": "Form Side Table"
+          }
+        },
+        {
+          "type": "testimonial",
+          "settings": {
+            "review_heading": "Worth every penny",
+            "customer_name": "Maya Robinson",
+            "custom_product_title": "Linen Accent Chair"
+          }
+        },
+        {
+          "type": "testimonial",
+          "settings": {
+            "review_heading": "Exceptional quality",
+            "customer_name": "James Wilson",
+            "custom_product_title": "Oak Coffee Table"
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

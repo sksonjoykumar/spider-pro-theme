@@ -1,0 +1,2 @@
+{% comment %}LiquidDoc: Textarea primitive. Parameters: id, name, label required.{% endcomment %}
+<div class="sp-field"><label for="{{ id }}">{{ label }}</label><textarea id="{{ id }}" name="{{ name }}" rows="{{ rows | default: 5 }}" {{ attributes }}>{{ value | escape }}</textarea></div>

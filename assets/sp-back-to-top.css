@@ -1,0 +1,164 @@
+/* Spider Premium Back to Top — isolated, responsive System Group component. */
+.sp-back-to-top {
+  --sp-back-to-top-progress-deg: 0deg;
+  --sp-back-to-top-occupied-bottom: 0px;
+  --sp-back-to-top-visual-size: var(--sp-back-to-top-size-desktop, 56px);
+  --sp-back-to-top-icon-size: var(--sp-back-to-top-icon-desktop, 22px);
+  --sp-back-to-top-side-offset: var(--sp-back-to-top-side-desktop, 32px);
+  --sp-back-to-top-base-bottom: var(--sp-back-to-top-bottom-desktop, 32px);
+  --sp-back-to-top-radius: 999px;
+  --sp-back-to-top-accent: var(--sp-color-accent, #415DFF);
+  box-sizing: border-box;
+  position: fixed;
+  z-index: var(--sp-z-back-to-top, 35);
+  inset-block-end: calc(var(--sp-back-to-top-base-bottom) + max(var(--sp-back-to-top-occupied-bottom, 0px), env(safe-area-inset-bottom, 0px)));
+  inline-size: max(44px, var(--sp-back-to-top-visual-size));
+  block-size: max(44px, var(--sp-back-to-top-visual-size));
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateY(10px);
+  transition: opacity var(--sp-back-to-top-show-duration, 300ms) ease,
+    visibility var(--sp-back-to-top-show-duration, 300ms) ease,
+    transform var(--sp-back-to-top-show-duration, 300ms) ease,
+    inset-block-end 220ms ease;
+  color: var(--sp-back-to-top-icon-color, var(--sp-color-heading, var(--sp-color-primary, #171717)));
+  contain: layout style;
+}
+.sp-back-to-top--appearance-fade { transform: none; }
+.sp-back-to-top--appearance-none { transition: none !important; transform: none; }
+.sp-back-to-top.is-visible,
+.sp-back-to-top.is-editor-preview {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: none;
+}
+.sp-back-to-top.is-suppressed { opacity: 0; visibility: hidden; pointer-events: none; }
+.sp-back-to-top--position-right.sp-back-to-top--mirror-rtl { inset-inline-end: var(--sp-back-to-top-side-offset); }
+.sp-back-to-top--position-left.sp-back-to-top--mirror-rtl { inset-inline-start: var(--sp-back-to-top-side-offset); }
+.sp-back-to-top--position-right:not(.sp-back-to-top--mirror-rtl) { right: var(--sp-back-to-top-side-offset); left: auto; }
+.sp-back-to-top--position-left:not(.sp-back-to-top--mirror-rtl) { left: var(--sp-back-to-top-side-offset); right: auto; }
+
+.sp-back-to-top__button {
+  box-sizing: border-box;
+  position: relative;
+  display: grid;
+  place-items: center;
+  inline-size: 100%;
+  block-size: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: var(--sp-back-to-top-radius);
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+.sp-back-to-top__button[hidden] { display: none !important; }
+.sp-back-to-top__button:disabled { cursor: default; }
+.sp-back-to-top__surface,
+.sp-back-to-top__progress {
+  box-sizing: border-box;
+  position: absolute;
+  inset: 50% auto auto 50%;
+  inline-size: var(--sp-back-to-top-visual-size);
+  block-size: var(--sp-back-to-top-visual-size);
+  border-radius: var(--sp-back-to-top-radius);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+.sp-back-to-top__surface {
+  z-index: 1;
+  border: var(--sp-back-to-top-border-width, 1px) solid var(--sp-back-to-top-border, var(--sp-color-border, #E4E4E7));
+  background: var(--sp-back-to-top-bg, #fff);
+  box-shadow: var(--sp-back-to-top-surface-shadow, 0 5px 20px rgb(0 0 0 / .10));
+  transition: background-color var(--sp-back-to-top-hover-duration, 225ms) ease,
+    border-color var(--sp-back-to-top-hover-duration, 225ms) ease,
+    box-shadow var(--sp-back-to-top-hover-duration, 225ms) ease,
+    transform var(--sp-back-to-top-hover-duration, 225ms) ease;
+}
+.sp-back-to-top__progress {
+  z-index: 2;
+  display: none;
+  background: conic-gradient(from var(--sp-back-to-top-start-angle, 0deg),
+    var(--sp-back-to-top-active, var(--sp-color-accent, #415DFF)) 0deg,
+    var(--sp-back-to-top-active, var(--sp-color-accent, #415DFF)) var(--sp-back-to-top-progress-deg, 0deg),
+    var(--sp-back-to-top-track, #E4E4E7) var(--sp-back-to-top-progress-deg, 0deg),
+    var(--sp-back-to-top-track, #E4E4E7) 360deg);
+  -webkit-mask: radial-gradient(farthest-side,
+    transparent calc(100% - var(--sp-back-to-top-ring-width, 3px)),
+    #000 calc(100% - var(--sp-back-to-top-ring-width, 3px) + .5px));
+  mask: radial-gradient(farthest-side,
+    transparent calc(100% - var(--sp-back-to-top-ring-width, 3px)),
+    #000 calc(100% - var(--sp-back-to-top-ring-width, 3px) + .5px));
+}
+.sp-back-to-top--ring-counterclockwise .sp-back-to-top__progress { transform: translate(-50%, -50%) scaleX(-1); }
+.sp-back-to-top--style-progress[data-progress-enabled="true"] .sp-back-to-top__progress { display: block; }
+.sp-back-to-top--style-progress[data-progress-enabled="true"] .sp-back-to-top__surface { border-color: transparent; }
+.sp-back-to-top--style-simple .sp-back-to-top__surface { border-width: 0; }
+.sp-back-to-top--style-outline .sp-back-to-top__surface { background: transparent; }
+.sp-back-to-top__icon {
+  position: relative;
+  z-index: 3;
+  display: grid;
+  place-items: center;
+  inline-size: var(--sp-back-to-top-icon-size);
+  block-size: var(--sp-back-to-top-icon-size);
+  pointer-events: none;
+  transition: color var(--sp-back-to-top-hover-duration, 225ms) ease,
+    transform var(--sp-back-to-top-hover-duration, 225ms) ease;
+}
+.sp-back-to-top__icon svg { display: block; inline-size: 100%; block-size: 100%; }
+.sp-back-to-top__button:focus-visible {
+  outline: 2px solid var(--sp-focus-color, var(--sp-color-accent, #415DFF));
+  outline-offset: 3px;
+  box-shadow: 0 0 0 5px color-mix(in srgb, var(--sp-focus-color, var(--sp-color-accent, #415DFF)) 13%, transparent);
+}
+.sp-back-to-top--shape-square { --sp-back-to-top-radius: 0px; }
+.sp-back-to-top--shape-rounded { --sp-back-to-top-radius: var(--sp-radius-md, 8px); }
+.sp-back-to-top--shape-circle { --sp-back-to-top-radius: 999px; }
+.sp-back-to-top--shape-custom { --sp-back-to-top-radius: var(--sp-back-to-top-custom-radius, 12px); }
+.sp-back-to-top--shadow-none { --sp-back-to-top-surface-shadow: none; }
+.sp-back-to-top--shadow-soft { --sp-back-to-top-surface-shadow: 0 5px 20px rgb(0 0 0 / .10); }
+.sp-back-to-top--shadow-medium { --sp-back-to-top-surface-shadow: 0 8px 24px rgb(0 0 0 / .16); }
+.sp-back-to-top--shadow-strong { --sp-back-to-top-surface-shadow: 0 12px 34px rgb(0 0 0 / .23); }
+.sp-back-to-top--complete-fill.is-complete .sp-back-to-top__surface {
+  background: var(--sp-back-to-top-hover-bg, var(--sp-color-accent, #415DFF));
+}
+.sp-back-to-top--complete-fill.is-complete .sp-back-to-top__icon {
+  color: var(--sp-back-to-top-hover-icon, #fff);
+}
+@media (hover: hover) and (pointer: fine) {
+  .sp-back-to-top__button:hover { color: var(--sp-back-to-top-hover-icon, #fff); }
+  .sp-back-to-top__button:hover .sp-back-to-top__surface {
+    background: var(--sp-back-to-top-hover-bg, var(--sp-color-accent, #415DFF));
+    border-color: var(--sp-back-to-top-hover-border, var(--sp-color-accent, #415DFF));
+    box-shadow: 0 8px 24px color-mix(in srgb, var(--sp-back-to-top-hover-bg, var(--sp-color-accent, #415DFF)) 24%, transparent);
+  }
+  .sp-back-to-top--hover-move-up .sp-back-to-top__button:hover .sp-back-to-top__icon {
+    transform: translateY(calc(-1px * var(--sp-back-to-top-hover-lift, 1)));
+  }
+  .sp-back-to-top--hover-scale .sp-back-to-top__button:hover .sp-back-to-top__surface { transform: translate(-50%, -50%) scale(1.03); }
+}
+.sp-back-to-top__button:active .sp-back-to-top__surface { filter: brightness(.96); }
+@media (max-width: 989px) { .sp-back-to-top { --sp-back-to-top-side-offset: var(--sp-back-to-top-side-tablet, 20px); } }
+@media (max-width: 749px) {
+  .sp-back-to-top {
+    --sp-back-to-top-visual-size: var(--sp-back-to-top-size-mobile, 48px);
+    --sp-back-to-top-icon-size: var(--sp-back-to-top-icon-mobile, 20px);
+    --sp-back-to-top-side-offset: var(--sp-back-to-top-side-mobile, 16px);
+    --sp-back-to-top-base-bottom: var(--sp-back-to-top-bottom-mobile, 16px);
+  }
+  .sp-back-to-top--hide-mobile { display: none !important; }
+}
+@media (min-width: 750px) and (max-width: 989px) { .sp-back-to-top--hide-tablet { display: none !important; } }
+@media (min-width: 990px) { .sp-back-to-top--hide-desktop { display: none !important; } }
+@media (prefers-reduced-motion: reduce) {
+  .sp-back-to-top, .sp-back-to-top__surface, .sp-back-to-top__progress, .sp-back-to-top__icon {
+    transition-duration: 0.01ms !important;
+    animation: none !important;
+  }
+}

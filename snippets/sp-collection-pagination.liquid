@@ -1,0 +1,37 @@
+{% if paginate.pages > 1 %}
+  {%- liquid
+    assign sp_loaded_count = paginate.current_page | times: paginate.page_size
+    if sp_loaded_count > paginate.items
+      assign sp_loaded_count = paginate.items
+    endif
+    assign sp_progress = sp_loaded_count | times: 100.0 | divided_by: paginate.items
+  -%}
+  {% if mode == 'pagination' %}
+    <nav class="sp-collection-pagination" aria-label="Pagination" data-sp-collection-pagination>
+      {% if paginate.previous %}
+        <a class="sp-collection-pagination__control" href="{{ paginate.previous.url }}" rel="prev" data-sp-collection-link aria-label="Previous page">
+          <svg viewBox="0 0 20 20" aria-hidden="true"><path d="m12 5-5 5 5 5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Previous</span>
+        </a>
+      {% endif %}
+      {% if section.settings.show_page_numbers %}
+        <div class="sp-collection-pagination__pages">
+          {% for part in paginate.parts %}
+            {% if part.is_link %}<a href="{{ part.url }}" data-sp-collection-link>{{ part.title }}</a>{% else %}<span{% if part.title == paginate.current_page %} aria-current="page"{% endif %}>{{ part.title }}</span>{% endif %}
+          {% endfor %}
+        </div>
+      {% else %}
+        <span class="sp-collection-pagination__summary">Page {{ paginate.current_page }} of {{ paginate.pages }}</span>
+      {% endif %}
+      {% if paginate.next %}
+        <a class="sp-collection-pagination__control" href="{{ paginate.next.url }}" rel="next" data-sp-collection-link aria-label="Next page"><span>Next</span><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m8 5 5 5-5 5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+      {% endif %}
+    </nav>
+  {% elsif paginate.next %}
+    <div class="sp-collection-load-more" data-sp-collection-pagination{% if mode == 'infinite' %} data-sp-infinite-scroll{% endif %}>
+      <p class="sp-collection-load-more__progress">Showing {{ sp_loaded_count }} of {{ paginate.items }} products</p>
+      <span class="sp-collection-load-more__track" aria-hidden="true"><span style="width:{{ sp_progress }}%"></span></span>
+      <a class="sp-button sp-button--secondary" href="{{ paginate.next.url }}" rel="next" data-sp-load-more>{{ section.settings.load_more_label | default: 'Load more' | escape }}</a>
+      <p class="visually-hidden" data-sp-load-more-status aria-live="polite"></p>
+    </div>
+  {% endif %}
+{% endif %}

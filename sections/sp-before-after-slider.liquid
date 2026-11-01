@@ -1,0 +1,1414 @@
+{%- comment -%}
+  Spider Before & After Slider. Install alongside its two snippets and two assets.
+  Default (no JS): independent side-by-side images; JS enhances only interactive styles.
+{%- endcomment -%}
+{% render 'sp-section-color-scheme', section: section %}
+{{ 'sp-section-heading.css' | asset_url | stylesheet_tag }}
+{{ 'sp-before-after-slider.css' | asset_url | stylesheet_tag }}
+{%- unless section.settings.layout_style == 'style_3' -%}
+  <script src="{{ 'sp-before-after-slider.js' | asset_url }}" defer></script>
+{%- endunless -%}
+{%- liquid
+  assign s = section.settings
+  assign valid_count = 0
+  for block in section.blocks
+    if block.type == 'comparison'
+      if block.settings.before_image != blank and block.settings.after_image != blank
+        assign valid_count = valid_count | plus: 1
+      elsif request.design_mode
+        assign valid_count = valid_count | plus: 1
+      endif
+    endif
+  endfor
+  assign benefit_count = 0
+  for block in section.blocks
+    if block.type == 'benefit'
+      assign benefit_count = benefit_count | plus: 1
+    endif
+  endfor
+  assign heading_type = 'global'
+  assign size_d = 48
+  assign size_t = 38
+  assign size_m = 30
+  if s.heading_size == 'medium'
+    assign heading_type = 'custom'
+    assign size_d = 44
+    assign size_t = 36
+    assign size_m = 28
+  elsif s.heading_size == 'large'
+    assign heading_type = 'custom'
+    assign size_d = 64
+    assign size_t = 46
+    assign size_m = 34
+  endif
+  assign outer_container = 'sp-container'
+  if s.section_max_width == 'wide'
+    assign outer_container = 'sp-container sp-container--wide'
+  endif
+  assign cmp_ratio_d = '2.8'
+  case s.comparison_aspect_ratio
+    when 'square'
+      assign cmp_ratio_d = '1'
+    when 'portrait'
+      assign cmp_ratio_d = '0.8'
+    when 'landscape'
+      assign cmp_ratio_d = '1.7778'
+    when 'wide'
+      assign cmp_ratio_d = '2.8'
+    when 'custom'
+      assign cmp_ratio_d = s.custom_aspect_ratio_desktop | divided_by: 100.0
+    when 'natural'
+      assign cmp_ratio_d = 'var(--sp-ba-natural-ratio)'
+  endcase
+  assign cmp_ratio_m = s.custom_aspect_ratio_mobile | divided_by: 100.0
+  assign is_vertical = false
+  if s.layout_style == 'style_2'
+    assign is_vertical = true
+  endif
+  if s.comparison_direction == 'vertical'
+    assign is_vertical = true
+  elsif s.comparison_direction == 'horizontal'
+    assign is_vertical = false
+  endif
+-%}
+{%- if valid_count > 0 or request.design_mode -%}
+<section class="sp-section sp-ba sp-ba--{{ s.layout_style }} sp-ba--content-{{ s.content_alignment }}{% if is_vertical %} sp-ba--vertical{% endif %} sp-ba--labels-{{ s.label_style }} sp-ba--handle-{{ s.handle_style }} sp-ba--label-pos-{{ s.label_position }} sp-ba--helper-{{ s.helper_position }}{% if s.reverse_images %} sp-ba--reverse{% endif %}{% if s.hide_labels_during_drag %} sp-ba--hide-labels-drag{% endif %}{% if s.show_handle_shadow %} sp-ba--handle-shadow{% endif %}{% if s.static_divider %} sp-ba--static-divider{% endif %}{% if s.enable_crossfade %} sp-ba--crossfade{% endif %}"
+  id="sp-ba-{{ section.id }}" data-sp-ba-root data-sp-ba-style="{{ s.layout_style }}" data-sp-ba-section="{{ section.id }}"
+  data-sp-ba-loop="{{ s.infinite_loop }}" data-sp-ba-autoplay="{{ s.enable_autoplay }}" data-sp-ba-speed="{{ s.autoplay_speed | times: 1000 }}" data-sp-ba-pause-hover="{{ s.pause_on_hover }}" data-sp-ba-swipe="{{ s.enable_swipe }}" data-sp-ba-hide-helper="{{ s.hide_helper_after_interaction }}"
+  style="
+    --sp-ba-padding-top:{{ s.padding_top }}px;--sp-ba-padding-bottom:{{ s.padding_bottom }}px;
+    --sp-ba-padding-top-t:{{ s.padding_top_tablet }}px;--sp-ba-padding-bottom-t:{{ s.padding_bottom_tablet }}px;
+    --sp-ba-padding-top-m:{{ s.padding_top_mobile }}px;--sp-ba-padding-bottom-m:{{ s.padding_bottom_mobile }}px;
+    --sp-ba-max-width:{{ s.comparison_max_width }}px;--sp-ba-frame-ratio-d:{{ cmp_ratio_d }};--sp-ba-frame-ratio-m:{{ cmp_ratio_m }};
+    --sp-ba-height-d:{% if s.comparison_height_desktop > 0 %}{{ s.comparison_height_desktop }}px{% else %}auto{% endif %};
+    --sp-ba-height-t:{% if s.comparison_height_tablet > 0 %}{{ s.comparison_height_tablet }}px{% else %}auto{% endif %};
+    --sp-ba-height-m:{% if s.comparison_height_mobile > 0 %}{{ s.comparison_height_mobile }}px{% else %}auto{% endif %};
+    --sp-ba-header-gap:{{ s.header_to_comparison_spacing }}px;--sp-ba-helper-gap:{{ s.comparison_to_helper_spacing }}px;
+    --sp-ba-benefits-gap:{{ s.helper_to_benefits_spacing }}px;--sp-ba-benefit-item-gap:{{ s.benefit_item_gap }}px;--sp-ba-benefits-mobile-cols:{{ s.benefits_mobile_columns | default: 1 }};
+    --sp-ba-divider-width:{{ s.divider_width }}px;--sp-ba-handle-size:{{ s.handle_size }}px;--sp-ba-mobile-handle-size:{{ s.mobile_handle_size | default: 50 }}px;
+    --sp-ba-handle-border-width:{{ s.handle_border_width }}px;--sp-ba-label-radius:{{ s.label_border_radius }}px;--sp-ba-label-font:{{ s.label_size }}px;
+    --sp-ba-radius:{{ s.frame_radius }}px;--sp-ba-description-width:{{ s.description_width }}px;--sp-ba-header-width:{{ s.header_max_width }}px;
+    --sp-ba-divider-style:{{ s.divider_style }};--sp-ba-fit:{{ s.image_fit }};
+    {% if s.divider_color != blank %}--sp-ba-divider-color:{{ s.divider_color }};{% endif %}
+    {% if s.handle_background != blank %}--sp-ba-handle-bg:{{ s.handle_background }};{% endif %}
+    {% if s.handle_border_color != blank %}--sp-ba-handle-border:{{ s.handle_border_color }};{% endif %}
+    {% if s.handle_icon_color != blank %}--sp-ba-handle-icon:{{ s.handle_icon_color }};{% endif %}
+    {% if s.label_background != blank %}--sp-ba-label-background:{{ s.label_background }};--sp-ba-after-label-background:{{ s.label_background }};{% endif %}
+    {% if s.label_text_color != blank %}--sp-ba-label-foreground:{{ s.label_text_color }};--sp-ba-after-label-foreground:{{ s.label_text_color }};{% endif %}
+    {% if s.accent_color != blank %}--sp-ba-accent:{{ s.accent_color }};{% endif %}
+    {% if s.border_color != blank %}--sp-ba-border:{{ s.border_color }};{% endif %}
+  ">
+  <div class="{{ outer_container }} sp-ba__container">
+    {%- if s.show_header -%}
+      <div class="sp-ba__header sp-ba__header--{{ s.heading_alignment }}" style="--sp-ba-header-bottom:{{ s.header_bottom_spacing }}px;">
+        {%- if s.eyebrow != blank -%}<p class="sp-ba__eyebrow">{{ s.eyebrow | escape }}</p>{%- endif -%}
+        {% render 'sp-section-heading', heading_settings: s, heading: s.heading, subheading: s.description, heading_tag: 'h2', design: '1', alignment: s.heading_alignment, mobile_alignment: s.heading_alignment, bottom_spacing: 0, typography_source: heading_type, heading_size_desktop: size_d, heading_size_tablet: size_t, heading_size_mobile: size_m, heading_gap: 8 %}
+      </div>
+    {%- endif -%}
+    <div class="sp-ba__main" data-sp-ba-main>
+      <div class="sp-ba__comparisons" data-sp-ba-track>
+        {%- assign comparison_index = 0 -%}
+        {%- for block in section.blocks -%}
+          {%- if block.type == 'comparison' -%}
+            {%- liquid
+                assign sp_render_pair = false
+                if block.settings.before_image != blank and block.settings.after_image != blank
+                  assign sp_render_pair = true
+                elsif request.design_mode
+                  assign sp_render_pair = true
+                endif
+              -%}
+            {%- if sp_render_pair -%}
+              {% render 'sp-before-after-comparison', block: block, section: section, comparison_index: comparison_index, is_vertical: is_vertical %}
+              {%- assign comparison_index = comparison_index | plus: 1 -%}
+            {%- endif -%}
+          {%- endif -%}
+        {%- endfor -%}
+      </div>
+      {%- if s.layout_style == 'style_4' and valid_count > 1 -%}
+        <nav class="sp-ba__navigation" aria-label="Before and after comparison gallery" data-sp-ba-navigation>
+          {%- if s.show_arrows -%}
+            <button type="button" class="sp-ba__nav-arrow" data-sp-ba-nav="prev" aria-label="Previous comparison">{% render 'icon', name: 'chevron-left' %}</button>
+          {%- endif -%}
+          {%- if s.show_dots -%}
+            <div class="sp-ba__dots" aria-label="Select comparison">
+              {%- for i in (1..valid_count) -%}
+                <button type="button" class="sp-ba__dot" aria-label="Go to comparison {{ i }}" data-sp-ba-goto="{{ forloop.index0 }}" aria-current="{% if forloop.first %}true{% else %}false{% endif %}"><span class="visually-hidden">Comparison {{ i }}</span></button>
+              {%- endfor -%}
+            </div>
+          {%- endif -%}
+          {%- if s.show_fraction -%}<span class="sp-ba__fraction" data-sp-ba-fraction>1 / {{ valid_count }}</span>{%- endif -%}
+          {%- if s.show_arrows -%}
+            <button type="button" class="sp-ba__nav-arrow" data-sp-ba-nav="next" aria-label="Next comparison">{% render 'icon', name: 'chevron-right' %}</button>
+          {%- endif -%}
+        </nav>
+      {%- endif -%}
+      {%- if s.layout_style == 'style_5' and s.show_thumbnails and valid_count > 1 -%}
+        <div class="sp-ba__thumbnails" data-sp-ba-thumbnails aria-label="Select image pair">
+          {%- assign thumbnail_index = 0 -%}
+          {%- for block in section.blocks -%}
+            {%- if block.type == 'comparison' -%}
+              {%- liquid
+                assign sp_render_thumb = false
+                if block.settings.before_image != blank and block.settings.after_image != blank
+                  assign sp_render_thumb = true
+                elsif request.design_mode
+                  assign sp_render_thumb = true
+                endif
+                -%}
+              {%- if sp_render_thumb -%}
+                <button type="button" class="sp-ba__thumbnail" data-sp-ba-goto="{{ thumbnail_index }}" aria-current="{% if thumbnail_index == 0 %}true{% else %}false{% endif %}" aria-label="Show {{ block.settings.comparison_heading | default: 'comparison' | escape }} {{ thumbnail_index | plus: 1 }}">
+                  {%- if block.settings.before_image != blank -%}{{ block.settings.before_image | image_url: width: 140 | image_tag: widths: '70,140', sizes: '70px', loading: 'lazy', alt: '' }}{%- else -%}{{ 'product-1' | placeholder_svg_tag }}{%- endif -%}
+                </button>
+                {%- assign thumbnail_index = thumbnail_index | plus: 1 -%}
+              {%- endif -%}
+            {%- endif -%}
+          {%- endfor -%}
+        </div>
+      {%- endif -%}
+    </div>
+    {%- if s.show_helper_text and s.helper_text != blank and s.layout_style != 'style_3' and s.layout_style != 'style_5' -%}
+      <p class="sp-ba__helper" data-sp-ba-helper>{{ s.helper_text | escape }}{% if s.helper_icon == 'arrow' %} <span aria-hidden="true">→</span>{% elsif s.helper_icon == 'hand' %} <span aria-hidden="true">↔</span>{% endif %}</p>
+    {%- endif -%}
+    {%- if benefit_count > 0 -%}
+      <ul class="sp-ba__benefits" role="list">
+        {%- for block in section.blocks -%}
+          {%- if block.type == 'benefit' -%}{% render 'sp-before-after-benefit', block: block %}{%- endif -%}
+        {%- endfor -%}
+      </ul>
+    {%- endif -%}
+    {%- if s.show_cta and s.cta_label != blank and s.cta_link != blank -%}
+      <div class="sp-ba__cta sp-ba__cta--{{ s.cta_alignment }}">
+        {%- capture sp_cta_attributes -%}{% if s.cta_new_tab %}target="_blank" rel="noopener noreferrer"{% endif %}{%- endcapture -%}
+        {% render 'button', label: s.cta_label, href: s.cta_link, style: s.cta_style, attributes: sp_cta_attributes %}
+      </div>
+    {%- endif -%}
+    {%- if s.show_disclosure and s.disclosure_text != blank -%}<p class="sp-ba__disclosure sp-ba__disclosure--{{ s.disclosure_position }}">{{ s.disclosure_text | escape }}</p>{%- endif -%}
+  </div>
+</section>
+{%- endif -%}
+{% schema %}
+{
+  "name": "Before & After Slider",
+  "tag": "section",
+  "class": "sp-ba-shopify-section",
+  "disabled_on": {
+    "groups": [
+      "header",
+      "footer",
+      "custom.system"
+    ]
+  },
+  "settings": [
+    {
+      "type": "header",
+      "content": "Global color scheme"
+    },
+    {
+      "type": "color_scheme",
+      "id": "sp_color_scheme",
+      "label": "Color scheme",
+      "default": "scheme-2",
+      "info": "Uses the global Spider theme colors by default."
+    },
+    {
+      "type": "header",
+      "content": "Content"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_header",
+      "label": "Show section heading",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Eyebrow",
+      "default": "SEE THE DIFFERENCE"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "From Worn to Like New"
+    },
+    {
+      "type": "richtext",
+      "id": "description",
+      "label": "Description",
+      "default": "<p>Drag the slider to reveal the difference our care system can make.</p>"
+    },
+    {
+      "type": "select",
+      "id": "heading_alignment",
+      "label": "Heading alignment",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "select",
+      "id": "heading_size",
+      "label": "Heading size",
+      "options": [
+        {
+          "value": "global",
+          "label": "Theme default"
+        },
+        {
+          "value": "medium",
+          "label": "Medium"
+        },
+        {
+          "value": "large",
+          "label": "Large"
+        }
+      ],
+      "default": "large"
+    },
+    {
+      "type": "range",
+      "id": "description_width",
+      "label": "Description max width",
+      "min": 400,
+      "max": 1200,
+      "step": 20,
+      "default": 900,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "header_max_width",
+      "label": "Heading max width",
+      "min": 500,
+      "max": 1400,
+      "step": 20,
+      "default": 1100,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "header_bottom_spacing",
+      "label": "Header bottom spacing",
+      "min": 0,
+      "max": 100,
+      "step": 2,
+      "default": 26,
+      "unit": "px"
+    },
+    {
+      "type": "header",
+      "content": "Layout style"
+    },
+    {
+      "type": "select",
+      "id": "layout_style",
+      "label": "Comparison style",
+      "options": [
+        {
+          "value": "style_1",
+          "label": "Horizontal Reveal Slider"
+        },
+        {
+          "value": "style_2",
+          "label": "Vertical Reveal Slider"
+        },
+        {
+          "value": "style_3",
+          "label": "Side-by-Side Comparison"
+        },
+        {
+          "value": "style_4",
+          "label": "Comparison Carousel"
+        },
+        {
+          "value": "style_5",
+          "label": "Before & After Toggle"
+        }
+      ],
+      "default": "style_1"
+    },
+    {
+      "type": "header",
+      "content": "Comparison media"
+    },
+    {
+      "type": "paragraph",
+      "content": "Add Comparison blocks with genuine before and after images. Match framing, lighting, dimensions, camera angle, and subject position. Both layers use identical rendering geometry."
+    },
+    {
+      "type": "checkbox",
+      "id": "eager_first_image",
+      "label": "Eager-load first image",
+      "default": false
+    },
+    {
+      "type": "header",
+      "content": "Comparison layout"
+    },
+    {
+      "type": "select",
+      "id": "section_max_width",
+      "label": "Section container width",
+      "options": [
+        {
+          "value": "default",
+          "label": "Standard"
+        },
+        {
+          "value": "wide",
+          "label": "Wide"
+        }
+      ],
+      "default": "wide"
+    },
+    {
+      "type": "range",
+      "id": "comparison_max_width",
+      "label": "Comparison max width",
+      "min": 600,
+      "max": 1800,
+      "step": 20,
+      "default": 1520,
+      "unit": "px"
+    },
+    {
+      "type": "select",
+      "id": "comparison_aspect_ratio",
+      "label": "Desktop image ratio",
+      "options": [
+        {
+          "value": "natural",
+          "label": "Original image ratio"
+        },
+        {
+          "value": "square",
+          "label": "Square (1:1)"
+        },
+        {
+          "value": "portrait",
+          "label": "Portrait (4:5)"
+        },
+        {
+          "value": "landscape",
+          "label": "Landscape (16:9)"
+        },
+        {
+          "value": "wide",
+          "label": "Wide reference (2.8:1)"
+        },
+        {
+          "value": "custom",
+          "label": "Custom ratio"
+        }
+      ],
+      "default": "wide"
+    },
+    {
+      "type": "range",
+      "id": "custom_aspect_ratio_desktop",
+      "label": "Custom desktop ratio (×100)",
+      "min": 50,
+      "max": 350,
+      "step": 5,
+      "default": 280
+    },
+    {
+      "type": "range",
+      "id": "custom_aspect_ratio_mobile",
+      "label": "Mobile ratio (×100)",
+      "min": 60,
+      "max": 250,
+      "step": 5,
+      "default": 125
+    },
+    {
+      "type": "select",
+      "id": "image_fit",
+      "label": "Image fit",
+      "options": [
+        {
+          "value": "cover",
+          "label": "Cover"
+        },
+        {
+          "value": "contain",
+          "label": "Contain"
+        }
+      ],
+      "default": "cover"
+    },
+    {
+      "type": "range",
+      "id": "comparison_height_desktop",
+      "label": "Desktop fixed height (0 = auto)",
+      "min": 0,
+      "max": 900,
+      "step": 10,
+      "default": 0,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "comparison_height_tablet",
+      "label": "Tablet fixed height (0 = auto)",
+      "min": 0,
+      "max": 800,
+      "step": 10,
+      "default": 0,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "comparison_height_mobile",
+      "label": "Mobile fixed height (0 = auto)",
+      "min": 0,
+      "max": 700,
+      "step": 10,
+      "default": 0,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "initial_position",
+      "label": "Section initial Before percentage",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "default": 50,
+      "unit": "%"
+    },
+    {
+      "type": "select",
+      "id": "comparison_direction",
+      "label": "Reveal orientation",
+      "options": [
+        {
+          "value": "auto",
+          "label": "Match selected layout"
+        },
+        {
+          "value": "horizontal",
+          "label": "Horizontal"
+        },
+        {
+          "value": "vertical",
+          "label": "Vertical"
+        }
+      ],
+      "default": "auto",
+      "info": "Applies to reveal/carousel layouts; Style 2 is vertical by default."
+    },
+    {
+      "type": "checkbox",
+      "id": "reverse_images",
+      "label": "Reverse before/after direction",
+      "default": false
+    },
+    {
+      "type": "select",
+      "id": "content_alignment",
+      "label": "Comparison group alignment",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "range",
+      "id": "frame_radius",
+      "label": "Frame corner radius",
+      "min": 0,
+      "max": 48,
+      "step": 1,
+      "default": 18,
+      "unit": "px"
+    },
+    {
+      "type": "checkbox",
+      "id": "static_divider",
+      "label": "Show static comparison divider",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Divider and handle"
+    },
+    {
+      "type": "color",
+      "id": "divider_color",
+      "label": "Divider color override"
+    },
+    {
+      "type": "range",
+      "id": "divider_width",
+      "label": "Divider line width",
+      "min": 1,
+      "max": 10,
+      "step": 1,
+      "default": 4,
+      "unit": "px"
+    },
+    {
+      "type": "select",
+      "id": "divider_style",
+      "label": "Divider line style",
+      "options": [
+        {
+          "value": "solid",
+          "label": "Solid"
+        },
+        {
+          "value": "dashed",
+          "label": "Dashed"
+        },
+        {
+          "value": "subtle",
+          "label": "Subtle"
+        }
+      ],
+      "default": "solid"
+    },
+    {
+      "type": "select",
+      "id": "handle_style",
+      "label": "Handle shape",
+      "options": [
+        {
+          "value": "circle",
+          "label": "Circle"
+        },
+        {
+          "value": "rounded_square",
+          "label": "Rounded square"
+        },
+        {
+          "value": "minimal_line",
+          "label": "Minimal line"
+        },
+        {
+          "value": "pill",
+          "label": "Pill"
+        }
+      ],
+      "default": "circle"
+    },
+    {
+      "type": "range",
+      "id": "handle_size",
+      "label": "Handle size",
+      "min": 44,
+      "max": 100,
+      "step": 2,
+      "default": 72,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "mobile_handle_size",
+      "label": "Mobile handle size",
+      "min": 40,
+      "max": 90,
+      "step": 2,
+      "default": 50,
+      "unit": "px"
+    },
+    {
+      "type": "color",
+      "id": "handle_background",
+      "label": "Handle background override"
+    },
+    {
+      "type": "color",
+      "id": "handle_border_color",
+      "label": "Handle border color override"
+    },
+    {
+      "type": "range",
+      "id": "handle_border_width",
+      "label": "Handle border width",
+      "min": 1,
+      "max": 6,
+      "step": 1,
+      "default": 3,
+      "unit": "px"
+    },
+    {
+      "type": "color",
+      "id": "handle_icon_color",
+      "label": "Handle icon color override"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_direction_arrows",
+      "label": "Show handle arrows",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_handle_shadow",
+      "label": "Show handle shadow",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Before and after labels"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_labels",
+      "label": "Show before and after labels",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "label_position",
+      "label": "Label position",
+      "options": [
+        {
+          "value": "top",
+          "label": "Top corners"
+        },
+        {
+          "value": "middle",
+          "label": "Middle sides"
+        },
+        {
+          "value": "bottom",
+          "label": "Bottom corners"
+        }
+      ],
+      "default": "top"
+    },
+    {
+      "type": "select",
+      "id": "label_style",
+      "label": "Label style",
+      "options": [
+        {
+          "value": "pill",
+          "label": "Pill"
+        },
+        {
+          "value": "minimal_text",
+          "label": "Minimal text"
+        },
+        {
+          "value": "boxed",
+          "label": "Boxed"
+        },
+        {
+          "value": "overlay",
+          "label": "Overlay"
+        }
+      ],
+      "default": "pill"
+    },
+    {
+      "type": "color",
+      "id": "label_background",
+      "label": "Label background override"
+    },
+    {
+      "type": "color",
+      "id": "label_text_color",
+      "label": "Label text color override"
+    },
+    {
+      "type": "range",
+      "id": "label_border_radius",
+      "label": "Label corner radius",
+      "min": 0,
+      "max": 40,
+      "step": 1,
+      "default": 30,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "label_size",
+      "label": "Label font size",
+      "min": 10,
+      "max": 22,
+      "step": 1,
+      "default": 15,
+      "unit": "px"
+    },
+    {
+      "type": "checkbox",
+      "id": "hide_labels_during_drag",
+      "label": "Hide labels during dragging",
+      "default": false
+    },
+    {
+      "type": "header",
+      "content": "Interaction helper"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_helper_text",
+      "label": "Show helper text",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "helper_text",
+      "label": "Helper text",
+      "default": "Drag to compare"
+    },
+    {
+      "type": "select",
+      "id": "helper_icon",
+      "label": "Helper icon",
+      "options": [
+        {
+          "value": "arrow",
+          "label": "Arrow"
+        },
+        {
+          "value": "hand",
+          "label": "Bidirectional arrow"
+        },
+        {
+          "value": "none",
+          "label": "None"
+        }
+      ],
+      "default": "arrow"
+    },
+    {
+      "type": "select",
+      "id": "helper_position",
+      "label": "Helper alignment",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "checkbox",
+      "id": "hide_helper_after_interaction",
+      "label": "Hide helper after first interaction",
+      "default": false
+    },
+    {
+      "type": "header",
+      "content": "Carousel"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_arrows",
+      "label": "Show navigation arrows",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_dots",
+      "label": "Show pagination dots",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_fraction",
+      "label": "Show page fraction",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_swipe",
+      "label": "Enable mobile swipe between slides",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_autoplay",
+      "label": "Enable autoplay",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "autoplay_speed",
+      "label": "Autoplay interval",
+      "min": 3,
+      "max": 12,
+      "step": 1,
+      "default": 6,
+      "unit": "s"
+    },
+    {
+      "type": "checkbox",
+      "id": "pause_on_hover",
+      "label": "Pause autoplay on hover",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "infinite_loop",
+      "label": "Loop carousel navigation",
+      "default": false
+    },
+    {
+      "type": "header",
+      "content": "Toggle mode"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_thumbnails",
+      "label": "Show gallery thumbnails",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_crossfade",
+      "label": "Use subtle image crossfade",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Benefits"
+    },
+    {
+      "type": "range",
+      "id": "benefit_item_gap",
+      "label": "Benefit item spacing",
+      "min": 4,
+      "max": 64,
+      "step": 2,
+      "default": 24,
+      "unit": "px"
+    },
+    {
+      "type": "select",
+      "id": "benefits_mobile_columns",
+      "label": "Mobile benefit columns",
+      "options": [
+        {
+          "value": "1",
+          "label": "Single column"
+        },
+        {
+          "value": "2",
+          "label": "Two columns"
+        }
+      ],
+      "default": "1"
+    },
+    {
+      "type": "header",
+      "content": "Optional call to action"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_cta",
+      "label": "Show CTA",
+      "default": false
+    },
+    {
+      "type": "text",
+      "id": "cta_label",
+      "label": "CTA label",
+      "default": "Shop now"
+    },
+    {
+      "type": "url",
+      "id": "cta_link",
+      "label": "CTA link"
+    },
+    {
+      "type": "select",
+      "id": "cta_style",
+      "label": "CTA button style",
+      "options": [
+        {
+          "value": "primary",
+          "label": "Primary"
+        },
+        {
+          "value": "secondary",
+          "label": "Secondary"
+        }
+      ],
+      "default": "primary"
+    },
+    {
+      "type": "select",
+      "id": "cta_alignment",
+      "label": "CTA alignment",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "checkbox",
+      "id": "cta_new_tab",
+      "label": "Open CTA in new tab",
+      "default": false
+    },
+    {
+      "type": "header",
+      "content": "Disclosure"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_disclosure",
+      "label": "Show comparison disclosure",
+      "default": false
+    },
+    {
+      "type": "text",
+      "id": "disclosure_text",
+      "label": "Disclosure text",
+      "default": "Results may vary. Images should represent genuine comparisons."
+    },
+    {
+      "type": "select",
+      "id": "disclosure_position",
+      "label": "Disclosure alignment",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "header",
+      "content": "Optional color overrides"
+    },
+    {
+      "type": "color",
+      "id": "accent_color",
+      "label": "Accent color override"
+    },
+    {
+      "type": "color",
+      "id": "border_color",
+      "label": "Border color override"
+    },
+    {
+      "type": "header",
+      "content": "Desktop spacing"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "Top padding",
+      "min": 0,
+      "max": 160,
+      "step": 2,
+      "default": 64,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "Bottom padding",
+      "min": 0,
+      "max": 160,
+      "step": 2,
+      "default": 64,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "header_to_comparison_spacing",
+      "label": "Heading to comparison",
+      "min": 0,
+      "max": 100,
+      "step": 2,
+      "default": 12,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "comparison_to_helper_spacing",
+      "label": "Comparison to helper",
+      "min": 0,
+      "max": 80,
+      "step": 2,
+      "default": 16,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "helper_to_benefits_spacing",
+      "label": "Helper to benefits",
+      "min": 0,
+      "max": 100,
+      "step": 2,
+      "default": 28,
+      "unit": "px"
+    },
+    {
+      "type": "header",
+      "content": "Tablet spacing"
+    },
+    {
+      "type": "range",
+      "id": "padding_top_tablet",
+      "label": "Tablet top padding",
+      "min": 0,
+      "max": 160,
+      "step": 2,
+      "default": 48,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom_tablet",
+      "label": "Tablet bottom padding",
+      "min": 0,
+      "max": 160,
+      "step": 2,
+      "default": 48,
+      "unit": "px"
+    },
+    {
+      "type": "header",
+      "content": "Mobile spacing"
+    },
+    {
+      "type": "range",
+      "id": "padding_top_mobile",
+      "label": "Mobile top padding",
+      "min": 0,
+      "max": 120,
+      "step": 2,
+      "default": 36,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom_mobile",
+      "label": "Mobile bottom padding",
+      "min": 0,
+      "max": 120,
+      "step": 2,
+      "default": 36,
+      "unit": "px"
+    },
+    {
+      "type": "header",
+      "content": "Accessibility"
+    },
+    {
+      "type": "paragraph",
+      "content": "The slider is keyboard-operable with visible focus, and the comparison remains readable without JavaScript. Add meaningful Before/After image alt text in each block."
+    },
+    {
+      "type": "header",
+      "content": "Advanced"
+    },
+    {
+      "type": "paragraph",
+      "content": "Style 3 is static and does not load JavaScript. Missing image pairs are hidden on the live store. Theme Editor shows editing placeholders."
+    }
+  ],
+  "blocks": [
+    {
+      "type": "comparison",
+      "name": "Comparison pair",
+      "limit": 10,
+      "settings": [
+        {
+          "type": "select",
+          "id": "image_position",
+          "label": "Shared image focal position",
+          "options": [
+            {
+              "value": "center center",
+              "label": "Center"
+            },
+            {
+              "value": "center top",
+              "label": "Top"
+            },
+            {
+              "value": "center bottom",
+              "label": "Bottom"
+            },
+            {
+              "value": "left center",
+              "label": "Left"
+            },
+            {
+              "value": "right center",
+              "label": "Right"
+            }
+          ],
+          "default": "center center",
+          "info": "Keep before and after subject aligned. Applies to both images."
+        },
+        {
+          "type": "image_picker",
+          "id": "before_image",
+          "label": "Before desktop image"
+        },
+        {
+          "type": "image_picker",
+          "id": "before_mobile_image",
+          "label": "Before mobile image (optional)"
+        },
+        {
+          "type": "text",
+          "id": "before_image_alt",
+          "label": "Before image alt text",
+          "info": "Describe the visual appearance, not guaranteed results."
+        },
+        {
+          "type": "text",
+          "id": "before_label",
+          "label": "Before badge",
+          "default": "BEFORE"
+        },
+        {
+          "type": "text",
+          "id": "before_caption",
+          "label": "Before caption"
+        },
+        {
+          "type": "image_picker",
+          "id": "after_image",
+          "label": "After desktop image"
+        },
+        {
+          "type": "image_picker",
+          "id": "after_mobile_image",
+          "label": "After mobile image (optional)"
+        },
+        {
+          "type": "text",
+          "id": "after_image_alt",
+          "label": "After image alt text",
+          "info": "Describe the visual appearance, not guaranteed results."
+        },
+        {
+          "type": "text",
+          "id": "after_label",
+          "label": "After badge",
+          "default": "AFTER"
+        },
+        {
+          "type": "text",
+          "id": "after_caption",
+          "label": "After caption"
+        },
+        {
+          "type": "text",
+          "id": "comparison_heading",
+          "label": "Comparison heading"
+        },
+        {
+          "type": "richtext",
+          "id": "comparison_description",
+          "label": "Comparison description"
+        },
+        {
+          "type": "checkbox",
+          "id": "use_section_initial_position",
+          "label": "Use section initial position",
+          "default": true
+        },
+        {
+          "type": "range",
+          "id": "initial_position",
+          "label": "Custom initial Before percentage",
+          "min": 0,
+          "max": 100,
+          "step": 1,
+          "default": 50
+        },
+        {
+          "type": "checkbox",
+          "id": "featured_comparison",
+          "label": "Featured comparison (reserved for future layouts)",
+          "default": false
+        },
+        {
+          "type": "text",
+          "id": "link_label",
+          "label": "Optional link label"
+        },
+        {
+          "type": "url",
+          "id": "link_url",
+          "label": "Optional link URL"
+        },
+        {
+          "type": "checkbox",
+          "id": "open_in_new_tab",
+          "label": "Open link in new tab",
+          "default": false
+        }
+      ]
+    },
+    {
+      "type": "benefit",
+      "name": "Benefit",
+      "limit": 6,
+      "settings": [
+        {
+          "type": "select",
+          "id": "icon",
+          "label": "Icon",
+          "default": "sparkle",
+          "options": [
+            {
+              "value": "sparkle",
+              "label": "Sparkle"
+            },
+            {
+              "value": "drop",
+              "label": "Water drop"
+            },
+            {
+              "value": "shield",
+              "label": "Shield"
+            },
+            {
+              "value": "star",
+              "label": "Star"
+            },
+            {
+              "value": "heart",
+              "label": "Heart"
+            },
+            {
+              "value": "truck",
+              "label": "Truck"
+            },
+            {
+              "value": "check",
+              "label": "Check"
+            },
+            {
+              "value": "none",
+              "label": "None"
+            }
+          ]
+        },
+        {
+          "type": "image_picker",
+          "id": "custom_icon",
+          "label": "Custom icon image"
+        },
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "Heading",
+          "default": "Feature"
+        },
+        {
+          "type": "text",
+          "id": "description",
+          "label": "Description"
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "Link"
+        },
+        {
+          "type": "checkbox",
+          "id": "open_in_new_tab",
+          "label": "Open link in new tab",
+          "default": false
+        }
+      ]
+    }
+  ],
+  "max_blocks": 16,
+  "presets": [
+    {
+      "name": "Before & After Slider",
+      "category": "04. Content",
+      "settings": {
+        "layout_style": "style_1",
+        "initial_position": 50
+      },
+      "blocks": [
+        {
+          "type": "comparison"
+        },
+        {
+          "type": "benefit",
+          "settings": {
+            "icon": "sparkle",
+            "heading": "Deep cleans"
+          }
+        },
+        {
+          "type": "benefit",
+          "settings": {
+            "icon": "drop",
+            "heading": "Restores color"
+          }
+        },
+        {
+          "type": "benefit",
+          "settings": {
+            "icon": "shield",
+            "heading": "Protects longer"
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

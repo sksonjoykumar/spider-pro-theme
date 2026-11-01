@@ -1,0 +1,61 @@
+{% comment %}
+  Spider canonical Article Card.
+  Required: article
+  Optional: design, image_ratio, image_fit, image_hover, show_date, show_author,
+  show_tags, show_excerpt, show_read_more, read_more_label, excerpt_words, featured.
+{% endcomment %}
+{% liquid
+  assign card_design = design | default: 'classic'
+  assign card_ratio = image_ratio | default: 'landscape'
+  assign card_fit = image_fit | default: 'cover'
+  assign card_hover = image_hover | default: 'zoom'
+  assign excerpt_limit = excerpt_words | default: 28
+  assign card_featured = featured | default: false
+  assign article_excerpt = article.excerpt
+  if article_excerpt == blank
+    assign article_excerpt = article.content
+  endif
+  assign article_alt = article.image.alt | default: article.title
+  assign primary_tag = article.tags.first
+%}
+
+<article
+  class="sp-article-card sp-article-card--{{ card_design }}{% if card_featured %} sp-article-card--featured{% endif %}{% unless article.image %} sp-article-card--no-image{% endunless %}"
+  data-article-id="{{ article.id }}"
+>
+  {% if article.image %}
+    <a class="sp-article-card__media sp-article-card__media--{{ card_ratio }} sp-article-card__media--fit-{{ card_fit }} sp-article-card__media--hover-{{ card_hover }}" href="{{ article.url }}" aria-label="{{ article.title | escape }}">
+      {% render 'responsive-image', image: article.image, class: 'sp-article-card__image', widths: '320, 480, 640, 800, 1000, 1200, 1600', sizes: article_sizes, loading: article_loading, alt: article_alt %}
+    </a>
+  {% endif %}
+
+  <div class="sp-article-card__content">
+    {% if show_tags and primary_tag != blank %}
+      <div class="sp-article-card__tag">{{ primary_tag | escape }}</div>
+    {% endif %}
+
+    <h2 class="sp-article-card__title{% if card_featured %} sp-heading--h2{% else %} sp-heading--h4{% endif %}">
+      <a href="{{ article.url }}">{{ article.title | escape }}</a>
+    </h2>
+
+    {% if show_excerpt and article_excerpt != blank %}
+      <p class="sp-article-card__excerpt">{{ article_excerpt | strip_html | strip | truncatewords: excerpt_limit }}</p>
+    {% endif %}
+
+    {% if show_date or show_author %}
+      <div class="sp-article-card__meta">
+        {% if show_date %}<span class="sp-article-card__date">{{ article.published_at | time_tag: format: 'date' }}</span>{% endif %}
+        {% if show_date and show_author and article.author != blank %}<span aria-hidden="true">·</span>{% endif %}
+        {% if show_author and article.author != blank %}<span class="sp-article-card__author">{{ article.author | escape }}</span>{% endif %}
+      </div>
+    {% endif %}
+
+    {% if show_read_more %}
+      {% if read_more_label != blank %}{% assign card_read_more_label = read_more_label %}{% else %}{% assign card_read_more_label = 'general.buttons.read_more' | t %}{% endif %}
+      <a class="sp-article-card__read-more" href="{{ article.url }}">
+        <span>{{ card_read_more_label }}</span>
+        <span class="sp-article-card__read-more-icon" aria-hidden="true">→</span>
+      </a>
+    {% endif %}
+  </div>
+</article>

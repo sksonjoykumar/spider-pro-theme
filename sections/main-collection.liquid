@@ -1,0 +1,718 @@
+{{ 'sp-main-collection.css' | asset_url | stylesheet_tag }}
+{% render 'sp-section-color-scheme', section: section %}
+
+{%- liquid
+  assign sp_sort_by = collection.sort_by | default: collection.default_sort_by
+  assign sp_filter_enabled = section.settings.enable_filters
+  assign sp_sort_enabled = section.settings.enable_sorting
+  assign sp_filter_layout = section.settings.desktop_filter_layout | default: 'sidebar-left'
+  assign sp_pagination_type = section.settings.pagination_type | default: 'pagination'
+  assign sp_per_page = section.settings.products_per_page | default: 24
+  assign sp_cols_d = section.settings.columns_desktop | default: 4
+  assign sp_cols_t = section.settings.columns_tablet | default: 3
+  assign sp_cols_m = section.settings.columns_mobile | default: '2'
+  assign sp_product_design = blank
+  unless section.settings.use_global_product_settings
+    assign sp_product_design = section.settings.product_design | default: '01'
+  endunless
+
+  assign sp_active_count = 0
+  for filter in collection.filters
+    assign sp_active_count = sp_active_count | plus: filter.active_values.size
+    if filter.type == 'price_range' and filter.min_value.value != blank
+      assign sp_active_count = sp_active_count | plus: 1
+    elsif filter.type == 'price_range' and filter.max_value.value != blank
+      assign sp_active_count = sp_active_count | plus: 1
+    endif
+  endfor
+
+  assign sp_container_class = 'sp-container'
+  case section.settings.container_width
+    when 'narrow'
+      assign sp_container_class = 'sp-container sp-container--narrow'
+    when 'wide'
+      assign sp_container_class = 'sp-container sp-container--wide'
+    when 'full'
+      assign sp_container_class = 'sp-main-collection__container sp-main-collection__container--full'
+    else
+      assign sp_container_class = 'sp-container'
+  endcase
+
+  assign sp_desktop_pct = 100 | divided_by: sp_cols_d
+  assign sp_tablet_pct = 100 | divided_by: sp_cols_t
+  assign sp_mobile_cols_num = sp_cols_m | plus: 0
+  assign sp_mobile_pct = 100 | divided_by: sp_mobile_cols_num
+  capture sp_card_sizes
+    echo '(min-width: 990px) '
+    echo sp_desktop_pct
+    echo 'vw, (min-width: 750px) '
+    echo sp_tablet_pct
+    echo 'vw, '
+    echo sp_mobile_pct
+    echo 'vw'
+  endcapture
+-%}
+
+<section
+  class="sp-main-collection sp-section sp-main-collection--filters-{{ sp_filter_layout }} sp-main-collection--header-{{ section.settings.header_style }}"
+  data-sp-main-collection
+  data-section-id="{{ section.id }}"
+  data-collection-url="{{ collection.url }}"
+  data-ajax-enabled="{{ section.settings.enable_ajax }}"
+  data-pagination-type="{{ sp_pagination_type }}"
+  data-desktop-filter-layout="{{ sp_filter_layout }}"
+  data-sticky-filters="{{ section.settings.sticky_filters }}"
+  data-default-view="{{ section.settings.default_view | default: 'grid' }}"
+  style="
+    --sp-mc-cols-d: {{ sp_cols_d }};
+    --sp-mc-cols-t: {{ sp_cols_t }};
+    --sp-mc-cols-m: {{ sp_cols_m }};
+    --sp-mc-sidebar-width: {{ section.settings.sidebar_width }}px;
+    --sp-mc-sidebar-gap: {{ section.settings.sidebar_gap }}px;
+    --sp-mc-gap: {% if section.settings.grid_gap_source == 'custom' %}{{ section.settings.grid_gap }}px{% else %}var(--sp-grid-gap, 24px){% endif %};
+    --sp-mc-pt-d: {% if section.settings.spacing_source == 'custom' %}{{ section.settings.padding_top_desktop }}px{% else %}var(--sp-section-space-d, 64px){% endif %};
+    --sp-mc-pb-d: {% if section.settings.spacing_source == 'custom' %}{{ section.settings.padding_bottom_desktop }}px{% else %}var(--sp-section-space-d, 64px){% endif %};
+    --sp-mc-pt-m: {% if section.settings.spacing_source == 'custom' %}{{ section.settings.padding_top_mobile }}px{% else %}var(--sp-section-space-m, 40px){% endif %};
+    --sp-mc-pb-m: {% if section.settings.spacing_source == 'custom' %}{{ section.settings.padding_bottom_mobile }}px{% else %}var(--sp-section-space-m, 40px){% endif %};
+    --sp-mc-banner-h-d: {{ section.settings.banner_height_desktop }}px;
+    --sp-mc-banner-h-m: {{ section.settings.banner_height_mobile }}px;
+    --sp-mc-overlay: {{ section.settings.banner_overlay | divided_by: 100.0 }};
+    --sp-mc-image-y: {{ section.settings.banner_image_position }};
+  "
+>
+  <div class="{{ sp_container_class }}">
+    {% render 'sp-collection-header', collection: collection, section: section, product_count: collection.products_count %}
+
+    {% if section.settings.description_position == 'under-products' and section.settings.show_description and collection.description != blank %}
+      {%- capture sp_description_under_products -%}<div class="sp-main-collection__description-under rte">{{ collection.description }}</div>{%- endcapture -%}
+    {% endif %}
+
+    <div class="sp-main-collection__body" data-sp-collection-body>
+      {% if sp_filter_enabled and sp_filter_layout == 'sidebar-left' %}
+        <aside class="sp-main-collection__sidebar sp-main-collection__sidebar--left" aria-label="Filters">
+          {% render 'sp-collection-filters', collection: collection, section: section, mode: 'desktop', sort_by: sp_sort_by %}
+        </aside>
+      {% endif %}
+
+      <div class="sp-main-collection__results-column">
+        {% render 'sp-collection-toolbar', collection: collection, section: section, active_count: sp_active_count, sort_by: sp_sort_by %}
+
+        {% if sp_filter_enabled and sp_filter_layout == 'horizontal' %}
+          <div class="sp-main-collection__horizontal-filters" data-sp-horizontal-filters>
+            {% render 'sp-collection-filters', collection: collection, section: section, mode: 'horizontal', sort_by: sp_sort_by %}
+          </div>
+        {% endif %}
+
+        {% if section.settings.show_active_filters and sp_filter_enabled %}
+          {% render 'sp-active-filters', collection: collection, section: section, sort_by: sp_sort_by, active_count: sp_active_count %}
+        {% endif %}
+
+        <div
+          class="sp-main-collection__results"
+          data-sp-collection-results
+          aria-live="polite"
+          aria-busy="false"
+          tabindex="-1"
+        >
+          {% paginate collection.products by sp_per_page %}
+            <p class="visually-hidden" data-sp-result-announcement>{{ collection.products_count }} products found</p>
+
+            {% if collection.products.size > 0 %}
+              <div
+                class="sp-main-collection__grid"
+                data-sp-product-grid
+                data-grid-columns="{{ sp_cols_d }}"
+                role="list"
+              >
+                {% for product in collection.products %}
+                  <div class="sp-main-collection__grid-item" data-sp-collection-product data-product-id="{{ product.id }}" role="listitem">
+                    {% render 'sp-product-card', product: product, context: 'collection', design: sp_product_design, section_id: section.id, instance_id: 'main-collection', sizes: sp_card_sizes, product_index: forloop.index, section_index: 1 %}
+                  </div>
+                {% endfor %}
+              </div>
+
+              {% render 'sp-collection-pagination', paginate: paginate, section: section, mode: sp_pagination_type %}
+            {% else %}
+              <div class="sp-main-collection__empty" data-sp-collection-empty>
+                <h2>No products found</h2>
+                {% if sp_active_count > 0 %}
+                  <p>Try removing some filters to see more products.</p>
+                  <a class="sp-button sp-button--secondary" href="{{ collection.url }}{% if sp_sort_by != blank %}?sort_by={{ sp_sort_by | url_encode }}{% endif %}" data-sp-collection-link>Clear all filters</a>
+                {% else %}
+                  <p>This collection does not have any products yet.</p>
+                {% endif %}
+              </div>
+            {% endif %}
+          {% endpaginate %}
+        </div>
+
+        {% if sp_description_under_products != blank %}{{ sp_description_under_products }}{% endif %}
+      </div>
+
+      {% if sp_filter_enabled and sp_filter_layout == 'sidebar-right' %}
+        <aside class="sp-main-collection__sidebar sp-main-collection__sidebar--right" aria-label="Filters">
+          {% render 'sp-collection-filters', collection: collection, section: section, mode: 'desktop', sort_by: sp_sort_by %}
+        </aside>
+      {% endif %}
+    </div>
+  </div>
+
+  {% if sp_filter_enabled and sp_filter_layout != 'hidden' %}
+    <dialog class="sp-drawer sp-main-collection__filter-drawer" id="SpCollectionFilters-{{ section.id }}" data-sp-collection-filter-drawer>
+      <div class="sp-main-collection__drawer-panel">
+        <header class="sp-main-collection__drawer-header">
+          <div>
+            <p class="sp-main-collection__drawer-eyebrow">Filters{% if sp_active_count > 0 %} · {{ sp_active_count }}{% endif %}</p>
+            <h2 class="sp-main-collection__drawer-title">Refine products</h2>
+          </div>
+          <button class="sp-icon-button" type="button" data-drawer-close aria-label="Close filters">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+          </button>
+        </header>
+        <div class="sp-main-collection__drawer-content">
+          {% render 'sp-collection-filters', collection: collection, section: section, mode: 'mobile', sort_by: sp_sort_by %}
+        </div>
+      </div>
+    </dialog>
+  {% endif %}
+</section>
+
+{% schema %}
+{
+  "name": "Main Collection",
+  "tag": "section",
+  "class": "sp-main-collection-section",
+  "enabled_on": {
+    "templates": [
+      "collection"
+    ]
+  },
+  "settings": [
+    {
+      "type": "header",
+      "content": "Collection header"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_breadcrumb",
+      "label": "Show breadcrumb",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_title",
+      "label": "Show collection title",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_product_count",
+      "label": "Show product count",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_description",
+      "label": "Show collection description",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "description_position",
+      "label": "Description position",
+      "default": "under-title",
+      "options": [
+        {
+          "value": "under-title",
+          "label": "Under title"
+        },
+        {
+          "value": "under-products",
+          "label": "Under products"
+        }
+      ]
+    },
+    {
+      "type": "checkbox",
+      "id": "show_collection_image",
+      "label": "Show collection image",
+      "default": false
+    },
+    {
+      "type": "select",
+      "id": "header_style",
+      "label": "Header style",
+      "default": "simple",
+      "options": [
+        {
+          "value": "simple",
+          "label": "Simple"
+        },
+        {
+          "value": "image-banner",
+          "label": "Image banner"
+        },
+        {
+          "value": "image-content",
+          "label": "Image + content"
+        },
+        {
+          "value": "overlay",
+          "label": "Overlay banner"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "header_alignment",
+      "label": "Header alignment",
+      "default": "left",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ]
+    },
+    {
+      "type": "range",
+      "id": "banner_height_desktop",
+      "label": "Banner height desktop",
+      "min": 220,
+      "max": 700,
+      "step": 20,
+      "unit": "px",
+      "default": 420
+    },
+    {
+      "type": "range",
+      "id": "banner_height_mobile",
+      "label": "Banner height mobile",
+      "min": 180,
+      "max": 520,
+      "step": 20,
+      "unit": "px",
+      "default": 300
+    },
+    {
+      "type": "range",
+      "id": "banner_overlay",
+      "label": "Overlay opacity",
+      "min": 0,
+      "max": 80,
+      "step": 5,
+      "unit": "%",
+      "default": 30
+    },
+    {
+      "type": "select",
+      "id": "banner_image_position",
+      "label": "Banner image position",
+      "default": "center",
+      "options": [
+        {
+          "value": "top",
+          "label": "Top"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "bottom",
+          "label": "Bottom"
+        }
+      ]
+    },
+    {
+      "type": "header",
+      "content": "Filtering"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_filters",
+      "label": "Enable Shopify filters",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "desktop_filter_layout",
+      "label": "Desktop filter layout",
+      "default": "sidebar-left",
+      "options": [
+        {
+          "value": "sidebar-left",
+          "label": "Sidebar left"
+        },
+        {
+          "value": "sidebar-right",
+          "label": "Sidebar right"
+        },
+        {
+          "value": "horizontal",
+          "label": "Horizontal toolbar"
+        },
+        {
+          "value": "drawer",
+          "label": "Drawer only"
+        },
+        {
+          "value": "hidden",
+          "label": "No filters"
+        }
+      ]
+    },
+    {
+      "type": "checkbox",
+      "id": "collapse_filters",
+      "label": "Collapse inactive filter groups",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "sticky_filters",
+      "label": "Sticky desktop filters",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "sidebar_width",
+      "label": "Desktop sidebar width",
+      "min": 200,
+      "max": 340,
+      "step": 10,
+      "unit": "px",
+      "default": 240
+    },
+    {
+      "type": "range",
+      "id": "sidebar_gap",
+      "label": "Sidebar to grid gap",
+      "min": 12,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "default": 24
+    },
+    {
+      "type": "checkbox",
+      "id": "show_active_filters",
+      "label": "Show active filter chips",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_clear_all",
+      "label": "Show Clear all",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "desktop_auto_apply",
+      "label": "Apply desktop filters immediately",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_ajax",
+      "label": "Ajax filter and sort enhancement",
+      "default": true,
+      "info": "Normal GET links/forms remain the no-JavaScript fallback."
+    },
+    {
+      "type": "header",
+      "content": "Sorting & toolbar"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_sorting",
+      "label": "Enable sorting",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_toolbar_count",
+      "label": "Show product count in toolbar",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_column_switcher",
+      "label": "Show desktop grid and list view switcher",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "default_view",
+      "label": "Default product view",
+      "default": "grid",
+      "options": [
+        { "value": "grid", "label": "Product grid" },
+        { "value": "list", "label": "Product list" }
+      ]
+    },
+    {
+      "type": "header",
+      "content": "Product card"
+    },
+    {
+      "type": "checkbox",
+      "id": "use_global_product_settings",
+      "label": "Use Global Product Settings",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "product_design",
+      "label": "Collection product design",
+      "default": "01",
+      "info": "Choose one of 8 Spider premium product card layouts; use Global Product Settings to inherit the global selection.",
+      "options": [
+        {
+          "value": "01",
+          "label": "01 — Classic Premium"
+        },
+        {
+          "value": "02",
+          "label": "02 — Modern Badges"
+        },
+        {
+          "value": "03",
+          "label": "03 — Variant Preview"
+        },
+        {
+          "value": "04",
+          "label": "04 — Image Overlay"
+        },
+        {
+          "value": "05",
+          "label": "05 — Apparel Swatches"
+        },
+        {
+          "value": "06",
+          "label": "06 — Stock Status"
+        },
+        {
+          "value": "07",
+          "label": "07 — Minimal Luxury"
+        },
+        {
+          "value": "08",
+          "label": "08 — Lifestyle Wide"
+        }
+      ]
+    },
+    {
+      "type": "header",
+      "content": "Product grid"
+    },
+    {
+      "type": "range",
+      "id": "columns_desktop",
+      "label": "Desktop columns",
+      "min": 2,
+      "max": 6,
+      "step": 1,
+      "default": 4
+    },
+    {
+      "type": "range",
+      "id": "columns_tablet",
+      "label": "Tablet columns",
+      "min": 2,
+      "max": 4,
+      "step": 1,
+      "default": 3
+    },
+    {
+      "type": "select",
+      "id": "columns_mobile",
+      "label": "Mobile columns",
+      "default": "2",
+      "options": [
+        {
+          "value": "1",
+          "label": "1 column"
+        },
+        {
+          "value": "2",
+          "label": "2 columns"
+        }
+      ]
+    },
+    {
+      "type": "range",
+      "id": "products_per_page",
+      "label": "Products per page",
+      "min": 8,
+      "max": 48,
+      "step": 4,
+      "default": 24
+    },
+    {
+      "type": "select",
+      "id": "grid_gap_source",
+      "label": "Grid gap",
+      "default": "global",
+      "options": [
+        {
+          "value": "global",
+          "label": "Use Theme Default"
+        },
+        {
+          "value": "custom",
+          "label": "Custom"
+        }
+      ]
+    },
+    {
+      "type": "range",
+      "id": "grid_gap",
+      "label": "Custom grid gap",
+      "min": 4,
+      "max": 48,
+      "step": 2,
+      "unit": "px",
+      "default": 20
+    },
+    {
+      "type": "header",
+      "content": "Pagination"
+    },
+    {
+      "type": "select",
+      "id": "pagination_type",
+      "label": "Pagination type",
+      "default": "pagination",
+      "options": [
+        {
+          "value": "pagination",
+          "label": "Pagination"
+        },
+        {
+          "value": "load-more",
+          "label": "Load more"
+        },
+        {
+          "value": "infinite",
+          "label": "Infinite scroll"
+        }
+      ]
+    },
+    {
+      "type": "checkbox",
+      "id": "show_page_numbers",
+      "label": "Show page numbers",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "load_more_label",
+      "label": "Load more label",
+      "default": "Load more"
+    },
+    {
+      "type": "header",
+      "content": "Global design system"
+    },
+    {
+      "type": "color_scheme",
+      "id": "sp_color_scheme",
+      "label": "Color scheme",
+      "default": "scheme-1"
+    },
+    {
+      "type": "select",
+      "id": "container_width",
+      "label": "Container width",
+      "default": "theme",
+      "options": [
+        {
+          "value": "theme",
+          "label": "Theme Default"
+        },
+        {
+          "value": "narrow",
+          "label": "Narrow"
+        },
+        {
+          "value": "boxed",
+          "label": "Boxed"
+        },
+        {
+          "value": "wide",
+          "label": "Wide"
+        },
+        {
+          "value": "full",
+          "label": "Full width"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "spacing_source",
+      "label": "Section spacing",
+      "default": "global",
+      "options": [
+        {
+          "value": "global",
+          "label": "Use Theme Default"
+        },
+        {
+          "value": "custom",
+          "label": "Custom"
+        }
+      ]
+    },
+    {
+      "type": "range",
+      "id": "padding_top_desktop",
+      "label": "Desktop padding top",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "px",
+      "default": 48
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom_desktop",
+      "label": "Desktop padding bottom",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "px",
+      "default": 64
+    },
+    {
+      "type": "range",
+      "id": "padding_top_mobile",
+      "label": "Mobile padding top",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "default": 28
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom_mobile",
+      "label": "Mobile padding bottom",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "default": 48
+    }
+  ]
+}
+{% endschema %}

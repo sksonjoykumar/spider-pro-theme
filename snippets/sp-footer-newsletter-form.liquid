@@ -1,0 +1,32 @@
+{% if variant == 'premium' %}
+{% form 'customer', id: form_id, class: 'sp-pf__newsletter-form' %}
+      <input type="hidden" name="contact[tags]" value="newsletter">
+      {% if form.errors %}<div class="sp-pf__form-message" role="alert">{{ form.errors | default_errors }}</div>{% endif %}
+      {% if form.posted_successfully? %}<p class="sp-pf__form-message" role="status">{{ block.settings.success_message | escape }}</p>{% endif %}
+      <div class="sp-pf__form-row">
+        <label class="sp-pf__sr-only" for="{{ form_id }}-email">Email address</label>
+        <span class="sp-pf__mail-icon" aria-hidden="true">✉</span>
+        <input id="{{ form_id }}-email" type="email" name="contact[email]" autocomplete="email" autocapitalize="off" spellcheck="false" placeholder="{{ block.settings.placeholder | escape }}" required {% if form.errors %}aria-invalid="true"{% endif %}>
+        <button type="submit">{{ block.settings.button_label | escape }} <span aria-hidden="true">→</span></button>
+      </div>
+    {% endform %}
+{% else %}
+{%- assign form_id = 'SpFooterNewsletter-' | append: block.id -%}
+{%- assign error_id = form_id | append: '-errors' -%}
+{%- assign success_id = form_id | append: '-success' -%}
+{%- assign form_class = 'sp-footer-newsletter sp-footer-newsletter--' | append: block.settings.layout -%}
+{% form 'customer', id: form_id, class: form_class %}
+  <input type="hidden" name="contact[tags]" value="newsletter">
+  {%- if form.errors -%}<div id="{{ error_id }}" class="sp-footer-newsletter__message sp-footer-newsletter__message--error" role="alert">{{ form.errors | default_errors }}</div>{%- endif -%}
+  {%- if form.posted_successfully? -%}<p id="{{ success_id }}" class="sp-footer-newsletter__message sp-footer-newsletter__message--success" role="status">Thanks for subscribing.</p>{%- endif -%}
+  <div class="sp-footer-newsletter__fields">
+    <label class="sp-footer-visually-hidden" for="{{ form_id }}-email">Email address</label>
+    <input id="{{ form_id }}-email" class="sp-footer-newsletter__input" type="email" name="contact[email]" value="{% if customer %}{{ customer.email }}{% endif %}" placeholder="{{ block.settings.placeholder | escape }}" autocomplete="email" autocapitalize="off" spellcheck="false" required{% if form.errors %} aria-invalid="true" aria-describedby="{{ error_id }}"{% elsif form.posted_successfully? %} aria-describedby="{{ success_id }}"{% endif %}>
+    <button class="sp-footer-newsletter__button sp-footer-newsletter__button--{{ block.settings.button_style }}" type="submit">{{ block.settings.button_label | escape }}</button>
+  </div>
+  {%- if block.settings.show_agreement -%}
+    <label class="sp-footer-newsletter__agreement"><input type="checkbox" name="contact[accepts_marketing_terms]" value="yes" required><span>{{ block.settings.agreement_text }}</span></label>
+  {%- endif -%}
+{% endform %}
+
+{% endif %}

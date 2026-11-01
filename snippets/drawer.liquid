@@ -1,0 +1,2 @@
+{% comment %}LiquidDoc: Drawer shell. Parameters: id, label, content required.{% endcomment %}
+<dialog id="{{ id }}" class="sp-drawer sp-drawer--{{ position | default: 'right' }}" aria-label="{{ label | escape }}"><button class="sp-drawer__close" type="button" data-drawer-close aria-label="{{ 'header.navigation.close_menu' | t }}">{% render 'icon', name: 'close' %}</button>{{ content }}</dialog>

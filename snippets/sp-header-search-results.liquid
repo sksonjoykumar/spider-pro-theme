@@ -1,0 +1,96 @@
+{% comment %}
+  Spider Premium Header — Search Drawer predictive result scaffold.
+  Result rows are populated by the existing Spider Header controller from Shopify's predictive-search JSON endpoint.
+  Params: section (required)
+{% endcomment %}
+<div
+  class="sp-search-drawer__results{% if section.settings.search_result_dividers %} has-section-dividers{% endif %}"
+  data-sp-search-results
+  aria-busy="false">
+  <p
+    class="visually-hidden"
+    data-sp-search-status
+    aria-live="polite"
+    aria-atomic="true"></p>
+
+  <div
+    class="sp-search-drawer__loading"
+    data-sp-search-loading
+    hidden
+    aria-hidden="true">
+    <span class="sp-search-drawer__spinner" aria-hidden="true"></span>
+    <span>Loading suggestions…</span>
+  </div>
+
+  <div
+    class="sp-search-drawer__message"
+    data-sp-search-error
+    hidden>
+    <strong>Unable to load suggestions.</strong>
+    <p>You can still press Enter to search the store.</p>
+  </div>
+
+  <div
+    class="sp-search-drawer__message"
+    data-sp-search-no-results
+    hidden>
+    <strong data-sp-search-no-results-title>No results found.</strong>
+    <p>Try another search or view all search results.</p>
+  </div>
+
+  <div
+    class="sp-search-drawer__result-sections"
+    data-sp-search-result-sections
+    hidden>
+    <section
+      class="sp-search-drawer__result-section"
+      data-sp-search-section="queries"
+      hidden>
+      <h3 class="sp-search-drawer__section-title">Suggestions</h3>
+      <div class="sp-search-drawer__suggestions" data-sp-search-list="queries"></div>
+    </section>
+
+    <section
+      class="sp-search-drawer__result-section"
+      data-sp-search-section="products"
+      hidden>
+      <h3 class="sp-search-drawer__section-title">Products</h3>
+      <div class="sp-search-drawer__product-list" data-sp-search-list="products"></div>
+    </section>
+
+    <section
+      class="sp-search-drawer__result-section"
+      data-sp-search-section="collections"
+      hidden>
+      <h3 class="sp-search-drawer__section-title">Collections</h3>
+      <div class="sp-search-drawer__link-list" data-sp-search-list="collections"></div>
+    </section>
+
+    <section
+      class="sp-search-drawer__result-section"
+      data-sp-search-section="pages"
+      hidden>
+      <h3 class="sp-search-drawer__section-title">Pages</h3>
+      <div class="sp-search-drawer__link-list" data-sp-search-list="pages"></div>
+    </section>
+
+    <section
+      class="sp-search-drawer__result-section"
+      data-sp-search-section="articles"
+      hidden>
+      <h3 class="sp-search-drawer__section-title">Articles</h3>
+      <div class="sp-search-drawer__link-list" data-sp-search-list="articles"></div>
+    </section>
+  </div>
+
+  {% if section.settings.search_show_view_all %}
+    <a
+      class="sp-search-drawer__view-all"
+      data-sp-search-view-all
+      href="{{ routes.search_url }}"
+      hidden>
+      <span>View all results for “<span data-sp-search-view-all-query></span>”</span>
+      <span aria-hidden="true">→</span>
+    </a>
+  {% endif %}
+</div>

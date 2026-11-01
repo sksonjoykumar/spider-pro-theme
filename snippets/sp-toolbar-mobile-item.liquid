@@ -1,0 +1,162 @@
+{% comment %}
+  Spider Premium Mobile Toolbar item.
+  Uses normal navigation links as the no-JS baseline. JavaScript enhances only
+  actions whose existing Spider dependency is actually present.
+{% endcomment %}
+{%- liquid
+  assign sp_type = block.type
+  assign sp_label = block.settings.label | default: sp_type | capitalize
+  assign sp_href = routes.root_url
+  assign sp_action = ''
+  assign sp_dependency = ''
+  assign sp_hidden = false
+  assign sp_active = false
+  assign sp_new_tab = false
+  assign sp_search_behaviour = ''
+  assign sp_custom_image_sizes = block.settings.image_width | default: 24 | append: 'px'
+
+  case sp_type
+    when 'home'
+      assign sp_href = routes.root_url
+      if request.page_type == 'index'
+        assign sp_active = true
+      endif
+    when 'shop'
+      if block.settings.collection != blank
+        assign sp_href = block.settings.collection.url
+        if request.page_type == 'collection' and collection.handle == block.settings.collection.handle
+          assign sp_active = true
+        endif
+      else
+        assign sp_href = routes.all_products_collection_url
+        if request.page_type == 'collection'
+          assign sp_active = true
+        endif
+      endif
+    when 'more'
+      assign sp_href = routes.account_url
+      assign sp_action = 'more'
+    when 'categories'
+      assign sp_href = routes.collections_url | default: '/collections'
+      assign sp_action = 'categories'
+    when 'search'
+      assign sp_href = routes.search_url
+      assign sp_search_behaviour = block.settings.behaviour | default: 'drawer'
+      if request.page_type == 'search'
+        assign sp_active = true
+      endif
+      if sp_search_behaviour == 'drawer'
+        assign sp_action = 'search'
+      endif
+    when 'account'
+      if customer
+        assign sp_href = routes.account_url
+      else
+        assign sp_href = routes.account_login_url | default: routes.account_url
+      endif
+      assign sp_action = 'account'
+      if request.page_type contains 'customers'
+        assign sp_active = true
+      endif
+    when 'wishlist'
+      if request.page_type == 'page' and page.handle contains 'wishlist'
+        assign sp_active = true
+      endif
+      assign sp_dependency = 'wishlist'
+      if block.settings.fallback_url != blank
+        assign sp_href = block.settings.fallback_url
+      elsif pages['wishlist'] != blank
+        assign sp_href = pages['wishlist'].url
+      else
+        assign sp_href = routes.root_url
+        assign sp_hidden = true
+      endif
+    when 'cart'
+      assign sp_href = routes.cart_url
+      if block.settings.open_drawer and request.page_type != 'cart'
+        assign sp_action = 'cart'
+      endif
+      if request.page_type == 'cart'
+        assign sp_active = true
+      endif
+    when 'compare'
+      assign sp_dependency = 'compare'
+      if block.settings.fallback_url != blank
+        assign sp_href = block.settings.fallback_url
+      else
+        assign sp_href = routes.root_url
+        assign sp_hidden = true
+      endif
+    when 'blog'
+      if block.settings.blog != blank
+        assign sp_href = block.settings.blog.url
+        if request.page_type == 'blog' and blog.handle == block.settings.blog.handle
+          assign sp_active = true
+        endif
+      else
+        assign sp_href = routes.root_url
+      endif
+    when 'nav'
+      assign sp_href = routes.root_url
+      assign sp_action = 'menu'
+    when 'filter'
+      assign sp_href = request.path
+      assign sp_action = 'filter'
+      assign sp_dependency = 'filter'
+      assign sp_hidden = true
+    when 'sidebar'
+      assign sp_href = request.path
+      assign sp_action = 'sidebar'
+      assign sp_dependency = 'sidebar'
+      assign sp_hidden = true
+    when 'link'
+      if block.settings.url != blank
+        assign sp_href = block.settings.url
+      else
+        assign sp_href = routes.root_url
+      endif
+      assign sp_new_tab = block.settings.new_tab
+  endcase
+-%}
+
+<div
+  class="sp-mobile-toolbar__item{% if sp_active %} is-active{% endif %}"
+  data-sp-toolbar-item="{{ sp_type }}"
+  {% if sp_dependency != blank %}data-sp-toolbar-dependency="{{ sp_dependency }}"{% endif %}
+  {% if sp_type == 'wishlist' or sp_type == 'compare' %}data-fallback-url="{% if block.settings.fallback_url != blank %}{{ block.settings.fallback_url | escape }}{% elsif sp_type == 'wishlist' and pages['wishlist'] != blank %}{{ pages['wishlist'].url | escape }}{% endif %}"{% endif %}
+  {% if sp_hidden %}hidden{% endif %}
+  {{ block.shopify_attributes }}>
+  <a
+    class="sp-mobile-toolbar__link"
+    href="{{ sp_href | escape }}"
+    {% if sp_action != blank %}data-sp-toolbar-action="{{ sp_action }}"{% endif %}
+    {% if sp_type == 'search' %}data-search-behaviour="{{ sp_search_behaviour }}"{% endif %}
+    {% if sp_new_tab %}target="_blank" rel="noopener noreferrer"{% endif %}
+    {% if sp_active %}aria-current="page"{% endif %}
+    {% if sp_type == 'categories' %}aria-expanded="false" aria-controls="SpToolbarCategories-{{ section.id }}"{% endif %}
+    aria-label="{% if sp_type == 'cart' %}{{ sp_label | escape }}, {{ cart.item_count }} {% if cart.item_count == 1 %}item{% else %}items{% endif %}{% else %}{{ sp_label | escape }}{% endif %}">
+    <span class="sp-mobile-toolbar__icon" aria-hidden="true"><span class="sp-mobile-toolbar__icon-backdrop"></span><span class="sp-mobile-toolbar__icon-art">
+      {%- if sp_type == 'link' and block.settings.image != blank -%}
+        {{ block.settings.image
+          | image_url: width: 96
+          | image_tag:
+            widths: '32,48,64,96',
+            sizes: sp_custom_image_sizes,
+            loading: 'eager',
+            width: block.settings.image_width,
+            class: 'sp-mobile-toolbar__custom-image'
+        }}
+      {%- else -%}
+        {% render 'sp-toolbar-mobile-icon', name: sp_type %}
+      {%- endif -%}
+
+      </span>
+      {%- if sp_type == 'cart' and section.settings.show_cart_badge -%}
+        {% render 'sp-toolbar-mobile-count', type: 'cart', count: cart.item_count, section: section %}
+      {%- elsif sp_type == 'wishlist' and section.settings.show_wishlist_badge -%}
+        {% render 'sp-toolbar-mobile-count', type: 'wishlist', count: 0, section: section, force_hidden: true %}
+      {%- endif -%}
+    </span>
+    <span class="sp-mobile-toolbar__label">{{ sp_label | escape }}</span>
+  </a>
+</div>

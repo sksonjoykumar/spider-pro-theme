@@ -1,0 +1,462 @@
+/* Spider Product Registration Form — scoped styles, inheriting the global Spider tokens. */
+.sp-product-registration {
+  padding-block: var(--sp-pr-top, 72px) var(--sp-pr-bottom, 72px);
+  color: var(--sp-section-text, var(--sp-color-text, #3f3f46));
+  background: transparent;
+}
+
+.sp-product-registration,
+.sp-product-registration * {
+  box-sizing: border-box;
+}
+
+.sp-product-registration__layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.06fr) minmax(0, .94fr);
+  align-items: center;
+  gap: var(--sp-pr-column-gap, 64px);
+}
+
+.sp-product-registration__intro {
+  min-width: 0;
+  padding-block: 8px;
+}
+
+.sp-product-registration__eyebrow-row {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  margin-bottom: 30px;
+}
+
+.sp-product-registration__eyebrow,
+.sp-product-registration__form-eyebrow {
+  margin: 0;
+  color: var(--sp-section-muted, var(--sp-color-muted, #71717a));
+  font-family: var(--sp-body-font, inherit);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: .055em;
+  line-height: 1.4;
+  text-transform: uppercase;
+}
+
+.sp-product-registration__eyebrow-divider {
+  display: block;
+  width: 60px;
+  height: 1px;
+  flex: 0 0 60px;
+  background: var(--sp-section-muted, var(--sp-color-muted, #71717a));
+  opacity: .7;
+}
+
+.sp-product-registration__title {
+  max-width: 820px;
+  margin: 0;
+  color: var(--sp-section-heading, var(--sp-color-heading, #171717));
+  font-family: var(--sp-heading-font, inherit);
+  font-size: calc(var(--sp-h1-size-d, 60px) * var(--sp-type-scale-d, 1));
+  font-style: var(--sp-heading-style, normal);
+  font-weight: var(--sp-h1-weight, 700);
+  letter-spacing: var(--sp-h1-tracking, 0);
+  line-height: var(--sp-h1-line, 1.1);
+  text-transform: var(--sp-h1-transform, none);
+  text-wrap: balance;
+}
+
+.sp-product-registration__title-highlight {
+  color: var(--sp-section-accent, var(--sp-color-accent, #415dff));
+}
+
+.sp-product-registration__description {
+  max-width: 720px;
+  margin-top: 26px;
+  color: var(--sp-section-muted, var(--sp-color-muted, #71717a));
+  font-size: calc(var(--sp-body-size-d, 16px) * var(--sp-type-scale-d, 1));
+  line-height: 1.6;
+}
+
+.sp-product-registration__description p {
+  margin: 0;
+}
+
+.sp-product-registration__benefits {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--sp-pr-benefit-gap, 32px) 26px;
+  margin-top: 52px;
+}
+
+.sp-product-registration__benefit {
+  display: grid;
+  grid-template-columns: var(--sp-pr-icon-size, 80px) minmax(0, 1fr);
+  align-items: start;
+  gap: 24px;
+  min-width: 0;
+}
+
+.sp-product-registration__benefit-icon {
+  display: grid;
+  width: var(--sp-pr-icon-size, 80px);
+  height: var(--sp-pr-icon-size, 80px);
+  place-items: center;
+  border-radius: 28%;
+  color: var(--sp-section-accent, var(--sp-color-accent, #415dff));
+  background: color-mix(in srgb, var(--sp-section-accent, var(--sp-color-accent, #415dff)) 10%, var(--sp-section-bg, #fff));
+}
+
+.sp-product-registration__icon-svg {
+  display: block;
+  width: 42%;
+  height: 42%;
+  overflow: visible;
+}
+
+.sp-product-registration__benefit-copy {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 2px;
+}
+
+.sp-product-registration__benefit-heading {
+  color: var(--sp-section-heading, var(--sp-color-heading, #171717));
+  font-size: 20px;
+  font-weight: 650;
+  line-height: 1.35;
+}
+
+.sp-product-registration__benefit-description {
+  color: var(--sp-section-muted, var(--sp-color-muted, #71717a));
+  font-size: 16px;
+  line-height: 1.55;
+}
+
+.sp-product-registration__form-card {
+  min-width: 0;
+  padding: var(--sp-pr-card-pad, 36px);
+  border: 1px solid var(--sp-section-border, var(--sp-color-border, #e4e4e7));
+  border-radius: var(--sp-pr-card-radius, 16px);
+  background: var(--sp-section-card, var(--sp-color-card, #fff));
+}
+
+.sp-product-registration--shadow .sp-product-registration__form-card {
+  box-shadow: var(--sp-card-shadow, 0 10px 34px rgb(0 0 0 / 5%));
+}
+
+.sp-product-registration__form-eyebrow {
+  margin-bottom: 14px;
+  color: var(--sp-section-accent, var(--sp-color-accent, #415dff));
+}
+
+.sp-product-registration__form-title {
+  margin: 0;
+  color: var(--sp-section-heading, var(--sp-color-heading, #171717));
+  font-family: var(--sp-heading-font, inherit);
+  font-size: calc(var(--sp-h3-size-d, 36px) * var(--sp-type-scale-d, 1));
+  font-weight: var(--sp-h3-weight, 600);
+  line-height: var(--sp-h3-line, 1.2);
+  letter-spacing: var(--sp-h3-tracking, 0);
+}
+
+.sp-product-registration__form-description {
+  margin: 12px 0 22px;
+  color: var(--sp-section-muted, var(--sp-color-muted, #71717a));
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+.sp-product-registration__fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px 10px;
+}
+
+.sp-product-registration__field {
+  min-width: 0;
+  margin: 0;
+}
+
+.sp-product-registration__field--full {
+  grid-column: 1 / -1;
+}
+
+.sp-product-registration__field input,
+.sp-product-registration__field select,
+.sp-product-registration__field textarea {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  min-height: var(--sp-form-height-d, var(--sp-form-height, 52px));
+  padding: 12px 14px;
+  border: var(--sp-form-border-width, 1px) solid var(--sp-form-border, var(--sp-section-border, #d6d9df));
+  border-radius: var(--sp-form-radius, 8px);
+  background-color: var(--sp-section-card, var(--sp-form-bg, #fff));
+  color: var(--sp-section-text, var(--sp-form-text, #3f3f46));
+  font: inherit;
+  font-size: 15px;
+  line-height: 1.4;
+  transition: border-color var(--sp-form-transition, 200ms) ease, box-shadow var(--sp-form-transition, 200ms) ease;
+}
+
+.sp-product-registration__field input::placeholder,
+.sp-product-registration__field textarea::placeholder {
+  color: var(--sp-form-placeholder, #9299a5);
+  opacity: 1;
+}
+
+.sp-product-registration__field select {
+  padding-right: 36px;
+  color: var(--sp-section-muted, var(--sp-color-muted, #71717a));
+}
+
+.sp-product-registration__field select:valid {
+  color: var(--sp-section-text, var(--sp-color-text, #3f3f46));
+}
+
+.sp-product-registration__field textarea {
+  min-height: 96px;
+  resize: vertical;
+}
+
+.sp-product-registration__field input:hover:not(:disabled),
+.sp-product-registration__field select:hover:not(:disabled),
+.sp-product-registration__field textarea:hover:not(:disabled) {
+  border-color: var(--sp-form-hover-border, #999fa9);
+}
+
+.sp-product-registration__field :is(input, select, textarea):focus-visible {
+  outline: 2px solid transparent;
+  outline-offset: 0;
+  border-color: var(--sp-form-focus, var(--sp-section-accent, #415dff));
+  box-shadow: 0 0 0 var(--sp-form-ring-width, 3px) color-mix(in srgb, var(--sp-form-focus, var(--sp-section-accent, #415dff)) var(--sp-form-ring-opacity, 13%), transparent);
+}
+
+.sp-product-registration__field :is(input, select, textarea)[aria-invalid="true"] {
+  border-color: var(--sp-form-error, #b91c1c);
+}
+
+.sp-product-registration__date-wrap {
+  position: relative;
+}
+
+.sp-product-registration__date-wrap input[type="date"] {
+  color: var(--sp-section-text, var(--sp-color-text, #3f3f46));
+}
+
+.sp-product-registration__date-placeholder {
+  position: absolute;
+  top: 50%;
+  left: 15px;
+  z-index: 1;
+  max-width: calc(100% - 62px);
+  overflow: hidden;
+  color: var(--sp-form-placeholder, #9299a5);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  pointer-events: none;
+  transform: translateY(-50%);
+}
+
+.sp-product-registration__date-wrap[data-has-value="true"] .sp-product-registration__date-placeholder,
+.sp-product-registration__date-wrap:focus-within .sp-product-registration__date-placeholder {
+  display: none;
+}
+
+.sp-product-registration__submit {
+  display: flex;
+  width: 100%;
+  min-height: 58px;
+  margin-top: 18px;
+  gap: 14px;
+}
+
+.sp-product-registration__submit-arrow {
+  display: block;
+  width: 20px;
+  height: 20px;
+  flex: 0 0 20px;
+  transition: transform 225ms ease;
+}
+
+.sp-product-registration__submit:hover:not(:disabled) .sp-product-registration__submit-arrow {
+  transform: translateX(3px);
+}
+
+.sp-product-registration__submit[aria-busy="true"] .sp-product-registration__submit-arrow {
+  opacity: .45;
+}
+
+.sp-product-registration__privacy-note {
+  margin: 14px 0 0;
+  color: var(--sp-section-muted, var(--sp-color-muted, #71717a));
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.sp-product-registration__privacy-note a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.sp-product-registration__privacy-note a:hover {
+  color: var(--sp-section-accent, var(--sp-color-accent, #415dff));
+}
+
+.sp-product-registration__status {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 0 0 18px;
+  padding: 12px 14px;
+  border: 1px solid var(--sp-section-border, var(--sp-color-border, #e4e4e7));
+  border-radius: var(--sp-form-radius, 8px);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.sp-product-registration__status--success {
+  color: var(--sp-color-success, #166534);
+  border-color: color-mix(in srgb, var(--sp-color-success, #16a34a) 30%, transparent);
+  background: color-mix(in srgb, var(--sp-color-success, #16a34a) 7%, var(--sp-section-card, #fff));
+}
+
+.sp-product-registration__status--error {
+  display: block;
+  color: var(--sp-form-error, #b91c1c);
+  border-color: color-mix(in srgb, var(--sp-form-error, #b91c1c) 35%, transparent);
+  background: color-mix(in srgb, var(--sp-form-error, #b91c1c) 5%, var(--sp-section-card, #fff));
+}
+
+.sp-product-registration__status--error strong {
+  display: block;
+  margin-bottom: 4px;
+}
+
+.sp-product-registration__status-icon {
+  display: inline-grid;
+  width: 22px;
+  height: 22px;
+  flex: 0 0 22px;
+  place-items: center;
+  border: 1px solid currentColor;
+  border-radius: 50%;
+  font-weight: 700;
+}
+
+.sp-product-registration__submission-summary,
+.sp-product-registration__sr-only {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
+@media (max-width: 1199px) {
+  .sp-product-registration__layout {
+    grid-template-columns: minmax(0, 1fr) minmax(0, .95fr);
+    gap: clamp(28px, 4vw, var(--sp-pr-column-gap, 64px));
+  }
+  .sp-product-registration__title {
+    font-size: calc(var(--sp-h1-size-t, 52px) * var(--sp-type-scale-t, 1));
+  }
+  .sp-product-registration__benefits {
+    gap: 26px 20px;
+    margin-top: 40px;
+  }
+  .sp-product-registration__benefit {
+    grid-template-columns: minmax(52px, var(--sp-pr-icon-size, 80px)) minmax(0, 1fr);
+    gap: 16px;
+  }
+  .sp-product-registration__benefit-icon {
+    width: min(var(--sp-pr-icon-size, 80px), 68px);
+    height: min(var(--sp-pr-icon-size, 80px), 68px);
+  }
+  .sp-product-registration__benefit-heading { font-size: 18px; }
+  .sp-product-registration__benefit-description { font-size: 15px; }
+  .sp-product-registration__form-card { padding: clamp(24px, 3vw, var(--sp-pr-card-pad, 36px)); }
+}
+
+@media (max-width: 989px) {
+  .sp-product-registration__layout {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 40px;
+  }
+  .sp-product-registration__intro { padding-block: 0; }
+  .sp-product-registration__title { max-width: 900px; }
+  .sp-product-registration__description { max-width: 760px; margin-top: 20px; }
+  .sp-product-registration__benefits { margin-top: 32px; }
+  .sp-product-registration__form-card { padding: var(--sp-pr-card-pad, 36px); }
+}
+
+@media (max-width: 749px) {
+  .sp-product-registration {
+    padding-block: var(--sp-pr-top-m, 44px) var(--sp-pr-bottom-m, 44px);
+  }
+  .sp-product-registration__layout { gap: 32px; }
+  .sp-product-registration__eyebrow-row { gap: 16px; margin-bottom: 22px; }
+  .sp-product-registration__eyebrow,
+  .sp-product-registration__form-eyebrow { font-size: 12px; }
+  .sp-product-registration__eyebrow-divider { width: 40px; flex-basis: 40px; }
+  .sp-product-registration__title {
+    font-size: calc(var(--sp-h1-size-m, 40px) * var(--sp-type-scale-m, 1));
+    line-height: 1.12;
+  }
+  .sp-product-registration__description {
+    margin-top: 18px;
+    font-size: calc(var(--sp-body-size-m, 16px) * var(--sp-type-scale-m, 1));
+  }
+  .sp-product-registration__benefits {
+    gap: 24px 18px;
+    margin-top: 30px;
+  }
+  .sp-product-registration__benefit {
+    grid-template-columns: 52px minmax(0, 1fr);
+    gap: 12px;
+  }
+  .sp-product-registration__benefit-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
+  }
+  .sp-product-registration__benefit-heading { font-size: 16px; }
+  .sp-product-registration__benefit-description { font-size: 14px; line-height: 1.5; }
+  .sp-product-registration__form-card {
+    padding: var(--sp-pr-card-pad-m, 20px);
+    border-radius: min(var(--sp-pr-card-radius, 16px), 14px);
+  }
+  .sp-product-registration__form-eyebrow { margin-bottom: 10px; }
+  .sp-product-registration__form-title {
+    font-size: calc(var(--sp-h3-size-m, 26px) * var(--sp-type-scale-m, 1));
+  }
+  .sp-product-registration__form-description { margin: 10px 0 18px; font-size: 14px; }
+  .sp-product-registration__fields { gap: 12px; }
+  .sp-product-registration__field input,
+  .sp-product-registration__field select,
+  .sp-product-registration__field textarea {
+    min-height: var(--sp-form-height-m, 48px);
+    padding: 11px 12px;
+    font-size: 16px;
+  }
+  .sp-product-registration__date-placeholder { left: 13px; font-size: 14px; }
+  .sp-product-registration__submit { min-height: 52px; margin-top: 16px; }
+}
+
+@media (max-width: 480px) {
+  .sp-product-registration__benefits { grid-template-columns: minmax(0, 1fr); gap: 18px; }
+  .sp-product-registration__benefit { grid-template-columns: 52px minmax(0, 1fr); }
+  .sp-product-registration__fields { grid-template-columns: minmax(0, 1fr); }
+  .sp-product-registration__field--half { grid-column: 1 / -1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sp-product-registration__field :is(input, select, textarea),
+  .sp-product-registration__submit-arrow { transition: none !important; }
+}

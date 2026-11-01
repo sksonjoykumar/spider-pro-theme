@@ -1,0 +1,56 @@
+{%- liquid
+  assign resolved_heading_tag = 'h2'
+  if section.settings.heading_level == 'h3_all'
+    assign resolved_heading_tag = 'h3'
+  elsif section.settings.heading_level == 'h1_first' and slide_index == 0
+    assign resolved_heading_tag = 'h1'
+  endif
+-%}
+<div class="sp-hero__content-wrap">
+  <div class="sp-hero__content{% if block.settings.enable_content_box %} sp-hero__content--boxed sp-hero__content--{{ block.settings.content_box_style }}{% endif %}">
+    {%- if block.settings.small_logo != blank -%}
+      <div class="sp-hero__small-logo sp-hero__anim-item" style="--sp-hero-item-order:0">
+        {{ block.settings.small_logo
+          | image_url: width: 480
+          | image_tag:
+            widths: '120, 180, 240, 320, 480',
+            sizes: '(max-width: 749px) 40vw, 220px',
+            loading: image_loading,
+            alt: block.settings.small_logo.alt
+        }}
+      </div>
+    {%- endif -%}
+
+    {%- if block.settings.badge != blank -%}
+      <span class="sp-hero__badge sp-hero__badge--{{ block.settings.badge_style }} sp-hero__anim-item" style="--sp-hero-item-order:1">
+        {{ block.settings.badge | escape }}
+      </span>
+    {%- endif -%}
+
+    {%- if block.settings.show_rating -%}
+      <div class="sp-hero__rating sp-hero__anim-item" style="--sp-hero-item-order:2">
+        <span class="sp-hero__rating-stars" aria-hidden="true">
+          {%- for star in (1..5) -%}{% if star <= block.settings.rating %}★{% else %}☆{% endif %}{%- endfor -%}
+        </span>
+        <span class="sp-hero__sr-only">{{ 'sections.hero-slider.rating' | t: rating: block.settings.rating }}</span>
+        {%- if block.settings.rating_text != blank -%}<span class="sp-hero__rating-text">{{ block.settings.rating_text | escape }}</span>{%- endif -%}
+      </div>
+    {%- endif -%}
+
+    {%- if block.settings.eyebrow != blank -%}
+      <p class="sp-hero__eyebrow sp-hero__anim-item" style="--sp-hero-item-order:3">{{ block.settings.eyebrow | escape }}</p>
+    {%- endif -%}
+
+    {%- if block.settings.heading != blank -%}
+      <{{ resolved_heading_tag }} class="sp-hero__heading sp-hero__anim-item" style="--sp-hero-item-order:4">{{ block.settings.heading | escape }}</{{ resolved_heading_tag }}>
+    {%- endif -%}
+
+    {%- if block.settings.description != blank -%}
+      <div class="sp-hero__description rte sp-hero__anim-item" style="--sp-hero-item-order:5">{{ block.settings.description }}</div>
+    {%- endif -%}
+
+    <div class="sp-hero__anim-item" style="--sp-hero-item-order:6">
+      {% render 'sp-hero-buttons', block: block %}
+    </div>
+  </div>
+</div>

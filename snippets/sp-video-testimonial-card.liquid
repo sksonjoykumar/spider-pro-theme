@@ -1,0 +1,98 @@
+{%- liquid
+  assign s = section.settings
+  assign b = block.settings
+  assign consented = false
+  if b.merchant_confirms_genuine_review and b.merchant_confirms_customer_consent
+    assign consented = true
+  endif
+  assign has_video = false
+  if b.shopify_video != blank or b.external_video != blank
+    assign has_video = true
+  endif
+  assign allowed = false
+  if consented and has_video
+    assign allowed = true
+  endif
+  assign poster = b.poster_image
+  if poster == blank and b.shopify_video != blank
+    assign poster = b.shopify_video.preview_image
+  endif
+  assign show_identity = consented
+  assign display_product = b.product
+  assign product_title = b.custom_product_title
+  assign product_href = b.custom_product_url
+  if display_product != blank
+    assign product_title = display_product.title
+    assign product_href = display_product.url
+  endif
+  assign title = b.customer_name | default: 'Customer story'
+  assign ext_provider = b.external_video.type
+  assign ext_id = b.external_video.id
+-%}
+<article class="sp-vt__card{% if media_only %} sp-vt__card--media-only{% endif %}{% if featured %} sp-vt__card--featured{% endif %}{% unless allowed %} sp-vt__card--unconfigured{% endunless %}" data-sp-vt-card data-sp-vt-block="{{ block.id }}" {{ block.shopify_attributes }}>
+  <div class="sp-vt__media" data-sp-vt-media>
+    {% if allowed %}
+      <div class="sp-vt__poster" data-sp-vt-poster>
+        {% if poster != blank %}
+          <picture>
+            {% if b.poster_image_mobile != blank %}<source media="(max-width: 749px)" srcset="{{ b.poster_image_mobile | image_url: width: 420 }} 420w, {{ b.poster_image_mobile | image_url: width: 750 }} 750w" sizes="(max-width: 749px) 92vw, 33vw">{% endif %}
+            {{ poster | image_url: width: 1100 | image_tag: widths: '320,420,560,750,900,1100', sizes: '(min-width: 1200px) 32vw, (min-width: 750px) 48vw, 92vw', loading: 'lazy', alt: b.poster_image_alt, class: 'sp-vt__poster-image' }}
+          </picture>
+        {% else %}
+          <div class="sp-vt__poster-fallback"><span aria-hidden="true">▶</span></div>
+        {% endif %}
+      </div>
+      {% if b.shopify_video != blank %}
+        <video class="sp-vt__video" data-sp-vt-video preload="none" playsinline controlslist="nodownload{% unless s.show_fullscreen_control %} nofullscreen{% endunless %}" {% if s.loop_video %}loop{% endif %} {% if s.muted %}muted{% endif %} aria-label="Testimonial video: {{ title | escape }}"{% if poster != blank %} poster="{{ poster | image_url: width: 1100 }}"{% endif %}>
+          {% assign mp4_found = false %}
+          {% for source in b.shopify_video.sources %}
+            {% if source.mime_type contains 'mp4' and mp4_found == false %}
+              <source data-sp-vt-src="{{ source.url | escape }}" type="{{ source.mime_type | escape }}">
+              {% assign mp4_found = true %}
+            {% endif %}
+          {% endfor %}
+          {% unless mp4_found %}
+            {% assign fallback_source = b.shopify_video.sources | first %}
+            {% if fallback_source != blank %}<source data-sp-vt-src="{{ fallback_source.url | escape }}" type="{{ fallback_source.mime_type | escape }}">{% endif %}
+          {% endunless %}
+          {% if b.captions_file_url != blank %}<track kind="captions" src="{{ b.captions_file_url | escape }}" srclang="{{ b.captions_language | default: 'en' | escape }}" label="{{ b.captions_label | default: 'Captions' | escape }}">{% endif %}
+        </video>
+        <noscript><a href="{{ b.shopify_video.sources.first.url | escape }}">Open testimonial video</a></noscript>
+      {% else %}
+        <div class="sp-vt__external" data-sp-vt-external data-sp-vt-provider="{{ ext_provider | escape }}" data-sp-vt-external-id="{{ ext_id | escape }}"></div>
+      {% endif %}
+      <button type="button" class="sp-vt__play{% unless s.show_custom_play_button %} sp-vt__play--text{% endunless %}" data-sp-vt-play aria-label="Play customer testimonial{% if show_identity and b.customer_name != blank %} from {{ b.customer_name | escape }}{% endif %}">
+        {% if s.show_custom_play_button %}<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.4c0-.9 1-.9 1.5-.6l11 7.2-11 7.2c-.6.4-1.5.1-1.5-.7V5.4Z" fill="currentColor"/></svg>{% else %}Play video{% endif %}
+      </button>
+      {% if s.show_duration and b.duration_label != blank %}<span class="sp-vt__duration">{{ b.duration_label | escape }}</span>{% endif %}
+      <div class="sp-vt__media-caption">
+        {% unless media_only %}
+          {% if b.customer_quote != blank %}<blockquote class="sp-vt__quote">“{{ b.customer_quote | escape }}”</blockquote>{% endif %}
+          {% if show_identity %}
+            {% if s.show_customer_name and b.customer_name != blank or s.show_customer_location and b.customer_location != blank %}
+              <p class="sp-vt__customer">{% if s.show_customer_image and b.customer_image != blank %}{{ b.customer_image | image_url: width: 100 | image_tag: loading: 'lazy', widths: '44,80,100', sizes: '36px', alt: b.customer_image_alt, class: 'sp-vt__customer-avatar' }}{% endif %}{% if s.show_customer_name and b.customer_name != blank %}{{ b.customer_name | escape }}{% endif %}{% if s.show_customer_location and b.customer_location != blank %}{% if s.show_customer_name and b.customer_name != blank %}<span aria-hidden="true"> · </span>{% endif %}{{ b.customer_location | escape }}{% endif %}</p>
+            {% endif %}
+            {% if s.show_verified_purchase and b.verified_purchase and b.merchant_confirms_purchase_verification %}<p class="sp-vt__verified"><span aria-hidden="true">✓</span> Verified purchase</p>{% endif %}
+          {% endif %}
+        {% endunless %}
+      </div>
+    {% elsif request.design_mode %}
+      <div class="sp-vt__editor-placeholder"><span aria-hidden="true">▶</span><strong>Video testimonial</strong><span>Add a video and confirm genuine review and public-display consent.</span></div>
+    {% endif %}
+  </div>
+  {% if allowed %}
+    {% if s.show_review_date and b.review_date != blank or s.show_rating and b.rating != 'none' or s.show_product and product_title != blank or s.show_transcript and b.transcript != blank %}
+      <div class="sp-vt__meta">
+        {% if s.show_rating and b.rating != 'none' %}<p class="sp-vt__stars" aria-label="{{ b.rating | escape }} out of 5 stars">{% assign rating_count = b.rating | plus: 0 %}{% for i in (1..5) %}{% if i <= rating_count %}★{% else %}☆{% endif %}{% endfor %}</p>{% endif %}
+        {% if s.show_review_date and b.review_date != blank %}<p class="sp-vt__review-date">{{ b.review_date | escape }}</p>{% endif %}
+        {% if s.show_product and product_title != blank %}
+          <div class="sp-vt__product">
+            {% if s.show_product_image and display_product.featured_image != blank %}{{ display_product.featured_image | image_url: width: 100 | image_tag: loading: 'lazy', widths: '60,100', sizes: '48px', alt: '' }}{% endif %}
+            <span>{% if s.show_product_link and product_href != blank %}<a href="{{ product_href }}">{{ product_title | escape }}</a>{% else %}{{ product_title | escape }}{% endif %}{% if s.show_product_price and display_product != blank %}<small>{{ display_product.price | money }}</small>{% endif %}</span>
+          </div>
+        {% endif %}
+        {% if s.show_transcript and b.transcript != blank %}<details class="sp-vt__transcript"><summary>{{ s.transcript_label | escape }}</summary><div class="rte">{{ b.transcript }}</div></details>{% endif %}
+      </div>
+    {% endif %}
+  {% endif %}
+</article>

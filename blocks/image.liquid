@@ -1,0 +1,1 @@
+<div class="sp-block-image" {{ block.shopify_attributes }}>{% if block.settings.image %}{% render 'responsive-image', image: block.settings.image, sizes: '100vw' %}{% else %}{% render 'placeholder-image', name: 'image' %}{% endif %}</div>{% schema %}{"name":"Image","settings":[{"type":"image_picker","id":"image","label":"Image"}],"presets":[{"name":"Image"}]}{% endschema %}

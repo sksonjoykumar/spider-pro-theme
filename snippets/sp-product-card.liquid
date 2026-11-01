@@ -1,0 +1,94 @@
+{%- comment -%}
+  Spider Global Product Card v8.0: eight premium reference designs,
+  one shared Shopify product/variant/commerce engine.
+  Existing raw 1-8 maps directly; removed designs 9-16 fall back to 01.
+{%- endcomment -%}
+{%- liquid
+  assign sp_raw_design = design | default: card_settings.product_style | default: settings.card_style | default: '01' | append: '' | strip
+  assign sp_design = '1'
+  case sp_raw_design
+    when '02', '2'
+      assign sp_design = '2'
+    when '03', '3'
+      assign sp_design = '3'
+    when '04', '4'
+      assign sp_design = '4'
+    when '05', '5'
+      assign sp_design = '5'
+    when '06', '6'
+      assign sp_design = '6'
+    when '07', '7'
+      assign sp_design = '7'
+    when '08', '8'
+      assign sp_design = '8'
+  endcase
+
+  assign sp_context = context | default: 'product-grid'
+  assign sp_instance = instance_id | default: section_id | default: 'global'
+  assign sp_featured_image = product.featured_media.preview_image
+  assign sp_second_image = blank
+
+  assign sp_show_second_image = card_settings.show_second_image
+  if card_settings == blank
+    assign sp_show_second_image = settings.card_second_image
+  endif
+  if sp_show_second_image and product.images.size > 1
+    assign sp_second_image = product.images[1]
+  endif
+
+  assign sp_media_actions = true
+  assign sp_media_cta = false
+  assign sp_content_cta = true
+  if sp_design == '4' or sp_design == '8'
+    assign sp_content_cta = false
+  endif
+  if sp_design == '4'
+    assign sp_media_cta = true
+  endif
+
+  assign sp_initial_variant = product.selected_or_first_available_variant
+  assign sp_show_quick_view = card_settings.show_quick_view
+  assign sp_show_wishlist = card_settings.show_wishlist
+  assign sp_show_compare = card_settings.show_compare
+  assign sp_show_quick_add = card_settings.show_quick_add
+  if card_settings == blank
+    assign sp_show_quick_view = settings.card_quick_view
+    assign sp_show_wishlist = settings.card_wishlist
+    assign sp_show_compare = settings.card_compare
+    assign sp_show_quick_add = settings.card_quick_add
+  endif
+
+-%}
+<div
+  class="sp-product-card sp-product-card--style-{{ sp_design }} sp-product-card--align-{{ settings.card_text_align | default: 'left' }} sp-product-card--context-{{ sp_context | handleize }}{% if legacy_card_class != blank %} {{ legacy_card_class }}{% endif %}{% if sp_second_image != blank %} has-secondary-media{% endif %}{% unless product.available %} is-sold-out{% endunless %}"
+  data-sp-product-card
+  data-product-id="{{ product.id }}"
+  data-product-handle="{{ product.handle | escape }}"
+  data-product-url="{{ product.url }}"
+  data-product-base-url="{{ product.url }}"
+  data-product-title="{{ product.title | escape }}"
+  data-product-vendor="{{ product.vendor | escape }}"
+  data-product-image="{% if sp_featured_image %}{{ sp_featured_image | image_url: width: 480 }}{% endif %}"
+  data-product-available="{{ product.available }}"
+  data-product-price="{{ product.price }}"
+  data-product-compare-at="{{ product.compare_at_price_max }}"
+  data-product-context="{{ sp_context | escape }}"
+  data-product-design="{{ sp_design }}"
+  data-product-design-source="{{ sp_raw_design | escape }}"
+  data-color-shape="{{ card_settings.color_swatch_shape | default: settings.swatch_shape | default: 'circle' }}"
+  data-size-shape="{{ card_settings.size_swatch_shape | default: 'square' }}"
+  data-initial-variant-id="{{ sp_initial_variant.id }}"
+  data-selected-variant-id="{{ sp_initial_variant.id }}"
+  data-selected-options='{{ sp_initial_variant.options | json | escape }}'
+  data-initial-options='{{ sp_initial_variant.options | json | escape }}'
+  data-show-quick-view="{{ sp_show_quick_view }}"
+  data-show-wishlist="{{ sp_show_wishlist }}"
+  data-show-compare="{{ sp_show_compare }}"
+  data-show-quick-add="{{ sp_show_quick_add }}"
+  data-stock-threshold="{{ settings.sp_card_low_stock_threshold | default: 10 }}"
+>
+  <article class="sp-product-card__card">
+    {% render 'sp-product-card-media', product: product, card_settings: card_settings, sizes: sizes, section_id: section_id, instance_id: sp_instance, design: sp_design, media_actions: sp_media_actions, media_cta: sp_media_cta, product_index: product_index, section_index: section_index, context: sp_context %}
+    {% render 'sp-product-card-info', product: product, card_settings: card_settings, section_id: section_id, instance_id: sp_instance, design: sp_design, content_cta: sp_content_cta, media_actions: sp_media_actions, swatch_color_map: swatch_color_map, context: sp_context %}
+  </article>
+</div>

@@ -1,0 +1,1135 @@
+{%- liquid
+  assign spec_product = product | default: section.settings.selected_product
+  assign image_to_use = section.settings.custom_product_image | default: spec_product.featured_image
+  assign product_title = spec_product.title | default: section.settings.custom_product_title
+  assign image_alt = section.settings.product_image_alt | default: product_title
+  assign default_active_group_key = section.settings.default_active_group | handleize
+  assign model = section.settings.custom_model
+  if section.settings.model_source == 'metafield' and spec_product != blank and section.settings.model_metafield_namespace != blank and section.settings.model_metafield_key != blank
+    assign model_field = spec_product.metafields[section.settings.model_metafield_namespace][section.settings.model_metafield_key]
+    if model_field != blank
+      assign model = model_field.value
+    endif
+  endif
+  assign product_variant = spec_product.selected_or_first_available_variant
+  assign container = 'sp-container'
+  if section.settings.section_max_width == 'wide'
+    assign container = 'sp-container sp-container--wide'
+  elsif section.settings.section_max_width == 'narrow'
+    assign container = 'sp-container sp-container--narrow'
+  endif
+  assign first_group_id = ''
+  assign preferred_group_id = ''
+  assign group_count = 0
+  assign seen_groups = '|'
+  for group in section.blocks
+    if group.type == 'specification_group'
+      assign group_handle = group.settings.group_key | handleize
+      assign group_token = '|' | append: group_handle | append: '|'
+      if seen_groups contains group_token
+        continue
+      endif
+      assign seen_groups = seen_groups | append: group_handle | append: '|'
+      capture potential_rows
+        for candidate in section.blocks
+          if candidate.type == 'specification'
+            assign candidate_group = candidate.settings.group_key | handleize
+            if candidate_group == group_handle
+              render 'sp-specification-row', block: candidate, spec_product: spec_product, mode: 'table'
+            endif
+          endif
+        endfor
+      endcapture
+      assign potential_rows = potential_rows | strip
+      if potential_rows != blank
+        assign group_count = group_count | plus: 1
+        if first_group_id == ''
+          assign first_group_id = group.id
+        endif
+        if group_handle == default_active_group_key
+          assign preferred_group_id = group.id
+        endif
+      endif
+    endif
+  endfor
+  if preferred_group_id != ''
+    assign first_group_id = preferred_group_id
+  endif
+-%}
+{% render 'sp-section-color-scheme', section: section %}
+{{ 'sp-product-specifications-table.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'sp-product-specifications-table.js' | asset_url }}" defer="defer"></script>
+<section id="SpSpecs-{{ section.id }}" class="sp-section sp-specs sp-specs--{{ section.settings.layout_style }} sp-specs--mobile-{{ section.settings.mobile_table_style }}{% unless section.settings.show_product_summary %} sp-specs--no-product{% endunless %}{% if section.settings.alternating_rows %} sp-specs--striped{% endif %}{% if section.settings.card_shadow %} sp-specs--shadow{% endif %}" data-sp-product-specifications data-sp-layout="{{ section.settings.layout_style }}" data-sp-accordion-mode="{{ section.settings.accordion_mode }}" data-sp-section-id="{{ section.id }}"{% if group_count == 0 and request.design_mode == false %} hidden{% endif %}
+  style="--sp-specs-top:{% if section.settings.use_global_spacing %}var(--sp-section-pad-top, var(--sp-section-space-d, 72px)){% else %}{{ section.settings.padding_top }}px{% endif %};--sp-specs-bottom:{% if section.settings.use_global_spacing %}var(--sp-section-pad-bottom, var(--sp-section-space-d, 72px)){% else %}{{ section.settings.padding_bottom }}px{% endif %};--sp-specs-top-t:{% if section.settings.use_global_spacing %}var(--sp-section-space-t, 56px){% else %}{{ section.settings.padding_top_tablet }}px{% endif %};--sp-specs-bottom-t:{% if section.settings.use_global_spacing %}var(--sp-section-space-t, 56px){% else %}{{ section.settings.padding_bottom_tablet }}px{% endif %};--sp-specs-top-m:{% if section.settings.use_global_spacing %}var(--sp-section-pad-mobile, var(--sp-section-space-m, 40px)){% else %}{{ section.settings.padding_top_mobile }}px{% endif %};--sp-specs-bottom-m:{% if section.settings.use_global_spacing %}var(--sp-section-pad-mobile, var(--sp-section-space-m, 40px)){% else %}{{ section.settings.padding_bottom_mobile }}px{% endif %};--sp-specs-radius:{% if section.settings.use_global_radius %}var(--sp-radius-lg, 16px){% else %}{{ section.settings.table_border_radius }}px{% endif %};--sp-specs-label-width:{{ section.settings.label_column_width }}%;--sp-specs-cell-padding:{{ section.settings.cell_padding_desktop }}px;--sp-specs-cell-padding-m:{{ section.settings.cell_padding_mobile }}px;--sp-specs-columns-d:{{ section.settings.desktop_columns }};--sp-specs-columns-t:{{ section.settings.tablet_columns }};--sp-specs-columns-m:{{ section.settings.mobile_columns }};--sp-specs-card-gap:{{ section.settings.row_spacing }}px;--sp-specs-panel-width:{{ section.settings.product_panel_width }}%;--sp-specs-border-width:{{ section.settings.table_border_width }}px;--sp-specs-border-color:{% if section.settings.use_scheme_border %}var(--sp-section-border, var(--sp-color-border, #e4e4e7)){% else %}{{ section.settings.table_border_color }}{% endif %};--sp-specs-card-bg:{% if section.settings.use_scheme_card %}var(--sp-section-card, var(--sp-color-card, #fff)){% else %}{{ section.settings.table_background }}{% endif %};">
+ <div class="{{ container }}">
+  {% if section.settings.show_header %}
+    <div class="sp-specs__header sp-specs__header--{{ section.settings.heading_alignment }}">
+      {% if section.settings.eyebrow != blank %}<p class="sp-eyebrow sp-specs__eyebrow">{{ section.settings.eyebrow | escape }}</p>{% endif %}
+      {% render 'sp-section-heading', heading: section.settings.heading, subheading: section.settings.description, heading_tag: 'h2', alignment: section.settings.heading_alignment, mobile_alignment: 'center', typography_source: 'global', bottom_spacing: 0 %}
+    </div>
+  {% endif %}
+  <div class="sp-specs__shell">
+    {% if section.settings.show_product_summary %}
+      <div class="sp-specs__product-summary{% if section.settings.layout_style == 'style_5' and section.settings.product_panel_sticky %} sp-specs__product-summary--sticky{% endif %}" data-sp-product-summary>
+        <div class="sp-specs__product-identity">
+          {% if section.settings.show_product_image and image_to_use != blank %}
+            <div class="sp-specs__product-image">{% render 'responsive-image', image: image_to_use, widths: '120,180,240,360,480', sizes: '(max-width: 749px) 80px, 110px', loading: 'lazy', alt: image_alt %}</div>
+          {% elsif request.design_mode and section.settings.show_product_image %}
+            <div class="sp-specs__product-image sp-specs__placeholder">{{ 'product-1' | placeholder_svg_tag }}</div>
+          {% endif %}
+          <div class="sp-specs__product-meta">
+            {% if section.settings.show_product_title and product_title != blank %}<h3>{{ product_title | escape }}</h3>{% elsif request.design_mode and section.settings.show_product_title %}<h3>Preview product</h3>{% endif %}
+            {% if section.settings.show_model and model != blank %}<span>{{ model | escape }}</span>{% endif %}
+            {% if section.settings.show_vendor and spec_product.vendor != blank %}<span>{{ spec_product.vendor | escape }}</span>{% endif %}
+            {% if section.settings.show_sku and product_variant.sku != blank %}<span data-sp-spec-field="sku">{{ product_variant.sku | escape }}</span>{% endif %}
+            {% if section.settings.show_variant_title and product_variant.title != blank and product_variant.title != 'Default Title' %}<span>{{ product_variant.title | escape }}</span>{% endif %}
+            {% if section.settings.show_product_link and spec_product.url != blank %}<a href="{{ spec_product.url }}">{{ section.settings.product_link_label | escape }}</a>{% endif %}
+          </div>
+        </div>
+        <div class="sp-specs__actions">
+          {% if section.settings.show_download_button and section.settings.download_file_url != blank %}
+            {% capture dl_label %}<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 17v4h16v-4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>{{ section.settings.download_button_label | escape }}{% endcapture %}
+            {% capture dl_attrs %}{% if section.settings.download_new_tab %}target="_blank" rel="noopener noreferrer"{% endif %}{% if section.settings.force_download_when_supported %} download{% endif %}{% endcapture %}
+            {% render 'button', label: dl_label, href: section.settings.download_file_url, style: section.settings.download_button_style, class: 'sp-specs__download', attributes: dl_attrs %}
+          {% endif %}
+          {% if section.settings.show_print_button %}<button type="button" class="sp-button sp-button--secondary sp-specs__print" data-sp-spec-print>{{ section.settings.print_button_label | escape }}</button>{% endif %}
+        </div>
+      </div>
+    {% endif %}
+    <div class="sp-specs__content">
+      {% if section.settings.layout_style == 'style_1' and group_count > 0 %}
+        <div class="sp-specs__tabs" role="tablist" aria-label="Specification groups">
+          {% assign seen_tab_keys = '|' %}
+          {% for block in section.blocks %}{% if block.type == 'specification_group' %}
+            {% assign block_key = block.settings.group_key | handleize %}
+            {% assign block_token = '|' | append: block_key | append: '|' %}
+            {% unless seen_tab_keys contains block_token %}
+              {% assign seen_tab_keys = seen_tab_keys | append: block_key | append: '|' %}
+            {% capture eligible_rows %}{% for candidate in section.blocks %}{% if candidate.type == 'specification' %}{% assign candidate_key = candidate.settings.group_key | handleize %}{% if candidate_key == block_key %}{% render 'sp-specification-row', block: candidate, spec_product: spec_product, mode: 'table' %}{% endif %}{% endif %}{% endfor %}{% endcapture %}
+            {% assign eligible_rows = eligible_rows | strip %}
+            {% if eligible_rows != blank %}
+              {% assign tab_active = false %}{% if block.id == first_group_id %}{% assign tab_active = true %}{% endif %}
+              <button class="sp-specs__tab" type="button" role="tab" id="SpSpecsTab-{{ section.id }}-{{ block.id }}" aria-controls="SpSpecsPanel-{{ section.id }}-{{ block.id }}" aria-selected="{{ tab_active }}" tabindex="{% if tab_active %}0{% else %}-1{% endif %}" data-sp-spec-tab="{{ block.id }}">{{ block.settings.group_label | escape }}</button>
+            {% endif %}
+            {% endunless %}
+          {% endif %}{% endfor %}
+        </div>
+      {% endif %}
+      <div class="sp-specs__groups">
+        {% assign group_position = 0 %}
+        {% assign seen_rendered_groups = '|' %}
+        {% for group in section.blocks %}{% if group.type == 'specification_group' %}
+          {% assign active_group_key = group.settings.group_key | handleize %}
+          {% assign active_group_token = '|' | append: active_group_key | append: '|' %}
+          {% unless seen_rendered_groups contains active_group_token %}
+          {% assign seen_rendered_groups = seen_rendered_groups | append: active_group_key | append: '|' %}
+          {% assign group_position = group_position | plus: 1 %}
+          {% assign group_active = false %}{% if group.id == first_group_id %}{% assign group_active = true %}{% endif %}
+          {% assign is_first_group = false %}{% if group_position == 1 %}{% assign is_first_group = true %}{% endif %}
+          {% render 'sp-specification-table', group: group, spec_product: spec_product, section: section, active: group_active, for_first: is_first_group %}
+          {% endunless %}
+        {% endif %}{% endfor %}
+      </div>
+    </div>
+    {% if section.settings.show_information_notice and section.settings.notice_text != blank %}
+      <div class="sp-specs__notice" role="note"><span class="sp-specs__notice-icon" aria-hidden="true">i</span><div class="rte">{{ section.settings.notice_text }}</div></div>
+    {% endif %}
+  </div>
+ </div>
+</section>
+{% schema %}
+{
+  "name": "Product Specs Table",
+  "tag": "section",
+  "class": "sp-product-specifications-table-wrapper",
+    "disabled_on": {
+    "groups": [
+      "header",
+      "footer",
+      "custom.system"
+    ]
+  },
+  "settings": [
+    {
+      "type": "header",
+      "content": "Content"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_header",
+      "label": "Show section heading",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Eyebrow",
+      "default": "PRODUCT DETAILS"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Everything You Need to Know"
+    },
+    {
+      "type": "richtext",
+      "id": "description",
+      "label": "Description",
+      "default": "<p>Explore the materials, dimensions, and technical details before you choose.</p>"
+    },
+    {
+      "type": "select",
+      "id": "heading_alignment",
+      "label": "Heading alignment",
+      "default": "center",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ]
+    },
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    {
+      "type": "select",
+      "id": "layout_style",
+      "label": "Layout style",
+      "default": "style_1",
+      "options": [
+        {
+          "value": "style_1",
+          "label": "Tabbed specifications table"
+        },
+        {
+          "value": "style_2",
+          "label": "Complete technical table"
+        },
+        {
+          "value": "style_3",
+          "label": "Grouped specification accordion"
+        },
+        {
+          "value": "style_4",
+          "label": "Specification cards grid"
+        },
+        {
+          "value": "style_5",
+          "label": "Product datasheet split"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "section_max_width",
+      "label": "Container",
+      "default": "normal",
+      "options": [
+        {
+          "value": "normal",
+          "label": "Normal"
+        },
+        {
+          "value": "wide",
+          "label": "Wide"
+        },
+        {
+          "value": "narrow",
+          "label": "Narrow"
+        }
+      ]
+    },
+    {
+      "type": "checkbox",
+      "id": "use_global_spacing",
+      "label": "Use global section spacing",
+      "info": "When enabled, this section follows Spider Theme spacing settings. Turn off to use the desktop, tablet, and mobile spacing controls below.",
+      "default": true
+    },
+    {
+      "type": "color_scheme",
+      "id": "sp_color_scheme",
+      "label": "Color scheme",
+      "default": "scheme-1"
+    },
+    {
+      "type": "checkbox",
+      "id": "card_shadow",
+      "label": "Subtle card shadow",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Product source"
+    },
+    {
+      "type": "product",
+      "id": "selected_product",
+      "label": "Selected product"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_product_summary",
+      "label": "Show product summary",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_product_image",
+      "label": "Show product image",
+      "default": true
+    },
+    {
+      "type": "image_picker",
+      "id": "custom_product_image",
+      "label": "Custom product image"
+    },
+    {
+      "type": "text",
+      "id": "product_image_alt",
+      "label": "Custom image alt text"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_product_title",
+      "label": "Show product title",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "custom_product_title",
+      "label": "Fallback product title"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_vendor",
+      "label": "Show vendor",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "show_model",
+      "label": "Show model",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "model_source",
+      "label": "Model source",
+      "default": "manual",
+      "options": [
+        {
+          "value": "manual",
+          "label": "Manual"
+        },
+        {
+          "value": "metafield",
+          "label": "Product metafield"
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "id": "custom_model",
+      "label": "Fallback model"
+    },
+    {
+      "type": "text",
+      "id": "model_metafield_namespace",
+      "label": "Model metafield namespace"
+    },
+    {
+      "type": "text",
+      "id": "model_metafield_key",
+      "label": "Model metafield key"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_sku",
+      "label": "Show SKU",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "show_variant_title",
+      "label": "Show variant title",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "show_product_link",
+      "label": "Show product link",
+      "default": false
+    },
+    {
+      "type": "text",
+      "id": "product_link_label",
+      "label": "Product link label",
+      "default": "View product"
+    },
+    {
+      "type": "header",
+      "content": "Specification table"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_table_header",
+      "label": "Show table column headings",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "label_column_heading",
+      "label": "First column heading",
+      "default": "Specification"
+    },
+    {
+      "type": "text",
+      "id": "value_column_heading",
+      "label": "Second column heading",
+      "default": "Details"
+    },
+    {
+      "type": "range",
+      "id": "label_column_width",
+      "label": "Label column width",
+      "default": 35,
+      "min": 25,
+      "max": 55,
+      "step": 1,
+      "unit": "%"
+    },
+    {
+      "type": "checkbox",
+      "id": "use_global_radius",
+      "label": "Use global card radius",
+      "info": "When enabled, the shell follows Spider Theme global radius settings. Turn off to use the custom card corner radius below.",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "table_border_radius",
+      "label": "Card corner radius",
+      "default": 16,
+      "min": 0,
+      "max": 32,
+      "step": 1,
+      "unit": "px",
+      "info": "Used only when Use global card radius is disabled."
+    },
+    {
+      "type": "range",
+      "id": "row_spacing",
+      "label": "Card gap",
+      "default": 14,
+      "min": 8,
+      "max": 32,
+      "step": 2,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "cell_padding_desktop",
+      "label": "Table cell padding desktop",
+      "default": 12,
+      "min": 8,
+      "max": 24,
+      "step": 2,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "cell_padding_mobile",
+      "label": "Table cell padding mobile",
+      "default": 10,
+      "min": 6,
+      "max": 16,
+      "step": 2,
+      "unit": "px"
+    },
+    {
+      "type": "checkbox",
+      "id": "alternating_rows",
+      "label": "Alternate row backgrounds",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "use_scheme_border",
+      "label": "Use scheme border",
+      "default": true
+    },
+    {
+      "type": "color",
+      "id": "table_border_color",
+      "label": "Custom border color",
+      "default": "#E4E4E7"
+    },
+    {
+      "type": "range",
+      "id": "table_border_width",
+      "label": "Card border width",
+      "default": 1,
+      "min": 0,
+      "max": 3,
+      "step": 1,
+      "unit": "px"
+    },
+    {
+      "type": "checkbox",
+      "id": "use_scheme_card",
+      "label": "Use scheme card background",
+      "default": true
+    },
+    {
+      "type": "color",
+      "id": "table_background",
+      "label": "Custom card background",
+      "default": "#FFFFFF"
+    },
+    {
+      "type": "header",
+      "content": "Mobile table"
+    },
+    {
+      "type": "select",
+      "id": "mobile_table_style",
+      "label": "Table on mobile",
+      "default": "stacked_rows",
+      "options": [
+        {
+          "value": "stacked_rows",
+          "label": "Stacked rows"
+        },
+        {
+          "value": "compact_table",
+          "label": "Compact table"
+        },
+        {
+          "value": "horizontal_scroll",
+          "label": "Horizontal scroll"
+        }
+      ]
+    },
+    {
+      "type": "header",
+      "content": "Tabs"
+    },
+    {
+      "type": "text",
+      "id": "default_active_group",
+      "label": "Default group key",
+      "default": "overview"
+    },
+    {
+      "type": "header",
+      "content": "Accordion"
+    },
+    {
+      "type": "select",
+      "id": "accordion_mode",
+      "label": "Accordion mode",
+      "default": "single",
+      "options": [
+        {
+          "value": "single",
+          "label": "Only one open"
+        },
+        {
+          "value": "multiple",
+          "label": "Multiple open"
+        }
+      ]
+    },
+    {
+      "type": "checkbox",
+      "id": "first_group_open",
+      "label": "First accordion open",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Specification cards"
+    },
+    {
+      "type": "select",
+      "id": "desktop_columns",
+      "label": "Desktop columns",
+      "default": "4",
+      "options": [
+        {
+          "value": "1",
+          "label": "1"
+        },
+        {
+          "value": "2",
+          "label": "2"
+        },
+        {
+          "value": "3",
+          "label": "3"
+        },
+        {
+          "value": "4",
+          "label": "4"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "tablet_columns",
+      "label": "Tablet columns",
+      "default": "2",
+      "options": [
+        {
+          "value": "1",
+          "label": "1"
+        },
+        {
+          "value": "2",
+          "label": "2"
+        },
+        {
+          "value": "3",
+          "label": "3"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "mobile_columns",
+      "label": "Mobile columns",
+      "default": "1",
+      "options": [
+        {
+          "value": "1",
+          "label": "1"
+        },
+        {
+          "value": "2",
+          "label": "2"
+        }
+      ]
+    },
+    {
+      "type": "header",
+      "content": "Datasheet split"
+    },
+    {
+      "type": "range",
+      "id": "product_panel_width",
+      "label": "Product panel width",
+      "default": 34,
+      "min": 25,
+      "max": 45,
+      "step": 1,
+      "unit": "%"
+    },
+    {
+      "type": "checkbox",
+      "id": "product_panel_sticky",
+      "label": "Sticky product panel on desktop",
+      "default": false
+    },
+    {
+      "type": "header",
+      "content": "Download and print"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_download_button",
+      "label": "Show download button",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "download_button_label",
+      "label": "Download button label",
+      "default": "Download specifications"
+    },
+    {
+      "type": "url",
+      "id": "download_file_url",
+      "label": "Specifications file URL"
+    },
+    {
+      "type": "select",
+      "id": "download_button_style",
+      "label": "Download button style",
+      "default": "secondary",
+      "options": [
+        {
+          "value": "primary",
+          "label": "Primary"
+        },
+        {
+          "value": "secondary",
+          "label": "Secondary"
+        }
+      ]
+    },
+    {
+      "type": "checkbox",
+      "id": "download_new_tab",
+      "label": "Open file in new tab",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "force_download_when_supported",
+      "label": "Request download when supported",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "show_print_button",
+      "label": "Show print button",
+      "default": false
+    },
+    {
+      "type": "text",
+      "id": "print_button_label",
+      "label": "Print button label",
+      "default": "Print specifications"
+    },
+    {
+      "type": "header",
+      "content": "Information notice"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_information_notice",
+      "label": "Show information notice",
+      "default": false
+    },
+    {
+      "type": "richtext",
+      "id": "notice_text",
+      "label": "Information note",
+      "default": "<p>Measurements may vary slightly due to the handcrafted finishing process.</p>"
+    },
+    {
+      "type": "header",
+      "content": "Desktop spacing"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "Top padding",
+      "default": 72,
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "info": "Used when Use global section spacing is disabled."
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "Bottom padding",
+      "default": 72,
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "info": "Used when Use global section spacing is disabled."
+    },
+    {
+      "type": "header",
+      "content": "Tablet spacing"
+    },
+    {
+      "type": "range",
+      "id": "padding_top_tablet",
+      "label": "Top padding tablet",
+      "default": 56,
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "info": "Used when Use global section spacing is disabled."
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom_tablet",
+      "label": "Bottom padding tablet",
+      "default": 56,
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "info": "Used when Use global section spacing is disabled."
+    },
+    {
+      "type": "header",
+      "content": "Mobile spacing"
+    },
+    {
+      "type": "range",
+      "id": "padding_top_mobile",
+      "label": "Top padding mobile",
+      "default": 40,
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "info": "Used when Use global section spacing is disabled."
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom_mobile",
+      "label": "Bottom padding mobile",
+      "default": 40,
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "info": "Used when Use global section spacing is disabled."
+    }
+  ],
+  "blocks": [
+    {
+      "type": "specification_group",
+      "name": "Specification group",
+      "limit": 8,
+      "settings": [
+        {
+          "type": "text",
+          "id": "group_key",
+          "label": "Unique group key",
+          "default": "overview"
+        },
+        {
+          "type": "text",
+          "id": "group_label",
+          "label": "Tab/group label",
+          "default": "Overview"
+        },
+        {
+          "type": "text",
+          "id": "group_heading",
+          "label": "Group heading"
+        },
+        {
+          "type": "richtext",
+          "id": "group_description",
+          "label": "Group description"
+        },
+        {
+          "type": "checkbox",
+          "id": "open_by_default",
+          "label": "Open accordion by default",
+          "default": false
+        }
+      ]
+    },
+    {
+      "type": "specification",
+      "name": "Specification row",
+      "limit": 40,
+      "settings": [
+        {
+          "type": "text",
+          "id": "group_key",
+          "label": "Parent group key",
+          "default": "overview"
+        },
+        {
+          "type": "text",
+          "id": "label",
+          "label": "Specification label",
+          "default": "Specification"
+        },
+        {
+          "type": "select",
+          "id": "value_source",
+          "label": "Value source",
+          "default": "manual_text",
+          "options": [
+            {
+              "value": "manual_text",
+              "label": "Manual text"
+            },
+            {
+              "value": "manual_rich_text",
+              "label": "Manual rich text"
+            },
+            {
+              "value": "product_field",
+              "label": "Product field"
+            },
+            {
+              "value": "product_metafield",
+              "label": "Product metafield"
+            }
+          ]
+        },
+        {
+          "type": "checkbox",
+          "id": "enable_specification",
+          "label": "Approve manual value for storefront",
+          "default": false
+        },
+        {
+          "type": "text",
+          "id": "manual_value",
+          "label": "Manual value"
+        },
+        {
+          "type": "richtext",
+          "id": "manual_rich_value",
+          "label": "Rich text value"
+        },
+        {
+          "type": "select",
+          "id": "product_field",
+          "label": "Product field",
+          "default": "sku",
+          "options": [
+            {
+              "value": "sku",
+              "label": "Variant SKU"
+            },
+            {
+              "value": "barcode",
+              "label": "Variant barcode"
+            },
+            {
+              "value": "variant_title",
+              "label": "Variant title"
+            },
+            {
+              "value": "weight",
+              "label": "Variant weight"
+            },
+            {
+              "value": "weight_unit",
+              "label": "Variant weight unit"
+            },
+            {
+              "value": "vendor",
+              "label": "Product vendor"
+            },
+            {
+              "value": "product_type",
+              "label": "Product type"
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "id": "metafield_namespace",
+          "label": "Product metafield namespace"
+        },
+        {
+          "type": "text",
+          "id": "metafield_key",
+          "label": "Product metafield key"
+        },
+        {
+          "type": "text",
+          "id": "additional_note",
+          "label": "Additional note"
+        },
+        {
+          "type": "checkbox",
+          "id": "highlight_row",
+          "label": "Highlight row",
+          "default": false
+        },
+        {
+          "type": "checkbox",
+          "id": "hide_when_empty",
+          "label": "Hide if empty",
+          "default": true
+        }
+      ]
+    }
+  ],
+  "max_blocks": 48,
+  "presets": [
+    {
+      "name": "Product Specifications Table",
+      "settings": {
+        "layout_style": "style_1"
+      },
+      "category": "02. Products",
+      "blocks": [
+        {
+          "type": "specification_group",
+          "settings": {
+            "group_key": "overview",
+            "group_label": "Overview",
+            "open_by_default": true
+          }
+        },
+        {
+          "type": "specification_group",
+          "settings": {
+            "group_key": "materials",
+            "group_label": "Materials",
+            "open_by_default": false
+          }
+        },
+        {
+          "type": "specification_group",
+          "settings": {
+            "group_key": "dimensions",
+            "group_label": "Dimensions",
+            "open_by_default": false
+          }
+        },
+        {
+          "type": "specification_group",
+          "settings": {
+            "group_key": "care",
+            "group_label": "Care",
+            "open_by_default": false
+          }
+        },
+        {
+          "type": "specification",
+          "settings": {
+            "group_key": "overview",
+            "label": "Primary material",
+            "value_source": "manual_text",
+            "manual_value": "Recycled 600D polyester",
+            "enable_specification": false
+          }
+        },
+        {
+          "type": "specification",
+          "settings": {
+            "group_key": "overview",
+            "label": "Lining",
+            "value_source": "manual_text",
+            "manual_value": "Water-resistant recycled nylon",
+            "enable_specification": false
+          }
+        },
+        {
+          "type": "specification",
+          "settings": {
+            "group_key": "overview",
+            "label": "Capacity",
+            "value_source": "manual_text",
+            "manual_value": "24 litres",
+            "enable_specification": false
+          }
+        },
+        {
+          "type": "specification",
+          "settings": {
+            "group_key": "overview",
+            "label": "Dimensions",
+            "value_source": "manual_text",
+            "manual_value": "48 × 30 × 17 cm",
+            "enable_specification": false
+          }
+        },
+        {
+          "type": "specification",
+          "settings": {
+            "group_key": "overview",
+            "label": "Weight",
+            "value_source": "manual_text",
+            "manual_value": "0.92 kg",
+            "enable_specification": false
+          }
+        },
+        {
+          "type": "specification",
+          "settings": {
+            "group_key": "overview",
+            "label": "Laptop sleeve",
+            "value_source": "manual_text",
+            "manual_value": "Fits devices up to 16 inches",
+            "enable_specification": false
+          }
+        },
+        {
+          "type": "specification",
+          "settings": {
+            "group_key": "overview",
+            "label": "Closure",
+            "value_source": "manual_text",
+            "manual_value": "Two-way YKK zipper",
+            "enable_specification": false
+          }
+        },
+        {
+          "type": "specification",
+          "settings": {
+            "group_key": "overview",
+            "label": "Warranty",
+            "value_source": "manual_text",
+            "manual_value": "Limited 2-year warranty",
+            "enable_specification": false
+          }
+        },
+        {
+          "type": "specification",
+          "settings": {
+            "group_key": "materials",
+            "label": "Outer shell",
+            "value_source": "manual_text",
+            "manual_value": "Recycled polyester",
+            "enable_specification": false
+          }
+        },
+        {
+          "type": "specification",
+          "settings": {
+            "group_key": "materials",
+            "label": "Interior",
+            "value_source": "manual_text",
+            "manual_value": "Recycled nylon",
+            "enable_specification": false
+          }
+        },
+        {
+          "type": "specification",
+          "settings": {
+            "group_key": "dimensions",
+            "label": "Height",
+            "value_source": "manual_text",
+            "manual_value": "48 cm",
+            "enable_specification": false
+          }
+        },
+        {
+          "type": "specification",
+          "settings": {
+            "group_key": "dimensions",
+            "label": "Width",
+            "value_source": "manual_text",
+            "manual_value": "30 cm",
+            "enable_specification": false
+          }
+        },
+        {
+          "type": "specification",
+          "settings": {
+            "group_key": "care",
+            "label": "Cleaning",
+            "value_source": "manual_text",
+            "manual_value": "Wipe with a damp cloth",
+            "enable_specification": false
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

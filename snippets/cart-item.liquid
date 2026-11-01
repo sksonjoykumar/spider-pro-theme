@@ -1,0 +1,131 @@
+{% comment %}
+  Canonical Main Cart line presentation.
+  Parameters: item, index, section.
+{% endcomment %}
+{%- liquid
+  assign image_alt = item.image.alt | default: item.product.title
+  assign quantity_min = 1
+  assign quantity_step = 1
+  assign quantity_max = blank
+  if item.variant.quantity_rule
+    if item.variant.quantity_rule.min != blank and item.variant.quantity_rule.min > 0
+      assign quantity_min = item.variant.quantity_rule.min
+    endif
+    if item.variant.quantity_rule.increment != blank and item.variant.quantity_rule.increment > 0
+      assign quantity_step = item.variant.quantity_rule.increment
+    endif
+    if item.variant.quantity_rule.max != blank
+      assign quantity_max = item.variant.quantity_rule.max
+    endif
+  endif
+  assign quantity_id = 'CartQuantity-' | append: section.id | append: '-' | append: index
+-%}
+
+<article
+  class="sp-cart-item"
+  role="row"
+  data-cart-line="{{ index }}"
+  data-cart-key="{{ item.key | escape }}"
+  data-cart-quantity="{{ item.quantity }}"
+>
+  <div class="sp-cart-item__product" role="cell">
+    <a class="sp-cart-item__media" href="{{ item.url }}" aria-label="{{ item.product.title | escape }}">
+      {% if item.image %}
+        {% render 'responsive-image', image: item.image, class: 'sp-cart-item__image', widths: '96, 144, 192, 240, 320', sizes: '(max-width: 749px) 88px, 110px', alt: image_alt %}
+      {% else %}
+        {% render 'placeholder-image', name: 'product-1', class: 'sp-placeholder' %}
+      {% endif %}
+    </a>
+
+    <div class="sp-cart-item__details">
+      {% if section.settings.show_vendor and item.product.vendor != blank %}
+        <div class="sp-cart-item__vendor sp-text-small">{{ item.product.vendor | escape }}</div>
+      {% endif %}
+
+      <a class="sp-cart-item__title" href="{{ item.url }}">{{ item.product.title | escape }}</a>
+
+      {% if section.settings.show_variant_options and item.product.has_only_default_variant == false %}
+        <dl class="sp-cart-item__options">
+          {% for option in item.options_with_values %}
+            {% unless option.value == 'Default Title' %}
+              <div><dt>{{ option.name | escape }}:</dt><dd>{{ option.value | escape }}</dd></div>
+            {% endunless %}
+          {% endfor %}
+        </dl>
+      {% endif %}
+
+      {% if section.settings.show_selling_plan and item.selling_plan_allocation %}
+        <div class="sp-cart-item__selling-plan sp-text-small">{{ item.selling_plan_allocation.selling_plan.name | escape }}</div>
+      {% endif %}
+
+      {% if section.settings.show_properties and item.properties.size > 0 %}
+        <dl class="sp-cart-item__properties">
+          {% for property in item.properties %}
+            {% assign property_first_character = property.first | slice: 0 %}
+            {% unless property.last == blank or property_first_character == '_' %}
+              <div>
+                <dt>{{ property.first | escape }}:</dt>
+                <dd>
+                  {% if property.last contains '/uploads/' %}
+                    <a href="{{ property.last | escape }}" target="_blank" rel="noopener">{{ property.last | split: '/' | last | escape }}</a>
+                  {% else %}
+                    {{ property.last | escape }}
+                  {% endif %}
+                </dd>
+              </div>
+            {% endunless %}
+          {% endfor %}
+        </dl>
+      {% endif %}
+
+      {% if section.settings.show_line_discounts and item.line_level_discount_allocations.size > 0 %}
+        {% render 'cart-discounts', discounts: item.line_level_discount_allocations %}
+      {% endif %}
+
+      <div class="sp-premium-cart__item-actions">
+      <a
+        class="sp-cart-item__remove"
+        href="{{ item.url_to_remove }}"
+        data-cart-remove
+        data-line="{{ index }}"
+        data-cart-key="{{ item.key | escape }}"
+        aria-label="{{ 'cart.actions.remove_item' | t }} — {{ item.product.title | escape }}"
+      >{{ 'cart.actions.remove_item' | t }}</a>
+      {% if section.settings.enable_save_later %}
+        <span class="sp-premium-cart__action-divider" aria-hidden="true"></span>
+        <button type="button" hidden class="sp-premium-cart__save-link" data-premium-save
+          data-variant-id="{{ item.variant_id }}"
+          data-item-key="{{ item.key | escape }}"
+          data-quantity="{{ item.quantity }}"
+          data-title="{{ item.product.title | escape }}"
+          data-product-url="{{ item.url | escape }}"
+          {% if item.image %}data-image="{{ item.image | image_url: width: 240 | escape }}"{% endif %}
+          data-properties="{{ item.properties | json | escape }}"
+          {% if item.selling_plan_allocation %}data-selling-plan="{{ item.selling_plan_allocation.selling_plan.id }}"{% endif %}
+          >Save for later</button>
+      {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <div class="sp-cart-item__unit-price" role="cell" data-mobile-label="{{ section.settings.price_column_label | default: 'Price' | escape }}">
+    {% if item.original_price != item.final_price %}<s>{{ item.original_price | money }}</s>{% endif %}
+    <strong>{{ item.final_price | money }}</strong>
+    {% if item.unit_price_measurement %}
+      <small class="sp-cart-item__unit-measure">{{ item.unit_price | money }} / {% if item.unit_price_measurement.reference_value != 1 %}{{ item.unit_price_measurement.reference_value }}{% endif %}{{ item.unit_price_measurement.reference_unit }}</small>
+    {% endif %}
+  </div>
+
+  <div class="sp-cart-item__quantity" role="cell" data-mobile-label="{{ section.settings.quantity_column_label | default: 'Quantity' | escape }}">
+    <span class="visually-hidden" id="CartQuantityLabel-{{ section.id }}-{{ index }}">{{ 'products.product.quantity.label' | t }} — {{ item.product.title | escape }}</span>
+    {% render 'quantity-input', id: quantity_id, name: 'updates[]', value: item.quantity, min: quantity_min, max: quantity_max, step: quantity_step %}
+    <p class="sp-cart-item__error" role="alert" data-cart-line-error hidden></p>
+  </div>
+
+  {% if section.settings.show_line_total %}
+    <div class="sp-cart-item__price" role="cell" data-mobile-label="{{ section.settings.total_column_label | default: 'Total' | escape }}">
+      {% if item.original_line_price != item.final_line_price %}<s>{{ item.original_line_price | money }}</s>{% endif %}
+      <strong>{{ item.final_line_price | money }}</strong>
+    </div>
+  {% endif %}
+</article>

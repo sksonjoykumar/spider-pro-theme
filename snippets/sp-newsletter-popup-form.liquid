@@ -1,0 +1,57 @@
+{%- assign form_id = 'SpNewsletterPopupForm-' | append: section.id -%}
+{%- assign email_id = form_id | append: '-email' -%}
+{%- assign agreement_id = form_id | append: '-agreement' -%}
+{%- assign status_id = form_id | append: '-status' -%}
+
+<div class="sp-newsletter-popup__form-wrap">
+  {%- form 'customer', id: form_id, class: 'sp-newsletter-popup__form' -%}
+    <input type="hidden" name="contact[tags]" value="newsletter">
+
+    <div class="sp-newsletter-popup__fields sp-newsletter-popup__fields--{{ section.settings.form_layout }}">
+      <label class="sp-newsletter-popup__visually-hidden" for="{{ email_id }}">Email address</label>
+      <div class="sp-newsletter-popup__email-field{% if section.settings.show_email_icon %} has-icon{% endif %}">
+        {% if section.settings.show_email_icon %}
+          <span class="sp-newsletter-popup__email-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m4 7 8 6 8-6"/></svg>
+          </span>
+        {% endif %}
+      <input
+        id="{{ email_id }}"
+        class="sp-newsletter-popup__email"
+        type="email"
+        name="contact[email]"
+        value="{% if customer %}{{ customer.email | escape }}{% endif %}"
+        placeholder="{{ section.settings.placeholder_text | escape }}"
+        autocomplete="email"
+        inputmode="email"
+        aria-describedby="{{ status_id }}"
+        required
+      >
+      </div>
+      <button
+        type="submit"
+        class="sp-newsletter-popup__submit sp-newsletter-popup__submit--{{ section.settings.button_style }}"
+        data-sp-newsletter-popup-submit
+        data-sp-no-loader
+      >
+        <span>{{ section.settings.subscribe_text | escape }}</span>
+        <svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M4 10h11M11 6l4 4-4 4"></path></svg>
+      </button>
+    </div>
+
+    {%- if section.settings.require_agreement -%}
+      <div class="sp-newsletter-popup__agreement">
+        <input id="{{ agreement_id }}" type="checkbox" required data-sp-newsletter-popup-agreement>
+        <label for="{{ agreement_id }}">{{ section.settings.agreement_text }}</label>
+      </div>
+    {%- endif -%}
+
+    <div id="{{ status_id }}" class="sp-newsletter-popup__form-status" aria-live="polite" data-sp-newsletter-popup-form-status>
+      {%- if form.posted_successfully? -%}
+        <p class="sp-newsletter-popup__success" role="status" data-sp-newsletter-success>{{ section.settings.success_message | escape }}</p>
+      {%- elsif form.errors -%}
+        <p class="sp-newsletter-popup__error" role="alert" data-sp-newsletter-error>{{ section.settings.error_message | escape }}</p>
+      {%- endif -%}
+    </div>
+  {%- endform -%}
+</div>

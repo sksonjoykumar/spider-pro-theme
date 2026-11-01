@@ -1,0 +1,154 @@
+{%- liquid
+  assign current_variant = product.selected_or_first_available_variant
+  assign featured_image = product.featured_media.preview_image | default: product.featured_image
+  assign image_alt = featured_image.alt | default: product.title
+  assign form_id = 'ComparisonProductForm-' | append: section_id | append: '-' | append: slot
+  assign added_label = 'products.product.added_to_cart' | t
+
+  assign rating_value = blank
+  assign rating_max = 5
+  assign rating_count = product.metafields.reviews.rating_count
+  assign rating_percent = 0
+
+  if product.metafields.reviews.rating.value != blank
+    assign rating_value = product.metafields.reviews.rating.value.rating
+    assign rating_max = product.metafields.reviews.rating.value.scale_max | default: 5
+    if rating_value != blank and rating_max > 0
+      assign rating_percent = rating_value | times: 100.0 | divided_by: rating_max
+    endif
+  endif
+-%}
+
+<div
+  class="sp-product-comparison__product{% if highlight %} is-highlighted{% endif %}"
+  data-sp-product-card
+  data-product-id="{{ product.id }}"
+  data-product-handle="{{ product.handle | escape }}"
+  data-product-url="{{ product.url }}"
+  data-product-base-url="{{ product.url }}"
+  data-product-title="{{ product.title | escape }}"
+  data-product-vendor="{{ product.vendor | escape }}"
+  data-product-image="{% if featured_image %}{{ featured_image | image_url: width: 480 }}{% endif %}"
+  data-product-available="{{ product.available }}"
+  data-product-price="{{ current_variant.price }}"
+  data-product-compare-at="{{ current_variant.compare_at_price | default: 0 }}"
+  data-product-context="product-comparison"
+  data-initial-variant-id="{{ current_variant.id }}"
+  data-selected-variant-id="{{ current_variant.id }}"
+  data-image-ratio="{{ image_ratio | default: 'landscape' }}"
+>
+  {%- if highlight and highlight_label != blank -%}
+    <span class="sp-product-comparison__highlight-badge">
+      {{ highlight_label | escape }}
+    </span>
+  {%- endif -%}
+
+  <a class="sp-product-comparison__media" href="{{ product.url }}">
+    {%- if featured_image -%}
+      {{
+        featured_image
+        | image_url: width: 900
+        | image_tag:
+          widths: '220, 280, 360, 440, 540, 680, 800, 900',
+          sizes: '(min-width: 990px) 28vw, 224px',
+          loading: 'lazy',
+          alt: image_alt,
+          class: 'sp-product-comparison__image'
+      }}
+    {%- else -%}
+      {{ 'product-1' | placeholder_svg_tag: 'sp-product-comparison__placeholder-svg placeholder-svg' }}
+    {%- endif -%}
+  </a>
+
+  <div class="sp-product-comparison__product-content">
+    <h3 class="sp-product-comparison__product-title">
+      <a href="{{ product.url }}">{{ product.title | escape }}</a>
+    </h3>
+
+    {%- if subtitle != blank -%}
+      <p class="sp-product-comparison__product-subtitle">{{ subtitle | escape }}</p>
+    {%- endif -%}
+
+    {%- if show_rating and rating_value != blank -%}
+      <div class="sp-product-comparison__rating">
+        <span
+          class="sp-product-comparison__stars"
+          style="--sp-comparison-rating-fill: {{ rating_percent }}%;"
+          aria-hidden="true"
+        >
+          <span class="sp-product-comparison__stars-base">★★★★★</span>
+          <span class="sp-product-comparison__stars-fill">★★★★★</span>
+        </span>
+        <span class="visually-hidden">
+          {{ rating_value }} out of {{ rating_max }} stars
+        </span>
+        {%- if rating_count != blank -%}
+          <span class="sp-product-comparison__rating-count">({{ rating_count }})</span>
+        {%- endif -%}
+      </div>
+    {%- endif -%}
+
+    {%- if show_price -%}
+      <div class="sp-product-comparison__price">
+        {% render 'product-price',
+          product: product,
+          variant: current_variant,
+          show_compare: true,
+          show_savings: false
+        %}
+      </div>
+    {%- endif -%}
+
+    {%- if show_cta -%}
+      <div class="sp-product-comparison__product-action">
+        {%- if product.available == false -%}
+          <button
+            class="sp-button sp-button--primary sp-product-comparison__cta"
+            type="button"
+            disabled
+            aria-disabled="true"
+          >
+            {{ sold_out_label | default: 'Sold out' | escape }}
+          </button>
+
+        {%- elsif product.has_only_default_variant -%}
+          {% form 'product', product,
+            id: form_id,
+            class: 'sp-card-form sp-product-comparison__form',
+            data-product-card-form: '',
+            data-added-label: added_label
+          %}
+            <input type="hidden" name="id" value="{{ current_variant.id }}">
+            <input type="hidden" name="quantity" value="1">
+
+            <button
+              class="sp-button sp-button--primary sp-product-comparison__cta"
+              type="submit"
+              data-add-to-cart
+            >
+              {{ 'products.product.add_to_cart' | t }}
+            </button>
+
+            <div
+              class="sp-product-comparison__form-message"
+              role="status"
+              aria-live="polite"
+              data-product-message
+            ></div>
+          {% endform %}
+
+        {%- else -%}
+          <button
+            class="sp-button sp-button--primary sp-product-comparison__cta"
+            type="button"
+            data-sp-product-quick-add
+            aria-controls="SpProductQuickAdd"
+            aria-label="{{ choose_options_label | default: 'Choose options' | escape }}: {{ product.title | escape }}"
+          >
+            {{ choose_options_label | default: 'Choose options' | escape }}
+          </button>
+        {%- endif -%}
+      </div>
+    {%- endif -%}
+  </div>
+</div>

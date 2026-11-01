@@ -1,0 +1,99 @@
+{%- comment -%}
+  Spider Scrolling Marquee original semantic item.
+  Required: block, section, layout_style. Never render this snippet for clones in Liquid.
+{%- endcomment -%}
+{%- liquid
+  assign sp_item = block.settings
+  assign sp_show_icon = false
+  if sp_item.item_type == 'icon_text' and sp_item.icon != 'none'
+    unless sp_item.icon == 'custom' and sp_item.custom_icon == blank
+      assign sp_show_icon = true
+    endunless
+  endif
+  assign sp_is_media = false
+  if sp_item.item_type == 'image' or sp_item.item_type == 'logo'
+    assign sp_is_media = true
+  endif
+  assign sp_is_valid = false
+  if sp_is_media
+    if sp_item.image != blank
+      assign sp_is_valid = true
+    elsif request.design_mode
+      assign sp_is_valid = true
+    endif
+  elsif sp_item.item_type == 'icon_text'
+    if sp_item.heading != blank or sp_item.text != blank
+      assign sp_is_valid = true
+    endif
+  elsif sp_item.text != blank or sp_item.heading != blank
+    assign sp_is_valid = true
+  endif
+  if sp_item.item_type == 'icon_text'
+    assign sp_copy = sp_item.heading | default: sp_item.text
+  else
+    assign sp_copy = sp_item.text | default: sp_item.heading
+  endif
+  assign sp_link_valid = false
+  if sp_item.link != blank
+    assign sp_link_valid = true
+  endif
+-%}
+{%- if sp_is_valid -%}
+<li class="sp-marquee-item sp-marquee-item--{{ sp_item.item_type }}{% if sp_item.highlight_item %} sp-marquee-item--highlight{% endif %}" data-sp-marquee-block-id="{{ block.id }}" {{ block.shopify_attributes }}>
+  {%- if sp_link_valid -%}
+    <a class="sp-marquee-item__content sp-marquee-item__content--link" href="{{ sp_item.link }}"{% if sp_item.open_in_new_tab %} target="_blank" rel="noopener noreferrer"{% endif %}{% if sp_item.accessible_label != blank %} aria-label="{{ sp_item.accessible_label | escape }}"{% endif %}>
+  {%- else -%}
+    <div class="sp-marquee-item__content">
+  {%- endif -%}
+  {%- if sp_is_media -%}
+    {%- if sp_item.image != blank -%}
+      {%- assign sp_media_alt = sp_item.image_alt | default: sp_item.image.alt | default: sp_item.heading -%}
+      {{ sp_item.image | image_url: width: 600 | image_tag: class: 'sp-marquee-item__image', widths: '100,150,220,320,440,600', sizes: '(max-width: 749px) 110px, 160px', loading: 'lazy', alt: sp_media_alt }}
+    {%- elsif request.design_mode -%}
+      <span class="sp-marquee-item__placeholder" aria-hidden="true">{{ 'image' | placeholder_svg_tag }}</span>
+    {%- endif -%}
+    {%- if sp_copy != blank -%}<span class="sp-marquee-item__label">{{ sp_copy | escape }}</span>{%- endif -%}
+  {%- else -%}
+    {%- if sp_show_icon -%}
+      <span class="sp-marquee-item__icon" aria-hidden="true">
+        {%- if sp_item.custom_icon != blank and sp_item.icon == 'custom' -%}
+          {{ sp_item.custom_icon | image_url: width: 120 | image_tag: widths: '40,80,120', sizes: '48px', loading: 'lazy', alt: '' }}
+        {%- else -%}
+          {%- case sp_item.icon -%}
+            {%- when 'leaf' -%}<svg viewBox="0 0 48 48" fill="none"><path d="M6 40C7 17 19 6 43 5c-1 25-15 37-35 35M7 40c8-13 17-21 29-27" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            {%- when 'chat' -%}<svg viewBox="0 0 48 48" fill="none"><path d="M39 32c4-5 5-12 1-19C35 5 23 3 14 9 4 15 3 30 11 37l-2 8 10-5c9 2 16-1 20-8Z" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/></svg>
+            {%- when 'package' -%}<svg viewBox="0 0 48 48" fill="none"><path d="m24 3 19 10v22L24 45 5 35V13L24 3ZM5 13l19 11 19-11M24 24v21M15 8l19 11" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            {%- when 'sparkle' -%}<svg viewBox="0 0 48 48" fill="none"><path d="M24 4c1 12 7 18 19 20-12 2-18 8-19 20-2-12-8-18-20-20 12-2 18-8 20-20Z" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/></svg>
+            {%- when 'shield' -%}{% render 'icon', name: 'shield', class: 'sp-marquee-item__theme-icon' %}
+            {%- when 'truck' -%}{% render 'icon', name: 'truck', class: 'sp-marquee-item__theme-icon' %}
+            {%- when 'return' -%}{% render 'icon', name: 'return', class: 'sp-marquee-item__theme-icon' %}
+            {%- when 'star' -%}{% render 'icon', name: 'star', class: 'sp-marquee-item__theme-icon' %}
+            {%- when 'none' -%}
+            {%- else -%}<svg viewBox="0 0 48 48" fill="none"><path d="M24 4c1 12 7 18 19 20-12 2-18 8-19 20-2-12-8-18-20-20 12-2 18-8 20-20Z" stroke="currentColor" stroke-width="2.4"/></svg>
+          {%- endcase -%}
+        {%- endif -%}
+      </span>
+    {%- endif -%}
+    {%- if sp_copy != blank -%}<span class="sp-marquee-item__label">{{ sp_copy | escape }}</span>{%- endif -%}
+    {%- if sp_item.description != blank and layout_style == 'style_3' -%}<span class="sp-marquee-item__description">{{ sp_item.description | escape }}</span>{%- endif -%}
+    {%- if sp_item.show_arrow and layout_style != 'style_4' -%}<span class="sp-marquee-item__arrow" aria-hidden="true"><svg viewBox="0 0 42 12" fill="none"><path d="M0 6h40m-7-5 7 5-7 5" stroke="currentColor" stroke-width="1.4"/></svg></span>{%- endif -%}
+  {%- endif -%}
+  {%- if sp_link_valid -%}</a>{%- else -%}</div>{%- endif -%}
+  {%- unless sp_is_media -%}
+    {%- if section.settings.show_separators and layout_style != 'style_3' and layout_style != 'style_4' and layout_style != 'style_5' and section.settings.separator_type != 'none' and block.settings.row == 'row_1' -%}
+      {%- unless section.settings.separator_type == 'custom_icon' and section.settings.custom_separator_icon == blank -%}
+      <span class="sp-marquee-item__separator sp-marquee-item__separator--{{ section.settings.separator_type }}" aria-hidden="true">
+        {%- case section.settings.separator_type -%}
+          {%- when 'sparkle' -%}✦
+          {%- when 'dot' -%}•
+          {%- when 'arrow' -%}→
+          {%- when 'line' -%}<span class="sp-marquee-item__sep-line"></span>
+          {%- when 'custom_icon' -%}{% if section.settings.custom_separator_icon != blank %}{{ section.settings.custom_separator_icon | image_url: width: 100 | image_tag: loading: 'lazy', widths: '50,100', sizes: '40px', alt: '' }}{% endif %}
+          {%- when 'custom_text' -%}{{ section.settings.separator_text | escape }}
+        {%- endcase -%}
+      </span>
+      {%- endunless -%}
+    {%- endif -%}
+  {%- endunless -%}
+</li>
+{%- endif -%}

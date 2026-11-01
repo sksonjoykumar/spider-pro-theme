@@ -1,0 +1,770 @@
+{%- liquid
+  assign product_1 = section.settings.product_1
+  assign product_2 = section.settings.product_2
+  assign product_3 = section.settings.product_3
+  assign product_4 = section.settings.product_4
+
+  assign product_1_active = false
+  assign product_2_active = false
+  assign product_3_active = false
+  assign product_4_active = false
+
+  if product_1 != blank
+    assign product_1_active = true
+  endif
+
+  if product_2 != blank
+    assign product_2_active = true
+    if product_1_active and product_2.id == product_1.id
+      assign product_2_active = false
+    endif
+  endif
+
+  if product_3 != blank
+    assign product_3_active = true
+    if product_1_active and product_3.id == product_1.id
+      assign product_3_active = false
+    endif
+    if product_2_active and product_3.id == product_2.id
+      assign product_3_active = false
+    endif
+  endif
+
+  if product_4 != blank
+    assign product_4_active = true
+    if product_1_active and product_4.id == product_1.id
+      assign product_4_active = false
+    endif
+    if product_2_active and product_4.id == product_2.id
+      assign product_4_active = false
+    endif
+    if product_3_active and product_4.id == product_3.id
+      assign product_4_active = false
+    endif
+  endif
+
+  assign product_count = 0
+  if product_1_active
+    assign product_count = product_count | plus: 1
+  endif
+  if product_2_active
+    assign product_count = product_count | plus: 1
+  endif
+  if product_3_active
+    assign product_count = product_count | plus: 1
+  endif
+  if product_4_active
+    assign product_count = product_count | plus: 1
+  endif
+
+  assign can_render = false
+  if product_count >= 2
+    assign can_render = true
+  endif
+
+  assign product_1_highlight = false
+  assign product_2_highlight = false
+  assign product_3_highlight = false
+  assign product_4_highlight = false
+
+  case section.settings.highlight_product
+    when '1'
+      if product_1_active
+        assign product_1_highlight = true
+      endif
+    when '2'
+      if product_2_active
+        assign product_2_highlight = true
+      endif
+    when '3'
+      if product_3_active
+        assign product_3_highlight = true
+      endif
+    when '4'
+      if product_4_active
+        assign product_4_highlight = true
+      endif
+  endcase
+
+  assign container_class = 'sp-container'
+  if section.settings.section_width == 'wide'
+    assign container_class = 'sp-container sp-container--wide'
+  endif
+
+  assign desktop_feature_width = 190
+  assign desktop_product_min = 250
+  assign desktop_min_width = product_count | times: desktop_product_min | plus: desktop_feature_width
+-%}
+
+{%- if can_render or request.design_mode -%}
+  {% render 'sp-section-color-scheme', section: section %}
+  {{ 'sp-product-comparison.css' | asset_url | stylesheet_tag }}
+
+  <section
+    id="SpiderProductComparison-{{ section.id }}"
+    class="sp-section sp-product-comparison{% if section.settings.sticky_feature_labels %} sp-product-comparison--sticky-labels{% endif %}"
+    data-sp-product-section
+    data-section-id="{{ section.id }}"
+    data-cart-add-url="{{ routes.cart_add_url }}"
+    data-money-format="{{ shop.money_with_currency_format | escape }}"
+    data-currency="{{ cart.currency.iso_code | default: shop.currency | escape }}"
+    data-cart-ajax-updates="{{ settings.cart_ajax_updates }}"
+    data-cart-open-after-add="{{ settings.cart_open_after_add }}"
+    data-cart-type="{{ settings.cart_type | default: 'drawer' | escape }}"
+    data-buy-now="false"
+    style="
+      --sp-comparison-count: {{ product_count }};
+      --sp-comparison-desktop-min: {{ desktop_min_width }}px;
+    "
+  >
+    <div class="{{ container_class }} sp-product-comparison__container">
+      {%- if section.settings.show_header -%}
+        <header class="sp-product-comparison__header sp-product-comparison__header--{{ section.settings.header_alignment }}">
+          {%- if section.settings.show_eyebrow and section.settings.eyebrow != blank -%}
+            <p class="sp-product-comparison__eyebrow sp-text-small">
+              {{ section.settings.eyebrow | escape }}
+            </p>
+          {%- endif -%}
+
+          {%- if section.settings.heading != blank -%}
+            <h2 class="sp-product-comparison__heading sp-heading--h2">
+              {{ section.settings.heading | escape }}
+            </h2>
+          {%- endif -%}
+
+          {%- if section.settings.description != blank -%}
+            <div class="sp-product-comparison__description rte">
+              {{ section.settings.description }}
+            </div>
+          {%- endif -%}
+        </header>
+      {%- endif -%}
+
+      {%- if can_render -%}
+        <div
+          class="sp-product-comparison__scroller"
+          role="region"
+          tabindex="0"
+          aria-label="{{ section.settings.table_label | escape }}"
+        >
+          <table class="sp-product-comparison__table">
+            <caption class="visually-hidden">
+              {{ section.settings.table_label | escape }}
+            </caption>
+
+            <colgroup>
+              <col class="sp-product-comparison__feature-col">
+              {%- if product_1_active -%}<col class="sp-product-comparison__product-col">{%- endif -%}
+              {%- if product_2_active -%}<col class="sp-product-comparison__product-col">{%- endif -%}
+              {%- if product_3_active -%}<col class="sp-product-comparison__product-col">{%- endif -%}
+              {%- if product_4_active -%}<col class="sp-product-comparison__product-col">{%- endif -%}
+            </colgroup>
+
+            <thead>
+              <tr class="sp-product-comparison__products-row">
+                <th scope="col" class="sp-product-comparison__feature-head">
+                  <span class="visually-hidden">{{ section.settings.features_label | escape }}</span>
+                </th>
+
+                {%- if product_1_active -%}
+                  <th scope="col" class="sp-product-comparison__product-cell{% if product_1_highlight %} is-highlighted{% endif %}">
+                    {% render 'sp-product-comparison-product',
+                      product: product_1,
+                      slot: 1,
+                      subtitle: section.settings.product_1_subtitle,
+                      show_rating: section.settings.show_ratings,
+                      show_price: section.settings.show_prices,
+                      show_cta: section.settings.show_product_cta,
+                      highlight: product_1_highlight,
+                      highlight_label: section.settings.highlight_label,
+                      image_ratio: section.settings.image_ratio,
+                      section_id: section.id,
+                      choose_options_label: section.settings.choose_options_label,
+                      sold_out_label: section.settings.sold_out_label
+                    %}
+                  </th>
+                {%- endif -%}
+
+                {%- if product_2_active -%}
+                  <th scope="col" class="sp-product-comparison__product-cell{% if product_2_highlight %} is-highlighted{% endif %}">
+                    {% render 'sp-product-comparison-product',
+                      product: product_2,
+                      slot: 2,
+                      subtitle: section.settings.product_2_subtitle,
+                      show_rating: section.settings.show_ratings,
+                      show_price: section.settings.show_prices,
+                      show_cta: section.settings.show_product_cta,
+                      highlight: product_2_highlight,
+                      highlight_label: section.settings.highlight_label,
+                      image_ratio: section.settings.image_ratio,
+                      section_id: section.id,
+                      choose_options_label: section.settings.choose_options_label,
+                      sold_out_label: section.settings.sold_out_label
+                    %}
+                  </th>
+                {%- endif -%}
+
+                {%- if product_3_active -%}
+                  <th scope="col" class="sp-product-comparison__product-cell{% if product_3_highlight %} is-highlighted{% endif %}">
+                    {% render 'sp-product-comparison-product',
+                      product: product_3,
+                      slot: 3,
+                      subtitle: section.settings.product_3_subtitle,
+                      show_rating: section.settings.show_ratings,
+                      show_price: section.settings.show_prices,
+                      show_cta: section.settings.show_product_cta,
+                      highlight: product_3_highlight,
+                      highlight_label: section.settings.highlight_label,
+                      image_ratio: section.settings.image_ratio,
+                      section_id: section.id,
+                      choose_options_label: section.settings.choose_options_label,
+                      sold_out_label: section.settings.sold_out_label
+                    %}
+                  </th>
+                {%- endif -%}
+
+                {%- if product_4_active -%}
+                  <th scope="col" class="sp-product-comparison__product-cell{% if product_4_highlight %} is-highlighted{% endif %}">
+                    {% render 'sp-product-comparison-product',
+                      product: product_4,
+                      slot: 4,
+                      subtitle: section.settings.product_4_subtitle,
+                      show_rating: section.settings.show_ratings,
+                      show_price: section.settings.show_prices,
+                      show_cta: section.settings.show_product_cta,
+                      highlight: product_4_highlight,
+                      highlight_label: section.settings.highlight_label,
+                      image_ratio: section.settings.image_ratio,
+                      section_id: section.id,
+                      choose_options_label: section.settings.choose_options_label,
+                      sold_out_label: section.settings.sold_out_label
+                    %}
+                  </th>
+                {%- endif -%}
+              </tr>
+            </thead>
+
+            <tbody>
+              {%- for block in section.blocks -%}
+                {%- if block.type == 'comparison_row' and block.settings.label != blank -%}
+                  <tr {{ block.shopify_attributes }}>
+                    <th scope="row" class="sp-product-comparison__feature-cell">
+                      <span class="sp-product-comparison__feature-label">
+                        {%- if block.settings.icon != 'none' -%}
+                          <span class="sp-product-comparison__feature-icon" aria-hidden="true">
+                            {% render 'sp-product-comparison-icon', name: block.settings.icon %}
+                          </span>
+                        {%- endif -%}
+                        <span>{{ block.settings.label | escape }}</span>
+                      </span>
+                    </th>
+
+                    {%- if product_1_active -%}
+                      <td class="sp-product-comparison__value-cell{% if product_1_highlight %} is-highlighted{% endif %}">
+                        {% render 'sp-product-comparison-value',
+                          display_type: block.settings.display_type,
+                          text_value: block.settings.value_1,
+                          boolean_value: block.settings.boolean_1,
+                          yes_label: section.settings.yes_label,
+                          no_label: section.settings.no_label,
+                          empty_label: section.settings.not_specified_label
+                        %}
+                      </td>
+                    {%- endif -%}
+
+                    {%- if product_2_active -%}
+                      <td class="sp-product-comparison__value-cell{% if product_2_highlight %} is-highlighted{% endif %}">
+                        {% render 'sp-product-comparison-value',
+                          display_type: block.settings.display_type,
+                          text_value: block.settings.value_2,
+                          boolean_value: block.settings.boolean_2,
+                          yes_label: section.settings.yes_label,
+                          no_label: section.settings.no_label,
+                          empty_label: section.settings.not_specified_label
+                        %}
+                      </td>
+                    {%- endif -%}
+
+                    {%- if product_3_active -%}
+                      <td class="sp-product-comparison__value-cell{% if product_3_highlight %} is-highlighted{% endif %}">
+                        {% render 'sp-product-comparison-value',
+                          display_type: block.settings.display_type,
+                          text_value: block.settings.value_3,
+                          boolean_value: block.settings.boolean_3,
+                          yes_label: section.settings.yes_label,
+                          no_label: section.settings.no_label,
+                          empty_label: section.settings.not_specified_label
+                        %}
+                      </td>
+                    {%- endif -%}
+
+                    {%- if product_4_active -%}
+                      <td class="sp-product-comparison__value-cell{% if product_4_highlight %} is-highlighted{% endif %}">
+                        {% render 'sp-product-comparison-value',
+                          display_type: block.settings.display_type,
+                          text_value: block.settings.value_4,
+                          boolean_value: block.settings.boolean_4,
+                          yes_label: section.settings.yes_label,
+                          no_label: section.settings.no_label,
+                          empty_label: section.settings.not_specified_label
+                        %}
+                      </td>
+                    {%- endif -%}
+                  </tr>
+                {%- endif -%}
+              {%- endfor -%}
+            </tbody>
+          </table>
+        </div>
+
+        {%- if section.settings.show_bottom_cta and section.settings.bottom_cta_label != blank and section.settings.bottom_cta_link != blank -%}
+          <div class="sp-product-comparison__footer">
+            {% render 'button',
+              label: section.settings.bottom_cta_label,
+              href: section.settings.bottom_cta_link,
+              style: 'secondary',
+              class: 'sp-product-comparison__bottom-cta'
+            %}
+          </div>
+        {%- endif -%}
+      {%- elsif request.design_mode -%}
+        <div class="sp-product-comparison__empty" role="status">
+          <span class="sp-product-comparison__empty-icon" aria-hidden="true">
+            {% render 'sp-product-comparison-icon', name: 'compare' %}
+          </span>
+          <div class="sp-product-comparison__empty-copy">
+            <h3 class="sp-product-comparison__empty-title">Select at least two products</h3>
+            <p class="sp-product-comparison__empty-text">
+              Choose two to four unique products to create a comparison.
+            </p>
+          </div>
+        </div>
+      {%- endif -%}
+    </div>
+  </section>
+{%- else -%}
+  <style>#shopify-section-{{ section.id }}{display:none!important}</style>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Product Comparison",
+  "tag": "section",
+  "class": "sp-product-comparison-section",
+  "max_blocks": 16,
+  "disabled_on": {
+    "groups": ["header", "footer", "custom.system"]
+  },
+  "settings": [
+    {
+      "type": "header",
+      "content": "General"
+    },
+    {
+      "type": "color_scheme",
+      "id": "sp_color_scheme",
+      "label": "Color scheme",
+      "default": "scheme-1"
+    },
+    {
+      "type": "select",
+      "id": "section_width",
+      "label": "Section width",
+      "default": "container",
+      "options": [
+        { "value": "container", "label": "Contained" },
+        { "value": "wide", "label": "Wide" }
+      ]
+    },
+    {
+      "type": "header",
+      "content": "Header"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_header",
+      "label": "Show section header",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_eyebrow",
+      "label": "Show eyebrow",
+      "default": true,
+      "visible_if": "{{ section.settings.show_header }}"
+    },
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Eyebrow",
+      "default": "Compare your options",
+      "visible_if": "{{ section.settings.show_header and section.settings.show_eyebrow }}"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Product Comparison",
+      "visible_if": "{{ section.settings.show_header }}"
+    },
+    {
+      "type": "richtext",
+      "id": "description",
+      "label": "Description",
+      "default": "<p>Find the perfect Spider Bottle for your lifestyle. Compare features, specs, and benefits to choose the right fit for you.</p>",
+      "visible_if": "{{ section.settings.show_header }}"
+    },
+    {
+      "type": "select",
+      "id": "header_alignment",
+      "label": "Header alignment",
+      "default": "center",
+      "options": [
+        { "value": "left", "label": "Left" },
+        { "value": "center", "label": "Center" }
+      ],
+      "visible_if": "{{ section.settings.show_header }}"
+    },
+    {
+      "type": "header",
+      "content": "Products"
+    },
+    {
+      "type": "product",
+      "id": "product_1",
+      "label": "Product 1"
+    },
+    {
+      "type": "text",
+      "id": "product_1_subtitle",
+      "label": "Product 1 subtitle"
+    },
+    {
+      "type": "product",
+      "id": "product_2",
+      "label": "Product 2"
+    },
+    {
+      "type": "text",
+      "id": "product_2_subtitle",
+      "label": "Product 2 subtitle"
+    },
+    {
+      "type": "product",
+      "id": "product_3",
+      "label": "Product 3"
+    },
+    {
+      "type": "text",
+      "id": "product_3_subtitle",
+      "label": "Product 3 subtitle"
+    },
+    {
+      "type": "product",
+      "id": "product_4",
+      "label": "Product 4"
+    },
+    {
+      "type": "text",
+      "id": "product_4_subtitle",
+      "label": "Product 4 subtitle"
+    },
+    {
+      "type": "header",
+      "content": "Display"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_ratings",
+      "label": "Show ratings",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_prices",
+      "label": "Show prices",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_product_cta",
+      "label": "Show product CTA",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "choose_options_label",
+      "label": "Choose options label",
+      "default": "Choose options",
+      "visible_if": "{{ section.settings.show_product_cta }}"
+    },
+    {
+      "type": "text",
+      "id": "sold_out_label",
+      "label": "Sold out label",
+      "default": "Sold out",
+      "visible_if": "{{ section.settings.show_product_cta }}"
+    },
+    {
+      "type": "select",
+      "id": "highlight_product",
+      "label": "Highlighted product",
+      "default": "2",
+      "options": [
+        { "value": "none", "label": "None" },
+        { "value": "1", "label": "Product 1" },
+        { "value": "2", "label": "Product 2" },
+        { "value": "3", "label": "Product 3" },
+        { "value": "4", "label": "Product 4" }
+      ]
+    },
+    {
+      "type": "text",
+      "id": "highlight_label",
+      "label": "Highlight label",
+      "default": "Most Popular",
+      "visible_if": "{{ section.settings.highlight_product != 'none' }}"
+    },
+    {
+      "type": "select",
+      "id": "image_ratio",
+      "label": "Product image ratio",
+      "default": "landscape",
+      "options": [
+        { "value": "adapt", "label": "Adapt to image" },
+        { "value": "square", "label": "Square" },
+        { "value": "portrait", "label": "Portrait" },
+        { "value": "landscape", "label": "Landscape" }
+      ]
+    },
+    {
+      "type": "header",
+      "content": "Comparison"
+    },
+    {
+      "type": "text",
+      "id": "table_label",
+      "label": "Accessible table label",
+      "default": "Product comparison"
+    },
+    {
+      "type": "text",
+      "id": "features_label",
+      "label": "Feature column accessible label",
+      "default": "Features"
+    },
+    {
+      "type": "checkbox",
+      "id": "sticky_feature_labels",
+      "label": "Sticky feature labels on tablet and mobile",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "yes_label",
+      "label": "Yes accessible label",
+      "default": "Yes"
+    },
+    {
+      "type": "text",
+      "id": "no_label",
+      "label": "No accessible label",
+      "default": "No"
+    },
+    {
+      "type": "text",
+      "id": "not_specified_label",
+      "label": "Empty value accessible label",
+      "default": "Not specified"
+    },
+    {
+      "type": "header",
+      "content": "Bottom CTA"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_bottom_cta",
+      "label": "Show bottom CTA",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "bottom_cta_label",
+      "label": "CTA label",
+      "default": "View full comparison",
+      "visible_if": "{{ section.settings.show_bottom_cta }}"
+    },
+    {
+      "type": "url",
+      "id": "bottom_cta_link",
+      "label": "CTA link",
+      "visible_if": "{{ section.settings.show_bottom_cta }}"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "comparison_row",
+      "name": "Comparison row",
+      "settings": [
+        {
+          "type": "text",
+          "id": "label",
+          "label": "Label",
+          "default": "Feature"
+        },
+        {
+          "type": "select",
+          "id": "icon",
+          "label": "Icon",
+          "default": "none",
+          "options": [
+            { "value": "none", "label": "None" },
+            { "value": "capacity", "label": "Capacity" },
+            { "value": "material", "label": "Material" },
+            { "value": "snowflake", "label": "Insulation" },
+            { "value": "droplet", "label": "Water / liquid" },
+            { "value": "bag", "label": "Carry" },
+            { "value": "weight", "label": "Weight" },
+            { "value": "target", "label": "Best for" },
+            { "value": "dishwasher", "label": "Dishwasher" }
+          ]
+        },
+        {
+          "type": "select",
+          "id": "display_type",
+          "label": "Display type",
+          "default": "text",
+          "options": [
+            { "value": "text", "label": "Text" },
+            { "value": "boolean", "label": "Yes / No" }
+          ]
+        },
+        {
+          "type": "text",
+          "id": "value_1",
+          "label": "Product 1 value",
+          "visible_if": "{{ block.settings.display_type == 'text' }}"
+        },
+        {
+          "type": "text",
+          "id": "value_2",
+          "label": "Product 2 value",
+          "visible_if": "{{ block.settings.display_type == 'text' }}"
+        },
+        {
+          "type": "text",
+          "id": "value_3",
+          "label": "Product 3 value",
+          "visible_if": "{{ block.settings.display_type == 'text' }}"
+        },
+        {
+          "type": "text",
+          "id": "value_4",
+          "label": "Product 4 value",
+          "visible_if": "{{ block.settings.display_type == 'text' }}"
+        },
+        {
+          "type": "checkbox",
+          "id": "boolean_1",
+          "label": "Product 1: Yes",
+          "default": false,
+          "visible_if": "{{ block.settings.display_type == 'boolean' }}"
+        },
+        {
+          "type": "checkbox",
+          "id": "boolean_2",
+          "label": "Product 2: Yes",
+          "default": false,
+          "visible_if": "{{ block.settings.display_type == 'boolean' }}"
+        },
+        {
+          "type": "checkbox",
+          "id": "boolean_3",
+          "label": "Product 3: Yes",
+          "default": false,
+          "visible_if": "{{ block.settings.display_type == 'boolean' }}"
+        },
+        {
+          "type": "checkbox",
+          "id": "boolean_4",
+          "label": "Product 4: Yes",
+          "default": false,
+          "visible_if": "{{ block.settings.display_type == 'boolean' }}"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Product Comparison",
+      "category": "02. Products",
+      "blocks": [
+        {
+          "type": "comparison_row",
+          "settings": {
+            "label": "Capacity",
+            "icon": "capacity",
+            "display_type": "text"
+          }
+        },
+        {
+          "type": "comparison_row",
+          "settings": {
+            "label": "Material",
+            "icon": "material",
+            "display_type": "text"
+          }
+        },
+        {
+          "type": "comparison_row",
+          "settings": {
+            "label": "Insulation",
+            "icon": "snowflake",
+            "display_type": "text"
+          }
+        },
+        {
+          "type": "comparison_row",
+          "settings": {
+            "label": "Leak Proof",
+            "icon": "droplet",
+            "display_type": "boolean"
+          }
+        },
+        {
+          "type": "comparison_row",
+          "settings": {
+            "label": "Carry Handle",
+            "icon": "bag",
+            "display_type": "boolean"
+          }
+        },
+        {
+          "type": "comparison_row",
+          "settings": {
+            "label": "Weight",
+            "icon": "weight",
+            "display_type": "text"
+          }
+        },
+        {
+          "type": "comparison_row",
+          "settings": {
+            "label": "Best for",
+            "icon": "target",
+            "display_type": "text"
+          }
+        },
+        {
+          "type": "comparison_row",
+          "settings": {
+            "label": "Dishwasher Safe",
+            "icon": "dishwasher",
+            "display_type": "boolean"
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

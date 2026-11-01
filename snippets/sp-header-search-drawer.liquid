@@ -1,0 +1,216 @@
+{% comment %}
+  Spider Premium Header — ONE shared desktop/mobile Search Drawer.
+  Params: section (required)
+{% endcomment %}
+{%- liquid
+  assign sp_predictive_enabled = section.settings.enable_predictive_search
+  if section.settings.sp_use_global_header
+    assign sp_predictive_enabled = settings.search_predictive
+  endif
+  assign sp_search_types = ''
+  if section.settings.search_enable_products
+    assign sp_search_types = sp_search_types | append: ',product'
+  endif
+  if section.settings.search_enable_collections
+    assign sp_search_types = sp_search_types | append: ',collection'
+  endif
+  if section.settings.search_enable_pages
+    assign sp_search_types = sp_search_types | append: ',page'
+  endif
+  if section.settings.search_enable_articles
+    assign sp_search_types = sp_search_types | append: ',article'
+  endif
+  if section.settings.search_enable_queries
+    assign sp_search_types = sp_search_types | append: ',query'
+  endif
+  assign sp_search_types = sp_search_types | remove_first: ','
+  if sp_search_types == blank
+    assign sp_search_types = 'product,collection,query'
+  endif
+  assign sp_overlay_alpha = section.settings.search_drawer_overlay_opacity | default: 45 | times: 0.01
+  assign sp_overlay = section.settings.search_drawer_overlay_color | default: '#000000' | color_modify: 'alpha', sp_overlay_alpha
+-%}
+
+<div
+  id="SpSearchDrawer-{{ section.id }}"
+  class="sp-search-drawer"
+  data-sp-search-drawer
+  data-position="{{ section.settings.search_drawer_position | default: 'right' }}"
+  data-mobile-width="{{ section.settings.search_drawer_mobile_width | default: 'full' }}"
+  data-corner-style="{{ section.settings.search_drawer_corner_style | default: 'square' }}"
+  data-animation="{{ section.settings.search_drawer_animation | default: 'slide_fade' }}"
+  data-predictive="{{ sp_predictive_enabled }}"
+  data-predictive-url="{{ routes.predictive_search_url }}"
+  data-search-url="{{ routes.search_url }}"
+  data-resource-types="{{ sp_search_types }}"
+  data-min-chars="{{ section.settings.search_min_chars | default: 2 }}"
+  data-product-limit="{{ section.settings.search_product_limit | default: 6 }}"
+  data-collection-limit="{{ section.settings.search_collection_limit | default: 4 }}"
+  data-query-limit="{{ section.settings.search_query_limit | default: 5 }}"
+  data-page-limit="{{ section.settings.search_page_limit | default: 3 }}"
+  data-article-limit="{{ section.settings.search_article_limit | default: 3 }}"
+  data-show-product-images="{{ section.settings.search_show_product_images }}"
+  data-product-image-ratio="{{ section.settings.search_product_image_ratio | default: 'square' }}"
+  data-show-vendor="{{ section.settings.search_show_vendor }}"
+  data-show-price="{{ section.settings.search_show_price }}"
+  data-show-compare="{{ section.settings.search_show_compare }}"
+  data-show-sale="{{ section.settings.search_show_sale_badge }}"
+  data-close-overlay="{{ section.settings.search_close_on_overlay }}"
+  data-close-escape="{{ section.settings.search_close_on_escape }}"
+  data-lock-scroll="{{ section.settings.search_lock_scroll }}"
+  data-autofocus="{{ section.settings.search_autofocus }}"
+  data-mobile-autofocus="{{ section.settings.search_mobile_autofocus }}"
+  data-editor-preview="{{ section.settings.search_open_editor }}"
+  data-design-mode="{% if request.design_mode %}true{% else %}false{% endif %}"
+  data-recent-enabled="{{ section.settings.search_show_recent }}"
+  data-recent-max="{{ section.settings.search_recent_max | default: 5 }}"
+  data-currency="{{ cart.currency.iso_code | default: shop.currency }}"
+  data-locale="{{ request.locale.iso_code | default: 'en' }}"
+  style="--sp-search-overlay: {{ sp_overlay }}; --sp-search-drawer-title-weight: {{ section.settings.search_drawer_title_weight | default: '700' }}; --sp-search-drawer-header-bg: {{ '#ffffff' | default: '#ffffff' }}; --sp-search-close: {{ '#111111' | default: '#111111' }}; --sp-search-close-hover: {{ '#666666' | default: '#666666' }};"
+  hidden
+  aria-hidden="true">
+  <button
+    class="sp-search-drawer__backdrop"
+    type="button"
+    data-sp-search-backdrop
+    tabindex="-1"
+    aria-label="Close search"></button>
+
+  <div
+    class="sp-search-drawer__panel"
+    data-sp-search-panel-drawer
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="SpSearchDrawerTitle-{{ section.id }}"
+    tabindex="-1">
+    <header class="sp-search-drawer__header{% if true %} has-divider{% endif %}">
+      <h2 id="SpSearchDrawerTitle-{{ section.id }}" class="sp-search-drawer__title">{{ section.settings.search_drawer_title | default: 'SEARCH OUR SITE' | escape }}</h2>
+      <button
+        class="sp-search-drawer__close"
+        type="button"
+        data-sp-search-drawer-close
+        aria-label="Close search">
+        {% render 'icon'
+          , name: 'close' %}
+      </button>
+    </header>
+
+    <div class="sp-search-drawer__body">
+      <form
+        class="sp-search-drawer__form{% if true %} has-divider{% endif %}"
+        action="{{ routes.search_url }}"
+        method="get"
+        role="search"
+        data-sp-search-drawer-form>
+        {% if section.settings.search_show_scope %}
+          <label class="visually-hidden" for="SpSearchScope-{{ section.id }}">Search scope</label>
+          <div class="sp-search-drawer__scope-wrap">
+            <select
+              id="SpSearchScope-{{ section.id }}"
+              class="sp-search-drawer__scope"
+              data-sp-search-scope>
+              <option
+                value="all"
+                {% if section.settings.search_default_scope == 'all' %}
+                selected{% endif %}>{{ section.settings.search_scope_label | default: 'All Categories' | escape }}</option>
+              {% if section.settings.search_enable_products %}
+                <option
+                  value="product"
+                  {% if section.settings.search_default_scope == 'product' %}
+                  selected{% endif %}>Products</option>
+              {% endif %}
+              {% if section.settings.search_enable_collections %}
+                <option
+                  value="collection"
+                  {% if section.settings.search_default_scope == 'collection' %}
+                  selected{% endif %}>Collections</option>
+              {% endif %}
+              {% if section.settings.search_enable_pages %}
+                <option
+                  value="page"
+                  {% if section.settings.search_default_scope == 'page' %}
+                  selected{% endif %}>Pages</option>
+              {% endif %}
+              {% if section.settings.search_enable_articles %}
+                <option
+                  value="article"
+                  {% if section.settings.search_default_scope == 'article' %}
+                  selected{% endif %}>Articles</option>
+              {% endif %}
+              {% if section.settings.search_enable_queries %}
+                <option
+                  value="query"
+                  {% if section.settings.search_default_scope == 'query' %}
+                  selected{% endif %}>Suggestions</option>
+              {% endif %}
+            </select>
+            <span class="sp-search-drawer__scope-chevron" aria-hidden="true">
+              <svg
+                viewBox="0 0 20 20"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                focusable="false">
+                <path
+                  d="M5.5 7.5L10 12L14.5 7.5"
+                  stroke="currentColor"
+                  stroke-width="1.6"
+                  stroke-linecap="round"
+                  stroke-linejoin="round" />
+              </svg>
+            </span>
+          </div>
+        {% endif %}
+
+        <input
+          type="hidden"
+          data-sp-search-type
+          name="type"
+          value=""
+          disabled>
+        <input
+          type="hidden"
+          name="options[prefix]"
+          value="last">
+
+        <label class="visually-hidden" for="SpSearchDrawerInput-{{ section.id }}">Search</label>
+        <div class="sp-search-drawer__input-wrap">
+          <span class="sp-search-drawer__input-icon" aria-hidden="true">{% render 'icon'
+, name: 'search' %}</span>
+          <input
+            id="SpSearchDrawerInput-{{ section.id }}"
+            class="sp-search-drawer__input"
+            type="search"
+            name="q"
+            value=""
+            placeholder="{{ section.settings.search_placeholder | default: 'Search products...' | escape }}"
+            autocomplete="off"
+            autocapitalize="off"
+            spellcheck="false"
+            data-sp-search-input
+            aria-controls="SpSearchDrawerResults-{{ section.id }}">
+          {% if section.settings.search_show_clear %}
+            <button
+              class="sp-search-drawer__clear"
+              type="button"
+              data-sp-search-clear
+              aria-label="Clear search"
+              hidden>{% render 'icon'
+, name: 'close' %}</button>
+          {% endif %}
+          <button
+            class="sp-search-drawer__submit"
+            type="submit"
+            aria-label="Submit search">{% render 'icon'
+, name: 'search' %}</button>
+        </div>
+      </form>
+
+      <div id="SpSearchDrawerResults-{{ section.id }}" class="sp-search-drawer__content">
+        {% render 'sp-header-search-empty'
+          , section: section %}
+        {% render 'sp-header-search-results'
+          , section: section %}
+      </div>
+    </div>
+  </div>
+</div>

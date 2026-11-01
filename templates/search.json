@@ -1,0 +1,75 @@
+{
+  "sections": {
+    "main": {
+      "type": "main-search",
+      "blocks": {
+        "suggested_collection_eFkVkz": {
+          "type": "suggested_collection",
+          "settings": {
+            "collection": "fashion"
+          }
+        },
+        "popular_search_Nw7GmU": {
+          "type": "popular_search",
+          "settings": {
+            "label": "",
+            "query": ""
+          }
+        }
+      },
+      "block_order": [
+        "suggested_collection_eFkVkz",
+        "popular_search_Nw7GmU"
+      ],
+      "settings": {
+        "show_heading": true,
+        "heading": "Search",
+        "heading_style": "custom",
+        "custom_heading_size": 48,
+        "heading_alignment": "center",
+        "show_search_form": true,
+        "search_placeholder": "Search products, articles and pages",
+        "show_result_types": true,
+        "show_products": true,
+        "show_articles": true,
+        "show_pages": true,
+        "enable_filters": true,
+        "desktop_filter_layout": "sidebar_left",
+        "show_active_filters": true,
+        "enable_sorting": true,
+        "enable_ajax": true,
+        "use_global_product_settings": true,
+        "product_design": "01",
+        "columns_desktop": 4,
+        "columns_tablet": 3,
+        "columns_mobile": "2",
+        "article_show_image": true,
+        "article_show_date": true,
+        "article_show_excerpt": true,
+        "page_show_excerpt": true,
+        "results_per_page": 24,
+        "pagination_type": "pagination",
+        "empty_intro": "Find products, articles and more.",
+        "empty_heading": "What are you looking for?",
+        "empty_text": "Search the store or explore one of the suggestions below.",
+        "show_popular_searches": false,
+        "show_suggested_collections": false,
+        "sp_color_scheme": "",
+        "container_width": "theme",
+        "spacing_source": "theme",
+        "padding_top": 64,
+        "padding_bottom": 80,
+        "padding_top_mobile": 36,
+        "padding_bottom_mobile": 56,
+        "hero_description": "Search products, articles and pages",
+        "search_button_label": "Search",
+        "show_search_clear": true,
+        "hero_max_width": 720,
+        "sidebar_width": 220
+      }
+    }
+  },
+  "order": [
+    "main"
+  ]
+}

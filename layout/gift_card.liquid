@@ -1,0 +1,24 @@
+<!doctype html>
+<html
+  lang="{{ request.locale.iso_code }}"
+  dir="{% if request.locale.iso_code == 'ar' or request.locale.iso_code == 'he' or request.locale.iso_code == 'fa' %}rtl{% else %}ltr{% endif %}"
+>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+    {% render 'meta-tags' %}
+    {% render 'global-settings-css' %}
+    {{ 'sp-reset.css' | asset_url | stylesheet_tag }}
+    {{ 'sp-base.css' | asset_url | stylesheet_tag }}
+    {{ 'sp-components.css' | asset_url | stylesheet_tag }}
+    {{ 'sp-gift-card.css' | asset_url | stylesheet_tag }}
+    {{ content_for_header }}
+    <script src="{{ 'vendor/qrcode.js' | shopify_asset_url }}" defer></script>
+    <script src="{{ 'sp-gift-card.js' | asset_url }}" defer></script>
+  </head>
+  <body class="template-gift-card {% render 'global-settings-classes' %}">
+    <main id="MainContent" class="sp-main" role="main">
+      {{ content_for_layout }}
+    </main>
+  </body>
+</html>

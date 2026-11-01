@@ -1,0 +1,27 @@
+{% liquid
+  assign heading_tag = section.settings.heading_tag
+  assign size_class = 'sp-hero-video__content--' | append: section.settings.text_size
+%}
+<div class="sp-hero-video__positioner sp-hero-video__positioner--d-{{ section.settings.content_position }} sp-hero-video__positioner--m-{{ section.settings.content_position_mobile }}" data-sp-hv-positioner>
+  <div class="sp-hero-video__content {{ size_class }} sp-hero-video__align--d-{{ section.settings.text_alignment }} sp-hero-video__align--m-{{ section.settings.text_alignment_mobile }}{% if section.settings.content_background_enabled %} sp-hero-video__content--card sp-hero-video__content-shadow--{{ section.settings.content_shadow }}{% endif %}" data-sp-hv-content>
+    <div class="sp-hero-video__content-motion">
+    {% if section.settings.subtitle != blank %}
+      <div class="sp-hero-video__subtitle">{{ section.settings.subtitle | escape }}</div>
+    {% endif %}
+
+    {% if section.settings.heading != blank %}
+      {% case heading_tag %}
+        {% when 'h1' %}<h1 class="sp-hero-video__heading">{{ section.settings.heading | escape | newline_to_br }}</h1>
+        {% when 'h3' %}<h3 class="sp-hero-video__heading">{{ section.settings.heading | escape | newline_to_br }}</h3>
+        {% else %}<h2 class="sp-hero-video__heading">{{ section.settings.heading | escape | newline_to_br }}</h2>
+      {% endcase %}
+    {% endif %}
+
+    {% if section.settings.description != blank %}
+      <div class="sp-hero-video__description rte">{{ section.settings.description }}</div>
+    {% endif %}
+
+    {% render 'sp-hero-video-buttons', section: section %}
+    </div>
+  </div>
+</div>

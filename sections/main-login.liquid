@@ -1,0 +1,97 @@
+{{ 'sp-customer-account.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'sp-customer-account.js' | asset_url }}" defer></script>
+{% render 'sp-section-color-scheme', section: section %}
+{% capture recover_content %}
+  {% form 'recover_customer_password' %}
+    {% assign recover_success = form.posted_successfully? %}
+    {% assign recover_errors = form.errors %}
+    {% if form.errors %}<div class="sp-account-alert sp-account-alert--error" role="alert">{{ form.errors | default_errors }}</div>{% endif %}
+    {% if form.posted_successfully? %}<div class="sp-account-alert sp-account-alert--success" role="status">{{ 'customer.spider.recover_success' | t }}</div>{% endif %}
+    {% render 'sp-account-form-field', id: 'RecoverEmail', name: 'email', type: 'email', label: 'customer.login_page.email', value: form.email, autocomplete: 'email', required: true %}
+    <button class="sp-button sp-button--primary sp-account-auth__submit" type="submit">{{ 'customer.spider.send_reset_link' | t }}</button>
+  {% endform %}
+{% endcapture %}
+<section class="sp-section sp-account-page sp-account-auth" style="--sp-account-pad-top:{{ section.settings.padding_top }}px;--sp-account-pad-bottom:{{ section.settings.padding_bottom }}px">
+  <div class="sp-container{% if section.settings.container_width == 'narrow' %} sp-container--narrow{% elsif section.settings.container_width == 'wide' %} sp-container--wide{% endif %}">
+    <div class="sp-account-auth__layout{% if section.settings.image != blank %} has-media sp-account-auth__layout--{{ section.settings.image_position }}{% endif %}">
+      {% if section.settings.image != blank %}
+        <div class="sp-account-auth__media">
+          {{ section.settings.image | image_url: width: 1200 | image_tag: widths: '480,720,960,1200', sizes: '(min-width: 990px) 50vw, 100vw', loading: 'lazy', alt: section.settings.image.alt | default: shop.name }}
+        </div>
+      {% endif %}
+      <div class="sp-account-auth__content">
+        <div id="recover" class="sp-account-auth__panel sp-account-auth__recover{% if recover_success or recover_errors %} is-forced{% endif %}">
+          <div class="sp-account-auth__heading">
+            <span class="sp-account-kicker">{{ 'customer.spider.account_access' | t }}</span>
+            <h2 class="sp-heading sp-heading--h2">{{ 'customer.recover_password.title' | t }}</h2>
+            <p>{{ 'customer.spider.recover_intro' | t }}</p>
+          </div>
+          {{ recover_content }}
+          <a class="sp-account-text-link" href="#login">{{ 'customer.spider.back_to_login' | t }}</a>
+        </div>
+        <div id="login" class="sp-account-auth__panel sp-account-auth__login{% if recover_success or recover_errors %} is-suppressed{% endif %}">
+          <div class="sp-account-auth__heading">
+            <span class="sp-account-kicker">{{ 'customer.spider.welcome_back' | t }}</span>
+            <h1 class="sp-heading sp-heading--h2">{% if section.settings.heading != blank %}{{ section.settings.heading | escape }}{% else %}{{ 'customer.login_page.title' | t }}{% endif %}</h1>
+            <p>{% if section.settings.supporting_text != blank %}{{ section.settings.supporting_text | escape }}{% else %}{{ 'customer.spider.login_intro' | t }}{% endif %}</p>
+          </div>
+          {% form 'customer_login' %}
+            {% if form.errors %}<div class="sp-account-alert sp-account-alert--error" role="alert">{{ form.errors | default_errors }}</div>{% endif %}
+            {% render 'sp-account-form-field', id: 'CustomerEmail', name: 'customer[email]', type: 'email', label: 'customer.login_page.email', value: form.email, autocomplete: 'email', required: true %}
+            {% render 'sp-account-form-field', id: 'CustomerPassword', name: 'customer[password]', type: 'password', label: 'customer.login_page.password', autocomplete: 'current-password', required: true %}
+            <div class="sp-account-auth__utility"><a href="#recover">{{ 'customer.login.forgot_password' | t }}</a></div>
+            <button class="sp-button sp-button--primary sp-account-auth__submit" type="submit">{{ 'customer.login_page.sign_in' | t }}</button>
+          {% endform %}
+          <div class="sp-account-auth__secondary">
+            <span>{{ 'customer.spider.new_customer' | t }}</span>
+            <a class="sp-button sp-button--outline" href="{{ routes.account_register_url }}">{{ 'customer.login_page.create_account' | t }}</a>
+          </div>
+          <a class="sp-account-text-link" href="{{ routes.root_url }}">{{ 'customer.spider.return_to_store' | t }}</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% schema %}
+{
+  "name": "Main login",
+  "settings": [
+    {"type":"color_scheme","id":"sp_color_scheme","label":"Color scheme","default":"scheme-1"},
+    {"type":"select","id":"container_width","label":"Container width","default":"narrow","options":[{"value":"narrow","label":"Narrow"},{"value":"default","label":"Theme default"},{"value":"wide","label":"Wide"}]},
+    {"type":"text","id":"heading","label":"Heading","default":"Sign in to your account"},
+    {"type":"textarea","id":"supporting_text","label":"Supporting text","default":"Welcome back. Sign in to view your orders and manage your details."},
+    {"type":"image_picker","id":"image","label":"Optional image"},
+    {"type":"select","id":"image_position","label":"Desktop image position","default":"left","options":[{"value":"left","label":"Left"},{"value":"right","label":"Right"}]},
+    {"type":"range","id":"padding_top","label":"Padding top","min":24,"max":160,"step":8,"unit":"px","default":72},
+    {"type":"range","id":"padding_bottom","label":"Padding bottom","min":24,"max":160,"step":8,"unit":"px","default":72}
+  ]
+}
+{% endschema %}
+{% comment %}
+
+This file has been rewritten to preserve the original behavior.
+
+---
+Changes:
+- from: "{% render 'sp-account-form-field', id: 'RecoverEmail', name: 'email', type:
+    'email', label: 'customer.login_page.email' | t, value: form.email, autocomplete:
+    'email', required: true %}"
+  to: "{% render 'sp-account-form-field', id: 'RecoverEmail', name: 'email', type:
+    'email', label: 'customer.login_page.email', value: form.email, autocomplete:
+    'email', required: true %}"
+  position: 685..865
+- from: "{% render 'sp-account-form-field', id: 'CustomerEmail', name: 'customer[email]',
+    type: 'email', label: 'customer.login_page.email' | t, value: form.email, autocomplete:
+    'email', required: true %}"
+  to: "{% render 'sp-account-form-field', id: 'CustomerEmail', name: 'customer[email]',
+    type: 'email', label: 'customer.login_page.email', value: form.email, autocomplete:
+    'email', required: true %}"
+  position: 3461..3652
+- from: "{% render 'sp-account-form-field', id: 'CustomerPassword', name: 'customer[password]',
+    type: 'password', label: 'customer.login_page.password' | t, autocomplete: 'current-password',
+    required: true %}"
+  to: "{% render 'sp-account-form-field', id: 'CustomerPassword', name: 'customer[password]',
+    type: 'password', label: 'customer.login_page.password', autocomplete: 'current-password',
+    required: true %}"
+  position: 3665..3860
+{% endcomment %}

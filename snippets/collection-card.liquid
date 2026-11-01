@@ -1,0 +1,93 @@
+{% comment %}
+  Canonical Spider collection card.
+  Required: card_collection
+  Optional: heading_tag, heading_style, design, image_ratio, image_fit, image_position,
+  hover_effect, show_count, show_description, show_cta, content_alignment,
+  use_product_fallback, loading, sizes.
+{% endcomment %}
+{% liquid
+  assign sp_heading_tag = heading_tag | default: 'h3'
+  assign sp_heading_style = heading_style | default: 'h5'
+  assign sp_design = design | default: 'classic'
+  assign sp_ratio = image_ratio | default: 'portrait'
+  assign sp_fit = image_fit | default: 'cover'
+  assign sp_position = image_position | default: 'center'
+  assign sp_hover = hover_effect | default: 'zoom'
+  assign sp_alignment = content_alignment | default: 'left'
+  assign sp_loading = loading | default: 'lazy'
+  assign sp_sizes = sizes | default: '(min-width: 990px) 25vw, (min-width: 750px) 33vw, 50vw'
+  assign sp_show_count = false
+  if show_count == true
+    assign sp_show_count = true
+  endif
+  assign sp_show_description = false
+  if show_description == true
+    assign sp_show_description = true
+  endif
+  assign sp_show_cta = false
+  if show_cta == true
+    assign sp_show_cta = true
+  endif
+  assign sp_use_product_fallback = true
+  if use_product_fallback == false
+    assign sp_use_product_fallback = false
+  endif
+
+  assign sp_image = card_collection.image
+  if override_image != blank
+    assign sp_image = override_image
+  endif
+  assign sp_title = card_collection.title
+  if override_title != blank
+    assign sp_title = override_title
+  endif
+  if sp_image == blank and sp_use_product_fallback and card_collection.products.first.featured_media
+    assign sp_image = card_collection.products.first.featured_media.preview_image
+  endif
+
+  assign sp_alt = sp_title
+  if sp_image != blank and sp_image.alt != blank
+    assign sp_alt = sp_image.alt
+  endif
+
+  assign sp_count = card_collection.all_products_count | default: 0
+  assign sp_description = card_collection.description | strip_html | strip | truncatewords: 28
+%}
+
+<article class="sp-collection-card sp-collection-card--{{ sp_design }} sp-collection-card--ratio-{{ sp_ratio }} sp-collection-card--fit-{{ sp_fit }} sp-collection-card--position-{{ sp_position }} sp-collection-card--hover-{{ sp_hover }} sp-collection-card--align-{{ sp_alignment }}">
+  <a class="sp-collection-card__link" href="{{ card_collection.url }}" aria-label="{{ sp_title | escape }}">
+    <div class="sp-collection-card__media">
+      {% if sp_image != blank %}
+        {% render 'responsive-image', image: sp_image, class: 'sp-collection-card__image', sizes: sp_sizes, loading: sp_loading, alt: sp_alt %}
+      {% else %}
+        {% render 'placeholder-image', name: 'collection-1', class: 'sp-placeholder sp-collection-card__placeholder' %}
+      {% endif %}
+    </div>
+
+    <div class="sp-collection-card__content">
+      <{{ sp_heading_tag }} class="sp-collection-card__title sp-heading--{{ sp_heading_style }}">{{ sp_title | escape }}</{{ sp_heading_tag }}>
+
+      {% if sp_show_count %}
+        <p class="sp-collection-card__count">
+          <span>{{ sp_count }}</span>
+          {% if count_singular %}
+            {% if sp_count == 1 %}<span>{{ 'products.product.product' | t | downcase }}</span>{% else %}<span>{{ 'collections.collection.products' | t | downcase }}</span>{% endif %}
+          {% else %}
+            <span>{{ 'collections.collection.products' | t }}</span>
+          {% endif %}
+        </p>
+      {% endif %}
+
+      {% if sp_show_description and sp_description != blank %}
+        <p class="sp-collection-card__description">{{ sp_description | escape }}</p>
+      {% endif %}
+
+      {% if sp_show_cta %}
+        <span class="sp-collection-card__cta">
+          {{ 'collections.collection.view_collection' | t }}
+          <svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M4 10h11M11 6l4 4-4 4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span>
+      {% endif %}
+    </div>
+  </a>
+</article>

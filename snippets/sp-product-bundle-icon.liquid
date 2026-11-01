@@ -1,0 +1,31 @@
+<svg
+  class="sp-product-bundle-icon"
+  viewBox="0 0 24 24"
+  fill="none"
+  xmlns="http://www.w3.org/2000/svg"
+  aria-hidden="true"
+  focusable="false"
+>
+  {%- case name -%}
+    {%- when 'check' -%}
+      <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.7"/>
+      <path d="m7.8 12.2 2.7 2.8 5.9-6.1" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>
+    {%- when 'bag' -%}
+      <path d="M5 8h14l1 12H4L5 8Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
+      <path d="M9 8V6a3 3 0 0 1 6 0v2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+    {%- when 'gift' -%}
+      <path d="M4 10h16v10H4V10ZM3 7h18v3H3V7Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
+      <path d="M12 7v13M12 7H8.5A2.5 2.5 0 1 1 11 4.5L12 7Zm0 0h3.5A2.5 2.5 0 1 0 13 4.5L12 7Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
+    {%- when 'tag' -%}
+      <path d="M4 4h7l9 9-7 7-9-9V4Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
+      <circle cx="8" cy="8" r="1.2" fill="currentColor"/>
+    {%- when 'star' -%}
+      <path d="m12 3 2.6 5.2 5.7.8-4.1 4 1 5.7L12 16l-5.2 2.7 1-5.7-4.1-4 5.7-.8L12 3Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+    {%- when 'bundle' -%}
+      <rect x="3" y="4" width="8" height="7" rx="1.5" stroke="currentColor" stroke-width="1.7"/>
+      <rect x="13" y="13" width="8" height="7" rx="1.5" stroke="currentColor" stroke-width="1.7"/>
+      <path d="M7 11v2.5A2.5 2.5 0 0 0 9.5 16H13M17 13v-2.5A2.5 2.5 0 0 0 14.5 8H11" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+    {%- else -%}
+      <circle cx="12" cy="12" r="8" stroke="currentColor" stroke-width="1.7"/>
+  {%- endcase -%}
+</svg>

@@ -1,0 +1,57 @@
+{%- comment -%}Spider shared product comparison UI. Settings are global; not an addable duplicate section.{%- endcomment -%}
+<div class="sp-commerce-compare-tray" data-sp-commerce-compare-tray hidden>
+  <div class="sp-commerce-compare-tray__inner">
+    <div class="sp-commerce-compare-tray__heading">
+      <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="6" width="26" height="29" rx="3"/><rect x="15" y="15" width="27" height="28" rx="3"/></svg>
+      <div><strong data-sp-compare-bar-title>{{ settings.sp_cmp_bar_title | default: 'Compare Products' | escape }}</strong><p data-sp-compare-bar-subtitle>{{ settings.sp_cmp_bar_subtitle | default: 'Compare up to 4 products' | escape }}</p></div>
+    </div>
+    <div class="sp-commerce-compare-tray__products" data-sp-commerce-compare-items aria-live="polite"></div>
+    <div class="sp-commerce-compare-tray__actions">
+      <button class="sp-commerce-compare-tray__open" type="button" data-sp-commerce-compare-open disabled aria-disabled="true"><span data-sp-compare-action-label>Compare (0)</span><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 12h16m-7-7 7 7-7 7"/></svg></button>
+      <button class="sp-commerce-compare-tray__clear" type="button" data-sp-commerce-compare-clear>{{ settings.sp_cmp_clear_text | default: 'Clear all' | escape }}</button>
+    </div>
+    <button class="sp-commerce-compare-tray__dismiss" type="button" data-sp-commerce-compare-dismiss aria-label="Hide comparison tray; keep selected products"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5 5 19 19M19 5 5 19"/></svg></button>
+  </div>
+</div>
+<dialog id="SpProductCompare" class="sp-commerce-compare-dialog" data-sp-commerce-compare-dialog aria-labelledby="SpProductCompareTitle">
+  <div class="sp-commerce-compare-dialog__shell">
+    {% render 'sp-commerce-close-button', label: 'Close product comparison' %}
+    <div class="sp-commerce-compare-dialog__body" data-sp-commerce-compare-table aria-live="polite" aria-busy="false"></div>
+    <div class="sp-commerce-compare-dialog__status" role="status" aria-live="polite" data-sp-compare-status></div>
+    <footer class="sp-compare-dialog__footer"><button type="button" data-sp-commerce-compare-clear>{{ settings.sp_cmp_clear_text | default: 'Clear all' | escape }}</button></footer>
+  </div>
+</dialog>
+<script type="application/json" data-sp-compare-settings>{
+  "enabled": {{ settings.sp_cmp_enabled | json }},
+  "max": {{ settings.sp_cmp_max | json }},
+  "persist": {{ settings.sp_cmp_persist | json }},
+  "barTitle": {{ settings.sp_cmp_bar_title | json }},
+  "barSubtitle": {{ settings.sp_cmp_bar_subtitle | json }},
+  "compareLabel": {{ settings.sp_cmp_compare_label | json }},
+  "modalEyebrow": {{ settings.sp_cmp_modal_eyebrow | json }},
+  "modalTitle": {{ settings.sp_cmp_modal_title | json }},
+  "modalHighlight": {{ settings.sp_cmp_modal_highlight | json }},
+  "modalDescription": {{ settings.sp_cmp_modal_description | json }},
+  "showRatings": {{ settings.sp_cmp_show_ratings | json }},
+  "showSavings": {{ settings.sp_cmp_show_savings | json }},
+  "showCompareAt": {{ settings.sp_cmp_show_compare_at | json }},
+  "showCart": {{ settings.sp_cmp_show_cart | json }},
+  "showIcons": {{ settings.sp_cmp_show_icons | json }},
+  "showEmpty": {{ settings.sp_cmp_show_missing | json }},
+  "hideEmptyRows": {{ settings.sp_cmp_hide_empty_rows | json }},
+  "showColors": {{ settings.sp_cmp_show_colors | json }},
+  "showThumbnails": {{ settings.sp_cmp_show_thumbnails | json }},
+  "showNames": {{ settings.sp_cmp_show_names | json }},
+  "showClear": {{ settings.sp_cmp_show_clear | json }},
+  "showHeading": {{ settings.sp_cmp_show_heading | json }},
+  "barHeight": {{ settings.sp_cmp_bar_height | default: 158 | json }},
+  "barMobileHeight": {{ settings.sp_cmp_bar_mobile_height | default: 0 | json }},
+  "barBottom": {{ settings.sp_cmp_bar_bottom | json }},
+  "barWidth": {{ settings.sp_cmp_bar_width | json }},
+  "barRadius": {{ settings.sp_cmp_bar_radius | json }},
+  "barImageSize": {{ settings.sp_cmp_bar_image_size | json }},
+  "modalWidth": {{ settings.sp_cmp_modal_width | json }},
+  "modalRadius": {{ settings.sp_cmp_modal_radius | json }},
+  "backdropOpacity": {{ settings.sp_cmp_backdrop_opacity | json }},
+  "moneyFormat": {{ shop.money_format | json }}
+}</script>

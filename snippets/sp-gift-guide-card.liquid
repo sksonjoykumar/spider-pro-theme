@@ -1,0 +1,96 @@
+{%- comment -%}
+  Render one distinct gift card. `filter_keys` is a merchant-curated comma-separated key list.
+  Without JavaScript all cards are shown. Shopify collection count reflects collection.products_count.
+{%- endcomment -%}
+{%- liquid
+  assign sp_b = block.settings
+  assign sp_collection = sp_b.collection
+  assign sp_product = sp_b.product
+  assign sp_image = sp_b.image
+  if sp_image == blank and sp_collection != blank
+    assign sp_image = sp_collection.featured_image
+  endif
+  if sp_image == blank and sp_product != blank
+    assign sp_image = sp_product.featured_image
+  endif
+  assign sp_mobile = sp_b.mobile_image
+  assign sp_title = sp_b.heading
+  if sp_title == blank and sp_collection != blank
+    assign sp_title = sp_collection.title
+  endif
+  if sp_title == blank and sp_product != blank
+    assign sp_title = sp_product.title
+  endif
+  assign sp_destination = sp_b.custom_link
+  if sp_destination == blank and sp_collection != blank
+    assign sp_destination = sp_collection.url
+  endif
+  if sp_destination == blank and sp_product != blank
+    assign sp_destination = sp_product.url
+  endif
+  assign sp_alt = sp_b.image_alt | default: sp_image.alt | default: sp_title
+  assign sp_count = 0
+  if sp_b.gift_count_source == 'collection' and sp_collection != blank
+    assign sp_count = sp_collection.products_count
+  elsif sp_b.gift_count_source == 'custom'
+    assign sp_count = sp_b.custom_gift_count
+  endif
+  assign sp_featured = is_first
+  assign sp_load = 'lazy'
+  if sp_featured and section.settings.eager_featured_image
+    assign sp_load = 'eager'
+  endif
+  assign sp_focal = sp_b.focal_position
+  if sp_focal == 'inherit'
+    assign sp_focal = 'center'
+  endif
+  assign sp_overlay = section.settings.overlay_opacity
+  if sp_b.override_overlay
+    assign sp_overlay = sp_b.overlay_opacity
+  endif
+  assign sp_image_missing = false
+  if sp_image == blank and sp_mobile == blank
+    assign sp_image_missing = true
+  endif
+-%}
+{%- unless sp_image_missing and section.settings.hide_missing_images and request.design_mode == false -%}
+<article class="sp-gift-guide__card sp-gift-guide__card--{{ sp_b.card_type }}{% if sp_featured %} sp-gift-guide__card--active-featured{% endif %} sp-gift-guide__card--content-{{ sp_b.content_position }}{% if sp_image_missing %} sp-gift-guide__card--no-image{% endif %}"
+  data-sp-gift-card data-sp-gift-card-id="{{ block.id }}" data-sp-gift-keys="{{ sp_b.filter_keys | downcase | escape }}"
+  data-sp-gift-is-featured="{% if sp_b.card_type == 'featured' %}true{% else %}false{% endif %}"
+  role="listitem" style="--sp-gift-card-overlay:{{ sp_overlay | divided_by: 100.0 }};--sp-gift-object-position:{{ sp_focal | replace: '-', ' ' }};--sp-gift-card-text:{{ sp_b.text_color }};"
+  {{ block.shopify_attributes }}>
+  <div class="sp-gift-guide__media">
+    {% if sp_image != blank or sp_mobile != blank %}
+      <picture>
+        {% if sp_mobile != blank %}
+          <source media="(max-width: 749px)" srcset="{{ sp_mobile | image_url: width: 480 }} 480w, {{ sp_mobile | image_url: width: 750 }} 750w, {{ sp_mobile | image_url: width: 1100 }} 1100w" sizes="(min-width: 600px) 60vw, 100vw">
+        {% endif %}
+        {% assign sp_render_image = sp_image | default: sp_mobile %}
+        {{ sp_render_image | image_url: width: 1800 | image_tag: widths: '320,480,640,800,1000,1200,1600,1800', sizes: '(min-width: 1100px) 48vw, (min-width: 750px) 50vw, 100vw', loading: sp_load, class: 'sp-gift-guide__image', alt: sp_alt }}
+      </picture>
+    {% elsif request.design_mode %}
+      {{ 'collection-1' | placeholder_svg_tag: 'sp-gift-guide__placeholder' }}
+    {% endif %}
+  </div>
+  <div class="sp-gift-guide__shade" aria-hidden="true"></div>
+  {% if section.settings.show_gift_count and sp_count > 0 %}<span class="sp-gift-guide__count">{{ sp_count }} {{ section.settings.gift_count_suffix | escape }}</span>{% endif %}
+  {% if sp_b.badge != blank %}<span class="sp-gift-guide__badge">{{ sp_b.badge | escape }}</span>{% endif %}
+  <div class="sp-gift-guide__card-body">
+    {% if sp_b.eyebrow != blank %}<p class="sp-gift-guide__card-eyebrow">{{ sp_b.eyebrow | escape }}</p>{% endif %}
+    {% if sp_title != blank %}<h3 class="sp-gift-guide__card-heading">{{ sp_title | escape }}</h3>{% endif %}
+    {% if sp_b.description != blank %}<p class="sp-gift-guide__card-description">{{ sp_b.description | escape }}</p>{% endif %}
+    {% if section.settings.layout_style == 'style_4' and sp_product != blank and section.settings.show_product_price %}
+      {% assign sp_v = sp_product.selected_or_first_available_variant %}
+      {% if sp_v != blank %}<p class="sp-gift-guide__price">{{ sp_v.price | money }}{% if sp_v.compare_at_price > sp_v.price %} <s>{{ sp_v.compare_at_price | money }}</s>{% endif %}</p>{% endif %}
+    {% endif %}
+    {% if sp_b.cta_label != blank %}
+      {% if sp_destination != blank %}
+        <a class="sp-gift-guide__card-link{% if sp_b.full_card_link and section.settings.full_card_links %} sp-gift-guide__card-link--stretched{% endif %}{% if sp_featured %} sp-gift-guide__card-link--button{% endif %}"
+          href="{{ sp_destination }}" {% if section.settings.new_tab %}target="_blank" rel="noopener noreferrer"{% endif %} aria-label="{{ sp_b.cta_accessibility_label | default: sp_b.cta_label | escape }}{% if sp_title != blank %} — {{ sp_title | escape }}{% endif %}">{{ sp_b.cta_label | escape }} <span aria-hidden="true">{% if sp_featured %}→{% else %}→{% endif %}</span></a>
+      {% elsif request.design_mode %}
+        <span class="sp-gift-guide__card-link sp-gift-guide__card-link--disabled{% if sp_featured %} sp-gift-guide__card-link--button{% endif %}" title="Assign a collection, product or custom URL">{{ sp_b.cta_label | escape }} <span aria-hidden="true">→</span></span>
+      {% endif %}
+    {% endif %}
+  </div>
+</article>
+{%- endunless -%}

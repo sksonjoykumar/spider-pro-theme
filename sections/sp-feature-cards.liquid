@@ -1,0 +1,634 @@
+{% render 'sp-section-color-scheme', section: section %}
+{{ 'sp-content-sections.css' | asset_url | stylesheet_tag }}
+
+{%- liquid
+  assign sp_fc_layout = section.settings.layout_style | default: 'original'
+  assign sp_fc_title = section.settings.heading
+  assign sp_fc_scheme_class = 'sp-feature-cards--' | append: sp_fc_layout
+-%}
+<section
+  class="sp-section sp-feature-cards {{ sp_fc_scheme_class }}{% if section.settings.card_hover != 'none' %} sp-feature-cards--hover-{{ section.settings.card_hover }}{% endif %}{% unless section.settings.equal_height %} sp-feature-cards--natural-height{% endunless %}{% unless section.settings.use_global_spacing %} sp-feature-cards--custom-spacing{% endunless %}{% unless section.settings.use_global_typography %} sp-feature-cards--custom-type{% endunless %}"
+  data-section-id="{{ section.id }}"
+  {% if sp_fc_title != blank %}aria-labelledby="SpFeatureCardsTitle-{{ section.id }}"{% elsif section.settings.eyebrow != blank %}aria-label="{{ section.settings.eyebrow | escape }}"{% endif %}
+  style="
+    --sp-fc-columns-d: {{ section.settings.columns_desktop }};
+    --sp-fc-columns-t: {{ section.settings.columns_tablet }};
+    --sp-fc-columns-m: {{ section.settings.columns_mobile }};
+    --sp-fc-gap-d: {{ section.settings.card_gap_desktop }}px;
+    --sp-fc-gap-m: {{ section.settings.card_gap_mobile }}px;
+    --sp-fc-header-gap: {{ section.settings.header_bottom_gap }}px;
+    --sp-fc-padding-d: {{ section.settings.card_padding_desktop }}px;
+    --sp-fc-padding-m: {{ section.settings.card_padding_mobile }}px;
+    --sp-fc-icon-box: {{ section.settings.icon_box_size }}px;
+    --sp-fc-icon-size: {{ section.settings.icon_size }}px;
+    --sp-fc-title-d: {{ section.settings.heading_size_desktop }}px;
+    --sp-fc-title-m: {{ section.settings.heading_size_mobile }}px;
+    --sp-fc-card-title: {{ section.settings.card_title_size }}px;
+    --sp-fc-copy-size: {{ section.settings.body_size }}px;
+    --sp-fc-space-top-d: {{ section.settings.padding_top_desktop }}px;
+    --sp-fc-space-bottom-d: {{ section.settings.padding_bottom_desktop }}px;
+    --sp-fc-space-top-m: {{ section.settings.padding_top_mobile }}px;
+    --sp-fc-space-bottom-m: {{ section.settings.padding_bottom_mobile }}px;
+    --sp-fc-radius: {% if section.settings.use_global_radius %}var(--sp-radius-md, 8px){% else %}{{ section.settings.card_radius }}px{% endif %};
+    --sp-fc-card-bg: {% if section.settings.use_global_card_colors %}var(--sp-color-card, #fff){% else %}{{ section.settings.custom_card_background }}{% endif %};
+    --sp-fc-card-border: {% if section.settings.use_global_card_colors %}var(--sp-color-border, #E4E4E7){% else %}{{ section.settings.custom_card_border }}{% endif %};
+    --sp-fc-icon-color: {% if section.settings.use_global_icon_colors %}var(--sp-color-accent, #415DFF){% else %}{{ section.settings.custom_icon_color }}{% endif %};
+    --sp-fc-icon-bg: {% if section.settings.use_global_icon_colors %}color-mix(in srgb, var(--sp-color-accent, #415DFF) 9%, var(--sp-color-card, #fff)){% else %}{{ section.settings.custom_icon_background }}{% endif %};
+  "
+>
+  <div class="sp-container{% if section.settings.container_width == 'wide' %} sp-container--wide{% elsif section.settings.container_width == 'narrow' %} sp-container--narrow{% endif %}">
+    {% if section.settings.eyebrow != blank or sp_fc_title != blank or section.settings.description != blank %}
+      <header class="sp-content-section-header sp-feature-cards__header sp-feature-cards__header--{{ section.settings.heading_alignment }}">
+        {% if section.settings.eyebrow != blank %}
+          <p class="sp-content-eyebrow sp-feature-cards__eyebrow">{{ section.settings.eyebrow | escape }}</p>
+        {% endif %}
+        {% if sp_fc_title != blank %}
+          <h2 id="SpFeatureCardsTitle-{{ section.id }}" class="sp-content-section-title sp-feature-cards__title">{{ sp_fc_title | escape }}</h2>
+        {% endif %}
+        {% if section.settings.description != blank %}
+          <div class="sp-content-section-description sp-feature-cards__description rte">{{ section.settings.description }}</div>
+        {% endif %}
+      </header>
+    {% endif %}
+
+    {% if section.blocks.size > 0 %}
+      <div class="sp-feature-cards__grid">
+        {% for block in section.blocks %}
+          <article class="sp-feature-card" {{ block.shopify_attributes }}>
+            {% if section.settings.show_icons %}
+              <div class="sp-feature-card__icon" aria-hidden="true">
+                {% render 'sp-content-icon', name: block.settings.icon %}
+              </div>
+            {% endif %}
+            <div class="sp-feature-card__content">
+              {% if block.settings.heading != blank %}
+                <h3 class="sp-content-card__title sp-feature-card__title">{{ block.settings.heading | escape }}</h3>
+              {% endif %}
+              {% if block.settings.text != blank %}
+                <p class="sp-content-card__text sp-feature-card__text">{{ block.settings.text | escape }}</p>
+              {% endif %}
+              {% if section.settings.show_links and block.settings.link_label != blank and block.settings.link != blank %}
+                <a class="sp-content-card__link sp-feature-card__link" href="{{ block.settings.link }}"{% if section.settings.open_links_new_tab %} target="_blank" rel="noopener noreferrer"{% endif %}>
+                  {{ block.settings.link_label | escape }}
+                  {% if section.settings.show_link_arrow %}<span class="sp-feature-card__arrow" aria-hidden="true">→</span>{% endif %}
+                </a>
+              {% endif %}
+            </div>
+          </article>
+        {% endfor %}
+      </div>
+    {% endif %}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Feature cards",
+  "disabled_on": {
+    "groups": [
+      "header",
+      "footer",
+      "custom.system"
+    ]
+  },
+  "settings": [
+    {
+      "type": "header",
+      "content": "Spider global design"
+    },
+    {
+      "type": "color_scheme",
+      "id": "sp_color_scheme",
+      "label": "Color scheme",
+      "default": "scheme-1",
+      "info": "Uses the shared Spider color panel from Theme settings."
+    },
+    {
+      "type": "select",
+      "id": "layout_style",
+      "label": "Design style",
+      "options": [
+        {
+          "value": "original",
+          "label": "Original Feature Cards"
+        },
+        {
+          "value": "premium",
+          "label": "Premium Feature Cards — Reference"
+        },
+        {
+          "value": "minimal",
+          "label": "Minimal Feature Cards"
+        },
+        {
+          "value": "horizontal",
+          "label": "Horizontal Feature List"
+        },
+        {
+          "value": "bordered",
+          "label": "Bordered Feature Cards"
+        }
+      ],
+      "default": "original"
+    },
+    {
+      "type": "select",
+      "id": "container_width",
+      "label": "Section width",
+      "options": [
+        {
+          "value": "normal",
+          "label": "Standard"
+        },
+        {
+          "value": "wide",
+          "label": "Wide"
+        },
+        {
+          "value": "narrow",
+          "label": "Narrow"
+        }
+      ],
+      "default": "normal"
+    },
+    {
+      "type": "header",
+      "content": "Section heading"
+    },
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Eyebrow label"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Why Shop With Us"
+    },
+    {
+      "type": "richtext",
+      "id": "description",
+      "label": "Description"
+    },
+    {
+      "type": "select",
+      "id": "heading_alignment",
+      "label": "Heading alignment",
+      "options": [
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "left",
+          "label": "Left"
+        }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "checkbox",
+      "id": "use_global_typography",
+      "label": "Use global typography sizes",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "heading_size_desktop",
+      "label": "Custom desktop heading size",
+      "min": 24,
+      "max": 72,
+      "step": 2,
+      "default": 52,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "heading_size_mobile",
+      "label": "Custom mobile heading size",
+      "min": 20,
+      "max": 44,
+      "step": 2,
+      "default": 32,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "card_title_size",
+      "label": "Custom card heading size",
+      "min": 18,
+      "max": 32,
+      "step": 1,
+      "default": 24,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "body_size",
+      "label": "Custom body text size",
+      "min": 14,
+      "max": 22,
+      "step": 1,
+      "default": 17,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "header_bottom_gap",
+      "label": "Header to cards gap",
+      "min": 16,
+      "max": 100,
+      "step": 2,
+      "default": 48,
+      "unit": "px"
+    },
+    {
+      "type": "header",
+      "content": "Responsive grid"
+    },
+    {
+      "type": "select",
+      "id": "columns_desktop",
+      "label": "Desktop columns",
+      "options": [
+        {
+          "value": "2",
+          "label": "2"
+        },
+        {
+          "value": "3",
+          "label": "3"
+        },
+        {
+          "value": "4",
+          "label": "4"
+        }
+      ],
+      "default": "3"
+    },
+    {
+      "type": "select",
+      "id": "columns_tablet",
+      "label": "Tablet columns",
+      "options": [
+        {
+          "value": "1",
+          "label": "1"
+        },
+        {
+          "value": "2",
+          "label": "2"
+        },
+        {
+          "value": "3",
+          "label": "3"
+        }
+      ],
+      "default": "2"
+    },
+    {
+      "type": "select",
+      "id": "columns_mobile",
+      "label": "Mobile columns",
+      "options": [
+        {
+          "value": "1",
+          "label": "1"
+        },
+        {
+          "value": "2",
+          "label": "2"
+        }
+      ],
+      "default": "1"
+    },
+    {
+      "type": "range",
+      "id": "card_gap_desktop",
+      "label": "Desktop card gap",
+      "min": 8,
+      "max": 56,
+      "step": 2,
+      "default": 24,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "card_gap_mobile",
+      "label": "Mobile card gap",
+      "min": 8,
+      "max": 32,
+      "step": 2,
+      "default": 16,
+      "unit": "px"
+    },
+    {
+      "type": "checkbox",
+      "id": "equal_height",
+      "label": "Equal height cards",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Card appearance"
+    },
+    {
+      "type": "range",
+      "id": "card_padding_desktop",
+      "label": "Card padding desktop",
+      "min": 12,
+      "max": 64,
+      "step": 2,
+      "default": 38,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "card_padding_mobile",
+      "label": "Card padding mobile",
+      "min": 12,
+      "max": 40,
+      "step": 2,
+      "default": 24,
+      "unit": "px"
+    },
+    {
+      "type": "checkbox",
+      "id": "use_global_radius",
+      "label": "Use global card radius",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "card_radius",
+      "label": "Custom card radius",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "default": 12,
+      "unit": "px"
+    },
+    {
+      "type": "select",
+      "id": "card_hover",
+      "label": "Card hover effect",
+      "options": [
+        {
+          "value": "none",
+          "label": "None"
+        },
+        {
+          "value": "lift",
+          "label": "Subtle lift"
+        },
+        {
+          "value": "border",
+          "label": "Accent border"
+        }
+      ],
+      "default": "none"
+    },
+    {
+      "type": "checkbox",
+      "id": "use_global_card_colors",
+      "label": "Use global card colors",
+      "default": true
+    },
+    {
+      "type": "color",
+      "id": "custom_card_background",
+      "label": "Custom card background",
+      "default": "#FFFFFF"
+    },
+    {
+      "type": "color",
+      "id": "custom_card_border",
+      "label": "Custom card border",
+      "default": "#E4E4E7"
+    },
+    {
+      "type": "header",
+      "content": "Icons & links"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_icons",
+      "label": "Show card icons",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "icon_box_size",
+      "label": "Icon background size",
+      "min": 48,
+      "max": 120,
+      "step": 4,
+      "default": 96,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "icon_size",
+      "label": "Icon size",
+      "min": 20,
+      "max": 56,
+      "step": 2,
+      "default": 42,
+      "unit": "px"
+    },
+    {
+      "type": "checkbox",
+      "id": "use_global_icon_colors",
+      "label": "Use global accent for icons",
+      "default": true
+    },
+    {
+      "type": "color",
+      "id": "custom_icon_color",
+      "label": "Custom icon color",
+      "default": "#415DFF"
+    },
+    {
+      "type": "color",
+      "id": "custom_icon_background",
+      "label": "Custom icon background",
+      "default": "#EEF3FF"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_links",
+      "label": "Show CTA links",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_link_arrow",
+      "label": "Show CTA arrows",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "open_links_new_tab",
+      "label": "Open CTA links in new tab",
+      "default": false
+    },
+    {
+      "type": "header",
+      "content": "Section spacing"
+    },
+    {
+      "type": "checkbox",
+      "id": "use_global_spacing",
+      "label": "Use Spider global section spacing",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "padding_top_desktop",
+      "label": "Custom top spacing desktop",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "default": 88,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom_desktop",
+      "label": "Custom bottom spacing desktop",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "default": 88,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "padding_top_mobile",
+      "label": "Custom top spacing mobile",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "default": 48,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom_mobile",
+      "label": "Custom bottom spacing mobile",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "default": 48,
+      "unit": "px"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "feature",
+      "name": "Feature",
+      "limit": 6,
+      "settings": [
+        {
+          "type": "select",
+          "id": "icon",
+          "label": "Icon",
+          "default": "bag",
+          "options": [
+            {
+              "value": "bag",
+              "label": "Shopping bag"
+            },
+            {
+              "value": "headset",
+              "label": "Support"
+            },
+            {
+              "value": "card",
+              "label": "Payment card"
+            },
+            {
+              "value": "truck",
+              "label": "Shipping"
+            },
+            {
+              "value": "shield",
+              "label": "Shield"
+            },
+            {
+              "value": "heart",
+              "label": "Heart"
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "Heading",
+          "default": "Curated Products"
+        },
+        {
+          "type": "textarea",
+          "id": "text",
+          "label": "Text",
+          "default": "We choose products with a focus on quality, function, and thoughtful design."
+        },
+        {
+          "type": "text",
+          "id": "link_label",
+          "label": "Link label"
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "Link"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Feature cards",
+      "settings": {
+        "layout_style": "premium",
+        "container_width": "wide",
+        "eyebrow": "WHY SHOP WITH US",
+        "heading": "More Reasons to Love Spider",
+        "description": "<p>Thoughtful service and better essentials, from checkout to delivery.</p>",
+        "card_hover": "lift"
+      },
+      "blocks": [
+        {
+          "type": "feature",
+          "settings": {
+            "icon": "bag",
+            "heading": "Curated Products",
+            "text": "We choose products with a focus on quality, function, and thoughtful design.",
+            "link_label": "Explore products"
+          }
+        },
+        {
+          "type": "feature",
+          "settings": {
+            "icon": "headset",
+            "heading": "Reliable Support",
+            "text": "Our support experience is designed to be clear and helpful before, during, and after purchase.",
+            "link_label": "Contact support"
+          }
+        },
+        {
+          "type": "feature",
+          "settings": {
+            "icon": "card",
+            "heading": "Easy Shopping Experience",
+            "text": "From browsing to checkout, we keep the shopping journey simple, secure, and easy to follow.",
+            "link_label": "Learn more"
+          }
+        }
+      ],
+      "category": "04. Content"
+    }
+  ]
+}
+{% endschema %}

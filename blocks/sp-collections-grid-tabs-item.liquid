@@ -1,0 +1,55 @@
+{%- liquid
+  assign sp_tab_title = block.settings.title | default: 'Item title'
+  assign sp_tab_label = block.settings.custom_label | default: sp_tab_title
+  assign sp_tab_id = 'sp-cgt-tab-' | append: section.id | append: '-' | append: block.id
+  assign sp_panel_id = 'sp-cgt-panel-' | append: section.id | append: '-' | append: block.id
+-%}
+<button
+  type="button"
+  class="sp-collections-grid-tabs__tab-source"
+  id="{{ sp_tab_id }}"
+  role="tab"
+  aria-selected="false"
+  aria-controls="{{ sp_panel_id }}"
+  tabindex="-1"
+  data-sp-collections-grid-tabs-tab
+  data-tab-id="{{ block.id }}"
+  data-active-default="{{ block.settings.active_default }}"
+>
+  {%- if block.settings.icon != blank -%}
+    <span class="sp-collections-grid-tabs__tab-icon" aria-hidden="true">
+      {{ block.settings.icon | image_url: width: 64 | image_tag: widths: '32,48,64', sizes: '24px', loading: 'lazy', alt: '' }}
+    </span>
+  {%- endif -%}
+  <span class="sp-collections-grid-tabs__tab-label">{{ sp_tab_label | escape }}</span>
+  {%- if block.settings.badge != blank -%}<span class="sp-collections-grid-tabs__tab-badge">{{ block.settings.badge | escape }}</span>{%- endif -%}
+</button>
+<div
+  class="sp-collections-grid-tabs__panel"
+  id="{{ sp_panel_id }}"
+  role="tabpanel"
+  aria-labelledby="{{ sp_tab_id }}"
+  data-sp-collections-grid-tabs-panel
+  data-tab-id="{{ block.id }}"
+  hidden
+  {{ block.shopify_attributes }}
+>
+  {% content_for 'block', type: 'sp-collections-grid-tabs-product-grid', id: 'product-grid' %}
+</div>
+
+{% schema %}
+{
+  "name": "Tabs item",
+  "tag": null,
+  "settings": [
+    {"type":"text","id":"title","label":"Tab title","default":"Item title"},
+    {"type":"text","id":"custom_label","label":"Custom display label","info":"Optional. When blank, Tab title is used."},
+    {"type":"image_picker","id":"icon","label":"Optional tab icon"},
+    {"type":"text","id":"badge","label":"Optional badge","info":"Example: New, Sale, Hot"},
+    {"type":"checkbox","id":"active_default","label":"Active by default","default":false}
+  ],
+  "presets": [
+    {"name":"Tabs item","settings":{"title":"Item title"}}
+  ]
+}
+{% endschema %}

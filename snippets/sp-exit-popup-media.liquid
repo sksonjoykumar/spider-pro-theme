@@ -1,0 +1,46 @@
+{%- liquid
+  assign desktop_image = section.settings.image | default: section.settings.image_mobile
+  assign mobile_image = section.settings.image_mobile | default: desktop_image
+  assign alt_text = ''
+  if section.settings.image_purpose == 'informative'
+    assign alt_text = section.settings.image_alt | default: desktop_image.alt
+  endif
+  assign pos_d = section.settings.image_position_d
+  if pos_d == 'focal'
+    assign pos_d = desktop_image.presentation.focal_point | default: '50% 50%'
+  endif
+  assign pos_m = section.settings.image_position_m
+  if pos_m == 'focal'
+    assign pos_m = mobile_image.presentation.focal_point | default: pos_d
+  endif
+-%}
+{%- if desktop_image != blank -%}
+  <div class="sp-exit-popup__media" style="--sp-exit-media-pos-d: {{ pos_d }}; --sp-exit-media-pos-m: {{ pos_m }}; --sp-exit-media-fit: {{ section.settings.image_fit }};">
+    <picture class="sp-exit-popup__picture">
+      {%- if section.settings.image_mobile != blank and section.settings.image_mobile != desktop_image -%}
+        <source media="(max-width: 749px)" srcset="{{ mobile_image | image_url: width: 360 }} 360w, {{ mobile_image | image_url: width: 540 }} 540w, {{ mobile_image | image_url: width: 800 }} 800w" sizes="calc(100vw - 32px)">
+      {%- endif -%}
+      <img class="sp-exit-popup__image"
+        src="{{ desktop_image | image_url: width: 900 }}"
+        srcset="{{ desktop_image | image_url: width: 420 }} 420w, {{ desktop_image | image_url: width: 640 }} 640w, {{ desktop_image | image_url: width: 900 }} 900w, {{ desktop_image | image_url: width: 1200 }} 1200w"
+        sizes="(min-width: 990px) min(41vw, 620px), calc(100vw - 32px)"
+        width="{{ desktop_image.width }}" height="{{ desktop_image.height }}"
+        loading="lazy" alt="{{ alt_text | escape }}">
+    </picture>
+    {%- if section.settings.popup_layout == 'reference_split' -%}
+      {%- if section.settings.promo_image_overlay > 0 -%}
+        <span class="sp-exit-popup__media-overlay" aria-hidden="true"></span>
+      {%- endif -%}
+      {%- if section.settings.show_promo_badge and section.settings.promo_badge_value != blank -%}
+        <div class="sp-exit-popup__promo-badge" aria-label="{{ section.settings.promo_badge_top | escape }} {{ section.settings.promo_badge_value | escape }} {{ section.settings.promo_badge_bottom | escape }}">
+          {%- if section.settings.promo_badge_top != blank -%}<span class="sp-exit-popup__promo-badge-top">{{ section.settings.promo_badge_top | escape }}</span>{%- endif -%}
+          <strong>{{ section.settings.promo_badge_value | escape }}</strong>
+          {%- if section.settings.promo_badge_bottom != blank -%}<span class="sp-exit-popup__promo-badge-bottom">{{ section.settings.promo_badge_bottom | escape }}</span>{%- endif -%}
+        </div>
+      {%- endif -%}
+      {%- if section.settings.show_image_tagline and section.settings.promo_image_tagline != blank -%}
+        <p class="sp-exit-popup__image-tagline" style="color:{{ section.settings.promo_tagline_color }};">{{ section.settings.promo_image_tagline | escape | newline_to_br }}</p>
+      {%- endif -%}
+    {%- endif -%}
+  </div>
+{%- endif -%}

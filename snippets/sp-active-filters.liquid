@@ -1,0 +1,26 @@
+{% if active_count > 0 %}
+  <div class="sp-collection-active-filters" data-sp-active-filters aria-label="Active filters">
+    <div class="sp-collection-active-filters__chips">
+      {% for filter in collection.filters %}
+        {% if filter.type == 'price_range' %}
+          {% if filter.min_value.value != blank or filter.max_value.value != blank %}
+            {%- assign min_price = filter.min_value.value | default: 0 -%}
+            {%- assign max_price = filter.max_value.value | default: filter.range_max -%}
+            <a class="sp-collection-active-filters__chip" href="{{ filter.url_to_remove }}" data-sp-collection-link>
+              <span>{{ min_price | money }} – {{ max_price | money }}</span><span aria-hidden="true">×</span><span class="visually-hidden">Remove price filter</span>
+            </a>
+          {% endif %}
+        {% else %}
+          {% for value in filter.active_values %}
+            <a class="sp-collection-active-filters__chip" href="{{ value.url_to_remove }}" data-sp-collection-link>
+              <span>{{ filter.label | escape }}: {{ value.label | escape }}</span><span aria-hidden="true">×</span><span class="visually-hidden">Remove {{ value.label | escape }} filter</span>
+            </a>
+          {% endfor %}
+        {% endif %}
+      {% endfor %}
+    </div>
+    {% if section.settings.show_clear_all %}
+      <a class="sp-collection-active-filters__clear" href="{{ collection.url }}{% if sort_by != blank %}?sort_by={{ sort_by | url_encode }}{% endif %}" data-sp-collection-link>Clear all</a>
+    {% endif %}
+  </div>
+{% endif %}

@@ -1,0 +1,59 @@
+name: Bug report
+description: Report a reproducible Spider Pro theme issue.
+title: "[Bug]: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: "Do not include passwords, access tokens, customer data, or private store information."
+  - type: input
+    id: version
+    attributes:
+      label: Spider Pro version
+      placeholder: "1.0.0"
+    validations:
+      required: true
+  - type: input
+    id: template
+    attributes:
+      label: Affected template or section
+      placeholder: "product.default.json / main-product"
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+    validations:
+      required: true
+  - type: dropdown
+    id: device
+    attributes:
+      label: Device
+      options:
+        - Desktop
+        - Tablet
+        - Mobile
+        - Multiple
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Screenshots or sanitized console output
+      description: Remove store URLs, customer information, and credentials.
+    validations:
+      required: false

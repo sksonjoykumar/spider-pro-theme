@@ -1,0 +1,32 @@
+{% comment %}Lightweight semantic Search result card for Article resources. Required: article.{% endcomment %}
+{% assign article_excerpt = article.excerpt | default: article.content %}
+<article class="sp-search-article-card">
+  {% if show_image and article.image %}
+    <a class="sp-search-article-card__media" href="{{ article.url }}" aria-label="{{ article.title | escape }}">
+      {% render 'responsive-image', image: article.image, class: 'sp-search-article-card__image', widths: '320,480,640,800,1000', sizes: '(min-width: 990px) 30vw, (min-width: 750px) 45vw, 100vw', loading: 'lazy', alt: article.image.alt, default: article.title %}
+    </a>
+  {% endif %}
+  <div class="sp-search-article-card__content">
+    <span class="sp-search-resource-type">{{ 'general.search.articles' | t }}</span>
+    <h2 class="sp-search-resource-title sp-heading--h4"><a href="{{ article.url }}">{{ article.title | escape }}</a></h2>
+    {% if show_date %}<div class="sp-search-resource-meta">{{ article.published_at | time_tag: format: 'date' }}</div>{% endif %}
+    {% if show_excerpt and article_excerpt != blank %}<p class="sp-search-resource-excerpt">{{ article_excerpt | strip_html | strip | truncatewords: 28 }}</p>{% endif %}
+    <a class="sp-search-resource-link" href="{{ article.url }}">{{ 'general.buttons.read_more' | t }} <span aria-hidden="true">→</span></a>
+  </div>
+</article>
+{% comment %}
+
+This file has been rewritten to preserve the original behavior.
+
+---
+Changes:
+- from: "{% render 'responsive-image', image: article.image, class: 'sp-search-article-card__image',
+    widths: '320,480,640,800,1000', sizes: '(min-width: 990px) 30vw, (min-width: 750px)
+    45vw, 100vw', loading: 'lazy', alt: article.image.alt | default: article.title
+    %}"
+  to: "{% render 'responsive-image', image: article.image, class: 'sp-search-article-card__image',
+    widths: '320,480,640,800,1000', sizes: '(min-width: 990px) 30vw, (min-width: 750px)
+    45vw, 100vw', loading: 'lazy', alt: article.image.alt, default: article.title
+    %}"
+  position: 390..646
+{% endcomment %}

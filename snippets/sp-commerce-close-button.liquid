@@ -1,0 +1,9 @@
+{%- comment -%}
+  Unified close control for every Spider Global Product System dialog.
+  Accepts: label (required accessible name)
+{%- endcomment -%}
+<button class="sp-commerce-dialog__close" type="button" data-sp-commerce-close aria-label="{{ label | default: 'Close dialog' | escape }}">
+  <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+    <path d="m6 6 12 12M18 6 6 18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+  </svg>
+</button>

@@ -1,0 +1,37 @@
+<div class="sp-hero-video__media{% unless has_video %} sp-hero-video__media--static{% endunless %}" data-sp-hv-media>
+  {% render 'sp-hero-video-placeholder', section: section, poster: poster, poster_mobile: poster_mobile, is_priority: is_priority %}
+
+  {% if poster == blank %}
+    <div class="sp-hero-video__fallback" data-sp-hv-fallback aria-hidden="true">
+      <svg viewBox="0 0 96 64" focusable="false" aria-hidden="true">
+        <rect x="1" y="1" width="94" height="62" rx="8" fill="none" stroke="currentColor" stroke-width="2" opacity=".35"/>
+        <path d="M39 20v24l20-12z" fill="currentColor" opacity=".55"/>
+      </svg>
+    </div>
+  {% endif %}
+
+  {% if source == 'shopify' and has_shopify_video %}
+    <div class="sp-hero-video__native" data-sp-hv-native-wrap>
+      {{ section.settings.shopify_video
+        | video_tag:
+          class: 'sp-hero-video__native-video',
+          playsinline: true,
+          autoplay: false,
+          muted: effective_muted,
+          loop: section.settings.loop,
+          controls: effective_controls,
+          preload: native_preload,
+          loading: native_loading,
+          image_size: '1600x'
+      }}
+    </div>
+  {% elsif source == 'external' and has_external_video %}
+    <div
+      id="SpHeroVideoPlayer-{{ section.id }}"
+      class="sp-hero-video__external"
+      data-sp-hv-external
+      data-provider="{{ external_type }}"
+      data-video-id="{{ external_id | escape }}"
+    ></div>
+  {% endif %}
+</div>

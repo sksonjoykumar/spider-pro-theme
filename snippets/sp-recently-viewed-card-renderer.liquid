@@ -1,0 +1,15 @@
+{%- comment -%}
+  Internal Recently Viewed Product Card render adapter.
+  This snippet never creates a second card system; it delegates to Spider's canonical sp-product-card.
+  Expected context: a product page requested through Shopify Section Rendering API.
+{%- endcomment -%}
+{%- if product != blank -%}
+  {% render 'sp-product-card',
+    product: product,
+    context: 'recently-viewed',
+    design: design,
+    section_id: 'sp-recently-viewed-renderer',
+    instance_id: product.id,
+    sizes: '(min-width: 1440px) 360px, (min-width: 990px) 25vw, (min-width: 750px) 33vw, 50vw'
+  %}
+{%- endif -%}

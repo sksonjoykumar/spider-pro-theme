@@ -1,0 +1,63 @@
+{{ 'sp-customer-account.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'sp-customer-account.js' | asset_url }}" defer></script>
+{% render 'sp-section-color-scheme', section: section %}
+<section class="sp-section sp-account-page" style="--sp-account-pad-top:{{ section.settings.padding_top }}px;--sp-account-pad-bottom:{{ section.settings.padding_bottom }}px">
+  <div class="sp-container{% if section.settings.container_width == 'wide' %} sp-container--wide{% elsif section.settings.container_width == 'narrow' %} sp-container--narrow{% endif %}">
+    <header class="sp-account-page-header"><div><span class="sp-account-kicker">{{ 'customer.spider.account_center' | t }}</span><h1>{{ 'customer.addresses.title' | t }}</h1><p>{{ 'customer.spider.addresses_intro' | t }}</p></div><button class="sp-button sp-button--primary" type="button" data-details-open="AddressNew">{% render 'sp-account-icon', name: 'plus' %}{{ 'customer.spider.add_address' | t }}</button></header>
+    <div class="sp-account-shell"><aside>{% render 'sp-account-nav', active: 'addresses' %}</aside><div class="sp-account-shell__main">
+      <details class="sp-account-expand" id="AddressNew"{% if customer.new_address.errors %} open{% endif %}>
+        <summary>{{ 'customer.addresses.add_new' | t }}</summary>
+        <div class="sp-account-expand__body">
+          {% form 'customer_address', customer.new_address %}
+            {% if form.errors %}<div class="sp-account-alert sp-account-alert--error" role="alert">{{ form.errors | default_errors }}</div>{% endif %}
+            {% render 'sp-account-address-fields', form: form, prefix: 'AddressNew', address: customer.new_address, customer: customer %}
+            <div class="sp-account-form-actions"><button class="sp-button sp-button--primary" type="submit">{{ 'customer.addresses.add' | t }}</button><button class="sp-button sp-button--outline" type="button" data-details-close>{{ 'customer.spider.cancel' | t }}</button></div>
+          {% endform %}
+        </div>
+      </details>
+      {% if customer.addresses_count > 0 %}
+        <div class="sp-account-address-grid">
+          {% for address in customer.addresses %}{% render 'sp-account-address-card', address: address, customer: customer, index: forloop.index %}{% endfor %}
+        </div>
+        {% for address in customer.addresses %}
+          <details class="sp-account-expand" id="AddressEdit-{{ address.id }}">
+            <summary>{{ 'customer.addresses.edit' | t }} — {{ address.first_name | escape }} {{ address.last_name | escape }}</summary>
+            <div class="sp-account-expand__body">
+              {% form 'customer_address', address %}
+                {% if form.errors %}<div class="sp-account-alert sp-account-alert--error" role="alert">{{ form.errors | default_errors }}</div>{% endif %}
+                {% render 'sp-account-address-fields', form: form, prefix: 'AddressEdit-', append: address.id, address: address, customer: customer %}
+                <div class="sp-account-form-actions"><button class="sp-button sp-button--primary" type="submit">{{ 'customer.spider.save_address' | t }}</button><button class="sp-button sp-button--outline" type="button" data-details-close>{{ 'customer.spider.cancel' | t }}</button></div>
+              {% endform %}
+            </div>
+          </details>
+          <details class="sp-account-expand sp-account-expand--danger" id="AddressDelete-{{ address.id }}">
+            <summary>{{ 'customer.addresses.delete' | t }} — {{ address.first_name | escape }} {{ address.last_name | escape }}</summary>
+            <div class="sp-account-expand__body"><p>{{ 'customer.spider.delete_address_confirm' | t }}</p><div class="sp-account-form-actions"><form method="post" action="{{ address.url }}" accept-charset="UTF-8"><input type="hidden" name="_method" value="delete"><button class="sp-button sp-button--primary sp-button--danger" type="submit">{{ 'customer.spider.delete_address' | t }}</button></form><button class="sp-button sp-button--outline" type="button" data-details-close>{{ 'customer.spider.cancel' | t }}</button></div></div>
+          </details>
+        {% endfor %}
+      {% else %}{% render 'sp-account-empty-state', icon: 'addresses', heading: 'customer.spider.no_addresses_heading', text: 'customer.spider.no_addresses_text', button_label: 'customer.spider.add_address', button_href: '#AddressNew' %}{% endif %}
+    </div></div>
+  </div>
+</section>
+{% schema %}
+{"name":"Main addresses","settings":[{"type":"color_scheme","id":"sp_color_scheme","label":"Color scheme","default":"scheme-1"},{"type":"select","id":"container_width","label":"Container width","default":"default","options":[{"value":"narrow","label":"Narrow"},{"value":"default","label":"Theme default"},{"value":"wide","label":"Wide"}]},{"type":"range","id":"padding_top","label":"Padding top","min":24,"max":160,"step":8,"unit":"px","default":64},{"type":"range","id":"padding_bottom","label":"Padding bottom","min":24,"max":160,"step":8,"unit":"px","default":80}]}
+{% endschema %}
+{% comment %}
+
+This file has been rewritten to preserve the original behavior.
+
+---
+Changes:
+- from: "{% render 'sp-account-address-fields', form: form, prefix: 'AddressEdit-'
+    | append: address.id, address: address, customer: customer %}"
+  to: "{% render 'sp-account-address-fields', form: form, prefix: 'AddressEdit-',
+    append: address.id, address: address, customer: customer %}"
+  position: 2822..2956
+- from: "{% render 'sp-account-empty-state', icon: 'addresses', heading: 'customer.spider.no_addresses_heading'
+    | t, text: 'customer.spider.no_addresses_text' | t, button_label: 'customer.spider.add_address'
+    | t, button_href: '#AddressNew' %}"
+  to: "{% render 'sp-account-empty-state', icon: 'addresses', heading: 'customer.spider.no_addresses_heading',
+    text: 'customer.spider.no_addresses_text', button_label: 'customer.spider.add_address',
+    button_href: '#AddressNew' %}"
+  position: 4151..4372
+{% endcomment %}

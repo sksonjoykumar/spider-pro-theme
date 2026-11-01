@@ -1,0 +1,166 @@
+{% comment %}
+  Spider issued Gift Card presentation.
+  Uses the canonical Shopify gift_card object and Spider global design tokens.
+{% endcomment %}
+
+{% liquid
+  assign recipient_name = blank
+  if gift_card.recipient
+    assign recipient_name = gift_card.recipient.name | default: gift_card.recipient.nickname
+  endif
+
+  assign gift_status = 'active'
+  assign gift_status_text = 'Active'
+  if gift_card.enabled == false
+    assign gift_status = 'disabled'
+    assign gift_status_text = 'Gift card unavailable'
+  elsif gift_card.expired
+    assign gift_status = 'expired'
+    assign gift_status_text = 'gift_cards.issued.expired' | t
+  elsif gift_card.balance == 0
+    assign gift_status = 'used'
+    assign gift_status_text = 'No remaining balance'
+  endif
+%}
+
+<section class="sp-gift-card-page" data-gift-card-page aria-labelledby="GiftCardTitle">
+  <div class="sp-container sp-container--narrow sp-gift-card-page__container">
+    <header class="sp-gift-card-page__brand">
+      <a class="sp-gift-card-page__brand-link" href="{{ routes.root_url }}" aria-label="{{ shop.name | escape }}">
+        {% if settings.sp_logo != blank %}
+          {{ settings.sp_logo
+            | image_url: width: 420
+            | image_tag:
+              widths: '120, 180, 240, 320, 420',
+              sizes: '(max-width: 749px) 160px, 210px',
+              loading: 'eager',
+              fetchpriority: 'high',
+              class: 'sp-gift-card-page__logo',
+              alt: shop.name
+          }}
+        {% else %}
+          <span class="sp-gift-card-page__shop-name">{{ shop.name | escape }}</span>
+        {% endif %}
+      </a>
+    </header>
+
+    <div class="sp-gift-card-page__intro">
+      <p class="sp-gift-card-page__eyebrow">{{ 'gift_cards.issued.subtext' | t }}</p>
+      <h1 id="GiftCardTitle" class="sp-gift-card-page__title sp-heading--h1">{{ 'gift_cards.issued.subtext' | t }}</h1>
+      {% if recipient_name != blank %}
+        <p class="sp-gift-card-page__recipient">For {{ recipient_name | escape }}</p>
+      {% endif %}
+    </div>
+
+    <article class="sp-gift-card sp-gift-card--{{ gift_status }}" aria-label="{{ 'gift_cards.issued.subtext' | t }}">
+      <div class="sp-gift-card__decor" aria-hidden="true"></div>
+
+      <div class="sp-gift-card__topline">
+        <span class="sp-gift-card__brand-name">{{ shop.name | escape }}</span>
+        <span class="sp-gift-card__status sp-gift-card__status--{{ gift_status }}">
+          <span class="sp-gift-card__status-dot" aria-hidden="true"></span>
+          {{ gift_status_text }}
+        </span>
+      </div>
+
+      <div class="sp-gift-card__value-group">
+        <span class="sp-gift-card__label">Gift card value</span>
+        <strong class="sp-gift-card__value">{{ gift_card.initial_value | money }}</strong>
+      </div>
+
+      <div class="sp-gift-card__code-block">
+        <span class="sp-gift-card__label">{{ 'gift_cards.issued.gift_card_code' | t }}</span>
+        <code class="sp-gift-card__code" dir="ltr" data-gift-card-code>{{ gift_card.code | format_code }}</code>
+        <button
+          class="sp-button sp-button--secondary sp-gift-card__copy"
+          type="button"
+          data-gift-card-copy
+          aria-describedby="GiftCardCopyStatus"
+        >
+          <span data-gift-card-copy-label>{{ 'gift_cards.issued.copy_code' | t }}</span>
+        </button>
+        <span id="GiftCardCopyStatus" class="visually-hidden" aria-live="polite" data-gift-card-copy-status></span>
+      </div>
+
+      <div class="sp-gift-card__details">
+        <div class="sp-gift-card__detail">
+          <span class="sp-gift-card__detail-label">Remaining balance</span>
+          <strong class="sp-gift-card__detail-value">{{ gift_card.balance | money }}</strong>
+        </div>
+
+        {% if gift_card.expires_on %}
+          <div class="sp-gift-card__detail">
+            <span class="sp-gift-card__detail-label">Expires</span>
+            <time class="sp-gift-card__detail-value" datetime="{{ gift_card.expires_on | date: '%Y-%m-%d' }}">
+              {{ gift_card.expires_on | date: '%b %d, %Y' }}
+            </time>
+          </div>
+        {% endif %}
+      </div>
+    </article>
+
+    <p class="sp-gift-card-page__redeem">{{ 'gift_cards.issued.redeem' | t }}</p>
+
+    {% if gift_card.qr_identifier != blank %}
+      <section class="sp-gift-card-qr" aria-labelledby="GiftCardQrTitle">
+        <h2 id="GiftCardQrTitle" class="sp-gift-card-qr__title">Scan to use your gift card</h2>
+        <div
+          class="sp-gift-card-qr__surface"
+          data-gift-card-qr
+          data-qr-text="{{ gift_card.qr_identifier | escape }}"
+          role="img"
+          aria-label="{{ 'gift_cards.issued.qr_image_alt' | t }}"
+        ></div>
+      </section>
+    {% endif %}
+
+    {% if gift_card.message != blank or gift_card.send_on != blank %}
+      <section class="sp-gift-card-message" aria-label="Gift card message">
+        {% if gift_card.message != blank %}
+          <p class="sp-gift-card-message__text">“{{ gift_card.message | escape }}”</p>
+        {% endif %}
+        {% if gift_card.send_on != blank %}
+          <p class="sp-gift-card-message__meta">
+            Sent on
+            <time datetime="{{ gift_card.send_on | date: '%Y-%m-%d' }}">{{ gift_card.send_on | date: '%b %d, %Y' }}</time>
+          </p>
+        {% endif %}
+      </section>
+    {% endif %}
+
+    <div class="sp-gift-card-actions" aria-label="Gift card actions">
+      {% if gift_card.pass_url %}
+        <a
+          class="sp-gift-card-actions__wallet"
+          href="{{ gift_card.pass_url }}"
+          aria-label="{{ 'gift_cards.issued.add_to_apple_wallet' | t }}"
+        >
+          <img
+            src="{{ 'gift-card/add-to-apple-wallet.svg' | shopify_asset_url }}"
+            width="120"
+            height="40"
+            loading="lazy"
+            alt="{{ 'gift_cards.issued.add_to_apple_wallet' | t }}"
+          >
+        </a>
+      {% endif %}
+
+      <button class="sp-button sp-button--outline" type="button" data-gift-card-print>
+        {{ 'gift_cards.issued.print' | t }}
+      </button>
+
+      <a class="sp-button sp-button--primary" href="{{ routes.root_url }}">
+        {{ 'gift_cards.issued.shop_link' | t }}
+      </a>
+    </div>
+
+    <footer class="sp-gift-card-page__footer">
+      <span>{{ shop.name | escape }}</span>
+      {% if gift_card.last_four_characters != blank %}
+        <span aria-label="{{ 'gift_cards.issued.last_four' | t: last_four: gift_card.last_four_characters }}">
+          •••• {{ gift_card.last_four_characters | escape }}
+        </span>
+      {% endif %}
+    </footer>
+  </div>
+</section>

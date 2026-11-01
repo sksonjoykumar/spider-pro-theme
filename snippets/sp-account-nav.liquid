@@ -1,0 +1,15 @@
+{% comment %}Parameters: active = overview|orders|addresses{% endcomment %}
+<nav class="sp-account-nav" aria-label="{{ 'customer.spider.account_navigation' | t }}">
+  <a class="sp-account-nav__item{% if active == 'overview' %} is-active{% endif %}" href="{{ routes.account_url }}"{% if active == 'overview' %} aria-current="page"{% endif %}>
+    {% render 'sp-account-icon', name: 'overview' %}<span>{{ 'customer.spider.overview' | t }}</span>
+  </a>
+  <a class="sp-account-nav__item{% if active == 'orders' %} is-active{% endif %}" href="{{ routes.account_url }}#orders"{% if active == 'orders' %} aria-current="page"{% endif %}>
+    {% render 'sp-account-icon', name: 'orders' %}<span>{{ 'customer.orders.title' | t }}</span>
+  </a>
+  <a class="sp-account-nav__item{% if active == 'addresses' %} is-active{% endif %}" href="{{ routes.account_addresses_url }}"{% if active == 'addresses' %} aria-current="page"{% endif %}>
+    {% render 'sp-account-icon', name: 'addresses' %}<span>{{ 'customer.account.addresses' | t }}</span>
+  </a>
+  <a class="sp-account-nav__item" href="{{ routes.account_logout_url }}">
+    {% render 'sp-account-icon', name: 'logout' %}<span>{{ 'customer.log_out' | t }}</span>
+  </a>
+</nav>

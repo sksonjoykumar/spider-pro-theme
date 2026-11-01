@@ -1,0 +1,871 @@
+{% render 'sp-section-color-scheme', section: section %}
+{{ 'sp-product-recommendations.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'sp-product-recommendations.js' | asset_url }}" defer></script>
+
+{%- liquid
+  assign sp_has_results = false
+  if recommendations.performed? and recommendations.products_count > 0
+    assign sp_has_results = true
+  endif
+
+  assign sp_product_design = blank
+  unless section.settings.use_global_product_settings
+    assign sp_product_design = section.settings.product_style
+  endunless
+
+  assign sp_container_choice = section.settings.container_width | default: 'theme'
+  assign sp_container_class = 'sp-container'
+  assign sp_is_full = false
+
+  case sp_container_choice
+    when 'full'
+      assign sp_container_class = 'sp-product-recommendations__container--full'
+      assign sp_is_full = true
+    when 'wide'
+      assign sp_container_class = 'sp-container sp-container--wide'
+    when 'narrow'
+      assign sp_container_class = 'sp-container sp-container--narrow'
+    when 'boxed'
+      assign sp_container_class = 'sp-container'
+    else
+      if settings.sp_layout_style == 'full'
+        assign sp_container_class = 'sp-product-recommendations__container--full'
+        assign sp_is_full = true
+      else
+        assign sp_container_class = 'sp-container'
+      endif
+  endcase
+
+  assign sp_heading_style = section.settings.heading_style | default: 'h2'
+  assign sp_heading_tag = sp_heading_style
+  assign sp_typography_source = 'global'
+  if sp_heading_style == 'custom'
+    assign sp_heading_tag = 'h2'
+    assign sp_typography_source = 'custom'
+  endif
+  assign sp_subheading = section.settings.subheading | escape
+
+  assign sp_cols_d = section.settings.columns_desktop | default: 4
+  assign sp_cols_t = section.settings.columns_tablet | default: 3
+  assign sp_cols_m = section.settings.columns_mobile | default: 2
+
+  assign sp_gap_d = settings.product_grid_gap | default: 24
+  assign sp_gap_t = settings.product_grid_gap | default: 24
+  assign sp_gap_m = settings.mobile_grid_gap | default: 16
+  unless section.settings.use_theme_gap
+    assign sp_gap_d = section.settings.gap_desktop
+    assign sp_gap_t = section.settings.gap_tablet
+    assign sp_gap_m = section.settings.gap_mobile
+  endunless
+
+  assign sp_max_width = settings.sp_container_width | default: 1280
+  case sp_container_choice
+    when 'wide'
+      assign sp_max_width = settings.sp_wide_width | default: 1600
+    when 'narrow'
+      assign sp_max_width = settings.sp_narrow_width | default: 800
+  endcase
+  if sp_container_choice == 'theme' and settings.sp_layout_style == 'full'
+    assign sp_is_full = true
+  endif
+
+  capture sp_sizes
+    if sp_is_full
+      echo '(min-width: 990px) calc((100vw - 64px) / '
+      echo sp_cols_d
+      echo '), (min-width: 750px) calc((100vw - 48px) / '
+      echo sp_cols_t
+      echo '), calc((100vw - 32px) / '
+      echo sp_cols_m
+      echo ')'
+    else
+      echo '(min-width: 990px) calc(min('
+      echo sp_max_width
+      echo 'px, calc(100vw - 64px)) / '
+      echo sp_cols_d
+      echo '), (min-width: 750px) calc((100vw - 48px) / '
+      echo sp_cols_t
+      echo '), calc((100vw - 32px) / '
+      echo sp_cols_m
+      echo ')'
+    endif
+  endcapture
+
+  assign sp_autoplay_ms = section.settings.autoplay_speed | default: 5 | times: 1000
+  assign sp_spacing_source = section.settings.spacing_source | default: 'theme'
+-%}
+
+<sp-product-recommendations
+  id="SpiderProductRecommendations-{{ section.id }}"
+  class="sp-product-recommendations sp-product-section{% if sp_spacing_source == 'theme' %} sp-product-recommendations--theme-spacing{% else %} sp-product-recommendations--custom-spacing{% endif %}"
+  data-sp-product-recommendations
+  data-sp-product-section
+  data-section-id="{{ section.id }}"
+  data-product-id="{{ product.id }}"
+  data-recommendations-url="{{ routes.product_recommendations_url }}"
+  data-limit="{{ section.settings.products_to_show }}"
+  data-intent="{{ section.settings.recommendation_type }}"
+  data-performed="{{ recommendations.performed? }}"
+  data-has-results="{{ sp_has_results }}"
+  data-layout="{{ section.settings.layout }}"
+  data-design-mode="{{ request.design_mode }}"
+  data-money-format="{{ shop.money_with_currency_format | escape }}"
+  data-currency="{{ cart.currency.iso_code | default: shop.currency | escape }}"
+  data-cart-add-url="{{ routes.cart_add_url }}"
+  data-compare-max="4"
+  data-buy-now="{{ settings.dynamic_checkout }}"
+  data-swatch-color-map-json=""
+  aria-busy="{% if recommendations.performed? %}false{% else %}true{% endif %}"
+  aria-label="{{ section.settings.heading | default: 'You may also like' | escape }}"
+  style="
+    --sp-rec-cols-d: {{ sp_cols_d }};
+    --sp-rec-cols-t: {{ sp_cols_t }};
+    --sp-rec-cols-m: {{ sp_cols_m }};
+    --sp-rec-gap-d: {{ sp_gap_d }}px;
+    --sp-rec-gap-t: {{ sp_gap_t }}px;
+    --sp-rec-gap-m: {{ sp_gap_m }}px;
+    --sp-rec-pt-d: {{ section.settings.padding_top_desktop }}px;
+    --sp-rec-pb-d: {{ section.settings.padding_bottom_desktop }}px;
+    --sp-rec-pt-t: {{ section.settings.padding_top_tablet }}px;
+    --sp-rec-pb-t: {{ section.settings.padding_bottom_tablet }}px;
+    --sp-rec-pt-m: {{ section.settings.padding_top_mobile }}px;
+    --sp-rec-pb-m: {{ section.settings.padding_bottom_mobile }}px;
+  "
+  {% unless sp_has_results or request.design_mode %}hidden{% endunless %}
+>
+  <div class="{{ sp_container_class }} sp-product-recommendations__container" data-sp-recommendations-content>
+    {%- if sp_has_results -%}
+      {% render 'sp-section-heading',
+        heading: section.settings.heading,
+        subheading: sp_subheading,
+        heading_tag: sp_heading_tag,
+        design: section.settings.heading_design,
+        alignment: section.settings.heading_alignment,
+        mobile_alignment: section.settings.heading_alignment,
+        heading_gap: section.settings.heading_gap,
+        bottom_spacing: section.settings.heading_bottom_spacing,
+        typography_source: sp_typography_source,
+        heading_size_desktop: section.settings.heading_size_desktop,
+        heading_size_tablet: section.settings.heading_size_tablet,
+        heading_size_mobile: section.settings.heading_size_mobile,
+        heading_weight: section.settings.heading_weight,
+        heading_line_height: section.settings.heading_line_height,
+        heading_letter_spacing: section.settings.heading_letter_spacing,
+        subheading_size: section.settings.subheading_size
+      %}
+
+      {%- if section.settings.layout == 'grid' -%}
+        <div class="sp-product-recommendations__grid" data-sp-recommendations-products>
+          {%- assign sp_seen_ids = '|' -%}
+          {%- for recommendation in recommendations.products limit: section.settings.products_to_show -%}
+            {%- capture sp_token -%}|{{ recommendation.id }}|{%- endcapture -%}
+            {%- unless recommendation.id == product.id or sp_seen_ids contains sp_token -%}
+              {% render 'sp-product-card',
+                product: recommendation,
+                context: 'product-recommendations',
+                design: sp_product_design,
+                section_id: section.id,
+                instance_id: 'recommendations',
+                sizes: sp_sizes,
+                product_index: forloop.index,
+                section_index: section.index
+              %}
+              {%- assign sp_seen_ids = sp_seen_ids | append: sp_token -%}
+            {%- endunless -%}
+          {%- endfor -%}
+        </div>
+      {%- else -%}
+        <div
+          class="sp-product-recommendations__carousel sp-carousel-block"
+          data-sp-recommendations-carousel
+          data-loop="{{ section.settings.loop }}"
+          data-autoplay="{{ section.settings.autoplay }}"
+          data-autoplay-delay="{{ sp_autoplay_ms }}"
+          data-pause-hover="{{ section.settings.pause_on_hover }}"
+          data-drag="{{ section.settings.mouse_drag }}"
+          data-outside-opacity="false"
+          data-pagination-style="{{ section.settings.pagination_style }}"
+          data-design-mode="{{ request.design_mode }}"
+          aria-roledescription="carousel"
+          aria-label="{{ section.settings.heading | default: 'Recommended products' | escape }}"
+        >
+          <div class="sp-product-recommendations__viewport" data-sp-carousel-viewport tabindex="0">
+            <div class="sp-product-recommendations__track" data-sp-carousel-track data-sp-recommendations-products>
+              {%- assign sp_seen_ids = '|' -%}
+              {%- for recommendation in recommendations.products limit: section.settings.products_to_show -%}
+                {%- capture sp_token -%}|{{ recommendation.id }}|{%- endcapture -%}
+                {%- unless recommendation.id == product.id or sp_seen_ids contains sp_token -%}
+                  {% render 'sp-product-card',
+                    product: recommendation,
+                    context: 'product-recommendations',
+                    design: sp_product_design,
+                    section_id: section.id,
+                    instance_id: 'recommendations',
+                    sizes: sp_sizes,
+                    product_index: forloop.index,
+                    section_index: section.index
+                  %}
+                  {%- assign sp_seen_ids = sp_seen_ids | append: sp_token -%}
+                {%- endunless -%}
+              {%- endfor -%}
+            </div>
+          </div>
+
+          {%- if section.settings.show_arrows -%}
+            <div class="sp-product-recommendations__navigation" aria-label="Product recommendation navigation">
+              <button class="sp-product-recommendations__arrow sp-product-recommendations__arrow--prev" type="button" data-sp-carousel-prev aria-label="Previous products">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 5-7 7 7 7" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
+              <button class="sp-product-recommendations__arrow sp-product-recommendations__arrow--next" type="button" data-sp-carousel-next aria-label="Next products">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 7 7-7 7" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
+            </div>
+          {%- endif -%}
+
+          {%- if section.settings.show_dots or section.settings.autoplay -%}
+            <div class="sp-product-recommendations__controls">
+              {%- if section.settings.show_dots -%}<div class="sp-product-recommendations__pagination" data-sp-carousel-pagination aria-label="Recommendation pages"></div>{%- endif -%}
+              {%- if section.settings.autoplay -%}
+                <button class="sp-product-recommendations__pause" type="button" data-sp-carousel-pause aria-label="Pause autoplay" aria-pressed="false">
+                  <span class="sp-product-recommendations__pause-icon" aria-hidden="true">Ⅱ</span>
+                  <span class="visually-hidden">Pause autoplay</span>
+                </button>
+              {%- endif -%}
+            </div>
+          {%- endif -%}
+        </div>
+      {%- endif -%}
+    {%- elsif request.design_mode -%}
+      {% render 'sp-section-heading',
+        heading: section.settings.heading,
+        subheading: sp_subheading,
+        heading_tag: sp_heading_tag,
+        design: section.settings.heading_design,
+        alignment: section.settings.heading_alignment,
+        mobile_alignment: section.settings.heading_alignment,
+        heading_gap: section.settings.heading_gap,
+        bottom_spacing: section.settings.heading_bottom_spacing,
+        typography_source: sp_typography_source,
+        heading_size_desktop: section.settings.heading_size_desktop,
+        heading_size_tablet: section.settings.heading_size_tablet,
+        heading_size_mobile: section.settings.heading_size_mobile,
+        heading_weight: section.settings.heading_weight,
+        heading_line_height: section.settings.heading_line_height,
+        heading_letter_spacing: section.settings.heading_letter_spacing,
+        subheading_size: section.settings.subheading_size
+      %}
+      <div class="sp-product-recommendations__editor-state" role="status" data-sp-recommendations-editor-state>
+        {%- if recommendations.performed? -%}
+          No {{ section.settings.recommendation_type }} product recommendations were returned for this product.
+        {%- else -%}
+          Product recommendations load automatically from Shopify for the current product.
+        {%- endif -%}
+      </div>
+    {%- endif -%}
+  </div>
+</sp-product-recommendations>
+
+{% schema %}
+{
+  "name": "Product Recommendations",
+  "tag": "section",
+  "class": "sp-section-product-recommendations",
+  "enabled_on": {
+    "templates": [
+      "product",
+      "collection",
+      "list-collections"
+    ]
+  },
+  "settings": [
+    {
+      "type": "header",
+      "content": "Content"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "You may also like"
+    },
+    {
+      "type": "textarea",
+      "id": "subheading",
+      "label": "Description"
+    },
+    {
+      "type": "select",
+      "id": "recommendation_type",
+      "label": "Recommendation type",
+      "default": "related",
+      "options": [
+        {
+          "value": "related",
+          "label": "Related products"
+        },
+        {
+          "value": "complementary",
+          "label": "Complementary products"
+        }
+      ]
+    },
+    {
+      "type": "range",
+      "id": "products_to_show",
+      "label": "Products to show",
+      "min": 1,
+      "max": 10,
+      "step": 1,
+      "default": 4
+    },
+    {
+      "type": "header",
+      "content": "Product card"
+    },
+    {
+      "type": "checkbox",
+      "id": "use_global_product_settings",
+      "label": "Use global Product Settings",
+      "default": true,
+      "info": "Uses Theme settings → Product Settings for the eight premium Product Card Styles and the shared Spider Product Card. Turn off only to override Product Design for this section."
+    },
+    {
+      "type": "select",
+      "id": "product_style",
+      "label": "Product design override",
+      "default": "01",
+      "info": "Choose one of 8 Spider premium product card layouts; use Global Product Settings to inherit the global selection.",
+      "options": [
+        {
+          "value": "01",
+          "label": "01 — Classic Premium"
+        },
+        {
+          "value": "02",
+          "label": "02 — Modern Badges"
+        },
+        {
+          "value": "03",
+          "label": "03 — Variant Preview"
+        },
+        {
+          "value": "04",
+          "label": "04 — Image Overlay"
+        },
+        {
+          "value": "05",
+          "label": "05 — Apparel Swatches"
+        },
+        {
+          "value": "06",
+          "label": "06 — Stock Status"
+        },
+        {
+          "value": "07",
+          "label": "07 — Minimal Luxury"
+        },
+        {
+          "value": "08",
+          "label": "08 — Lifestyle Wide"
+        }
+      ]
+    },
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    {
+      "type": "select",
+      "id": "layout",
+      "label": "Layout",
+      "default": "carousel",
+      "options": [
+        {
+          "value": "grid",
+          "label": "Grid"
+        },
+        {
+          "value": "carousel",
+          "label": "Carousel"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "container_width",
+      "label": "Container width",
+      "default": "theme",
+      "options": [
+        {
+          "value": "theme",
+          "label": "Use Theme Default"
+        },
+        {
+          "value": "full",
+          "label": "Full Width"
+        },
+        {
+          "value": "wide",
+          "label": "Wide"
+        },
+        {
+          "value": "boxed",
+          "label": "Boxed"
+        },
+        {
+          "value": "narrow",
+          "label": "Narrow"
+        }
+      ]
+    },
+    {
+      "type": "range",
+      "id": "columns_desktop",
+      "label": "Desktop columns",
+      "min": 1,
+      "max": 6,
+      "step": 1,
+      "default": 4
+    },
+    {
+      "type": "range",
+      "id": "columns_tablet",
+      "label": "Tablet columns",
+      "min": 1,
+      "max": 4,
+      "step": 1,
+      "default": 3
+    },
+    {
+      "type": "range",
+      "id": "columns_mobile",
+      "label": "Mobile columns",
+      "min": 1,
+      "max": 3,
+      "step": 1,
+      "default": 2
+    },
+    {
+      "type": "checkbox",
+      "id": "use_theme_gap",
+      "label": "Use theme product gap",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "gap_desktop",
+      "label": "Custom gap — desktop",
+      "min": 0,
+      "max": 60,
+      "step": 2,
+      "unit": "px",
+      "default": 24,
+      "info": "Used only when Use theme product gap is off."
+    },
+    {
+      "type": "range",
+      "id": "gap_tablet",
+      "label": "Custom gap — tablet",
+      "min": 0,
+      "max": 48,
+      "step": 2,
+      "unit": "px",
+      "default": 20,
+      "info": "Used only when Use theme product gap is off."
+    },
+    {
+      "type": "range",
+      "id": "gap_mobile",
+      "label": "Custom gap — mobile",
+      "min": 0,
+      "max": 32,
+      "step": 2,
+      "unit": "px",
+      "default": 12,
+      "info": "Used only when Use theme product gap is off."
+    },
+    {
+      "type": "header",
+      "content": "Carousel"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_arrows",
+      "label": "Show arrows",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_dots",
+      "label": "Show pagination",
+      "default": false
+    },
+    {
+      "type": "select",
+      "id": "pagination_style",
+      "label": "Pagination style",
+      "default": "default",
+      "options": [
+        {
+          "value": "default",
+          "label": "Dots"
+        },
+        {
+          "value": "numbers",
+          "label": "Numbers"
+        },
+        {
+          "value": "fraction",
+          "label": "Fraction"
+        }
+      ]
+    },
+    {
+      "type": "checkbox",
+      "id": "loop",
+      "label": "Loop",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "mouse_drag",
+      "label": "Mouse drag",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "autoplay",
+      "label": "Autoplay",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "autoplay_speed",
+      "label": "Autoplay speed",
+      "min": 3,
+      "max": 10,
+      "step": 1,
+      "unit": "s",
+      "default": 5
+    },
+    {
+      "type": "checkbox",
+      "id": "pause_on_hover",
+      "label": "Pause on hover",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Global design"
+    },
+    {
+      "type": "color_scheme",
+      "id": "sp_color_scheme",
+      "label": "Color scheme",
+      "default": "scheme-1",
+      "info": "Uses Spider Theme Settings → Spider Color Schemes."
+    },
+    {
+      "type": "select",
+      "id": "heading_design",
+      "label": "Heading design",
+      "default": "1",
+      "options": [
+        {
+          "value": "1",
+          "label": "1"
+        },
+        {
+          "value": "2",
+          "label": "2"
+        },
+        {
+          "value": "3",
+          "label": "3"
+        },
+        {
+          "value": "4",
+          "label": "4"
+        },
+        {
+          "value": "5",
+          "label": "5"
+        },
+        {
+          "value": "6",
+          "label": "6"
+        },
+        {
+          "value": "7",
+          "label": "7"
+        },
+        {
+          "value": "8",
+          "label": "8"
+        },
+        {
+          "value": "9",
+          "label": "9"
+        },
+        {
+          "value": "10",
+          "label": "10"
+        },
+        {
+          "value": "11",
+          "label": "11"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "heading_style",
+      "label": "Heading style",
+      "default": "h2",
+      "options": [
+        {
+          "value": "h1",
+          "label": "Global H1"
+        },
+        {
+          "value": "h2",
+          "label": "Global H2"
+        },
+        {
+          "value": "h3",
+          "label": "Global H3"
+        },
+        {
+          "value": "h4",
+          "label": "Global H4"
+        },
+        {
+          "value": "h5",
+          "label": "Global H5"
+        },
+        {
+          "value": "h6",
+          "label": "Global H6"
+        },
+        {
+          "value": "custom",
+          "label": "Custom"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "heading_alignment",
+      "label": "Heading alignment",
+      "default": "center",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ]
+    },
+    {
+      "type": "range",
+      "id": "heading_size_desktop",
+      "label": "Custom heading size — desktop",
+      "min": 18,
+      "max": 64,
+      "step": 1,
+      "unit": "px",
+      "default": 32,
+      "info": "Used only when Heading style is Custom."
+    },
+    {
+      "type": "range",
+      "id": "heading_size_tablet",
+      "label": "Custom heading size — tablet",
+      "min": 18,
+      "max": 52,
+      "step": 1,
+      "unit": "px",
+      "default": 28,
+      "info": "Used only when Heading style is Custom."
+    },
+    {
+      "type": "range",
+      "id": "heading_size_mobile",
+      "label": "Custom heading size — mobile",
+      "min": 16,
+      "max": 40,
+      "step": 1,
+      "unit": "px",
+      "default": 24,
+      "info": "Used only when Heading style is Custom."
+    },
+    {
+      "type": "select",
+      "id": "heading_weight",
+      "label": "Custom heading weight",
+      "default": "600",
+      "options": [
+        {
+          "value": "400",
+          "label": "Regular"
+        },
+        {
+          "value": "500",
+          "label": "Medium"
+        },
+        {
+          "value": "600",
+          "label": "Semibold"
+        },
+        {
+          "value": "700",
+          "label": "Bold"
+        }
+      ]
+    },
+    {
+      "type": "range",
+      "id": "heading_line_height",
+      "label": "Custom heading line height",
+      "min": 90,
+      "max": 150,
+      "step": 5,
+      "unit": "%",
+      "default": 115
+    },
+    {
+      "type": "range",
+      "id": "heading_letter_spacing",
+      "label": "Custom heading letter spacing",
+      "min": -2,
+      "max": 6,
+      "step": 0.5,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "subheading_size",
+      "label": "Description size",
+      "min": 12,
+      "max": 24,
+      "step": 1,
+      "unit": "px",
+      "default": 15
+    },
+    {
+      "type": "range",
+      "id": "heading_gap",
+      "label": "Heading / description gap",
+      "min": 0,
+      "max": 32,
+      "step": 1,
+      "unit": "px",
+      "default": 8
+    },
+    {
+      "type": "range",
+      "id": "heading_bottom_spacing",
+      "label": "Heading bottom spacing",
+      "min": 0,
+      "max": 80,
+      "step": 2,
+      "unit": "px",
+      "default": 30
+    },
+    {
+      "type": "header",
+      "content": "Section spacing"
+    },
+    {
+      "type": "select",
+      "id": "spacing_source",
+      "label": "Spacing source",
+      "default": "theme",
+      "options": [
+        {
+          "value": "theme",
+          "label": "Use Theme Default"
+        },
+        {
+          "value": "custom",
+          "label": "Custom"
+        }
+      ]
+    },
+    {
+      "type": "range",
+      "id": "padding_top_desktop",
+      "label": "Custom padding top — desktop",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "px",
+      "default": 80
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom_desktop",
+      "label": "Custom padding bottom — desktop",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "px",
+      "default": 80
+    },
+    {
+      "type": "range",
+      "id": "padding_top_tablet",
+      "label": "Custom padding top — tablet",
+      "min": 0,
+      "max": 140,
+      "step": 4,
+      "unit": "px",
+      "default": 64
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom_tablet",
+      "label": "Custom padding bottom — tablet",
+      "min": 0,
+      "max": 140,
+      "step": 4,
+      "unit": "px",
+      "default": 64
+    },
+    {
+      "type": "range",
+      "id": "padding_top_mobile",
+      "label": "Custom padding top — mobile",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "default": 48
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom_mobile",
+      "label": "Custom padding bottom — mobile",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "default": 48
+    }
+  ],
+  "presets": [
+    {
+      "name": "Product Recommendations",
+      "category": "02. Products"
+    }
+  ]
+}
+{% endschema %}

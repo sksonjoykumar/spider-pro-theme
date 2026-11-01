@@ -1,0 +1,16 @@
+{%- assign placeholder_count = count | default: 4 | at_most: 8 -%}
+{%- unless bare -%}<div class="sp-collections-grid-tabs-products sp-collections-grid-tabs-empty sp-collections-grid-tabs-empty--{{ mode }}" data-sp-collections-grid-tabs-items{% unless request.design_mode %} hidden{% endunless %}>{%- endunless -%}
+  {%- for i in (1..placeholder_count) -%}
+    <div class="sp-collections-grid-tabs-card sp-collections-grid-tabs-card--style-2 sp-collections-grid-tabs-card--placeholder" data-sp-collections-grid-tabs-card{% if bare and request.design_mode == false %} hidden{% endif %}>
+      <article class="sp-product-card sp-collections-grid-tabs-card__card">
+        <div class="sp-product-card__media sp-collections-grid-tabs-card__media">
+          {% render 'placeholder-image', name: 'product-1', class: 'sp-placeholder sp-collections-grid-tabs-card__placeholder' %}
+        </div>
+        <div class="sp-product-card__content sp-collections-grid-tabs-card__content">
+          <h3 class="sp-collections-grid-tabs-card__title">Product {{ i }}</h3>
+          <div class="sp-price"><span>$00.00</span></div>
+        </div>
+      </article>
+    </div>
+  {%- endfor -%}
+{%- unless bare -%}</div>{%- endunless -%}

@@ -1,0 +1,2 @@
+{% comment %}LiquidDoc: Accessible status region. Parameters: id, text, type optional.{% endcomment %}
+<div id="{{ id | default: 'SpiderStatus' }}" class="sp-status sp-status--{{ type | default: 'polite' }}" role="status" aria-live="{{ type | default: 'polite' }}" aria-atomic="true">{{ text }}</div>

@@ -1,0 +1,30 @@
+{%- liquid
+  assign eligible_amount = cart.total_price
+  assign remaining = threshold_cents | minus: eligible_amount
+  if remaining < 0
+    assign remaining = 0
+  endif
+  assign progress = 0
+  if threshold_cents > 0
+    assign progress = eligible_amount | times: 100.0 | divided_by: threshold_cents
+  endif
+  if progress > 100
+    assign progress = 100
+  endif
+  assign remaining_money = remaining | money_with_currency
+  assign message = section.settings.shipping_remaining_text | replace: '[amount]', remaining_money
+-%}
+<div class="sp-cart-drawer__shipping" data-sp-shipping-progress>
+  <p class="sp-cart-drawer__shipping-text">
+    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M2 6h12v11H2zM14 10h4l4 4v3h-8M6 20a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm12 0a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z"/></svg>
+    <span>{%- if remaining > 0 -%}{{ message | escape }}{%- else -%}{{ section.settings.shipping_success_text | escape }}{%- endif -%}</span>
+  </p>
+  <div class="sp-cart-drawer__shipping-progress-row">
+    <div class="sp-cart-drawer__shipping-track" role="progressbar" aria-label="Free shipping progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ progress | round }}">
+      <span class="sp-cart-drawer__shipping-value" style="--sp-cart-progress: {{ progress }}%"></span>
+    </div>
+    {%- if section.settings.show_amount_comparison -%}
+      <span class="sp-cart-drawer__shipping-amount">{{ eligible_amount | money }} / {{ threshold_cents | money }}</span>
+    {%- endif -%}
+  </div>
+</div>

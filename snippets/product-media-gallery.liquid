@@ -1,0 +1,126 @@
+{% comment %}Premium product gallery. Parameters: product, section, layout.{% endcomment %}
+{% assign gallery_layout = layout | default: 'thumbnails_left' %}
+{% assign hero_image_override = hero_image_override | default: section.settings.hero_image_override %}
+{% assign current_variant = product.selected_or_first_available_variant %}
+{% assign initial_media = current_variant.featured_media | default: product.media.first %}
+{% assign initial_media_id = initial_media.id %}
+{% assign initial_media_index = 1 %}
+{% assign gallery_media_count = product.media.size %}
+{% if hero_image_override != blank %}
+  {% assign initial_media_id = 'hero-override-' | append: section.id %}
+  {% assign gallery_media_count = product.media.size | plus: 1 %}
+{% else %}
+  {% for media in product.media %}{% if media.id == initial_media_id %}{% assign initial_media_index = forloop.index %}{% endif %}{% endfor %}
+{% endif %}
+{% assign show_thumbnails = section.settings.show_thumbnails %}
+{% if show_thumbnails == nil %}{% assign show_thumbnails = true %}{% endif %}
+{% assign show_arrows = section.settings.show_media_arrows %}
+{% if show_arrows == nil %}{% assign show_arrows = true %}{% endif %}
+{% assign show_pagination = section.settings.show_media_pagination %}
+{% if show_pagination == nil %}{% assign show_pagination = true %}{% endif %}
+{% assign enable_zoom = section.settings.enable_zoom %}
+{% if enable_zoom == nil %}{% assign enable_zoom = settings.product_zoom %}{% endif %}
+<div
+  class="sp-product-gallery sp-product-gallery--{{ gallery_layout }}"
+  aria-label="{{ 'products.product.media.gallery_viewer' | t }}"
+  data-product-gallery
+  data-gallery-mode="{{ gallery_layout }}"
+  data-mobile-style="{{ section.settings.mobile_gallery_style | default: 'counter' }}"
+  data-hover-zoom-enabled="{{ section.settings.enable_hover_zoom }}"
+  data-hover-zoom-factor="{{ section.settings.hover_zoom_factor | default: '2' }}"
+  data-hover-zoom-side="{{ section.settings.hover_zoom_side | default: 'auto' }}"
+  data-hover-zoom-panel-width="{{ section.settings.hover_zoom_panel_width | default: 420 }}"
+  data-arrow-visibility="{{ section.settings.gallery_arrow_visibility | default: 'hover' }}"
+  style="--sp-product-thumb-size: {{ section.settings.thumbnail_size | default: 76 }}px; --sp-product-media-gap: {{ section.settings.media_gap | default: 12 }}px;"
+>
+  {% if product.media.size > 0 or hero_image_override != blank %}
+    <div class="sp-product-gallery__viewport" data-gallery-viewport>
+      <div class="sp-product-gallery__main" data-gallery-track>
+        {% if hero_image_override != blank %}
+          {% assign hero_override_alt = hero_image_override.alt | default: product.title %}
+          <figure
+            id="Media-{{ section.id }}-hero-override"
+            class="sp-product-media sp-product-media--ratio-{{ section.settings.media_ratio | default: 'adapt' }} sp-product-media--fit-{{ section.settings.image_fit | default: 'contain' }} is-active"
+            data-media-id="hero-override-{{ section.id }}"
+            data-media-image-id=""
+            data-media-index="0"
+            data-media-type="image"
+          >
+            {% if section.settings.enable_zoom %}
+              <button class="sp-product-media__surface" type="button" data-media-zoom data-zoom-src="{{ hero_image_override | image_url: width: 2400 }}" data-zoom-alt="{{ hero_override_alt | escape }}" aria-label="{{ 'products.product.media.zoom' | t: index: 1 }}">
+                {{ hero_image_override | image_url: width: 2000 | image_tag: widths: '480, 640, 800, 1000, 1200, 1600, 2000', sizes: '(min-width: 990px) 58vw, 100vw', loading: 'eager', fetchpriority: 'high', class: 'sp-product-media__image', alt: hero_override_alt }}
+                <span class="sp-product-media__zoom-indicator" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="10.7" cy="10.7" r="6.3"/><path d="m15.5 15.5 5.1 5.1M10.7 7.9v5.6M7.9 10.7h5.6"/></svg></span>
+              </button>
+            {% else %}
+              {{ hero_image_override | image_url: width: 2000 | image_tag: widths: '480, 640, 800, 1000, 1200, 1600, 2000', sizes: '(min-width: 990px) 58vw, 100vw', loading: 'eager', fetchpriority: 'high', class: 'sp-product-media__image', alt: hero_override_alt }}
+            {% endif %}
+          </figure>
+        {% endif %}
+        {% for media in product.media %}
+          {% assign is_initial = false %}
+          {% if hero_image_override == blank and media.id == initial_media_id %}{% assign is_initial = true %}{% endif %}
+          <figure
+            id="Media-{{ section.id }}-{{ media.id }}"
+            class="sp-product-media{% if is_initial %} is-active{% endif %} sp-product-media--ratio-{{ section.settings.media_ratio | default: 'adapt' }} sp-product-media--fit-{{ section.settings.image_fit | default: 'contain' }}"
+            data-media-id="{{ media.id }}"
+            data-media-image-id="{% if media.media_type == 'image' and media.preview_image %}{{ media.preview_image.id }}{% endif %}"
+            data-media-index="{% if hero_image_override != blank %}{{ forloop.index }}{% else %}{{ forloop.index0 }}{% endif %}"
+            data-media-type="{{ media.media_type }}"
+            {% unless is_initial %}aria-hidden="true"{% endunless %}
+          >
+            {% if is_initial %}{% assign media_loading = 'eager' %}{% else %}{% assign media_loading = 'lazy' %}{% endif %}
+            {% render 'product-media', media: media, product: product, loading: media_loading, index: forloop.index, enable_zoom: enable_zoom, enable_hover_zoom: section.settings.enable_hover_zoom, media_ratio: section.settings.media_ratio, image_fit: section.settings.image_fit %}
+          </figure>
+        {% endfor %}
+      </div>
+
+      {% if gallery_media_count > 1 and show_arrows and section.settings.gallery_arrow_visibility != 'hidden' and gallery_layout != 'stacked' and gallery_layout != 'grid' %}
+        <div class="sp-product-gallery__controls">
+          <button class="sp-icon-button" type="button" data-gallery-previous aria-label="{{ 'products.product.media.previous' | t }}">{% render 'icon', name: 'chevron-left' %}</button>
+          <button class="sp-icon-button" type="button" data-gallery-next aria-label="{{ 'products.product.media.next' | t }}">{% render 'icon', name: 'chevron-right' %}</button>
+        </div>
+      {% endif %}
+
+      {% if gallery_media_count > 1 and show_pagination %}
+        <div class="sp-product-gallery__pagination" data-gallery-pagination>
+          <div class="sp-product-gallery__counter" data-gallery-counter><span data-gallery-current>{{ initial_media_index }}</span> / {{ gallery_media_count }}</div>
+          <div class="sp-product-gallery__dots" role="tablist" aria-label="{{ 'products.product.media.gallery_viewer' | t }}">
+            {% if hero_image_override != blank %}<button type="button" data-gallery-dot="0" aria-label="{{ 'products.product.media.load_image' | t: index: 1 }}" aria-current="true"></button>{% endif %}
+            {% for media in product.media %}<button type="button" data-gallery-dot="{% if hero_image_override != blank %}{{ forloop.index }}{% else %}{{ forloop.index0 }}{% endif %}" aria-label="{{ 'products.product.media.load_image' | t: index: forloop.index }}"{% if hero_image_override == blank and media.id == initial_media_id %} aria-current="true"{% endif %}></button>{% endfor %}
+          </div>
+        </div>
+      {% endif %}
+    </div>
+
+    {% if section.settings.enable_hover_zoom %}
+      <div class="sp-product-hover-zoom" data-hover-zoom-panel aria-hidden="true"></div>
+    {% endif %}
+
+    {% if gallery_media_count > 1 and show_thumbnails %}
+      <div class="sp-product-gallery__thumbs" role="tablist" aria-label="{{ 'products.product.media.gallery_viewer' | t }}" data-gallery-thumbs>
+        {% if hero_image_override != blank %}
+          <button class="sp-product-gallery__thumb-button" type="button" role="tab" aria-selected="true" aria-controls="Media-{{ section.id }}-hero-override" data-media-target="hero-override-{{ section.id }}" aria-label="{{ 'products.product.media.load_image' | t: index: 1 }}">
+            {% render 'responsive-image', image: hero_image_override, class: 'sp-product-gallery__thumb', widths: '80, 120, 160, 224', sizes: '112px' %}
+          </button>
+        {% endif %}
+        {% for media in product.media %}
+          <button class="sp-product-gallery__thumb-button" type="button" role="tab" aria-selected="{% if hero_image_override == blank and media.id == initial_media_id %}true{% else %}false{% endif %}" aria-controls="Media-{{ section.id }}-{{ media.id }}" data-media-target="{{ media.id }}" aria-label="{{ 'products.product.media.load_image' | t: index: forloop.index }}">
+            {% render 'responsive-image', image: media.preview_image, class: 'sp-product-gallery__thumb', widths: '80, 120, 160, 224', sizes: '112px' %}
+            {% unless media.media_type == 'image' %}<span class="sp-product-gallery__media-type">{{ media.media_type | replace: '_', ' ' }}</span>{% endunless %}
+          </button>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    {% if enable_zoom %}
+      <dialog class="sp-product-lightbox" data-product-lightbox aria-label="{{ 'products.product.media.gallery_viewer' | t }}">
+        <button class="sp-product-lightbox__close sp-icon-button" type="button" data-lightbox-close aria-label="{{ 'accessibility.close' | t }}">{% render 'icon', name: 'close' %}</button>
+        <button class="sp-product-lightbox__previous sp-icon-button" type="button" data-lightbox-previous aria-label="{{ 'products.product.media.previous' | t }}">{% render 'icon', name: 'chevron-left' %}</button>
+        <figure class="sp-product-lightbox__figure"><img src="" alt="" data-lightbox-image><figcaption data-lightbox-caption></figcaption></figure>
+        <button class="sp-product-lightbox__next sp-icon-button" type="button" data-lightbox-next aria-label="{{ 'products.product.media.next' | t }}">{% render 'icon', name: 'chevron-right' %}</button>
+      </dialog>
+    {% endif %}
+  {% else %}
+    {% render 'placeholder-image', name: 'product-1', class: 'sp-placeholder' %}
+  {% endif %}
+</div>

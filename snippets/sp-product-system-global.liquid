@@ -1,0 +1,192 @@
+{%- comment -%}
+  Spider Global Product System loader v4.
+  Safe to render from layout/theme.liquid OR from any Spider product section.
+  Shared assets and commerce UI are injected exactly once in the browser.
+{%- endcomment -%}
+{% render 'sp-wishlist-global' %}
+<template data-sp-product-system-ui-template>
+  {% render 'sp-product-commerce-ui' %}
+</template>
+<script>
+(() => {
+  'use strict';
+
+  const currentScript = document.currentScript;
+  const uiTemplate = currentScript?.previousElementSibling?.matches?.('[data-sp-product-system-ui-template]')
+    ? currentScript.previousElementSibling
+    : null;
+
+  const asset = {
+    cardCss: {{ 'sp-product-card.css' | asset_url | json }},
+    commerceCss: {{ 'sp-product-commerce.css' | asset_url | json }},
+    carouselCss: {{ 'sp-carousel.css' | asset_url | json }},
+    headingCss: {{ 'sp-section-heading.css' | asset_url | json }},
+    commerceJs: {{ 'sp-product-commerce.js' | asset_url | json }},
+    tooltipsJs: {{ 'sp-product-tooltips.js' | asset_url | json }},
+    carouselJs: {{ 'sp-carousel.js' | asset_url | json }}
+  };
+
+  const absolute = (url) => {
+    try { return new URL(url, document.baseURI).href; } catch (_) { return String(url || ''); }
+  };
+
+  const ensureUi = () => {
+    if (document.querySelector('[data-sp-product-commerce-ui]')) return;
+    if (!uiTemplate?.content) return;
+    const fragment = uiTemplate.content.cloneNode(true);
+    (document.body || document.documentElement).append(fragment);
+  };
+
+  const ensureCriticalCss = () => {
+    if (document.getElementById('SpProductSystemCriticalCss')) return;
+    const style = document.createElement('style');
+    style.id = 'SpProductSystemCriticalCss';
+    style.textContent = `
+      .sp-product-card__icon-action{appearance:none;box-sizing:border-box;display:grid;place-items:center;inline-size:42px;block-size:42px;min-inline-size:42px;min-block-size:42px;max-inline-size:42px;max-block-size:42px;padding:0;border-radius:50%;font-size:0;line-height:1;overflow:visible}
+      .sp-product-card__icon-action svg{display:block;inline-size:18px;block-size:18px;max-inline-size:18px;max-block-size:18px;flex:none}
+      .sp-product-card__tooltip{font-size:11px;line-height:1.15}
+      @media(max-width:749px){.sp-product-card__tooltip{display:none}.sp-product-card__icon-action{inline-size:40px;block-size:40px;min-inline-size:40px;min-block-size:40px;max-inline-size:40px;max-block-size:40px}.sp-product-card__icon-action svg{inline-size:17px;block-size:17px;max-inline-size:17px;max-block-size:17px}}
+    `;
+    document.head.append(style);
+  };
+
+  const LOAD_TIMEOUT = 12000;
+
+  const withTimeout = (executor, label) => new Promise((resolve, reject) => {
+    let settled = false;
+    const timer = window.setTimeout(() => {
+      if (settled) return;
+      settled = true;
+      reject(new Error(`${label} timed out.`));
+    }, LOAD_TIMEOUT);
+    const done = (callback, value) => {
+      if (settled) return;
+      settled = true;
+      window.clearTimeout(timer);
+      callback(value);
+    };
+    executor(
+      (value) => done(resolve, value),
+      (error) => done(reject, error instanceof Error ? error : new Error(String(error || label)))
+    );
+  });
+
+  const ensureStyle = (id, href) => withTimeout((resolve, reject) => {
+    const target = absolute(href);
+    let link = document.getElementById(id)
+      || [...document.querySelectorAll('link[rel="stylesheet"]')].find((node) => absolute(node.href) === target);
+
+    const attach = (node) => {
+      const finish = () => {
+        node.dataset.spProductSystemLoaded = 'true';
+        resolve(node);
+      };
+      const fail = () => {
+        node.dataset.spProductSystemLoaded = 'error';
+        if (node.dataset.spProductSystemAsset === '') node.remove();
+        reject(new Error(`Unable to load ${id}.`));
+      };
+      try {
+        if (node.sheet) return finish();
+      } catch (_) {
+        // Cross-origin stylesheet access can throw; rely on load/error instead.
+      }
+      node.addEventListener('load', finish, { once: true });
+      node.addEventListener('error', fail, { once: true });
+    };
+
+    if (link?.dataset.spProductSystemLoaded === 'error') {
+      if (link.dataset.spProductSystemAsset === '') link.remove();
+      link = null;
+    }
+    if (link) return attach(link);
+
+    link = document.createElement('link');
+    link.id = id;
+    link.rel = 'stylesheet';
+    link.href = href;
+    link.dataset.spProductSystemAsset = '';
+    attach(link);
+    document.head.append(link);
+  }, id);
+
+  const ensureScript = (id, src, ready) => withTimeout((resolve, reject) => {
+    if (typeof ready === 'function' && ready()) return resolve();
+    const target = absolute(src);
+    let script = document.getElementById(id)
+      || [...document.scripts].find((node) => absolute(node.src) === target);
+
+    const finish = (node) => {
+      node.dataset.spProductSystemLoaded = 'true';
+      if (!ready || ready()) resolve(node);
+      else {
+        node.dataset.spProductSystemLoaded = 'invalid';
+        reject(new Error(`${id} loaded without the expected Spider service.`));
+      }
+    };
+    const fail = (node) => {
+      node.dataset.spProductSystemLoaded = 'error';
+      if (node.dataset.spProductSystemAsset === '') node.remove();
+      reject(new Error(`Unable to load ${id}.`));
+    };
+    const attach = (node) => {
+      node.addEventListener('load', () => finish(node), { once: true });
+      node.addEventListener('error', () => fail(node), { once: true });
+    };
+
+    if (script?.dataset.spProductSystemLoaded === 'true') return finish(script);
+    if (script?.dataset.spProductSystemLoaded === 'error' || script?.dataset.spProductSystemLoaded === 'invalid') {
+      if (script.dataset.spProductSystemAsset === '') script.remove();
+      script = null;
+    }
+
+    // A matching script can predate this loader (for example from layout/theme.liquid).
+    // If it already produced the service, reuse it. Otherwise wait for its load/error event.
+    if (script) return attach(script);
+
+    script = document.createElement('script');
+    script.id = id;
+    script.src = src;
+    script.async = false;
+    script.dataset.spProductSystemAsset = '';
+    attach(script);
+    document.head.append(script);
+  }, id);
+
+  ensureCriticalCss();
+  ensureUi();
+
+  const state = window.__SPIDER_PRODUCT_SYSTEM_LOADER_V4__ ||= { promise: null };
+  if (!state.promise) {
+    document.documentElement.classList.add('sp-product-system-loading');
+    state.promise = Promise.all([
+      ensureStyle('SpProductCardCss', asset.cardCss),
+      ensureStyle('SpProductCommerceCss', asset.commerceCss),
+      ensureStyle('SpCarouselCss', asset.carouselCss),
+      ensureStyle('SpSectionHeadingCss', asset.headingCss)
+    ]).then(() => Promise.all([
+      ensureScript('SpProductCommerceJs', asset.commerceJs, () => Boolean(window.SpiderProductCommerce?.products?.fetch)),
+      ensureScript('SpProductTooltipsJs', asset.tooltipsJs, () => Boolean(window.__SPIDER_PRODUCT_TOOLTIPS_V1__)),
+      ensureScript('SpCarouselJs', asset.carouselJs, () => Boolean(window.SpiderCarousel?.mount))
+    ])).then(() => {
+      document.documentElement.classList.remove('sp-product-system-loading');
+      document.dispatchEvent(new CustomEvent('sp:product-system:ready', {
+        detail: { commerce: window.SpiderProductCommerce, carousel: window.SpiderCarousel }
+      }));
+      return true;
+    }).catch((error) => {
+      document.documentElement.classList.remove('sp-product-system-loading');
+      document.documentElement.classList.add('sp-product-system-load-error');
+      state.error = error;
+      state.promise = null;
+      document.dispatchEvent(new CustomEvent('sp:product-system:error', { detail: { error } }));
+      if (window.Shopify?.designMode) {
+        console.error('[Spider Product System] Global commerce assets failed to load.', error);
+      }
+      return false;
+    });
+  }
+
+  uiTemplate?.remove();
+})();
+</script>

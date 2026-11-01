@@ -1,0 +1,53 @@
+{%- comment -%}
+  Spider comparison product-data endpoint.
+  GET /products/:handle?section_id=sp-compare-product-data
+  This static, preset-free section renders only published product metafields using Shopify Liquid.
+  Merchant mapping syntax: Category~Label~namespace.key~type|...
+  Values are never inferred from product descriptions or example screenshots.
+{%- endcomment -%}
+{%- if product != blank -%}
+<script type="application/json" data-sp-compare-product-json>{
+ "id": {{ product.id | json }},
+ "type": {{ product.type | json }},
+ "vendor": {{ product.vendor | json }},
+ "tags": {{ product.tags | json }},
+ "rating": {{ product.metafields.reviews.rating.value | json }},
+ "ratingCount": {{ product.metafields.reviews.rating_count.value | json }},
+ "weight": {{ product.selected_or_first_available_variant.weight | json }},
+ "weightUnit": {{ product.selected_or_first_available_variant.weight_unit | json }},
+ "specs": [
+ {%- assign spec_rows = settings.sp_cmp_field_map | split: '|' -%}
+ {%- assign printed_specs = 0 -%}
+ {%- for row in spec_rows -%}
+   {%- assign chunks = row | strip | split: '~' -%}
+   {%- if chunks.size == 4 -%}
+     {%- assign field_parts = chunks[2] | strip | split: '.' -%}
+     {%- if field_parts.size == 2 -%}
+       {%- assign mf_namespace = field_parts[0] | strip -%}
+       {%- assign mf_key = field_parts[1] | strip -%}
+       {%- assign field_value = product.metafields[mf_namespace][mf_key].value -%}
+       {%- if printed_specs > 0 -%},{%- endif -%}
+       {"group": {{ chunks[0] | strip | json }}, "label": {{ chunks[1] | strip | json }}, "key": {{ chunks[2] | strip | json }}, "type": {{ chunks[3] | strip | json }}, "value": {{ field_value | json }}}
+       {%- assign printed_specs = printed_specs | plus: 1 -%}
+     {%- endif -%}
+   {%- endif -%}
+ {%- endfor -%}
+ ],
+ "colors": [
+ {%- assign color_count = 0 -%}
+ {%- for option in product.options_with_values -%}
+   {%- assign option_name = option.name | downcase -%}
+   {%- if option_name contains 'color' or option_name contains 'colour' -%}
+     {%- for color_option in option.values -%}
+       {%- if color_count > 0 -%},{%- endif -%}
+       {"name": {{ color_option.name | json }}, "color": {{ color_option.swatch.color | json }} }
+       {%- assign color_count = color_count | plus: 1 -%}
+     {%- endfor -%}
+   {%- endif -%}
+ {%- endfor -%}
+ ]
+}</script>
+{%- endif -%}
+{% schema %}
+{"name":"compare product data","settings":[]}
+{% endschema %}

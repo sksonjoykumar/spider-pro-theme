@@ -1,0 +1,23 @@
+{%- comment -%}
+  Kalles-parity cart item list. The markup is Cart-Drawer-specific, while
+  quantity/remove mutations remain owned by Spider's existing Cart Controller.
+{%- endcomment -%}
+{%- assign form_id = 'SpCartDrawerForm-' | append: section.id -%}
+<form
+  id="{{ form_id }}"
+  class="sp-cart-drawer__items-form"
+  action="{{ routes.cart_url }}"
+  method="post"
+  data-cart-form
+  data-sp-cart-drawer-items-form
+>
+  <div class="sp-cart-drawer__error" role="alert" aria-live="polite" data-cart-error hidden></div>
+  <div class="sp-cart-drawer__items" data-cart-items>
+    {%- for item in cart.items -%}
+      {% render 'sp-cart-drawer-item', item: item, line: forloop.index, form_id: form_id, section: section %}
+    {%- endfor -%}
+  </div>
+  <noscript>
+    <button class="sp-cart-drawer__noscript-update" type="submit" name="update">Update cart</button>
+  </noscript>
+</form>

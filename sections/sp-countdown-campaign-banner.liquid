@@ -1,0 +1,1445 @@
+{%- comment -%}
+  Spider Countdown Campaign Banner. Merchant must enable verified offer to publish.
+  Static copy remains accessible if JavaScript fails. Each section is self-contained.
+{%- endcomment -%}
+{%- liquid
+  assign sp_show = section.settings.campaign_enabled
+  if request.design_mode
+    assign sp_show = true
+  endif
+  assign sp_s = section.settings
+  assign sp_product = sp_s.featured_product
+  if sp_product == blank and sp_s.featured_collection != blank
+    assign sp_product = sp_s.featured_collection.products.first
+  endif
+  assign sp_variant = sp_product.selected_or_first_available_variant
+  assign sp_campaign_image = sp_s.desktop_image
+  if sp_s.layout_style == 'style_5' and sp_s.use_product_image and sp_product != blank and sp_s.product_image_override == blank
+    assign sp_campaign_image = sp_product.featured_image
+  elsif sp_s.layout_style == 'style_5' and sp_s.product_image_override != blank
+    assign sp_campaign_image = sp_s.product_image_override
+  endif
+  assign sp_show_trust = sp_s.allow_trust_claims
+  if request.design_mode
+    assign sp_show_trust = true
+  endif
+  assign sp_has_start = false
+  if sp_s.scheduled_start != blank
+    assign sp_has_start = true
+  endif
+  assign sp_scheme_content = sp_s.content_color_scheme
+  assign sp_scheme_media = sp_s.media_color_scheme
+  assign sp_scheme_strip = sp_s.strip_color_scheme
+  assign sp_scheme_expired = sp_s.expired_color_scheme
+  if sp_s.inherit_panel_scheme
+    assign sp_scheme_content = sp_s.sp_color_scheme
+    assign sp_scheme_media = sp_s.sp_color_scheme
+    assign sp_scheme_strip = sp_s.sp_color_scheme
+    assign sp_scheme_expired = sp_s.sp_color_scheme
+  endif
+-%}
+{%- if sp_show -%}
+  {% render 'sp-section-color-scheme', section: section %}
+  {{ 'sp-countdown-campaign-banner.css' | asset_url | stylesheet_tag }}
+  <script src="{{ 'sp-countdown-campaign-banner.js' | asset_url }}" defer></script>
+  <section
+    id="sp-campaign-{{ section.id }}"
+    class="sp-campaign sp-campaign--{{ sp_s.layout_style }}{% if sp_s.show_edge_accent %} sp-campaign--edge-accent{% endif %}{% if sp_s.show_media_angle %} sp-campaign--media-angle{% endif %}{% if sp_s.full_width %} sp-campaign--full{% endif %}{% if sp_s.mobile_media_first %} sp-campaign--mobile-media-first{% endif %}{% if sp_s.mobile_full_buttons %} sp-campaign--mobile-full-buttons{% endif %}{% if sp_s.enable_animations %} sp-campaign--animate{% endif %}"
+    data-sp-campaign
+    data-sp-design-mode="{{ request.design_mode }}"
+    data-sp-enabled="{{ sp_s.enable_countdown }}"
+    data-sp-mode="{{ sp_s.countdown_mode }}"
+    data-sp-deadline="{{ sp_s.deadline | escape }}"
+    data-sp-start="{{ sp_s.scheduled_start | escape }}"
+    data-sp-before="{{ sp_s.prestart_behavior }}"
+    data-sp-expiry="{{ sp_s.expiry_behavior }}"
+    data-sp-zero-days="{{ sp_s.hide_zero_days }}"
+    data-sp-leading-zero="{{ sp_s.leading_zero }}"
+    data-sp-update="{{ sp_s.update_on_expire }}"
+    data-sp-preview-days="{{ sp_s.preview_days }}"
+    data-sp-preview-hours="{{ sp_s.preview_hours }}"
+    data-sp-preview-minutes="{{ sp_s.preview_minutes }}"
+    data-sp-preview-seconds="{{ sp_s.preview_seconds }}"
+    data-sp-days-one="{{ sp_s.day_singular | escape }}"
+    data-sp-days-many="{{ sp_s.days_label | escape }}"
+    data-sp-hours-one="{{ sp_s.hour_singular | escape }}"
+    data-sp-hours-many="{{ sp_s.hours_label | escape }}"
+    data-sp-minutes-one="{{ sp_s.minute_singular | escape }}"
+    data-sp-minutes-many="{{ sp_s.minutes_label | escape }}"
+    data-sp-seconds-one="{{ sp_s.second_singular | escape }}"
+    data-sp-seconds-many="{{ sp_s.seconds_label | escape }}"
+    data-sp-copy-active-eyebrow="{{ sp_s.eyebrow | escape }}"
+    data-sp-copy-active-heading="{{ sp_s.heading | escape }}"
+    data-sp-copy-active-description="{{ sp_s.description | escape }}"
+    data-sp-copy-upcoming-eyebrow="{{ sp_s.upcoming_eyebrow | escape }}"
+    data-sp-copy-upcoming-heading="{{ sp_s.upcoming_heading | escape }}"
+    data-sp-copy-upcoming-description="{{ sp_s.upcoming_description | escape }}"
+    data-sp-copy-expired-eyebrow="{{ sp_s.expired_eyebrow | escape }}"
+    data-sp-copy-expired-heading="{{ sp_s.expired_heading | escape }}"
+    data-sp-copy-expired-description="{{ sp_s.expired_description | escape }}"
+    data-sp-copy-error="{{ sp_s.invalid_date_message | escape }}"
+    data-sp-accessible-prefix="{{ sp_s.countdown_accessibility_label | escape }}"
+    data-sp-text-active-note="{{ sp_s.ending_note | escape }}"
+    data-sp-text-before-note="{{ sp_s.upcoming_note | escape }}"
+    data-sp-text-expired-note="{{ sp_s.expired_note | escape }}"
+    data-sp-caption-active="{{ sp_s.image_badge_heading | escape }}"
+    data-sp-caption-before="{{ sp_s.upcoming_image_badge | escape }}"
+    data-sp-caption-expired="{{ sp_s.expired_image_badge | escape }}"
+    data-sp-has-start="{{ sp_has_start }}"
+    data-sp-state="{% if sp_has_start %}upcoming{% else %}active{% endif %}"
+    style="--sp-campaign-accent-width:{{ sp_s.edge_accent_width }}px;--sp-campaign-copy-padding:{{ sp_s.copy_padding }}px;--sp-campaign-copy-padding-mobile:{{ sp_s.copy_padding_mobile }}px;--sp-campaign-mobile-trust-cols:{{ sp_s.mobile_trust_columns }};--sp-campaign-pad-top:{{ sp_s.padding_top }}px;--sp-campaign-pad-bottom:{{ sp_s.padding_bottom }}px;--sp-campaign-pad-mobile-top:{{ sp_s.mobile_padding_top }}px;--sp-campaign-pad-mobile-bottom:{{ sp_s.mobile_padding_bottom }}px;--sp-campaign-max:{{ sp_s.max_width }}px;--sp-campaign-radius:{{ sp_s.section_radius }}px;--sp-campaign-timer-radius:{{ sp_s.timer_radius }}px;--sp-campaign-timer-size:{{ sp_s.timer_size }}px;--sp-campaign-heading-size:{{ sp_s.heading_size }}px;--sp-campaign-content-share:{{ sp_s.content_ratio }}%;--sp-campaign-media-height:{{ sp_s.media_height_desktop }}px;--sp-campaign-media-height-mobile:{{ sp_s.media_height_mobile }}px;--sp-campaign-overlay:{{ sp_s.overlay_strength | divided_by: 100.0 }};--sp-campaign-pattern-opacity:{{ sp_s.pattern_opacity | divided_by: 100.0 }};--sp-campaign-content-align:{{ sp_s.content_align }};--sp-campaign-text-align:{{ sp_s.desktop_alignment }};--sp-campaign-mobile-text-align:{{ sp_s.mobile_alignment }};--sp-campaign-timer-align:{{ sp_s.timer_alignment }};--sp-campaign-media-object:{{ sp_s.image_fit }};--sp-campaign-media-position:{{ sp_s.image_position }};--sp-campaign-badge-position:{{ sp_s.image_badge_position }};--sp-campaign-overflow-shadow:{% if sp_s.shadow == 'strong' %}0 18px 55px #0002{% elsif sp_s.shadow == 'soft' %}0 10px 32px #0001{% else %}none{% endif %};"
+    aria-label="{{ sp_s.section_accessibility_label | default: 'Limited time promotion' | escape }}"
+  >
+    {%- capture sp_content_style -%}--sp-cp-bg:{{ sp_scheme_content.settings.background | default: '#1b1d22' }};--sp-cp-text:{{ sp_scheme_content.settings.text | default: '#ffffff' }};--sp-cp-heading:{{ sp_scheme_content.settings.heading | default: '#ffffff' }};--sp-cp-accent:{{ sp_scheme_content.settings.accent | default: '#415dff' }};--sp-cp-muted:{{ sp_scheme_content.settings.muted | default: '#dadee9' }};{%- endcapture -%}
+    {%- capture sp_media_style -%}--sp-mp-bg:{{ sp_scheme_media.settings.background | default: '#edeae5' }};--sp-mp-text:{{ sp_scheme_media.settings.text | default: '#171717' }};{%- endcapture -%}
+    {%- capture sp_strip_style -%}--sp-st-bg:{{ sp_scheme_strip.settings.background | default: '#202328' }};--sp-st-color:{{ sp_scheme_strip.settings.text | default: '#ffffff' }};{%- endcapture -%}
+    {%- capture sp_expired_style -%}--sp-ex-bg:{{ sp_scheme_expired.settings.background | default: '#252830' }};--sp-ex-text:{{ sp_scheme_expired.settings.text | default: '#ffffff' }};{%- endcapture -%}
+    <div class="{% if sp_s.full_width %}sp-campaign__wrapper{% else %}sp-container sp-campaign__wrapper{% endif %}">
+      <div class="sp-campaign__shell{% if sp_s.show_border %} sp-campaign__shell--bordered{% endif %}{% if sp_s.decorative_pattern %} sp-campaign__shell--pattern{% endif %}" style="{{ sp_expired_style }}">
+        <div class="sp-campaign__main{% if sp_s.desktop_media_first %} sp-campaign__main--media-first{% endif %}">
+          <div class="sp-campaign__copy" style="{{ sp_content_style }}">
+            <div class="sp-campaign__copy-inner">
+              {%- if sp_s.eyebrow != blank -%}<p class="sp-campaign__eyebrow" data-sp-copy="eyebrow">{% if sp_has_start %}{{ sp_s.upcoming_eyebrow | escape }}{% else %}{{ sp_s.eyebrow | escape }}{% endif %}</p>{%- endif -%}
+              {%- if sp_s.show_promotional_badge and sp_s.promotional_badge != blank -%}
+                <div class="sp-campaign__sale-badge" data-sp-offer-only>{{ sp_s.promotional_badge | escape }}</div>
+              {%- endif -%}
+              <h2 class="sp-campaign__heading" id="sp-campaign-heading-{{ section.id }}" data-sp-copy="heading">{% if sp_has_start %}{{ sp_s.upcoming_heading | escape }}{% else %}{{ sp_s.heading | escape }}{% endif %}</h2>
+              <p class="sp-campaign__description" data-sp-copy="description">{% if sp_has_start %}{{ sp_s.upcoming_description | escape }}{% else %}{{ sp_s.description | escape }}{% endif %}</p>
+              {%- if sp_s.enable_countdown -%}
+                <div class="sp-campaign__clock sp-campaign__clock--{{ sp_s.timer_card_style }}{% if sp_s.show_timer_separators %} sp-campaign__clock--separators{% endif %}" data-sp-clock data-sp-show-days="{{ sp_s.show_days }}" data-sp-show-hours="{{ sp_s.show_hours }}" data-sp-show-minutes="{{ sp_s.show_minutes }}" data-sp-show-seconds="{{ sp_s.show_seconds }}" role="group" aria-label="{{ sp_s.countdown_accessibility_label | escape }}">
+                  {%- render 'sp-countdown-timer', section: section -%}
+                </div>
+                <p class="sp-campaign__clock-fallback" data-sp-clock-fallback>{{ sp_s.static_deadline_note | escape }}</p>
+                <p class="sp-campaign__sr-only" data-sp-clock-accessible aria-live="off">{{ sp_s.static_deadline_note | escape }}</p>
+                {%- if request.design_mode -%}<p class="sp-campaign__admin-warning" data-sp-warning hidden>Set a valid deadline with timezone, such as 2026-12-31T23:59:59Z.</p>{%- endif -%}
+              {%- endif -%}
+              <div class="sp-campaign__actions{% if sp_s.cta_layout == 'stack' %} sp-campaign__actions--stack{% endif %}" data-sp-actions>
+                {%- if sp_s.primary_label != blank and sp_s.primary_link != blank -%}
+                  {%- assign sp_p_label = sp_s.primary_label | escape -%}
+                  {%- render 'button', label: sp_p_label, href: sp_s.primary_link, style: sp_s.primary_button_style, class: 'sp-campaign__button sp-campaign__button--primary' -%}
+                {%- elsif request.design_mode and sp_s.primary_label != blank -%}<span class="sp-button sp-button--secondary sp-campaign__button sp-campaign__button--primary" aria-disabled="true">{{ sp_s.primary_label | escape }}</span>{%- endif -%}
+                {%- if sp_s.secondary_label != blank and sp_s.secondary_link != blank -%}
+                  {%- assign sp_s_label = sp_s.secondary_label | escape -%}
+                  {%- capture sp_new_target -%}{% if sp_s.secondary_new_tab %}target="_blank" rel="noopener noreferrer"{% endif %}{%- endcapture -%}
+                  {%- render 'button', label: sp_s_label, href: sp_s.secondary_link, style: sp_s.secondary_button_style, class: 'sp-campaign__button sp-campaign__button--secondary', attributes: sp_new_target -%}
+                {%- elsif request.design_mode and sp_s.secondary_label != blank -%}<span class="sp-button sp-button--outline sp-campaign__button sp-campaign__button--secondary" aria-disabled="true">{{ sp_s.secondary_label | escape }}</span>{%- endif -%}
+                {%- if sp_s.expired_cta_label != blank and sp_s.expired_cta_link != blank -%}
+                  <a href="{{ sp_s.expired_cta_link }}" class="sp-button sp-button--primary sp-campaign__expired-cta" data-sp-expired-action hidden>{{ sp_s.expired_cta_label | escape }}</a>
+                {%- endif -%}
+              </div>
+              {%- if sp_s.ending_note != blank or sp_s.upcoming_note != blank -%}
+                <p class="sp-campaign__ending" data-sp-note><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.7"/><path d="M12 7v5l3 2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg><span data-sp-note-value>{% if sp_has_start %}{{ sp_s.upcoming_note | escape }}{% else %}{{ sp_s.ending_note | escape }}{% endif %}</span></p>
+              {%- endif -%}
+              {%- if sp_s.legal_note != blank -%}<div class="sp-campaign__legal rte">{{ sp_s.legal_note }}</div>{%- endif -%}
+            </div>
+          </div>
+          {%- unless sp_s.layout_style == 'style_3' -%}
+            <div class="sp-campaign__media" style="{{ sp_media_style }}">
+              {%- if sp_s.layout_style == 'style_5' and sp_product != blank -%}
+                {%- if sp_campaign_image != blank -%}
+                  <div class="sp-campaign__media-image">
+                    {%- if sp_s.mobile_image != blank and sp_s.use_product_image == false -%}<picture><source media="(max-width: 749px)" srcset="{{ sp_s.mobile_image | image_url: width: 900 }}">{%- endif -%}
+                    {%- render 'responsive-image', image: sp_campaign_image, widths: '320,480,640,750,900,1200,1600', sizes: '(min-width: 990px) 45vw, 100vw', loading: 'lazy', class: 'sp-campaign__image', alt: sp_s.image_alt -%}
+                    {%- if sp_s.mobile_image != blank and sp_s.use_product_image == false -%}</picture>{%- endif -%}
+                  </div>
+                {%- endif -%}
+                <div class="sp-campaign__product-card">
+                  {% if sp_s.show_product_vendor and sp_product.vendor != blank %}<p class="sp-campaign__product-vendor">{{ sp_product.vendor | escape }}</p>{% endif %}
+                  <h3 class="sp-campaign__product-title">{{ sp_product.title | escape }}</h3>
+                  {% if sp_s.show_product_price and sp_variant != blank %}<p class="sp-campaign__price">{{ sp_variant.price | money }}{% if sp_s.show_compare_price and sp_variant.compare_at_price > sp_variant.price %} <s>{{ sp_variant.compare_at_price | money }}</s>{% endif %}</p>{% endif %}
+                  {% if sp_s.product_cta_label != blank %}<a class="sp-button sp-button--primary sp-campaign__product-link" href="{{ sp_product.url }}">{{ sp_s.product_cta_label | escape }}</a>{% endif %}
+                </div>
+              {%- else -%}
+                {%- if sp_campaign_image != blank -%}
+                  <picture>
+                    {%- if sp_s.mobile_image != blank -%}<source media="(max-width: 749px)" srcset="{{ sp_s.mobile_image | image_url: width: 750 }} 750w, {{ sp_s.mobile_image | image_url: width: 1200 }} 1200w" sizes="100vw">{%- endif -%}
+                    {%- render 'responsive-image', image: sp_campaign_image, widths: '320,480,640,750,900,1200,1600', sizes: '(min-width: 990px) 50vw, 100vw', loading: 'lazy', class: 'sp-campaign__image', alt: sp_s.image_alt -%}
+                  </picture>
+                {%- elsif request.design_mode -%}
+                  {{ 'lifestyle-2' | placeholder_svg_tag: 'sp-campaign__placeholder' }}
+                {%- endif -%}
+                {%- if sp_s.layout_style == 'style_5' and request.design_mode and sp_product == blank -%}
+                  <div class="sp-campaign__product-card"><p class="sp-campaign__product-vendor">Shopify product spotlight</p><h3 class="sp-campaign__product-title">Select a product or collection</h3><p>Configure a real product to display its image, price, and product link.</p></div>
+                {%- endif -%}
+                {%- if sp_s.show_image_badge and sp_s.image_badge_heading != blank -%}
+                  <div class="sp-campaign__image-badge" data-sp-image-badge data-sp-offer-only>
+                    {% if sp_s.image_badge_eyebrow != blank %}<span>{{ sp_s.image_badge_eyebrow | escape }}</span>{% endif %}
+                    <strong data-sp-image-badge-heading>{{ sp_s.image_badge_heading | escape }}</strong>
+                  </div>
+                {%- endif -%}
+              {%- endif -%}
+            </div>
+          {%- endunless -%}
+        </div>
+        {%- if sp_s.show_bottom_strip and sp_show_trust -%}
+          <div class="sp-campaign__trust-strip" style="{{ sp_strip_style }}">
+            {%- for block in section.blocks -%}
+              {%- if block.type == 'trust_feature' -%}
+                {%- if request.design_mode or sp_s.allow_trust_claims -%}
+                  <div class="sp-campaign__trust-item" {{ block.shopify_attributes }}>
+                    {%- if block.settings.image != blank -%}
+                      {{ block.settings.image | image_url: width: 96 | image_tag: widths: '48,96', sizes: '42px', loading: 'lazy', class: 'sp-campaign__trust-image', alt: '' }}
+                    {%- else -%}
+                      {% render 'sp-countdown-icon', name: block.settings.icon %}
+                    {%- endif -%}
+                    <div class="sp-campaign__trust-copy">
+                      {% if block.settings.link != blank %}<a href="{{ block.settings.link }}" aria-label="{{ block.settings.accessible_name | default: block.settings.heading | escape }}">{{ block.settings.heading | escape }}</a>{% else %}<strong>{{ block.settings.heading | escape }}</strong>{% endif %}
+                      {% if block.settings.description != blank %}<span>{{ block.settings.description | escape }}</span>{% endif %}
+                    </div>
+                  </div>
+                {%- endif -%}
+              {%- endif -%}
+            {%- endfor -%}
+          </div>
+        {%- endif -%}
+        {%- assign sp_highlights_count = 0 -%}
+        {%- for block in section.blocks -%}{% if block.type == 'highlight' %}{% assign sp_highlights_count = sp_highlights_count | plus: 1 %}{% endif %}{%- endfor -%}
+        {%- if sp_highlights_count > 0 -%}
+          <div class="sp-campaign__highlights">
+            {% for block in section.blocks %}{% if block.type == 'highlight' %}<div class="sp-campaign__highlight" {{ block.shopify_attributes }}>
+              {% render 'sp-countdown-icon', name: block.settings.icon %}<span>{{ block.settings.label | escape }}</span><strong>{{ block.settings.value | escape }}</strong>
+              {% if block.settings.link != blank %}<a href="{{ block.settings.link }}" aria-label="{{ block.settings.label | escape }}: {{ block.settings.value | escape }}"></a>{% endif %}
+            </div>{% endif %}{% endfor %}
+          </div>
+        {%- endif -%}
+      </div>
+    </div>
+  </section>
+{%- endif -%}
+{% schema %}
+{
+  "name": "Countdown Campaign Banner",
+  "tag": "section",
+  "class": "sp-campaign-shopify-wrapper",
+  "disabled_on": {
+    "groups": [
+      "header",
+      "footer",
+      "custom.system"
+    ]
+  },
+  "settings": [
+    {
+      "type": "header",
+      "content": "Setup and colors"
+    },
+    {
+      "type": "checkbox",
+      "id": "campaign_enabled",
+      "label": "Publish this campaign",
+      "default": false,
+      "info": "Disabled by default. Preview appears in Theme Editor only. Confirm genuine offer terms before enabling."
+    },
+    {
+      "type": "color_scheme",
+      "id": "sp_color_scheme",
+      "label": "Section scheme",
+      "default": "scheme-1"
+    },
+    {
+      "type": "color_scheme",
+      "id": "content_color_scheme",
+      "label": "Content panel scheme",
+      "default": "scheme-3"
+    },
+    {
+      "type": "color_scheme",
+      "id": "media_color_scheme",
+      "label": "Image panel scheme",
+      "default": "scheme-2"
+    },
+    {
+      "type": "color_scheme",
+      "id": "strip_color_scheme",
+      "label": "Trust strip scheme",
+      "default": "scheme-3"
+    },
+    {
+      "type": "color_scheme",
+      "id": "expired_color_scheme",
+      "label": "Expired panel scheme",
+      "default": "scheme-3"
+    },
+    {
+      "type": "checkbox",
+      "id": "inherit_panel_scheme",
+      "label": "Use main scheme for all panels",
+      "default": false,
+      "info": "Off keeps existing independent Content, Image, Trust strip and Expired schemes. Enable to inherit the selected global Section scheme for every panel."
+    },
+    {
+      "type": "select",
+      "id": "layout_style",
+      "label": "Layout style",
+      "default": "style_1",
+      "options": [
+        {
+          "value": "style_1",
+          "label": "Split campaign"
+        },
+        {
+          "value": "style_2",
+          "label": "Full image overlay"
+        },
+        {
+          "value": "style_3",
+          "label": "Compact countdown strip"
+        },
+        {
+          "value": "style_4",
+          "label": "Centered event card"
+        },
+        {
+          "value": "style_5",
+          "label": "Product spotlight"
+        }
+      ]
+    },
+    {
+      "type": "header",
+      "content": "Campaign content"
+    },
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Eyebrow",
+      "default": "LIMITED-TIME EVENT"
+    },
+    {
+      "type": "text",
+      "id": "promotional_badge",
+      "label": "Offer badge",
+      "default": "UP TO 30% OFF"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_promotional_badge",
+      "label": "Show offer badge",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "The Weekend Drop Ends Soon"
+    },
+    {
+      "type": "textarea",
+      "id": "description",
+      "label": "Description",
+      "default": "Save on everyday favorites before the clock runs out."
+    },
+    {
+      "type": "text",
+      "id": "primary_label",
+      "label": "Primary button label",
+      "default": "Shop the event"
+    },
+    {
+      "type": "url",
+      "id": "primary_link",
+      "label": "Primary button link"
+    },
+    {
+      "type": "text",
+      "id": "secondary_label",
+      "label": "Secondary button label",
+      "default": "View all offers"
+    },
+    {
+      "type": "url",
+      "id": "secondary_link",
+      "label": "Secondary button link"
+    },
+    {
+      "type": "select",
+      "id": "primary_button_style",
+      "label": "Primary button style",
+      "default": "secondary",
+      "options": [
+        {
+          "value": "primary",
+          "label": "Primary"
+        },
+        {
+          "value": "secondary",
+          "label": "Secondary"
+        },
+        {
+          "value": "accent",
+          "label": "Accent"
+        },
+        {
+          "value": "outline",
+          "label": "Outline"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "secondary_button_style",
+      "label": "Second button style",
+      "default": "outline",
+      "options": [
+        {
+          "value": "primary",
+          "label": "Primary"
+        },
+        {
+          "value": "secondary",
+          "label": "Secondary"
+        },
+        {
+          "value": "accent",
+          "label": "Accent"
+        },
+        {
+          "value": "outline",
+          "label": "Outline"
+        }
+      ]
+    },
+    {
+      "type": "checkbox",
+      "id": "secondary_new_tab",
+      "label": "Open second button in new tab",
+      "default": false
+    },
+    {
+      "type": "text",
+      "id": "ending_note",
+      "label": "Campaign ending note",
+      "default": "Check the offer terms for the final deadline."
+    },
+    {
+      "type": "richtext",
+      "id": "legal_note",
+      "label": "Legal / disclaimer"
+    },
+    {
+      "type": "header",
+      "content": "Countdown and deadline"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_countdown",
+      "label": "Enable countdown",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "countdown_mode",
+      "label": "Timer mode",
+      "default": "manual_preview",
+      "options": [
+        {
+          "value": "fixed",
+          "label": "Real fixed deadline"
+        },
+        {
+          "value": "manual_preview",
+          "label": "Editor demo numbers only"
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "id": "deadline",
+      "label": "Campaign deadline",
+      "info": "Strict ISO 8601 with offset, e.g. 2026-12-31T23:59:59Z or 2026-12-31T23:59:59+06:00."
+    },
+    {
+      "type": "text",
+      "id": "scheduled_start",
+      "label": "Optional campaign start",
+      "info": "Strict ISO 8601 with offset. Start must be before deadline."
+    },
+    {
+      "type": "select",
+      "id": "prestart_behavior",
+      "label": "Before start",
+      "default": "upcoming",
+      "options": [
+        {
+          "value": "upcoming",
+          "label": "Show upcoming message"
+        },
+        {
+          "value": "count_to_start",
+          "label": "Countdown to start"
+        },
+        {
+          "value": "hide_section",
+          "label": "Hide section"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "expiry_behavior",
+      "label": "After expiry",
+      "default": "show_expired",
+      "options": [
+        {
+          "value": "show_expired",
+          "label": "Show expired message"
+        },
+        {
+          "value": "hide_countdown",
+          "label": "Hide timer"
+        },
+        {
+          "value": "hide_section",
+          "label": "Hide entire section"
+        }
+      ]
+    },
+    {
+      "type": "checkbox",
+      "id": "update_on_expire",
+      "label": "Emit expired event",
+      "default": true,
+      "info": "Emits a section-scoped browser event; does not change checkout prices."
+    },
+    {
+      "type": "text",
+      "id": "static_deadline_note",
+      "label": "No-JS fallback text",
+      "default": "Promotion details and deadline are subject to the published offer terms."
+    },
+    {
+      "type": "text",
+      "id": "invalid_date_message",
+      "label": "Editor invalid-date message",
+      "default": "Configure a valid campaign deadline before publishing."
+    },
+    {
+      "type": "text",
+      "id": "countdown_accessibility_label",
+      "label": "Countdown accessible label",
+      "default": "Time remaining in this campaign"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_days",
+      "label": "Show days",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "days_label",
+      "label": "Days plural",
+      "default": "Days"
+    },
+    {
+      "type": "text",
+      "id": "day_singular",
+      "label": "Days singular",
+      "default": "Day"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_hours",
+      "label": "Show hours",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "hours_label",
+      "label": "Hours plural",
+      "default": "Hours"
+    },
+    {
+      "type": "text",
+      "id": "hour_singular",
+      "label": "Hours singular",
+      "default": "Hour"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_minutes",
+      "label": "Show minutes",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "minutes_label",
+      "label": "Minutes plural",
+      "default": "Minutes"
+    },
+    {
+      "type": "text",
+      "id": "minute_singular",
+      "label": "Minutes singular",
+      "default": "Minute"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_seconds",
+      "label": "Show seconds",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "seconds_label",
+      "label": "Seconds plural",
+      "default": "Seconds"
+    },
+    {
+      "type": "text",
+      "id": "second_singular",
+      "label": "Seconds singular",
+      "default": "Second"
+    },
+    {
+      "type": "checkbox",
+      "id": "hide_zero_days",
+      "label": "Hide zero days",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "show_timer_separators",
+      "label": "Show timer separators",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "leading_zero",
+      "label": "Add leading zeros",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "timer_card_style",
+      "label": "Timer card style",
+      "default": "solid",
+      "options": [
+        {
+          "value": "solid",
+          "label": "Solid"
+        },
+        {
+          "value": "outline",
+          "label": "Outline"
+        },
+        {
+          "value": "minimal",
+          "label": "Minimal"
+        }
+      ]
+    },
+    {
+      "type": "number",
+      "id": "preview_days",
+      "label": "Preview days",
+      "default": 2
+    },
+    {
+      "type": "range",
+      "id": "preview_hours",
+      "label": "Preview hours",
+      "default": 14,
+      "min": 0,
+      "max": 23,
+      "step": 1
+    },
+    {
+      "type": "range",
+      "id": "preview_minutes",
+      "label": "Preview minutes",
+      "default": 36,
+      "min": 0,
+      "max": 59,
+      "step": 1
+    },
+    {
+      "type": "range",
+      "id": "preview_seconds",
+      "label": "Preview seconds",
+      "default": 48,
+      "min": 0,
+      "max": 59,
+      "step": 1
+    },
+    {
+      "type": "header",
+      "content": "Upcoming campaign"
+    },
+    {
+      "type": "text",
+      "id": "upcoming_eyebrow",
+      "label": "Upcoming eyebrow",
+      "default": "COMING SOON"
+    },
+    {
+      "type": "text",
+      "id": "upcoming_heading",
+      "label": "Upcoming heading",
+      "default": "Something Worth Waiting For"
+    },
+    {
+      "type": "textarea",
+      "id": "upcoming_description",
+      "label": "Upcoming description",
+      "default": "Our next event is on its way."
+    },
+    {
+      "type": "text",
+      "id": "upcoming_note",
+      "label": "Upcoming note",
+      "default": "Watch this space for the campaign start time."
+    },
+    {
+      "type": "text",
+      "id": "upcoming_image_badge",
+      "label": "Upcoming image badge",
+      "default": "Coming soon"
+    },
+    {
+      "type": "header",
+      "content": "Expired campaign"
+    },
+    {
+      "type": "text",
+      "id": "expired_eyebrow",
+      "label": "Expired eyebrow",
+      "default": "EVENT FINISHED"
+    },
+    {
+      "type": "text",
+      "id": "expired_heading",
+      "label": "Expired heading",
+      "default": "This Event Has Ended"
+    },
+    {
+      "type": "textarea",
+      "id": "expired_description",
+      "label": "Expired description",
+      "default": "Explore our latest products and upcoming offers."
+    },
+    {
+      "type": "text",
+      "id": "expired_cta_label",
+      "label": "Expired CTA label",
+      "default": "Explore more"
+    },
+    {
+      "type": "url",
+      "id": "expired_cta_link",
+      "label": "Expired CTA link"
+    },
+    {
+      "type": "text",
+      "id": "expired_note",
+      "label": "Expired note",
+      "default": "This promotion is no longer active."
+    },
+    {
+      "type": "text",
+      "id": "expired_image_badge",
+      "label": "Expired image badge",
+      "default": "Event ended"
+    },
+    {
+      "type": "header",
+      "content": "Campaign images"
+    },
+    {
+      "type": "image_picker",
+      "id": "desktop_image",
+      "label": "Desktop image"
+    },
+    {
+      "type": "image_picker",
+      "id": "mobile_image",
+      "label": "Mobile image"
+    },
+    {
+      "type": "text",
+      "id": "image_alt",
+      "label": "Image alt text",
+      "default": "Campaign products displayed together"
+    },
+    {
+      "type": "select",
+      "id": "image_fit",
+      "label": "Image fit",
+      "default": "cover",
+      "options": [
+        {
+          "value": "cover",
+          "label": "Cover"
+        },
+        {
+          "value": "contain",
+          "label": "Contain"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "image_position",
+      "label": "Image focal position",
+      "default": "center",
+      "options": [
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "top",
+          "label": "Top"
+        },
+        {
+          "value": "bottom",
+          "label": "Bottom"
+        },
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ]
+    },
+    {
+      "type": "range",
+      "id": "media_height_desktop",
+      "label": "Desktop media height",
+      "default": 620,
+      "min": 300,
+      "max": 900,
+      "step": 10,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "media_height_mobile",
+      "label": "Mobile media height",
+      "default": 320,
+      "min": 160,
+      "max": 700,
+      "step": 10,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "overlay_strength",
+      "label": "Overlay dark intensity",
+      "default": 35,
+      "min": 0,
+      "max": 100,
+      "step": 5,
+      "unit": "%"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_image_badge",
+      "label": "Show image badge",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "image_badge_eyebrow",
+      "label": "Image badge eyebrow",
+      "default": "WEEKEND ONLY"
+    },
+    {
+      "type": "text",
+      "id": "image_badge_heading",
+      "label": "Image badge heading",
+      "default": "Save up to 30%"
+    },
+    {
+      "type": "select",
+      "id": "image_badge_position",
+      "label": "Image badge position",
+      "default": "top-right",
+      "options": [
+        {
+          "value": "top-right",
+          "label": "Top right"
+        },
+        {
+          "value": "top-left",
+          "label": "Top left"
+        },
+        {
+          "value": "bottom-right",
+          "label": "Bottom right"
+        },
+        {
+          "value": "bottom-left",
+          "label": "Bottom left"
+        }
+      ]
+    },
+    {
+      "type": "header",
+      "content": "Product spotlight"
+    },
+    {
+      "type": "product",
+      "id": "featured_product",
+      "label": "Featured product"
+    },
+    {
+      "type": "collection",
+      "id": "featured_collection",
+      "label": "Fallback collection"
+    },
+    {
+      "type": "checkbox",
+      "id": "use_product_image",
+      "label": "Use product featured image",
+      "default": true
+    },
+    {
+      "type": "image_picker",
+      "id": "product_image_override",
+      "label": "Product image override"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_product_price",
+      "label": "Show product price",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_compare_price",
+      "label": "Show compare-at price",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_product_vendor",
+      "label": "Show vendor",
+      "default": false
+    },
+    {
+      "type": "text",
+      "id": "product_cta_label",
+      "label": "Product CTA label",
+      "default": "View product"
+    },
+    {
+      "type": "header",
+      "content": "Layout and spacing"
+    },
+    {
+      "type": "checkbox",
+      "id": "full_width",
+      "label": "Full-width section",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "max_width",
+      "label": "Maximum width",
+      "default": 1550,
+      "min": 850,
+      "max": 1800,
+      "step": 50,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "content_ratio",
+      "label": "Left content width",
+      "default": 50,
+      "min": 35,
+      "max": 65,
+      "step": 1,
+      "unit": "%"
+    },
+    {
+      "type": "checkbox",
+      "id": "desktop_media_first",
+      "label": "Image first desktop",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "mobile_media_first",
+      "label": "Image first mobile",
+      "default": false
+    },
+    {
+      "type": "select",
+      "id": "content_align",
+      "label": "Content vertical align",
+      "default": "center",
+      "options": [
+        {
+          "value": "flex-start",
+          "label": "Top"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "flex-end",
+          "label": "Bottom"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "desktop_alignment",
+      "label": "Desktop text align",
+      "default": "left",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "mobile_alignment",
+      "label": "Mobile text align",
+      "default": "left",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "timer_alignment",
+      "label": "Timer align",
+      "default": "flex-start",
+      "options": [
+        {
+          "value": "flex-start",
+          "label": "Start"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "flex-end",
+          "label": "End"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "cta_layout",
+      "label": "CTA arrangement",
+      "default": "row",
+      "options": [
+        {
+          "value": "row",
+          "label": "Row / wrapping"
+        },
+        {
+          "value": "stack",
+          "label": "Stack"
+        }
+      ]
+    },
+    {
+      "type": "checkbox",
+      "id": "mobile_full_buttons",
+      "label": "Full-width mobile buttons",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_bottom_strip",
+      "label": "Show trust-feature strip",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "allow_trust_claims",
+      "label": "Publish confirmed trust claims",
+      "default": false,
+      "info": "Show trust blocks on live store only after confirming shipping/returns/payment policies."
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "Padding top",
+      "default": 64,
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "Padding bottom",
+      "default": 64,
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "mobile_padding_top",
+      "label": "Mobile top padding",
+      "default": 32,
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "mobile_padding_bottom",
+      "label": "Mobile bottom padding",
+      "default": 32,
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px"
+    },
+    {
+      "type": "header",
+      "content": "Appearance"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_edge_accent",
+      "label": "Show blue edge accent",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "edge_accent_width",
+      "label": "Accent line width",
+      "min": 0,
+      "max": 16,
+      "step": 1,
+      "unit": "px",
+      "default": 7
+    },
+    {
+      "type": "checkbox",
+      "id": "show_media_angle",
+      "label": "Show decorative media accent",
+      "default": true,
+      "info": "Visible on the Split campaign layout. Uses the selected Spider color-scheme accent."
+    },
+    {
+      "type": "range",
+      "id": "copy_padding",
+      "label": "Desktop content padding",
+      "min": 20,
+      "max": 100,
+      "step": 2,
+      "unit": "px",
+      "default": 54
+    },
+    {
+      "type": "range",
+      "id": "copy_padding_mobile",
+      "label": "Mobile content padding",
+      "min": 12,
+      "max": 56,
+      "step": 2,
+      "unit": "px",
+      "default": 24
+    },
+    {
+      "type": "select",
+      "id": "mobile_trust_columns",
+      "label": "Mobile benefit columns",
+      "default": "1",
+      "options": [
+        {
+          "value": "1",
+          "label": "1 column"
+        },
+        {
+          "value": "2",
+          "label": "2 columns"
+        }
+      ]
+    },
+    {
+      "type": "range",
+      "id": "section_radius",
+      "label": "Section corner radius",
+      "default": 16,
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "timer_radius",
+      "label": "Timer card radius",
+      "default": 10,
+      "min": 0,
+      "max": 32,
+      "step": 2,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "heading_size",
+      "label": "Heading size desktop",
+      "min": 32,
+      "max": 80,
+      "step": 2,
+      "unit": "px",
+      "default": 64
+    },
+    {
+      "type": "range",
+      "id": "timer_size",
+      "label": "Large timer number size",
+      "default": 50,
+      "min": 24,
+      "max": 70,
+      "step": 2,
+      "unit": "px"
+    },
+    {
+      "type": "select",
+      "id": "shadow",
+      "label": "Shadow",
+      "default": "soft",
+      "options": [
+        {
+          "value": "none",
+          "label": "None"
+        },
+        {
+          "value": "soft",
+          "label": "Soft"
+        },
+        {
+          "value": "strong",
+          "label": "Strong"
+        }
+      ]
+    },
+    {
+      "type": "checkbox",
+      "id": "show_border",
+      "label": "Show border",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "decorative_pattern",
+      "label": "Show subtle pattern",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "pattern_opacity",
+      "label": "Pattern opacity",
+      "default": 10,
+      "min": 0,
+      "max": 50,
+      "step": 5,
+      "unit": "%"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_animations",
+      "label": "Enable gentle animations",
+      "default": false
+    },
+    {
+      "type": "header",
+      "content": "Accessibility"
+    },
+    {
+      "type": "text",
+      "id": "section_accessibility_label",
+      "label": "Section accessible label",
+      "default": "Limited time promotion"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "trust_feature",
+      "name": "Trust feature",
+      "limit": 6,
+      "settings": [
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "Heading",
+          "default": "Free shipping over $75"
+        },
+        {
+          "type": "text",
+          "id": "description",
+          "label": "Supporting text"
+        },
+        {
+          "type": "select",
+          "id": "icon",
+          "label": "Icon",
+          "default": "truck",
+          "options": [
+            {
+              "value": "truck",
+              "label": "Shipping truck"
+            },
+            {
+              "value": "return",
+              "label": "Return arrow"
+            },
+            {
+              "value": "lock",
+              "label": "Lock"
+            },
+            {
+              "value": "shield",
+              "label": "Shield"
+            },
+            {
+              "value": "heart",
+              "label": "Heart"
+            },
+            {
+              "value": "check",
+              "label": "Check"
+            },
+            {
+              "value": "clock",
+              "label": "Clock"
+            },
+            {
+              "value": "bag",
+              "label": "Bag"
+            }
+          ]
+        },
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Custom icon image"
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "Optional link"
+        },
+        {
+          "type": "text",
+          "id": "accessible_name",
+          "label": "Link accessible label"
+        }
+      ]
+    },
+    {
+      "type": "highlight",
+      "name": "Campaign highlight",
+      "limit": 4,
+      "settings": [
+        {
+          "type": "text",
+          "id": "label",
+          "label": "Label",
+          "default": "Bonus offer"
+        },
+        {
+          "type": "text",
+          "id": "value",
+          "label": "Value",
+          "default": "See details"
+        },
+        {
+          "type": "select",
+          "id": "icon",
+          "label": "Icon",
+          "default": "check",
+          "options": [
+            {
+              "value": "check",
+              "label": "Check"
+            },
+            {
+              "value": "truck",
+              "label": "Truck"
+            },
+            {
+              "value": "heart",
+              "label": "Heart"
+            },
+            {
+              "value": "star",
+              "label": "Star"
+            }
+          ]
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "Link"
+        }
+      ]
+    }
+  ],
+  "max_blocks": 10,
+  "presets": [
+    {
+      "name": "Countdown Campaign Banner",
+      "category": "06. Promotions",
+      "settings": {
+        "layout_style": "style_1"
+      },
+      "blocks": [
+        {
+          "type": "trust_feature",
+          "settings": {
+            "heading": "Free shipping over $75",
+            "icon": "truck"
+          }
+        },
+        {
+          "type": "trust_feature",
+          "settings": {
+            "heading": "30-day returns",
+            "icon": "return"
+          }
+        },
+        {
+          "type": "trust_feature",
+          "settings": {
+            "heading": "Secure checkout",
+            "icon": "lock"
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

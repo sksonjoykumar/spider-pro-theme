@@ -1,0 +1,60 @@
+{%- if block.settings.custom_liquid != blank -%}
+  <div id="SpiderSlideCustomHtml-{{ block.id }}" class="sp-slide-custom-html{% if block.settings.hide_mobile %} sp-slide-block--hide-mobile{% endif %}" data-sp-slide-anim {{ block.shopify_attributes }} style="--sp-custom-html-max-width: {{ block.settings.max_width }}px; --sp-custom-html-mb: {{ block.settings.margin_bottom }}px;">{{ block.settings.custom_liquid }}</div>
+{%- elsif block.settings.spacer_height > 0 -%}
+  <div id="SpiderSlideCustomHtml-{{ block.id }}" class="sp-slide-custom-html-spacer{% if block.settings.hide_mobile %} sp-slide-block--hide-mobile{% endif %}" aria-hidden="true" {{ block.shopify_attributes }} style="--sp-custom-html-space: {{ block.settings.spacer_height }}px;"></div>
+{%- endif -%}
+{% schema %}
+{
+  "name": "Slide Custom HTML",
+  "tag": null,
+  "settings": [
+    {
+      "type": "liquid",
+      "id": "custom_liquid",
+      "label": "Custom Liquid / HTML",
+      "info": "Use theme-safe Liquid/HTML. Do not paste third-party script tags here."
+    },
+    {
+      "type": "range",
+      "id": "max_width",
+      "label": "Max width",
+      "min": 100,
+      "max": 1200,
+      "step": 20,
+      "unit": "px",
+      "default": 600
+    },
+    {
+      "type": "range",
+      "id": "margin_bottom",
+      "label": "Bottom margin",
+      "min": 0,
+      "max": 100,
+      "step": 2,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "spacer_height",
+      "label": "Fallback spacer height",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "checkbox",
+      "id": "hide_mobile",
+      "label": "Hide on mobile",
+      "default": false
+    }
+  ],
+  "presets": [
+    {
+      "name": "Slide Custom HTML"
+    }
+  ]
+}
+{% endschema %}

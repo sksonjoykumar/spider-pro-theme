@@ -1,0 +1,13 @@
+<div class="sp-pf__payments" {{ block.shopify_attributes }}>
+  {% if block.settings.show_icons and shop.enabled_payment_types.size > 0 %}
+    <ul role="list" aria-label="Accepted payment methods">
+      {% for payment_type in shop.enabled_payment_types %}<li>{{ payment_type | payment_type_svg_tag: class: 'sp-pf__payment-svg' }}</li>{% endfor %}
+    </ul>
+  {% endif %}
+</div>
+{% schema %}
+{"name":"Footer payments","tag":null,"settings":[
+ {"type":"checkbox","id":"show_icons","label":"Show enabled payment types","default":true},
+ {"type":"paragraph","content":"These icons come from Shopify's actual enabled payment methods; unsupported brands are not shown."}
+ ],"presets":[{"name":"Footer payments"}]}
+{% endschema %}

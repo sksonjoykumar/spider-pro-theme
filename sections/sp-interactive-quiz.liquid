@@ -1,0 +1,1393 @@
+{% comment %}
+  Spider Interactive Quiz — section-local, progressive-enhanced product finder.
+  Questions and answers are flat Shopify blocks connected by normalized merchant keys.
+  Result prices/links are rendered through Liquid; JS never invents product information.
+{% endcomment %}
+{% render 'sp-section-color-scheme', section: section %}
+{{ 'sp-interactive-quiz.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'sp-interactive-quiz.js' | asset_url }}" defer></script>
+
+{%- liquid
+  assign sp_iq_questions = section.blocks | where: 'type', 'question'
+  assign sp_iq_results = section.blocks | where: 'type', 'result'
+  assign sp_iq_settings = section.settings
+  assign sp_iq_back_label = sp_iq_settings.back_label | escape
+  assign sp_iq_continue_label = sp_iq_settings.continue_label | escape
+  assign sp_iq_restart_label = sp_iq_settings.restart_label | escape
+  assign sp_iq_show_media = false
+  if sp_iq_settings.media_image != blank or request.design_mode
+    assign sp_iq_show_media = true
+  endif
+-%}
+<section
+  id="sp-iq-{{ section.id }}"
+  class="sp-iq sp-iq--{{ sp_iq_settings.layout_style }}{% if sp_iq_settings.media_mobile_order == 'first' %} sp-iq--media-first{% endif %}{% unless sp_iq_show_media %} sp-iq--no-media{% endunless %}"
+  data-sp-iq-root
+  data-sp-iq-section="{{ section.id | escape }}"
+  data-sp-iq-remember="{{ sp_iq_settings.remember_session }}"
+  data-sp-iq-config-version="{{ sp_iq_settings.config_version | escape }}"
+  data-sp-iq-auto="{{ sp_iq_settings.auto_advance }}"
+  data-sp-iq-delay="{{ sp_iq_settings.auto_advance_delay }}"
+  data-sp-iq-preview="{{ request.design_mode }}"
+  data-sp-iq-require="{{ sp_iq_settings.require_answers }}"
+  data-sp-iq-continue-label="{{ sp_iq_settings.continue_label | escape }}"
+  data-sp-iq-finish-label="{{ sp_iq_settings.finish_label | escape }}"
+  data-sp-iq-validation-label="{{ sp_iq_settings.validation_message | escape }}"
+  data-sp-iq-counter-format="{{ sp_iq_settings.counter_format | escape }}"
+  data-sp-iq-step-message="{{ sp_iq_settings.step_message | escape }}"
+  data-sp-iq-max-message="{{ sp_iq_settings.max_message | escape }}"
+  data-sp-iq-result-message="{{ sp_iq_settings.result_announcement | escape }}"
+  data-sp-iq-empty-message="{{ sp_iq_settings.empty_announcement | escape }}"
+  data-sp-iq-back="{{ sp_iq_settings.enable_back }}"
+  style="--sp-iq-max:{{ sp_iq_settings.max_width }}px;--sp-iq-col:{{ sp_iq_settings.quiz_column_ratio }}%;--sp-iq-radius:{{ sp_iq_settings.panel_radius }}px;--sp-iq-answer-radius:{{ sp_iq_settings.answer_radius }}px;--sp-iq-pad-top:{{ sp_iq_settings.padding_top }}px;--sp-iq-pad-bottom:{{ sp_iq_settings.padding_bottom }}px;--sp-iq-pad-top-m:{{ sp_iq_settings.padding_top_mobile }}px;--sp-iq-pad-bottom-m:{{ sp_iq_settings.padding_bottom_mobile }}px;--sp-iq-answer-cols:{{ sp_iq_settings.answer_columns }};--sp-iq-answer-cols-t:{{ sp_iq_settings.answer_columns_tablet }};--sp-iq-answer-cols-m:{{ sp_iq_settings.answer_columns_mobile }};--sp-iq-media-ratio:{{ sp_iq_settings.image_ratio }};--sp-iq-panel-padding:{{ sp_iq_settings.quiz_panel_padding | default: 32 }}px;--sp-iq-answer-height:{{ sp_iq_settings.answer_card_min_height | default: 148 }}px;--sp-iq-gap:{{ sp_iq_settings.answer_card_gap | default: 16 }}px;--sp-iq-icon-size:{{ sp_iq_settings.answer_icon_size | default: 42 }}px;--sp-iq-progress-height:{{ sp_iq_settings.quiz_progress_height | default: 10 }}px;--sp-iq-media-inset:{{ sp_iq_settings.media_card_inset | default: 22 }}px;--sp-iq-media-radius:{{ sp_iq_settings.media_card_radius | default: 16 }}px;--sp-iq-progress-color:{{ sp_iq_settings.progress_color | default: 'var(--sp-section-accent)' }};--sp-iq-progress-track:{{ sp_iq_settings.progress_track_color | default: 'var(--sp-section-border)' }};"
+  aria-labelledby="sp-iq-title-{{ section.id }}"
+>
+  <div class="sp-container sp-iq__container">
+    {%- if sp_iq_settings.show_header -%}
+      <div id="sp-iq-title-{{ section.id }}" class="sp-iq__intro sp-iq__intro--{{ sp_iq_settings.heading_alignment }}">
+        {%- if sp_iq_settings.eyebrow != blank -%}<p class="sp-iq__eyebrow">{{ sp_iq_settings.eyebrow | escape }}</p>{%- endif -%}
+        {% render 'sp-section-heading', heading: sp_iq_settings.heading, subheading: sp_iq_settings.description, heading_tag: 'h2', alignment: sp_iq_settings.heading_alignment, mobile_alignment: 'center', bottom_spacing: 0, typography_source: 'global' %}
+      </div>
+    {%- else -%}
+      <h2 class="sp-iq__sr-only" id="sp-iq-title-{{ section.id }}">{{ sp_iq_settings.heading | default: 'Product finder' | escape }}</h2>
+    {%- endif -%}
+    <div class="sp-iq__shell {% if sp_iq_settings.show_shadow %}sp-iq__shell--shadow{% endif %}{% if sp_iq_settings.show_border %} sp-iq__shell--border{% endif %}">
+      {%- if sp_iq_settings.layout_style == 'style_4' -%}
+        <nav class="sp-iq__sidebar" aria-label="{{ sp_iq_settings.steps_label | escape }}">
+          <p class="sp-iq__sidebar-heading">{{ sp_iq_settings.quiz_label | escape }}</p>
+          <ol class="sp-iq__sidebar-list">
+            {%- for question in sp_iq_questions -%}
+              <li class="sp-iq__sidebar-item" data-sp-iq-nav-key="{{ question.settings.question_key | strip | downcase | escape }}"><span class="sp-iq__sidebar-index">{{ forloop.index }}</span><span>{{ question.settings.question_title | escape }}</span></li>
+            {%- endfor -%}
+          </ol>
+        </nav>
+      {%- endif -%}
+      <div class="sp-iq__main">
+        <div class="sp-iq__progress-area">
+          <div class="sp-iq__progress-top">
+            <span class="sp-iq__quiz-label">{{ sp_iq_settings.quiz_label | escape }}</span>
+            {% if sp_iq_settings.show_counter %}<span class="sp-iq__counter" data-sp-iq-counter aria-hidden="true"></span>{% endif %}
+          </div>
+          {% if sp_iq_settings.show_progress %}<div class="sp-iq__progress" role="progressbar" aria-label="{{ sp_iq_settings.progress_label | escape }}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" data-sp-iq-progress><span class="sp-iq__progress-bar" data-sp-iq-progress-bar></span></div>{% endif %}
+        </div>
+        {%- if sp_iq_questions.size > 0 -%}
+          <form class="sp-iq__form" data-sp-iq-form novalidate>
+            <div class="sp-iq__steps" data-sp-iq-steps>
+              {%- for question in sp_iq_questions -%}
+                {%- assign q_key = question.settings.question_key | strip | downcase -%}
+                <div class="sp-iq__step" data-sp-iq-step data-sp-iq-key="{{ q_key | escape }}" data-sp-iq-required="{{ question.settings.required }}" data-sp-iq-max="{{ question.settings.max_selections }}" data-sp-iq-kind="{{ question.settings.selection_type }}" {{ question.shopify_attributes }}>
+                  {% if question.settings.question_image != blank %}
+                    <div class="sp-iq__question-image">{% render 'responsive-image', image: question.settings.question_image, alt: question.settings.question_image_alt, widths: '320,480,640,800', sizes: '(max-width:749px) 100vw, 660px', loading: 'lazy', class: 'sp-iq__question-img' %}</div>
+                  {% endif %}
+                  {% if question.settings.question_eyebrow != blank %}<p class="sp-iq__question-eyebrow">{{ question.settings.question_eyebrow | escape }}</p>{% endif %}
+                  <fieldset class="sp-iq__fieldset">
+                    <legend class="sp-iq__legend" tabindex="-1" data-sp-iq-focus>{{ question.settings.question_title | escape }}</legend>
+                    {% if question.settings.question_description != blank %}<p class="sp-iq__question-description">{{ question.settings.question_description | escape }}</p>{% endif %}
+                    <div class="sp-iq__answers">
+                      {%- assign q_answer_count = 0 -%}
+                      {%- for answer in section.blocks -%}
+                        {%- assign a_parent = answer.settings.parent_question_key | strip | downcase -%}
+                        {%- if answer.type == 'answer' and a_parent == q_key and q_key != blank -%}
+                          {%- assign q_answer_count = q_answer_count | plus: 1 -%}
+                          <label class="sp-iq__answer" data-sp-iq-answer data-sp-iq-answer-key="{{ answer.settings.answer_key | strip | downcase | escape }}" data-sp-iq-result-keys="{{ answer.settings.result_keys | escape }}" data-sp-iq-weight="{{ answer.settings.score_weight }}" {{ answer.shopify_attributes }}>
+                            <input class="sp-iq__input" type="{% if question.settings.selection_type == 'multiple' %}checkbox{% else %}radio{% endif %}" name="sp-iq-{{ section.id }}-{{ question.id }}" value="{{ answer.settings.answer_key | strip | downcase | escape }}" aria-label="{{ answer.settings.answer_title | escape }}">
+                            <span class="sp-iq__answer-content">
+                              {%- if answer.settings.image != blank -%}
+                                <span class="sp-iq__answer-media">{% render 'responsive-image', image: answer.settings.image, alt: answer.settings.image_alt, widths: '160,240,320,480', sizes: '(max-width:749px) 140px, 200px', loading: 'lazy', class: 'sp-iq__answer-image' %}</span>
+                              {%- elsif answer.settings.custom_icon != blank -%}
+                                <span class="sp-iq__answer-icon-wrap">{% render 'responsive-image', image: answer.settings.custom_icon, alt: '', widths: '48,80,120', sizes: '44px', loading: 'lazy', class: 'sp-iq__custom-icon' %}</span>
+                              {%- else -%}
+                                <span class="sp-iq__answer-icon-wrap">{% render 'sp-interactive-quiz-icons', name: answer.settings.icon %}</span>
+                              {%- endif -%}
+                              <span class="sp-iq__answer-title">{{ answer.settings.answer_title | escape }}</span>
+                              {% if answer.settings.answer_description != blank %}<span class="sp-iq__answer-desc">{{ answer.settings.answer_description | escape }}</span>{% endif %}
+                            </span>
+                            <span class="sp-iq__selected-check" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" focusable="false"><path d="m5 12 4.4 4.4L19 7" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                          </label>
+                        {%- endif -%}
+                      {%- endfor -%}
+                    </div>
+                    {%- if q_answer_count == 0 and request.design_mode -%}<p class="sp-iq__editor-warning">Add Answer blocks with parent question key: {{ q_key | escape }}</p>{%- endif -%}
+                  </fieldset>
+                </div>
+              {%- endfor -%}
+            </div>
+            <p class="sp-iq__validation" data-sp-iq-error role="alert" tabindex="-1" hidden>{{ sp_iq_settings.validation_message | escape }}</p>
+            <div class="sp-iq__actions" data-sp-iq-actions>
+              {% if sp_iq_settings.enable_back %}{% render 'button', label: sp_iq_back_label, style: 'secondary', class: 'sp-iq__back', attributes: 'data-sp-iq-back' %}{% endif %}
+              {% render 'button', label: sp_iq_continue_label, style: 'primary', class: 'sp-iq__next', attributes: 'data-sp-iq-next' %}
+            </div>
+          </form>
+        {%- elsif request.design_mode -%}
+          <p class="sp-iq__editor-warning">Add at least one Question block, matching Answer blocks, and a Result block.</p>
+        {%- endif -%}
+        <div class="sp-iq__results" data-sp-iq-results>
+          <p class="sp-iq__question-eyebrow">{{ sp_iq_settings.result_eyebrow | escape }}</p>
+          <h3 class="sp-iq__results-heading" tabindex="-1" data-sp-iq-result-focus>{{ sp_iq_settings.result_heading | escape }}</h3>
+          {% if sp_iq_settings.result_description != blank %}<p class="sp-iq__question-description">{{ sp_iq_settings.result_description | escape }}</p>{% endif %}
+          {%- for result in sp_iq_results -%}
+            {% liquid
+              assign sp_iq_product = result.settings.product
+              assign sp_iq_variant = sp_iq_product.selected_or_first_available_variant
+              assign sp_iq_image = result.settings.image_override | default: sp_iq_product.featured_image
+              assign sp_iq_link = result.settings.primary_link | default: sp_iq_product.url | default: result.settings.collection.url
+              assign sp_iq_secondary = result.settings.secondary_link | default: result.settings.collection.url
+            %}
+            <article class="sp-iq__result{% if sp_iq_image == blank %} sp-iq__result--no-image{% endif %}" data-sp-iq-result data-sp-iq-result-key="{{ result.settings.result_key | strip | downcase | escape }}" data-sp-iq-result-tags="{{ result.settings.matching_tags | escape }}" data-sp-iq-min-score="{{ result.settings.min_score }}" data-sp-iq-fallback="{{ result.settings.is_fallback }}" {{ result.shopify_attributes }}>
+              {%- if sp_iq_image != blank -%}<div class="sp-iq__result-image">{% render 'responsive-image', image: sp_iq_image, alt: result.settings.result_heading, widths: '320,480,640,800,1000', sizes: '(max-width:749px) 100vw, 480px', loading: 'lazy', class: 'sp-iq__result-img' %}</div>{%- endif -%}
+              <div class="sp-iq__result-body">
+                {% if result.settings.badge != blank %}<span class="sp-iq__result-badge">{{ result.settings.badge | escape }}</span>{% endif %}
+                <h4 class="sp-iq__result-title">{{ result.settings.result_heading | escape }}</h4>
+                {% if result.settings.result_description != blank %}<p class="sp-iq__result-desc">{{ result.settings.result_description | escape }}</p>{% endif %}
+                {% if sp_iq_product != blank and sp_iq_variant != blank %}
+                  <p class="sp-iq__product-title">{{ sp_iq_product.title | escape }}</p>
+                  <p class="sp-iq__price"><span>{{ sp_iq_variant.price | money }}</span>{% if sp_iq_variant.compare_at_price > sp_iq_variant.price %}<s>{{ sp_iq_variant.compare_at_price | money }}</s>{% endif %}</p>
+                  {% unless sp_iq_variant.available %}<p class="sp-iq__stock">{{ sp_iq_settings.sold_out_label | escape }}</p>{% endunless %}
+                {% endif %}
+                <div class="sp-iq__result-links">
+                  {% if result.settings.primary_label != blank and sp_iq_link != blank %}<a class="sp-button sp-button--primary" href="{{ sp_iq_link | escape }}">{{ result.settings.primary_label | escape }}</a>{% endif %}
+                  {% if result.settings.secondary_label != blank and sp_iq_secondary != blank %}<a class="sp-button sp-button--secondary" href="{{ sp_iq_secondary | escape }}">{{ result.settings.secondary_label | escape }}</a>{% endif %}
+                </div>
+              </div>
+            </article>
+          {%- endfor -%}
+          <div class="sp-iq__result-empty" data-sp-iq-empty hidden><p>{{ sp_iq_settings.empty_result | escape }}</p></div>
+          {% render 'button', label: sp_iq_restart_label, style: 'secondary', class: 'sp-iq__restart', attributes: 'data-sp-iq-restart' %}
+        </div>
+        <p class="sp-iq__live sp-iq__sr-only" aria-live="polite" aria-atomic="true" data-sp-iq-live></p>
+        <div class="sp-iq__no-js"><p>{{ sp_iq_settings.no_js_message | escape }}</p></div>
+      </div>
+      {% if sp_iq_show_media and sp_iq_settings.layout_style != 'style_3' and sp_iq_settings.layout_style != 'style_4' %}
+        <aside class="sp-iq__media" aria-label="{{ sp_iq_settings.media_label | escape }}">
+          {% if sp_iq_settings.media_image != blank %}
+            <picture class="sp-iq__media-picture">
+              {% if sp_iq_settings.media_image_mobile != blank %}<source media="(max-width: 749px)" srcset="{{ sp_iq_settings.media_image_mobile | image_url: width: 800 }} 800w, {{ sp_iq_settings.media_image_mobile | image_url: width: 1200 }} 1200w" sizes="100vw">{% endif %}
+              {% render 'responsive-image', image: sp_iq_settings.media_image, alt: sp_iq_settings.media_image_alt, widths: '480,640,800,1000,1200,1600', sizes: '(max-width:749px) 100vw, 40vw', loading: 'lazy', class: 'sp-iq__media-image' %}
+            </picture>
+          {% elsif request.design_mode %}
+            {{ 'product-1' | placeholder_svg_tag: 'sp-iq__media-placeholder' }}
+          {% else %}
+            <div class="sp-iq__media-empty" aria-hidden="true">{% render 'sp-interactive-quiz-icons', name: 'sparkle' %}</div>
+          {% endif %}
+          {% if sp_iq_settings.show_time and sp_iq_settings.time_label != blank %}<span class="sp-iq__time">{% render 'sp-interactive-quiz-icons', name: 'clock' %}{{ sp_iq_settings.time_label | escape }}</span>{% endif %}
+          {% if sp_iq_settings.show_note and sp_iq_settings.media_note != blank %}<div class="sp-iq__media-note">{% render 'sp-interactive-quiz-icons', name: 'sparkle' %}<p>{{ sp_iq_settings.media_note | escape }}</p></div>{% endif %}
+        </aside>
+      {% endif %}
+    </div>
+  </div>
+</section>
+{% schema %}
+{
+  "name": "Interactive Quiz",
+  "tag": "section",
+  "class": "sp-iq-section",
+  "disabled_on": {
+    "groups": [
+      "header",
+      "footer",
+       "custom.system"
+    ]
+  },
+  "max_blocks": 50,
+  "settings": [
+    {
+      "type": "header",
+      "content": "Global design"
+    },
+    {
+      "type": "color_scheme",
+      "id": "sp_color_scheme",
+      "label": "Theme color scheme",
+      "default": "scheme-1"
+    },
+    {
+      "type": "select",
+      "id": "layout_style",
+      "label": "Layout style",
+      "default": "style_1",
+      "options": [
+        {
+          "value": "style_1",
+          "label": "Split Product Finder"
+        },
+        {
+          "value": "style_2",
+          "label": "Centered Step Wizard"
+        },
+        {
+          "value": "style_3",
+          "label": "Visual Choice Gallery"
+        },
+        {
+          "value": "style_4",
+          "label": "Sidebar Progress Quiz"
+        },
+        {
+          "value": "style_5",
+          "label": "Conversational Quiz"
+        }
+      ]
+    },
+    {
+      "type": "header",
+      "content": "Header and labels"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_header",
+      "label": "Show header",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Eyebrow",
+      "default": "PERSONALIZED FOR YOU"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Find Your Perfect Match"
+    },
+    {
+      "type": "richtext",
+      "id": "description",
+      "label": "Description",
+      "default": "<p>Answer a few quick questions and we’ll recommend products made for your life.</p>"
+    },
+    {
+      "type": "select",
+      "id": "heading_alignment",
+      "label": "Heading alignment",
+      "default": "center",
+      "options": [
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "left",
+          "label": "Left"
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "id": "quiz_label",
+      "label": "Quiz label",
+      "default": "PRODUCT FINDER"
+    },
+    {
+      "type": "text",
+      "id": "steps_label",
+      "label": "Steps navigation label",
+      "default": "Quiz steps"
+    },
+    {
+      "type": "text",
+      "id": "progress_label",
+      "label": "Progress accessibility label",
+      "default": "Quiz completion"
+    },
+    {
+      "type": "text",
+      "id": "continue_label",
+      "label": "Continue label",
+      "default": "Continue →"
+    },
+    {
+      "type": "text",
+      "id": "finish_label",
+      "label": "Results button label",
+      "default": "View my result →"
+    },
+    {
+      "type": "text",
+      "id": "back_label",
+      "label": "Back label",
+      "default": "← Back"
+    },
+    {
+      "type": "text",
+      "id": "restart_label",
+      "label": "Restart label",
+      "default": "Start again"
+    },
+    {
+      "type": "text",
+      "id": "validation_message",
+      "label": "Required answer message",
+      "default": "Choose an option to continue."
+    },
+    {
+      "type": "text",
+      "id": "no_js_message",
+      "label": "No-JavaScript message",
+      "default": "Enable JavaScript to receive your product recommendation. You can still review the questions and recommendations below."
+    },
+    {
+      "type": "text",
+      "id": "empty_announcement",
+      "label": "Empty result announcement",
+      "default": "Your results are ready."
+    },
+    {
+      "type": "text",
+      "id": "result_announcement",
+      "label": "Result announcement",
+      "default": "Your recommendation: {title}"
+    },
+    {
+      "type": "text",
+      "id": "max_message",
+      "label": "Maximum selections message",
+      "default": "Choose up to {max} answers."
+    },
+    {
+      "type": "text",
+      "id": "step_message",
+      "label": "Step announcement",
+      "default": "Question {current} of {total}: {title}"
+    },
+    {
+      "type": "text",
+      "id": "counter_format",
+      "label": "Question counter format",
+      "default": "Question {current} of {total}"
+    },
+    {
+      "type": "header",
+      "content": "Results"
+    },
+    {
+      "type": "text",
+      "id": "result_eyebrow",
+      "label": "Result eyebrow",
+      "default": "YOUR MATCH"
+    },
+    {
+      "type": "text",
+      "id": "result_heading",
+      "label": "Result heading",
+      "default": "Your thoughtful match"
+    },
+    {
+      "type": "text",
+      "id": "result_description",
+      "label": "Result description",
+      "default": "Here is a recommendation based on your answers."
+    },
+    {
+      "type": "text",
+      "id": "empty_result",
+      "label": "No matching result message",
+      "default": "No specific match is configured yet. Explore our collection or try again."
+    },
+    {
+      "type": "text",
+      "id": "sold_out_label",
+      "label": "Unavailable product label",
+      "default": "Currently unavailable"
+    },
+    {
+      "type": "header",
+      "content": "Layout and media"
+    },
+    {
+      "type": "range",
+      "id": "max_width",
+      "label": "Content max width",
+      "default": 1440,
+      "min": 760,
+      "max": 1760,
+      "step": 20,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "quiz_column_ratio",
+      "label": "Quiz panel width",
+      "default": 61,
+      "min": 45,
+      "max": 75,
+      "step": 1,
+      "unit": "%"
+    },
+    {
+      "type": "range",
+      "id": "answer_columns",
+      "label": "Desktop answer columns",
+      "default": 2,
+      "min": 1,
+      "max": 4,
+      "step": 1
+    },
+    {
+      "type": "range",
+      "id": "answer_columns_tablet",
+      "label": "Tablet answer columns",
+      "default": 2,
+      "min": 1,
+      "max": 3,
+      "step": 1
+    },
+    {
+      "type": "range",
+      "id": "answer_columns_mobile",
+      "label": "Mobile answer columns",
+      "default": 1,
+      "min": 1,
+      "max": 3,
+      "step": 1
+    },
+    {
+      "type": "image_picker",
+      "id": "media_image",
+      "label": "Main image"
+    },
+    {
+      "type": "image_picker",
+      "id": "media_image_mobile",
+      "label": "Mobile image"
+    },
+    {
+      "type": "text",
+      "id": "media_image_alt",
+      "label": "Main image alt text",
+      "default": "Lifestyle accessories selected for the quiz"
+    },
+    {
+      "type": "text",
+      "id": "media_label",
+      "label": "Media panel label",
+      "default": "Product finder illustration"
+    },
+    {
+      "type": "select",
+      "id": "media_mobile_order",
+      "label": "Mobile image position",
+      "default": "after",
+      "options": [
+        {
+          "value": "after",
+          "label": "Below quiz"
+        },
+        {
+          "value": "first",
+          "label": "Above quiz"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "image_ratio",
+      "label": "Mobile media ratio",
+      "default": "3/2",
+      "options": [
+        {
+          "value": "3/2",
+          "label": "Landscape"
+        },
+        {
+          "value": "1",
+          "label": "Square"
+        },
+        {
+          "value": "4/3",
+          "label": "Wide"
+        },
+        {
+          "value": "3/4",
+          "label": "Portrait"
+        }
+      ]
+    },
+    {
+      "type": "checkbox",
+      "id": "show_time",
+      "label": "Show time estimate",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "time_label",
+      "label": "Estimated time",
+      "default": "Takes about 2 minutes"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_note",
+      "label": "Show media note",
+      "default": true
+    },
+    {
+      "type": "textarea",
+      "id": "media_note",
+      "label": "Media supporting note",
+      "default": "Your answers help narrow down options to a few considered choices."
+    },
+    {
+      "type": "header",
+      "content": "Interaction"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_progress",
+      "label": "Show progress bar",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_counter",
+      "label": "Show question counter",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_back",
+      "label": "Show Back button",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "require_answers",
+      "label": "Require answers globally",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "auto_advance",
+      "label": "Auto-advance single choice",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "auto_advance_delay",
+      "label": "Auto-advance delay",
+      "default": 280,
+      "min": 0,
+      "max": 1200,
+      "step": 20,
+      "unit": "ms"
+    },
+    {
+      "type": "checkbox",
+      "id": "remember_session",
+      "label": "Remember answers in this tab",
+      "default": false
+    },
+    {
+      "type": "text",
+      "id": "config_version",
+      "label": "Quiz configuration version",
+      "default": "1",
+      "info": "Change when question and answer mappings are significantly revised."
+    },
+    {
+      "type": "header",
+      "content": "Premium question cards"
+    },
+    {
+      "type": "range",
+      "id": "quiz_panel_padding",
+      "label": "Quiz panel padding",
+      "min": 16,
+      "max": 56,
+      "step": 2,
+      "unit": "px",
+      "default": 32
+    },
+    {
+      "type": "range",
+      "id": "answer_card_min_height",
+      "label": "Answer card minimum height",
+      "min": 96,
+      "max": 216,
+      "step": 4,
+      "unit": "px",
+      "default": 148
+    },
+    {
+      "type": "range",
+      "id": "answer_card_gap",
+      "label": "Answer card gap",
+      "min": 8,
+      "max": 32,
+      "step": 2,
+      "unit": "px",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "answer_icon_size",
+      "label": "Answer icon size",
+      "min": 28,
+      "max": 60,
+      "step": 2,
+      "unit": "px",
+      "default": 42
+    },
+    {
+      "type": "range",
+      "id": "quiz_progress_height",
+      "label": "Progress bar height",
+      "min": 4,
+      "max": 16,
+      "step": 1,
+      "unit": "px",
+      "default": 10
+    },
+    {
+      "type": "header",
+      "content": "Media card refinements"
+    },
+    {
+      "type": "range",
+      "id": "media_card_inset",
+      "label": "Desktop media inset",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "default": 22
+    },
+    {
+      "type": "range",
+      "id": "media_card_radius",
+      "label": "Media card corner radius",
+      "min": 0,
+      "max": 36,
+      "step": 2,
+      "unit": "px",
+      "default": 16
+    },
+    {
+      "type": "header",
+      "content": "Appearance"
+    },
+    {
+      "type": "range",
+      "id": "panel_radius",
+      "label": "Panel corner radius",
+      "default": 20,
+      "min": 0,
+      "max": 40,
+      "step": 1,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "answer_radius",
+      "label": "Answer corner radius",
+      "default": 13,
+      "min": 0,
+      "max": 32,
+      "step": 1,
+      "unit": "px"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_border",
+      "label": "Show border",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_shadow",
+      "label": "Show shadow",
+      "default": true
+    },
+    {
+      "type": "color",
+      "id": "progress_color",
+      "label": "Progress color"
+    },
+    {
+      "type": "color",
+      "id": "progress_track_color",
+      "label": "Progress track color"
+    },
+    {
+      "type": "header",
+      "content": "Desktop spacing"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "Top padding",
+      "default": 64,
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "Bottom padding",
+      "default": 64,
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "px"
+    },
+    {
+      "type": "header",
+      "content": "Mobile spacing"
+    },
+    {
+      "type": "range",
+      "id": "padding_top_mobile",
+      "label": "Mobile top padding",
+      "default": 40,
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom_mobile",
+      "label": "Mobile bottom padding",
+      "default": 40,
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "question",
+      "name": "Question",
+      "limit": 15,
+      "settings": [
+        {
+          "type": "text",
+          "id": "question_key",
+          "label": "Unique question key",
+          "default": "question-1",
+          "info": "Use a unique key, such as priority. Answer parent keys must match."
+        },
+        {
+          "type": "text",
+          "id": "question_eyebrow",
+          "label": "Eyebrow",
+          "default": "YOUR PRIORITY"
+        },
+        {
+          "type": "text",
+          "id": "question_title",
+          "label": "Question",
+          "default": "What matters most to you?"
+        },
+        {
+          "type": "textarea",
+          "id": "question_description",
+          "label": "Question description",
+          "default": "Choose an option that best fits your everyday needs."
+        },
+        {
+          "type": "select",
+          "id": "selection_type",
+          "label": "Selection type",
+          "default": "single",
+          "options": [
+            {
+              "value": "single",
+              "label": "Single answer"
+            },
+            {
+              "value": "multiple",
+              "label": "Multiple answers"
+            }
+          ]
+        },
+        {
+          "type": "checkbox",
+          "id": "required",
+          "label": "Required",
+          "default": true
+        },
+        {
+          "type": "range",
+          "id": "max_selections",
+          "label": "Maximum multi-select answers (0 = unlimited)",
+          "default": 0,
+          "min": 0,
+          "max": 12,
+          "step": 1
+        },
+        {
+          "type": "image_picker",
+          "id": "question_image",
+          "label": "Question image"
+        },
+        {
+          "type": "text",
+          "id": "question_image_alt",
+          "label": "Question image alt text"
+        }
+      ]
+    },
+    {
+      "type": "answer",
+      "name": "Answer",
+      "limit": 40,
+      "settings": [
+        {
+          "type": "text",
+          "id": "parent_question_key",
+          "label": "Parent question key",
+          "default": "question-1"
+        },
+        {
+          "type": "text",
+          "id": "answer_key",
+          "label": "Unique answer key",
+          "default": "answer-1"
+        },
+        {
+          "type": "text",
+          "id": "answer_title",
+          "label": "Answer title",
+          "default": "A thoughtful choice"
+        },
+        {
+          "type": "textarea",
+          "id": "answer_description",
+          "label": "Answer description",
+          "default": "Describe the option."
+        },
+        {
+          "type": "select",
+          "id": "icon",
+          "label": "Icon",
+          "default": "leaf",
+          "options": [
+            {
+              "value": "leaf",
+              "label": "Leaf / light"
+            },
+            {
+              "value": "shield",
+              "label": "Shield"
+            },
+            {
+              "value": "organization",
+              "label": "Organization"
+            },
+            {
+              "value": "sparkle",
+              "label": "Sparkle"
+            },
+            {
+              "value": "bag",
+              "label": "Bag"
+            },
+            {
+              "value": "heart",
+              "label": "Heart"
+            },
+            {
+              "value": "diamond",
+              "label": "Diamond"
+            },
+            {
+              "value": "truck",
+              "label": "Truck"
+            },
+            {
+              "value": "clock",
+              "label": "Clock"
+            },
+            {
+              "value": "star",
+              "label": "Star"
+            },
+            {
+              "value": "check",
+              "label": "Check"
+            },
+            {
+              "value": "card",
+              "label": "Card"
+            }
+          ]
+        },
+        {
+          "type": "image_picker",
+          "id": "custom_icon",
+          "label": "Custom icon image"
+        },
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Answer image"
+        },
+        {
+          "type": "text",
+          "id": "image_alt",
+          "label": "Answer image alt text"
+        },
+        {
+          "type": "text",
+          "id": "result_keys",
+          "label": "Scoring result keys",
+          "default": "organized",
+          "info": "Comma-separated result keys, such as organized,durable."
+        },
+        {
+          "type": "range",
+          "id": "score_weight",
+          "label": "Score weight",
+          "default": 2,
+          "min": 0,
+          "max": 20,
+          "step": 1
+        }
+      ]
+    },
+    {
+      "type": "result",
+      "name": "Result",
+      "limit": 10,
+      "settings": [
+        {
+          "type": "text",
+          "id": "result_key",
+          "label": "Unique result key",
+          "default": "organized"
+        },
+        {
+          "type": "text",
+          "id": "matching_tags",
+          "label": "Additional matching tags",
+          "info": "Comma-separated optional tags also accepted from answers."
+        },
+        {
+          "type": "range",
+          "id": "min_score",
+          "label": "Minimum required score",
+          "default": 1,
+          "min": 0,
+          "max": 100,
+          "step": 1
+        },
+        {
+          "type": "checkbox",
+          "id": "is_fallback",
+          "label": "Use as unmatched fallback",
+          "default": false
+        },
+        {
+          "type": "text",
+          "id": "result_heading",
+          "label": "Result title",
+          "default": "The everyday organizer"
+        },
+        {
+          "type": "textarea",
+          "id": "result_description",
+          "label": "Result description",
+          "default": "An option focused on thoughtful organization."
+        },
+        {
+          "type": "text",
+          "id": "badge",
+          "label": "Badge",
+          "default": "Your recommendation"
+        },
+        {
+          "type": "product",
+          "id": "product",
+          "label": "Shopify product"
+        },
+        {
+          "type": "collection",
+          "id": "collection",
+          "label": "Shopify collection"
+        },
+        {
+          "type": "image_picker",
+          "id": "image_override",
+          "label": "Override result image"
+        },
+        {
+          "type": "url",
+          "id": "primary_link",
+          "label": "Primary URL override"
+        },
+        {
+          "type": "text",
+          "id": "primary_label",
+          "label": "Primary link label",
+          "default": "See product"
+        },
+        {
+          "type": "url",
+          "id": "secondary_link",
+          "label": "Secondary URL override"
+        },
+        {
+          "type": "text",
+          "id": "secondary_label",
+          "label": "Secondary link label",
+          "default": "Explore collection"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Interactive Quiz",
+      "settings": {
+        "layout_style": "style_1"
+      },
+      "category": "06. Promotions",
+      "blocks": [
+        {
+          "type": "question",
+          "settings": {
+            "question_key": "setting",
+            "question_eyebrow": "HOW YOU USE IT",
+            "question_title": "Where would you use it most?",
+            "question_description": "Pick the situation closest to your daily routine.",
+            "selection_type": "single",
+            "required": true
+          }
+        },
+        {
+          "type": "answer",
+          "settings": {
+            "parent_question_key": "setting",
+            "answer_key": "commute",
+            "answer_title": "Daily commute",
+            "answer_description": "From home to work.",
+            "icon": "bag",
+            "result_keys": "organized",
+            "score_weight": 2
+          }
+        },
+        {
+          "type": "answer",
+          "settings": {
+            "parent_question_key": "setting",
+            "answer_key": "travel",
+            "answer_title": "Weekend travel",
+            "answer_description": "Ready for every trip.",
+            "icon": "truck",
+            "result_keys": "durable",
+            "score_weight": 2
+          }
+        },
+        {
+          "type": "answer",
+          "settings": {
+            "parent_question_key": "setting",
+            "answer_key": "home",
+            "answer_title": "At home",
+            "answer_description": "Comfort for everyday living.",
+            "icon": "heart",
+            "result_keys": "lightweight",
+            "score_weight": 2
+          }
+        },
+        {
+          "type": "answer",
+          "settings": {
+            "parent_question_key": "setting",
+            "answer_key": "everywhere",
+            "answer_title": "A bit of everything",
+            "answer_description": "Adaptable and versatile.",
+            "icon": "sparkle",
+            "result_keys": "organized",
+            "score_weight": 2
+          }
+        },
+        {
+          "type": "question",
+          "settings": {
+            "question_key": "priority",
+            "question_eyebrow": "YOUR PRIORITY",
+            "question_title": "What matters most to you?",
+            "question_description": "Choose the option that best fits your everyday needs.",
+            "selection_type": "single",
+            "required": true
+          }
+        },
+        {
+          "type": "answer",
+          "settings": {
+            "parent_question_key": "priority",
+            "answer_key": "lightweight",
+            "answer_title": "Lightweight",
+            "answer_description": "Easy to carry all day.",
+            "icon": "leaf",
+            "result_keys": "lightweight",
+            "score_weight": 2
+          }
+        },
+        {
+          "type": "answer",
+          "settings": {
+            "parent_question_key": "priority",
+            "answer_key": "durability",
+            "answer_title": "Durability",
+            "answer_description": "Built for years of use.",
+            "icon": "shield",
+            "result_keys": "durable",
+            "score_weight": 2
+          }
+        },
+        {
+          "type": "answer",
+          "settings": {
+            "parent_question_key": "priority",
+            "answer_key": "organization",
+            "answer_title": "Smart organization",
+            "answer_description": "A place for everything.",
+            "icon": "organization",
+            "result_keys": "organized",
+            "score_weight": 2
+          }
+        },
+        {
+          "type": "answer",
+          "settings": {
+            "parent_question_key": "priority",
+            "answer_key": "sustainability",
+            "answer_title": "Sustainable materials",
+            "answer_description": "Lower-impact choices.",
+            "icon": "leaf",
+            "result_keys": "sustainable",
+            "score_weight": 2
+          }
+        },
+        {
+          "type": "question",
+          "settings": {
+            "question_key": "style",
+            "question_eyebrow": "YOUR STYLE",
+            "question_title": "Which style feels most like you?",
+            "question_description": "Find a look that works for your life.",
+            "selection_type": "single",
+            "required": true
+          }
+        },
+        {
+          "type": "answer",
+          "settings": {
+            "parent_question_key": "style",
+            "answer_key": "minimal",
+            "answer_title": "Minimal",
+            "answer_description": "Clean and easy.",
+            "icon": "sparkle",
+            "result_keys": "lightweight",
+            "score_weight": 2
+          }
+        },
+        {
+          "type": "answer",
+          "settings": {
+            "parent_question_key": "style",
+            "answer_key": "modern",
+            "answer_title": "Modern",
+            "answer_description": "Made for busy days.",
+            "icon": "diamond",
+            "result_keys": "organized",
+            "score_weight": 2
+          }
+        },
+        {
+          "type": "answer",
+          "settings": {
+            "parent_question_key": "style",
+            "answer_key": "classic",
+            "answer_title": "Classic",
+            "answer_description": "Timeless and dependable.",
+            "icon": "shield",
+            "result_keys": "durable",
+            "score_weight": 2
+          }
+        },
+        {
+          "type": "answer",
+          "settings": {
+            "parent_question_key": "style",
+            "answer_key": "natural",
+            "answer_title": "Natural",
+            "answer_description": "Considered materials.",
+            "icon": "leaf",
+            "result_keys": "sustainable",
+            "score_weight": 2
+          }
+        },
+        {
+          "type": "question",
+          "settings": {
+            "question_key": "carry",
+            "question_eyebrow": "WHAT YOU CARRY",
+            "question_title": "What do you carry most often?",
+            "question_description": "Choose the best fit for your essentials.",
+            "selection_type": "single",
+            "required": true
+          }
+        },
+        {
+          "type": "answer",
+          "settings": {
+            "parent_question_key": "carry",
+            "answer_key": "essentials",
+            "answer_title": "Just the essentials",
+            "answer_description": "Keep it light.",
+            "icon": "leaf",
+            "result_keys": "lightweight",
+            "score_weight": 2
+          }
+        },
+        {
+          "type": "answer",
+          "settings": {
+            "parent_question_key": "carry",
+            "answer_key": "work",
+            "answer_title": "Work essentials",
+            "answer_description": "Designed for daily organization.",
+            "icon": "organization",
+            "result_keys": "organized",
+            "score_weight": 2
+          }
+        },
+        {
+          "type": "answer",
+          "settings": {
+            "parent_question_key": "carry",
+            "answer_key": "travelkit",
+            "answer_title": "Travel items",
+            "answer_description": "Ready for the journey.",
+            "icon": "truck",
+            "result_keys": "durable",
+            "score_weight": 2
+          }
+        },
+        {
+          "type": "answer",
+          "settings": {
+            "parent_question_key": "carry",
+            "answer_key": "reusable",
+            "answer_title": "Reusable everyday items",
+            "answer_description": "Thoughtful habits.",
+            "icon": "heart",
+            "result_keys": "sustainable",
+            "score_weight": 2
+          }
+        },
+        {
+          "type": "question",
+          "settings": {
+            "question_key": "finishing",
+            "question_eyebrow": "ONE LAST THING",
+            "question_title": "Which benefit sounds best?",
+            "question_description": "This helps us choose a recommendation.",
+            "selection_type": "single",
+            "required": true
+          }
+        },
+        {
+          "type": "answer",
+          "settings": {
+            "parent_question_key": "finishing",
+            "answer_key": "easy",
+            "answer_title": "Easy to carry",
+            "answer_description": "Light and flexible.",
+            "icon": "leaf",
+            "result_keys": "lightweight",
+            "score_weight": 2
+          }
+        },
+        {
+          "type": "answer",
+          "settings": {
+            "parent_question_key": "finishing",
+            "answer_key": "strong",
+            "answer_title": "Built to last",
+            "answer_description": "Dependable and sturdy.",
+            "icon": "shield",
+            "result_keys": "durable",
+            "score_weight": 2
+          }
+        },
+        {
+          "type": "answer",
+          "settings": {
+            "parent_question_key": "finishing",
+            "answer_key": "room",
+            "answer_title": "Room for everything",
+            "answer_description": "Organized and ready.",
+            "icon": "organization",
+            "result_keys": "organized",
+            "score_weight": 2
+          }
+        },
+        {
+          "type": "answer",
+          "settings": {
+            "parent_question_key": "finishing",
+            "answer_key": "mindful",
+            "answer_title": "Mindful choices",
+            "answer_description": "Prefer considered materials.",
+            "icon": "heart",
+            "result_keys": "sustainable",
+            "score_weight": 2
+          }
+        },
+        {
+          "type": "result",
+          "settings": {
+            "result_key": "lightweight",
+            "result_heading": "Lightweight favorites",
+            "result_description": "Consider versatile everyday pieces that are easy to carry.",
+            "badge": "Light carry essentials",
+            "min_score": 1,
+            "is_fallback": false
+          }
+        },
+        {
+          "type": "result",
+          "settings": {
+            "result_key": "durable",
+            "result_heading": "Made for everyday use",
+            "result_description": "Explore options chosen for practical day-to-day wear.",
+            "badge": "Everyday durability",
+            "min_score": 1,
+            "is_fallback": false
+          }
+        },
+        {
+          "type": "result",
+          "settings": {
+            "result_key": "organized",
+            "result_heading": "A more organized everyday",
+            "result_description": "Look for an option that helps keep your essentials in order.",
+            "badge": "Smart everyday organization",
+            "min_score": 1,
+            "is_fallback": true
+          }
+        },
+        {
+          "type": "result",
+          "settings": {
+            "result_key": "sustainable",
+            "result_heading": "Considered material choices",
+            "result_description": "Explore product information and materials that match your priorities.",
+            "badge": "Thoughtful materials",
+            "min_score": 1,
+            "is_fallback": false
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

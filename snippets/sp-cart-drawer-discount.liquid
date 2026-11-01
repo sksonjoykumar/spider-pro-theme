@@ -1,0 +1,38 @@
+{%- if section.settings.show_discount -%}
+  <section id="SpCartToolDiscount-{{ section.id }}" class="sp-cart-drawer__tool-panel{% if inline %} sp-cart-drawer__discount-inline{% endif %}" data-sp-cart-tool-panel="discount" aria-labelledby="SpCartToolDiscountTitle-{{ section.id }}"{% unless inline %} hidden{% endunless %}>
+    {%- unless inline -%}
+    <div class="sp-cart-drawer__tool-panel-head">
+      <h3 id="SpCartToolDiscountTitle-{{ section.id }}">Discount code</h3>
+      <button type="button" class="sp-cart-drawer__tool-close" data-sp-cart-tool-close aria-label="Close discount panel">{% render 'icon', name: 'close' %}</button>
+    </div>
+
+    {%- endunless -%}
+    {%- if cart.discount_applications.size > 0 -%}
+      <ul class="sp-cart-drawer__discount-list" role="list">
+        {%- for discount_application in cart.discount_applications -%}
+          <li class="sp-cart-drawer__discount">
+            <span>
+              {{ discount_application.title | escape }}
+              <small>−{{ discount_application.total_allocated_amount | money_with_currency }}</small>
+            </span>
+            {%- if discount_application.type == 'discount_code' -%}
+              <button type="button" class="sp-cart-drawer__discount-remove" data-sp-discount-remove data-sp-discount-code="{{ discount_application.title | escape }}" aria-label="Remove discount {{ discount_application.title | escape }}">Remove</button>
+            {%- endif -%}
+          </li>
+        {%- endfor -%}
+      </ul>
+    {%- endif -%}
+
+    <form class="sp-cart-drawer__tool-form" data-sp-cart-discount-form data-error-message="{{ section.settings.discount_error_message | escape }}">
+      <label for="SpCartDiscount-{{ section.id }}"{% if inline %} class="sp-cart-drawer__visually-hidden"{% endif %}>Discount code</label>
+      <div class="sp-cart-drawer__field-row">
+        <div class="sp-cart-drawer__discount-input-wrap">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 13 11 22l-9-9V2h11l7 7v4Z"/><circle cx="7.5" cy="7.5" r="1.5"/></svg>
+          <input id="SpCartDiscount-{{ section.id }}" name="discount" type="text" placeholder="Discount code" autocomplete="off" required>
+        </div>
+        <button type="submit" class="sp-cart-drawer__button sp-cart-drawer__button--primary sp-cart-drawer__discount-apply">Apply</button>
+      </div>
+      <p class="sp-cart-drawer__tool-status" role="status" aria-live="polite" data-sp-cart-tool-status></p>
+    </form>
+  </section>
+{%- endif -%}

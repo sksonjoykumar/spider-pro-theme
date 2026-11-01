@@ -1,0 +1,34 @@
+{%- liquid
+  assign has_primary = false
+  assign has_secondary = false
+  if block.settings.primary_button_label != blank and block.settings.primary_button_link != blank
+    assign has_primary = true
+  endif
+  if block.settings.secondary_button_label != blank and block.settings.secondary_button_link != blank
+    assign has_secondary = true
+  endif
+-%}
+
+{%- if has_primary or has_secondary -%}
+  <div class="sp-hero__buttons" data-sp-hero-interactive>
+    {%- if has_primary -%}
+      <a
+        class="sp-hero__button sp-hero__button--primary"
+        href="{{ block.settings.primary_button_link }}"
+        {% if block.settings.primary_button_new_tab %}target="_blank" rel="noopener noreferrer"{% endif %}
+      >
+        {{ block.settings.primary_button_label | escape }}
+      </a>
+    {%- endif -%}
+
+    {%- if has_secondary -%}
+      <a
+        class="sp-hero__button sp-hero__button--secondary"
+        href="{{ block.settings.secondary_button_link }}"
+        {% if block.settings.secondary_button_new_tab %}target="_blank" rel="noopener noreferrer"{% endif %}
+      >
+        {{ block.settings.secondary_button_label | escape }}
+      </a>
+    {%- endif -%}
+  </div>
+{%- endif -%}

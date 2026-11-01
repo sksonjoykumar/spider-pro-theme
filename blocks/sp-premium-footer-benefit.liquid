@@ -1,0 +1,15 @@
+<div class="sp-pf__benefit" role="listitem" {{ block.shopify_attributes }}>
+  <div class="sp-pf__benefit-icon">{% render 'sp-premium-footer-icon', name: block.settings.icon %}</div>
+  <div class="sp-pf__benefit-content">
+    {% if block.settings.url != blank %}<a href="{{ block.settings.url }}" class="sp-pf__benefit-heading">{{ block.settings.heading | escape }}</a>{% else %}<strong class="sp-pf__benefit-heading">{{ block.settings.heading | escape }}</strong>{% endif %}
+    {% if block.settings.description != blank %}<p>{{ block.settings.description | escape }}</p>{% endif %}
+  </div>
+</div>
+{% schema %}
+{"name":"Footer trust benefit","tag":null,"settings":[
+ {"type":"select","id":"icon","label":"Outline icon","options":[{"value":"truck","label":"Shipping truck"},{"value":"package","label":"Package / returns"},{"value":"shield","label":"Secure shield"},{"value":"award","label":"Award"},{"value":"headphones","label":"Headphones"},{"value":"check","label":"Check"}],"default":"truck"},
+ {"type":"text","id":"heading","label":"Benefit title","default":"Store benefit"},
+ {"type":"text","id":"description","label":"Benefit detail","default":"Learn more about our services"},
+ {"type":"url","id":"url","label":"Optional information URL"}
+ ],"presets":[{"name":"Footer trust benefit"}]}
+{% endschema %}

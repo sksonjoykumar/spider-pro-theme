@@ -1,0 +1,32 @@
+{% comment %}Accessible Shopify quantity input. Parameters: id, name, value, min, max, step, form_id.{% endcomment %}
+{% assign quantity_value = value | default: 1 %}
+{% assign quantity_min = min | default: 1 %}
+{% assign quantity_step = step | default: 1 %}
+<div class="sp-quantity" data-quantity>
+  <button
+    type="button"
+    data-quantity-minus
+    aria-label="{{ 'products.product.quantity.decrease' | t }}"
+    {% if quantity_value <= quantity_min %}disabled{% endif %}
+  >{% render 'icon', name: 'minus' %}</button>
+  <input
+    id="{{ id }}"
+    name="{{ name | default: 'quantity' }}"
+    type="number"
+    value="{{ quantity_value }}"
+    min="{{ quantity_min }}"
+    step="{{ quantity_step }}"
+    {% if max != blank %}max="{{ max }}"{% endif %}
+    {% if form_id != blank %}form="{{ form_id }}"{% endif %}
+    inputmode="numeric"
+    autocomplete="off"
+    aria-label="{{ 'products.product.quantity.label' | t }}"
+    data-product-quantity
+  >
+  <button
+    type="button"
+    data-quantity-plus
+    aria-label="{{ 'products.product.quantity.increase' | t }}"
+    {% if max != blank and quantity_value >= max %}disabled{% endif %}
+  >{% render 'icon', name: 'plus' %}</button>
+</div>

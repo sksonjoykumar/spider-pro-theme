@@ -1,0 +1,79 @@
+{%- comment -%}
+  Compact complementary products. The wrapper stays hidden while automatic-only
+  recommendations are empty, so no blank recommendation region is reserved.
+{%- endcomment -%}
+{%- liquid
+  assign source_products = section.settings.complementary_products
+  if recommendations.performed and recommendations.products != blank
+    assign source_products = recommendations.products
+  endif
+
+  assign recommendations_url = blank
+  if section.settings.use_automatic_recommendations and cart.items.first != blank
+    assign recommendations_url = routes.product_recommendations_url | append: '?section_id=' | append: section.id | append: '&product_id=' | append: cart.items.first.product_id | append: '&limit=' | append: section.settings.complementary_limit | append: '&intent=complementary'
+  endif
+
+  assign rendered_count = 0
+  for recommendation_product in source_products limit: section.settings.complementary_limit
+    assign in_cart = false
+    for line_item in cart.items
+      if line_item.product_id == recommendation_product.id
+        assign in_cart = true
+        break
+      endif
+    endfor
+    unless in_cart or recommendation_product.available == false
+      assign rendered_count = rendered_count | plus: 1
+    endunless
+  endfor
+-%}
+
+{%- if rendered_count > 0 or recommendations_url != blank -%}
+  <section
+    class="sp-cart-drawer__complementary"
+    data-sp-complementary
+    {% if rendered_count == 0 %}hidden{% endif %}
+    {% if recommendations_url != blank %}data-recommendations-url="{{ recommendations_url }}"{% endif %}
+    data-replace-manual="{{ section.settings.replace_manual_recommendations }}"
+  >
+    <h3 class="sp-cart-drawer__complementary-title">{{ section.settings.complementary_heading | escape }}</h3>
+    <div class="sp-cart-drawer__complementary-track" data-sp-complementary-products>
+      {%- for recommendation_product in source_products limit: section.settings.complementary_limit -%}
+        {%- liquid
+          assign in_cart = false
+          for line_item in cart.items
+            if line_item.product_id == recommendation_product.id
+              assign in_cart = true
+              break
+            endif
+          endfor
+          assign recommendation_alt = recommendation_product.featured_image.alt | default: recommendation_product.title
+        -%}
+        {%- unless in_cart or recommendation_product.available == false -%}
+          <article class="sp-cart-drawer__complementary-card" data-product-id="{{ recommendation_product.id }}">
+            <a class="sp-cart-drawer__complementary-media" href="{{ recommendation_product.url }}">
+              {%- if recommendation_product.featured_image -%}
+                {{ recommendation_product.featured_image | image_url: width: 240 | image_tag: loading: 'lazy', widths: '80,120,160,240', sizes: '72px', alt: recommendation_alt }}
+              {%- else -%}
+                <span class="sp-cart-drawer__complementary-placeholder" aria-hidden="true"></span>
+              {%- endif -%}
+            </a>
+            <div class="sp-cart-drawer__complementary-info">
+              <a class="sp-cart-drawer__complementary-name" href="{{ recommendation_product.url }}">{{ recommendation_product.title | escape }}</a>
+              <div class="sp-cart-drawer__complementary-price">{{ recommendation_product.price | money_with_currency }}</div>
+              {%- if recommendation_product.has_only_default_variant and recommendation_product.selected_or_first_available_variant.available -%}
+                <form action="{{ routes.cart_add_url }}" method="post" data-product-card-form class="sp-cart-drawer__quick-add">
+                  <input type="hidden" name="id" value="{{ recommendation_product.selected_or_first_available_variant.id }}">
+                  <input type="hidden" name="quantity" value="1">
+                  <button class="sp-cart-drawer__quick-add-button" type="submit">Quick add</button>
+                </form>
+              {%- else -%}
+                <a class="sp-cart-drawer__quick-add-button" href="{{ recommendation_product.url }}">Choose options</a>
+              {%- endif -%}
+            </div>
+          </article>
+        {%- endunless -%}
+      {%- endfor -%}
+    </div>
+  </section>
+{%- endif -%}

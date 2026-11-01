@@ -1,0 +1,653 @@
+{% render 'sp-section-color-scheme', section: section %}
+{{ 'sp-collections-grid-tabs.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'sp-collections-grid-tabs.js' | asset_url }}" defer></script>
+
+{%- liquid
+  assign sp_layout = section.settings.section_layout | default: 'container'
+  assign sp_outer_class = 'sp-collections-grid-tabs sp-product-section'
+  assign sp_inner_class = 'sp-collections-grid-tabs__inner'
+  case sp_layout
+    when 'container'
+      assign sp_outer_class = sp_outer_class | append: ' sp-collections-grid-tabs--container'
+      assign sp_inner_class = sp_inner_class | append: ' sp-container'
+    when 'wrapper_container'
+      assign sp_outer_class = sp_outer_class | append: ' sp-collections-grid-tabs--wrapper'
+      assign sp_inner_class = sp_inner_class | append: ' sp-container'
+    when 'full_width'
+      assign sp_outer_class = sp_outer_class | append: ' sp-collections-grid-tabs--full'
+  endcase
+  assign sp_bg_alpha = section.settings.background_opacity | divided_by: 100.0
+-%}
+
+<sp-collections-grid-tabs
+  id="SpiderCollectionsGridTabs-{{ section.id }}"
+  class="{{ sp_outer_class }}"
+  data-sp-product-section
+  data-section-id="{{ section.id }}"
+  data-design-mode="{{ request.design_mode }}"
+  data-parallax="{{ section.settings.background_parallax }}"
+  data-money-format="{{ shop.money_with_currency_format | escape }}"
+  data-currency="{{ cart.currency.iso_code | default: shop.currency | escape }}"
+  data-compare-max="{{ section.settings.compare_max }}"
+  data-buy-now="{{ section.settings.enable_buy_now }}"
+  data-debug="{{ section.settings.debug_mode }}"
+  data-swatch-color-map-json="{{ section.settings.swatch_color_map | default: '' | json | escape }}"
+  data-tab-animation="{{ section.settings.tab_animation }}"
+  data-enable-tab-hash="{{ section.settings.enable_tab_hash }}"
+  style="
+    --sp-collections-grid-tabs-bg-opacity: {{ sp_bg_alpha }};
+    --sp-collections-grid-tabs-mt-d: {{ section.settings.margin_top_desktop }}px;
+    --sp-collections-grid-tabs-mb-d: {{ section.settings.margin_bottom_desktop }}px;
+    --sp-collections-grid-tabs-mt-t: {{ section.settings.margin_top_tablet }}px;
+    --sp-collections-grid-tabs-mb-t: {{ section.settings.margin_bottom_tablet }}px;
+    --sp-collections-grid-tabs-mt-m: {{ section.settings.margin_top_mobile }}px;
+    --sp-collections-grid-tabs-mb-m: {{ section.settings.margin_bottom_mobile }}px;
+    --sp-collections-grid-tabs-pt-d: {{ section.settings.padding_top_desktop }}px;
+    --sp-collections-grid-tabs-pb-d: {{ section.settings.padding_bottom_desktop }}px;
+    --sp-collections-grid-tabs-pt-t: {{ section.settings.padding_top_tablet }}px;
+    --sp-collections-grid-tabs-pb-t: {{ section.settings.padding_bottom_tablet }}px;
+    --sp-collections-grid-tabs-pt-m: {{ section.settings.padding_top_mobile }}px;
+    --sp-collections-grid-tabs-pb-m: {{ section.settings.padding_bottom_mobile }}px;
+    --sp-collections-grid-tabs-full-pad-d: {{ section.settings.full_padding_desktop }}px;
+    --sp-collections-grid-tabs-full-pad-t: {{ section.settings.full_padding_tablet }}px;
+    --sp-collections-grid-tabs-full-pad-m: {{ section.settings.full_padding_mobile }}px;
+    --sp-collections-grid-tabs-tab-gap-d: {{ section.settings.tab_gap_desktop }}px;
+    --sp-collections-grid-tabs-tab-gap-t: {{ section.settings.tab_gap_tablet }}px;
+    --sp-collections-grid-tabs-tab-gap-m: {{ section.settings.tab_gap_mobile }}px;
+    --sp-collections-grid-tabs-tab-size-d: {{ section.settings.tab_size_desktop }}px;
+    --sp-collections-grid-tabs-tab-size-t: {{ section.settings.tab_size_tablet }}px;
+    --sp-collections-grid-tabs-tab-size-m: {{ section.settings.tab_size_mobile }}px;
+    --sp-collections-grid-tabs-tab-weight: {{ section.settings.tab_weight }};
+    --sp-collections-grid-tabs-tab-letter: {{ section.settings.tab_letter_spacing }}px;
+    --sp-collections-grid-tabs-tab-active: {% if section.settings.custom_tab_colors %}{{ section.settings.tab_active_color }}{% else %}var(--sp-color-accent, #36c8dc){% endif %};
+    --sp-collections-grid-tabs-tab-inactive: {% if section.settings.custom_tab_colors %}{{ section.settings.tab_inactive_color }}{% else %}var(--sp-color-muted, #737373){% endif %};
+    --sp-collections-grid-tabs-tab-hover: {% if section.settings.custom_tab_colors %}{{ section.settings.tab_hover_color }}{% else %}var(--sp-color-text, #171717){% endif %};
+  "
+>
+  <div class="sp-collections-grid-tabs__surface" aria-hidden="true">
+    <span class="sp-collections-grid-tabs__color-layer"></span>
+    {%- if section.settings.background_image != blank -%}
+      {{ section.settings.background_image | image_url: width: 2000 | image_tag: class: 'sp-collections-grid-tabs__background-image', widths: '480,640,800,1000,1200,1440,1600,1800,2000', sizes: '100vw', loading: 'lazy', alt: '' }}
+    {%- endif -%}
+  </div>
+
+  <div class="{{ sp_inner_class }}">
+    {% content_for 'block', type: 'sp-collections-grid-tabs-heading', id: 'sp-collections-grid-tabs-heading' %}
+    <div class="sp-collections-grid-tabs__tabs-wrap sp-collections-grid-tabs__tabs-wrap--{{ section.settings.tabs_alignment }} sp-collections-grid-tabs__tabs-wrap--mobile-{{ section.settings.mobile_tabs_behavior }}">
+      <div class="sp-collections-grid-tabs__tabs sp-collections-grid-tabs__tabs--{{ section.settings.tab_style }} sp-collections-grid-tabs__tabs--transform-{{ section.settings.tab_transform }}" role="tablist" aria-label="Product collections" data-sp-collections-grid-tabs-nav></div>
+    </div>
+    <div class="sp-collections-grid-tabs__panels" data-sp-collections-grid-tabs-panels>
+      {% content_for 'blocks' %}
+    </div>
+  </div>
+</sp-collections-grid-tabs>
+
+{% schema %}
+{
+  "name": "Collections grid tabs",
+  "tag": "section",
+  "class": "sp-section sp-section-collections-grid-tabs",
+  "max_blocks": 8,
+  "disabled_on": {
+    "groups": [
+      "header",
+      "footer",
+      "custom.system"
+    ]
+  },
+  "blocks": [
+    {
+      "type": "sp-collections-grid-tabs-item"
+    }
+  ],
+  "settings": [
+    {
+      "type": "header",
+      "content": "Global design system"
+    },
+    {
+      "type": "color_scheme",
+      "id": "sp_color_scheme",
+      "label": "Color scheme",
+      "default": "scheme-1",
+      "info": "Shared Spider color panel. Edit schemes once in Theme settings → Spider Color Schemes."
+    },
+    {
+      "type": "header",
+      "content": "Section layout"
+    },
+    {
+      "type": "select",
+      "id": "section_layout",
+      "label": "Width",
+      "default": "container",
+      "options": [
+        {
+          "value": "container",
+          "label": "Container"
+        },
+        {
+          "value": "wrapper_container",
+          "label": "Full background / contained content"
+        },
+        {
+          "value": "full_width",
+          "label": "Full width"
+        }
+      ]
+    },
+    {
+      "type": "range",
+      "id": "background_opacity",
+      "label": "Background opacity",
+      "min": 0,
+      "max": 100,
+      "step": 5,
+      "unit": "%",
+      "default": 100
+    },
+    {
+      "type": "image_picker",
+      "id": "background_image",
+      "label": "Background image"
+    },
+    {
+      "type": "checkbox",
+      "id": "background_parallax",
+      "label": "Background parallax",
+      "default": false
+    },
+    {
+      "type": "header",
+      "content": "Commerce interactions"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_buy_now",
+      "label": "Enable Buy it now in product dialogs",
+      "default": true,
+      "info": "Uses the selected variant and redirects to checkout after a successful cart add. Verify on a duplicate Shopify theme before publishing."
+    },
+    {
+      "type": "range",
+      "id": "compare_max",
+      "label": "Maximum compared products",
+      "min": 2,
+      "max": 4,
+      "step": 1,
+      "default": 4
+    },
+    {
+      "type": "checkbox",
+      "id": "debug_mode",
+      "label": "Developer debug logging",
+      "default": false,
+      "info": "Logs Collections Grid Tabs Load More and commerce integration diagnostics in the browser console. Keep OFF on normal storefronts."
+    },
+    {
+      "type": "header",
+      "content": "Product swatch colors"
+    },
+    {
+      "type": "textarea",
+      "id": "swatch_color_map",
+      "label": "Custom swatch color map",
+      "info": "Optional. Use comma-separated, semicolon-separated, or one color per line. Example: Black: #000000, Pink: #F4A6B7, Periwinkle: #CCCCFF. Only real product Color/Colour option values are shown."
+    },
+    {
+      "type": "header",
+      "content": "Tabs navigation"
+    },
+    {
+      "type": "select",
+      "id": "tab_style",
+      "label": "Tab style",
+      "default": "underline",
+      "options": [
+        {
+          "value": "minimal",
+          "label": "Minimal text"
+        },
+        {
+          "value": "underline",
+          "label": "Underline"
+        },
+        {
+          "value": "pill",
+          "label": "Pill"
+        },
+        {
+          "value": "bordered",
+          "label": "Bordered"
+        },
+        {
+          "value": "segmented",
+          "label": "Premium segmented"
+        },
+        {
+          "value": "signature",
+          "label": "Spider signature"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "tabs_alignment",
+      "label": "Tabs alignment",
+      "default": "center",
+      "options": [
+        {
+          "value": "start",
+          "label": "Left"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "end",
+          "label": "Right"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "mobile_tabs_behavior",
+      "label": "Mobile tabs behavior",
+      "default": "scroll",
+      "options": [
+        {
+          "value": "scroll",
+          "label": "Horizontal scroll"
+        },
+        {
+          "value": "wrap",
+          "label": "Wrap"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "tab_animation",
+      "label": "Tab panel animation",
+      "default": "fade",
+      "options": [
+        {
+          "value": "none",
+          "label": "None"
+        },
+        {
+          "value": "fade",
+          "label": "Fade"
+        },
+        {
+          "value": "fade_translate",
+          "label": "Fade + slight translate"
+        }
+      ]
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_tab_hash",
+      "label": "Enable tab URL hash",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "hide_empty_tabs",
+      "label": "Hide empty tabs",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "tab_gap_desktop",
+      "label": "Desktop tab gap",
+      "min": 0,
+      "max": 64,
+      "step": 2,
+      "unit": "px",
+      "default": 32
+    },
+    {
+      "type": "range",
+      "id": "tab_gap_tablet",
+      "label": "Tablet tab gap",
+      "min": 0,
+      "max": 48,
+      "step": 2,
+      "unit": "px",
+      "default": 24
+    },
+    {
+      "type": "range",
+      "id": "tab_gap_mobile",
+      "label": "Mobile tab gap",
+      "min": 0,
+      "max": 32,
+      "step": 2,
+      "unit": "px",
+      "default": 18
+    },
+    {
+      "type": "range",
+      "id": "tab_size_desktop",
+      "label": "Desktop tab font size",
+      "min": 12,
+      "max": 28,
+      "step": 1,
+      "unit": "px",
+      "default": 18
+    },
+    {
+      "type": "range",
+      "id": "tab_size_tablet",
+      "label": "Tablet tab font size",
+      "min": 12,
+      "max": 26,
+      "step": 1,
+      "unit": "px",
+      "default": 17
+    },
+    {
+      "type": "range",
+      "id": "tab_size_mobile",
+      "label": "Mobile tab font size",
+      "min": 12,
+      "max": 24,
+      "step": 1,
+      "unit": "px",
+      "default": 16
+    },
+    {
+      "type": "select",
+      "id": "tab_weight",
+      "label": "Tab font weight",
+      "default": "600",
+      "options": [
+        {
+          "value": "400",
+          "label": "Regular"
+        },
+        {
+          "value": "500",
+          "label": "Medium"
+        },
+        {
+          "value": "600",
+          "label": "Semibold"
+        },
+        {
+          "value": "700",
+          "label": "Bold"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "tab_transform",
+      "label": "Tab text transform",
+      "default": "none",
+      "options": [
+        {
+          "value": "none",
+          "label": "None"
+        },
+        {
+          "value": "uppercase",
+          "label": "Uppercase"
+        },
+        {
+          "value": "capitalize",
+          "label": "Capitalize"
+        }
+      ]
+    },
+    {
+      "type": "range",
+      "id": "tab_letter_spacing",
+      "label": "Tab letter spacing",
+      "min": -1,
+      "max": 4,
+      "step": 0.5,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "header",
+      "content": "Custom tab colors"
+    },
+    {
+      "type": "checkbox",
+      "id": "custom_tab_colors",
+      "label": "Use custom tab colors",
+      "default": false
+    },
+    {
+      "type": "color",
+      "id": "tab_active_color",
+      "label": "Active tab color",
+      "default": "#36c8dc"
+    },
+    {
+      "type": "color",
+      "id": "tab_inactive_color",
+      "label": "Inactive tab color",
+      "default": "#737373"
+    },
+    {
+      "type": "color",
+      "id": "tab_hover_color",
+      "label": "Hover tab color",
+      "default": "#171717"
+    },
+    {
+      "type": "header",
+      "content": "Full-width inner padding"
+    },
+    {
+      "type": "range",
+      "id": "full_padding_desktop",
+      "label": "Desktop",
+      "min": 0,
+      "max": 80,
+      "step": 4,
+      "unit": "px",
+      "default": 32
+    },
+    {
+      "type": "range",
+      "id": "full_padding_tablet",
+      "label": "Tablet",
+      "min": 0,
+      "max": 60,
+      "step": 4,
+      "unit": "px",
+      "default": 24
+    },
+    {
+      "type": "range",
+      "id": "full_padding_mobile",
+      "label": "Mobile",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "default": 16
+    },
+    {
+      "type": "header",
+      "content": "Desktop spacing"
+    },
+    {
+      "type": "range",
+      "id": "margin_top_desktop",
+      "label": "Margin top",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "margin_bottom_desktop",
+      "label": "Margin bottom",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "default": 48
+    },
+    {
+      "type": "range",
+      "id": "padding_top_desktop",
+      "label": "Padding top",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom_desktop",
+      "label": "Padding bottom",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "header",
+      "content": "Tablet spacing"
+    },
+    {
+      "type": "range",
+      "id": "margin_top_tablet",
+      "label": "Margin top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "margin_bottom_tablet",
+      "label": "Margin bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "default": 40
+    },
+    {
+      "type": "range",
+      "id": "padding_top_tablet",
+      "label": "Padding top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom_tablet",
+      "label": "Padding bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "header",
+      "content": "Mobile spacing"
+    },
+    {
+      "type": "range",
+      "id": "margin_top_mobile",
+      "label": "Margin top",
+      "min": 0,
+      "max": 80,
+      "step": 2,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "margin_bottom_mobile",
+      "label": "Margin bottom",
+      "min": 0,
+      "max": 80,
+      "step": 2,
+      "unit": "px",
+      "default": 30
+    },
+    {
+      "type": "range",
+      "id": "padding_top_mobile",
+      "label": "Padding top",
+      "min": 0,
+      "max": 80,
+      "step": 2,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom_mobile",
+      "label": "Padding bottom",
+      "min": 0,
+      "max": 80,
+      "step": 2,
+      "unit": "px",
+      "default": 0
+    }
+  ],
+  "presets": [
+    {
+      "name": "Collections grid tabs",
+      "category": "03. Collections",
+      "blocks": [
+        {
+          "type": "sp-collections-grid-tabs-item",
+          "name": "Tabs item — Women",
+          "settings": {
+            "title": "Women",
+            "active_default": true
+          }
+        },
+        {
+          "type": "sp-collections-grid-tabs-item",
+          "name": "Tabs item — Men",
+          "settings": {
+            "title": "Men"
+          }
+        },
+        {
+          "type": "sp-collections-grid-tabs-item",
+          "name": "Tabs item — Accessories",
+          "settings": {
+            "title": "Accessories"
+          }
+        },
+        {
+          "type": "sp-collections-grid-tabs-heading",
+          "static": true,
+          "id": "sp-collections-grid-tabs-heading",
+          "settings": {
+            "heading": "BEST SELLER",
+            "subheading": "<p><em>Top sale in this week</em></p>",
+            "design": "2",
+            "alignment": "center",
+            "margin_bottom": 24
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

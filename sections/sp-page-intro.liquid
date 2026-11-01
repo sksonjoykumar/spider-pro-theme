@@ -1,0 +1,108 @@
+{% render 'sp-section-color-scheme', section: section %}
+{{ 'sp-content-sections.css' | asset_url | stylesheet_tag }}
+
+<section
+  class="sp-section sp-page-intro"
+  data-section-id="{{ section.id }}"
+  aria-labelledby="SpPageIntroTitle-{{ section.id }}"
+>
+  <div class="sp-container">
+    <div
+      class="sp-page-intro__inner"
+      style="--sp-page-intro-width: {{ section.settings.max_width }}px; --sp-page-intro-align: {{ section.settings.alignment }}; --sp-page-intro-mobile-align: {{ section.settings.mobile_alignment }};"
+    >
+      <h1 id="SpPageIntroTitle-{{ section.id }}" class="sp-page-intro__title">
+        {{ section.settings.heading | default: page.title | escape }}
+      </h1>
+      {% if section.settings.description != blank %}
+        <div class="sp-page-intro__description rte">
+          {{ section.settings.description }}
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Page intro",
+  "disabled_on": {
+    "groups": [
+      "header",
+      "footer",
+      "custom.system"
+    ]
+  },
+  "settings": [
+    {
+      "type": "header",
+      "content": "Global design system"
+    },
+    {
+      "type": "color_scheme",
+      "id": "sp_color_scheme",
+      "label": "Color scheme",
+      "default": "scheme-1",
+      "info": "Uses the shared Spider color panel from Theme settings."
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading"
+    },
+    {
+      "type": "richtext",
+      "id": "description",
+      "label": "Description"
+    },
+    {
+      "type": "select",
+      "id": "alignment",
+      "label": "Desktop alignment",
+      "default": "center",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "mobile_alignment",
+      "label": "Mobile alignment",
+      "default": "center",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        }
+      ]
+    },
+    {
+      "type": "range",
+      "id": "max_width",
+      "label": "Text width",
+      "min": 500,
+      "max": 800,
+      "step": 20,
+      "unit": "px",
+      "default": 680
+    }
+  ],
+  "presets": [
+    {
+      "name": "Page intro",
+      "category": "04. Content"
+    }
+  ]
+}
+{% endschema %}

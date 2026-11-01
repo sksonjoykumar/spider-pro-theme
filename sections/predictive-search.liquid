@@ -1,0 +1,20 @@
+{% render 'sp-section-color-scheme', section: section %}
+{% if predictive_search.performed %}<div class="sp-predictive-results" role="listbox">{% assign groups = predictive_search.resources %}{% if groups.products.size > 0 %}<h2>{{ 'general.search.products' | t }}</h2><ul role="list">{% for item in groups.products limit: settings.search_result_limit %}<li role="option"><a href="{{ item.url }}">{{ item.title | escape }}{% if settings.search_show_price %} — {{ item.price | money }}{% endif %}</a></li>{% endfor %}</ul>{% endif %}{% if groups.collections.size > 0 %}<h2>{{ 'general.search.collections' | t }}</h2><ul role="list">{% for item in groups.collections limit: settings.search_result_limit %}<li role="option"><a href="{{ item.url }}">{{ item.title | escape }}</a></li>{% endfor %}</ul>{% endif %}{% if groups.pages.size > 0 %}<h2>{{ 'general.search.pages' | t }}</h2><ul role="list">{% for item in groups.pages limit: settings.search_result_limit %}<li role="option"><a href="{{ item.url }}">{{ item.title | escape }}</a></li>{% endfor %}</ul>{% endif %}{% if groups.articles.size > 0 %}<h2>{{ 'general.search.articles' | t }}</h2><ul role="list">{% for item in groups.articles limit: settings.search_result_limit %}<li role="option"><a href="{{ item.url }}">{{ item.title | escape }}</a></li>{% endfor %}</ul>{% endif %}</div>{% endif %}
+{% schema %}
+{
+  "name": "Predictive search",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Global design system"
+    },
+    {
+      "type": "color_scheme",
+      "id": "sp_color_scheme",
+      "label": "Color scheme",
+      "default": "scheme-1",
+      "info": "Shared Spider color panel. Edit schemes once in Theme settings → Spider Color Schemes."
+    }
+  ]
+}
+{% endschema %}

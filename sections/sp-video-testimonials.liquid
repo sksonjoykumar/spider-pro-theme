@@ -1,0 +1,1367 @@
+{{ 'sp-section-heading.css' | asset_url | stylesheet_tag }}
+{{ 'sp-video-testimonials.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'sp-video-testimonials.js' | asset_url }}" defer></script>
+{% render 'sp-section-color-scheme', section: section %}
+{%- liquid
+  assign sp_valid_count = 0
+  assign sp_featured_id = ''
+  assign sp_first_valid_id = ''
+  for block in section.blocks
+    if block.type == 'video_testimonial'
+      assign has_source = false
+      if block.settings.shopify_video != blank or block.settings.external_video != blank
+        assign has_source = true
+      endif
+      assign has_accessible_text = true
+      if section.settings.require_captions and block.settings.captions_file_url == blank and block.settings.transcript == blank
+        assign has_accessible_text = false
+      endif
+      if block.settings.merchant_confirms_genuine_review and block.settings.merchant_confirms_customer_consent and has_source and has_accessible_text
+        assign sp_valid_count = sp_valid_count | plus: 1
+        if sp_first_valid_id == ''
+          assign sp_first_valid_id = block.id
+        endif
+        if block.settings.featured_testimonial and sp_featured_id == ''
+          assign sp_featured_id = block.id
+        endif
+      endif
+    endif
+  endfor
+  if sp_featured_id == ''
+    assign sp_featured_id = sp_first_valid_id
+  endif
+  assign sp_style = section.settings.layout_style
+  assign sp_carousel = false
+  if sp_style == 'style_1'
+    assign sp_carousel = true
+  endif
+  assign sp_show_rating_summary = false
+  if section.settings.show_rating_summary and section.settings.merchant_confirms_rating_accuracy and section.settings.review_count > 0
+    assign sp_show_rating_summary = true
+  endif
+  assign sp_show_carousel_arrows = false
+  if sp_carousel and sp_valid_count > 1 and section.settings.show_arrows
+    assign sp_show_carousel_arrows = true
+  endif
+-%}
+{% if sp_valid_count > 0 or request.design_mode %}
+<section
+  id="sp-video-testimonials-{{ section.id }}"
+  class="sp-vt sp-vt--{{ sp_style }} sp-vt--ratio-{{ section.settings.video_ratio }} sp-vt--shadow-{{ section.settings.card_shadow }} sp-vt--quote-{{ section.settings.quote_position }} sp-vt--quote-align-{{ section.settings.quote_text_alignment }}{% if section.settings.hover_effect == 'lift' %} sp-vt--hover-lift{% endif %}{% if section.settings.card_equal_height %} sp-vt--equal-height{% endif %}{% unless section.settings.enable_swipe %} sp-vt--no-touch-swipe{% endunless %}{% if section.settings.featured_position == 'right' %} sp-vt--featured-right{% endif %}{% unless section.settings.show_video_overlay %} sp-vt--no-overlay{% endunless %}{% if section.settings.mobile_featured_position == 'last' %} sp-vt--mobile-featured-last{% endif %}"
+  data-sp-vt
+  data-sp-vt-style="{{ sp_style }}"
+  data-sp-vt-playback="{{ section.settings.playback_mode }}"
+  data-sp-vt-autoplay="{{ section.settings.enable_autoplay }}"
+  data-sp-vt-infinite="{{ section.settings.infinite_loop }}"
+  data-sp-vt-delay="{{ section.settings.autoplay_speed }}"
+  data-sp-vt-swipe="{{ section.settings.enable_pointer_drag }}"
+  data-sp-vt-pause-hover="{{ section.settings.pause_on_hover }}"
+  data-sp-vt-pause-out="{{ section.settings.pause_when_out_of_view }}"
+  data-sp-vt-modal="{{ section.settings.playback_mode }}"
+  data-sp-vt-mobile="{{ section.settings.mobile_slides }}"
+  data-sp-vt-native-controls="{{ section.settings.show_native_controls }}"
+  data-sp-vt-autoplay-interaction="{{ section.settings.autoplay_on_interaction }}"
+  data-sp-vt-consent="{{ section.settings.require_external_consent }}"
+  data-sp-vt-design="{{ request.design_mode }}"
+  style="--sp-vt-max:{{ section.settings.section_max_width }}px;--sp-vt-gap:{{ section.settings.card_gap }}px;--sp-vt-radius:{{ section.settings.card_border_radius }}px;--sp-vt-pt:{{ section.settings.padding_top }}px;--sp-vt-pb:{{ section.settings.padding_bottom }}px;--sp-vt-pt-t:{{ section.settings.padding_top_tablet }}px;--sp-vt-pb-t:{{ section.settings.padding_bottom_tablet }}px;--sp-vt-pt-m:{{ section.settings.padding_top_mobile }}px;--sp-vt-pb-m:{{ section.settings.padding_bottom_mobile }}px;--sp-vt-desktop:{{ section.settings.desktop_slides }};--sp-vt-tablet:{{ section.settings.tablet_slides }};--sp-vt-mobile:{{ section.settings.mobile_slides }};--sp-vt-grid-d:{{ section.settings.desktop_columns }};--sp-vt-grid-t:{{ section.settings.tablet_columns }};--sp-vt-grid-m:{{ section.settings.mobile_columns }};--sp-vt-header-space:{{ section.settings.header_bottom_spacing }}px;--sp-vt-card-bg:{% if section.settings.card_background_source == 'custom' %}{{ section.settings.card_background }}{% else %}var(--sp-section-card,var(--sp-section-bg,var(--sp-color-background,#fff))){% endif %};--sp-vt-card-border:{{ section.settings.card_border_width }}px solid {{ section.settings.card_border_color }};--sp-vt-card-padding:{{ section.settings.card_content_padding }}px;--sp-vt-video-fit:{{ section.settings.video_fit }};--sp-vt-video-position:{{ section.settings.video_position }};--sp-vt-overlay-opacity:{{ section.settings.video_overlay_opacity }}%;--sp-vt-overlay-color:{{ section.settings.video_overlay_color }};--sp-vt-feature-ratio:{% if section.settings.video_ratio == 'square' %}1 / 1{% elsif section.settings.video_ratio == 'portrait' %}15 / 16{% elsif section.settings.video_ratio == 'vertical' %}9 / 16{% elsif section.settings.video_ratio == 'landscape' %}4 / 3{% elsif section.settings.video_ratio == 'wide' %}16 / 9{% else %}15 / 16{% endif %};"
+  aria-label="{{ section.settings.heading | default: 'Video testimonials' | escape }}"
+>
+  <div class="sp-vt__container">
+    {% if section.settings.show_header %}
+      <div class="sp-vt__header sp-vt__header--{{ section.settings.heading_alignment }}">
+        {% if section.settings.eyebrow != blank %}<p class="sp-vt__eyebrow">{{ section.settings.eyebrow | escape }}</p>{% endif %}
+        {% render 'sp-section-heading', heading_settings: section.settings, heading: section.settings.heading, subheading: section.settings.description, heading_tag: 'h2', alignment: section.settings.heading_alignment, bottom_spacing: 0 %}
+      </div>
+    {% endif %}
+    {% if sp_show_rating_summary or sp_show_carousel_arrows %}
+    <div class="sp-vt__toolbar">
+      {% if sp_show_rating_summary %}
+        <p class="sp-vt__summary"><span class="sp-vt__summary-stars" aria-hidden="true">★★★★★</span><span><strong>{{ section.settings.average_rating }}</strong> {{ section.settings.rating_summary_label | escape }} {{ section.settings.review_count | number_with_delimiter }} reviews</span></p>
+      {% endif %}
+      {% if sp_show_carousel_arrows %}
+        <div class="sp-vt__arrows" role="group" aria-label="Video testimonial carousel controls">
+          <button type="button" class="sp-vt__arrow" data-sp-vt-prev aria-label="Previous customer stories" aria-controls="sp-vt-track-{{ section.id }}">{% render 'icon', name: 'chevron-left' %}</button>
+          <button type="button" class="sp-vt__arrow sp-vt__arrow--primary" data-sp-vt-next aria-label="Next customer stories" aria-controls="sp-vt-track-{{ section.id }}">{% render 'icon', name: 'chevron-right' %}</button>
+        </div>
+      {% endif %}
+    </div>
+    {% endif %}
+    {% if sp_valid_count > 0 or request.design_mode %}
+      {% if sp_style == 'style_2' or sp_style == 'style_5' %}
+        <div class="sp-vt__featured-layout">
+          <div class="sp-vt__featured-story">
+            {% assign sp_feature_output = false %}
+            {% for block in section.blocks %}
+              {% if block.id == sp_featured_id and sp_feature_output == false %}
+                {% assign sp_feature_output = true %}
+                {% if sp_style == 'style_5' %}
+                  {% render 'sp-video-testimonial-card', block: block, section: section, featured: true, media_only: true %}
+                {% else %}
+                  {% render 'sp-video-testimonial-card', block: block, section: section, featured: true %}
+                {% endif %}
+              {% endif %}
+            {% endfor %}
+            {% if sp_feature_output == false and request.design_mode %}
+              <div class="sp-vt__editor-empty">Add a video testimonial and confirm consent to set the featured story.</div>
+            {% endif %}
+          </div>
+          <div class="sp-vt__supporting">
+            {% if sp_style == 'style_5' %}
+              <div class="sp-vt__editorial-copy">
+                {% for block in section.blocks %}
+                  {% if block.id == sp_featured_id %}
+                    {% if block.settings.customer_quote != blank %}<blockquote>“{{ block.settings.customer_quote | escape }}”</blockquote>{% endif %}
+                    {% if section.settings.show_customer_name and block.settings.customer_name != blank %}<p class="sp-vt__editorial-customer">{{ block.settings.customer_name | escape }}{% if section.settings.show_customer_location and block.settings.customer_location != blank %} · {{ block.settings.customer_location | escape }}{% endif %}</p>{% endif %}
+                    {% if section.settings.show_product and block.settings.product != blank %}<a class="sp-vt__editorial-link" href="{{ block.settings.product.url }}">Explore {{ block.settings.product.title | escape }} <span aria-hidden="true">→</span></a>{% endif %}
+                  {% endif %}
+                {% endfor %}
+              </div>
+            {% endif %}
+            <div class="sp-vt__supporting-list">
+              {% for block in section.blocks %}
+                {% assign sp_ok = false %}
+                {% if block.settings.merchant_confirms_genuine_review and block.settings.merchant_confirms_customer_consent %}
+                  {% if block.settings.shopify_video != blank or block.settings.external_video != blank %}{% assign sp_ok = true %}{% endif %}
+                {% endif %}
+                {% if section.settings.require_captions and block.settings.captions_file_url == blank and block.settings.transcript == blank %}{% assign sp_ok = false %}{% endif %}
+                {% if block.id != sp_featured_id and sp_ok %}
+                  {% render 'sp-video-testimonial-card', block: block, section: section %}
+                {% elsif block.id != sp_featured_id and request.design_mode %}
+                  {% render 'sp-video-testimonial-card', block: block, section: section %}
+                {% endif %}
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+      {% else %}
+        <div class="sp-vt__viewport" data-sp-vt-viewport{% if sp_carousel %} role="region" aria-roledescription="carousel" aria-label="Customer video stories" tabindex="0"{% endif %}>
+          <div id="sp-vt-track-{{ section.id }}" class="sp-vt__track" data-sp-vt-track>
+            {% for block in section.blocks %}
+              {% assign sp_ok = false %}
+              {% if block.settings.merchant_confirms_genuine_review and block.settings.merchant_confirms_customer_consent %}
+                {% if block.settings.shopify_video != blank or block.settings.external_video != blank %}{% assign sp_ok = true %}{% endif %}
+              {% endif %}
+              {% if section.settings.require_captions and block.settings.captions_file_url == blank and block.settings.transcript == blank %}{% assign sp_ok = false %}{% endif %}
+              {% if sp_ok or request.design_mode %}
+                <div class="sp-vt__slide" data-sp-vt-slide data-sp-vt-block-id="{{ block.id }}">
+                  {% render 'sp-video-testimonial-card', block: block, section: section %}
+                </div>
+              {% endif %}
+            {% endfor %}
+          </div>
+        </div>
+        {% if sp_carousel and sp_valid_count > 1 and section.settings.show_dots %}
+          <div class="sp-vt__dots" data-sp-vt-dots role="group" aria-label="Choose testimonial page"></div>
+        {% endif %}
+      {% endif %}
+    {% elsif request.design_mode %}
+      <p class="sp-vt__editor-empty">Add real video testimonials to get started.</p>
+    {% endif %}
+    {% if section.settings.show_section_cta and section.settings.section_cta_label != blank and section.settings.section_cta_link != blank %}
+      <div class="sp-vt__cta sp-vt__cta--{{ section.settings.section_cta_alignment }}">
+        {% capture sp_cta_attrs %}{% if section.settings.section_cta_new_tab %}target="_blank" rel="noopener noreferrer"{% endif %}{% endcapture %}
+        {% render 'button', label: section.settings.section_cta_label, href: section.settings.section_cta_link, style: section.settings.section_cta_style, attributes: sp_cta_attrs %}
+      </div>
+    {% endif %}
+    {% if request.design_mode and sp_valid_count == 0 %}<p class="sp-vt__editor-help">Live storefront stays empty until real video, authenticity confirmation and consent are configured.</p>{% endif %}
+  </div>
+  <dialog class="sp-vt__dialog" data-sp-vt-dialog aria-label="Play customer testimonial">
+    <div class="sp-vt__dialog-panel">
+      <button type="button" class="sp-vt__dialog-close" data-sp-vt-close aria-label="Close video">{% render 'icon', name: 'close' %}</button>
+      <div class="sp-vt__dialog-content" data-sp-vt-dialog-slot></div>
+    </div>
+  </dialog>
+  <p class="visually-hidden" data-sp-vt-announcer aria-live="polite" aria-atomic="true"></p>
+</section>
+{% endif %}
+{% schema %}
+{
+  "name": "Video testimonials",
+  "tag": "section",
+   "disabled_on": {
+    "groups": [
+      "header",
+      "footer",
+      "custom.system"
+    ]
+  },
+  "settings": [
+    {
+      "type": "header",
+      "content": "Theme and layout"
+    },
+    {
+      "type": "color_scheme",
+      "id": "sp_color_scheme",
+      "label": "Color scheme",
+      "default": "scheme-1"
+    },
+    {
+      "type": "select",
+      "id": "layout_style",
+      "label": "Layout style",
+      "options": [
+        {
+          "value": "style_1",
+          "label": "Video testimonial carousel"
+        },
+        {
+          "value": "style_2",
+          "label": "Featured video story"
+        },
+        {
+          "value": "style_3",
+          "label": "Video testimonial grid"
+        },
+        {
+          "value": "style_4",
+          "label": "Vertical customer stories"
+        },
+        {
+          "value": "style_5",
+          "label": "Editorial video split"
+        }
+      ],
+      "default": "style_1"
+    },
+    {
+      "type": "range",
+      "id": "section_max_width",
+      "label": "Maximum content width",
+      "min": 900,
+      "max": 1800,
+      "step": 50,
+      "default": 1600,
+      "unit": "px"
+    },
+    {
+      "type": "header",
+      "content": "Section heading"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_header",
+      "label": "Show heading",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Eyebrow",
+      "default": "REAL STORIES"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Loved in Real Life"
+    },
+    {
+      "type": "richtext",
+      "id": "description",
+      "label": "Description",
+      "default": "<p>Hear directly from customers who use Spider every day.</p>"
+    },
+    {
+      "type": "select",
+      "id": "heading_alignment",
+      "label": "Heading alignment",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "range",
+      "id": "header_bottom_spacing",
+      "label": "Space below heading",
+      "min": 0,
+      "max": 100,
+      "step": 2,
+      "default": 22,
+      "unit": "px"
+    },
+    {
+      "type": "header",
+      "content": "Aggregate rating"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_rating_summary",
+      "label": "Show aggregate rating",
+      "default": true,
+      "info": "Only enable when based on genuine documented reviews."
+    },
+    {
+      "type": "checkbox",
+      "id": "merchant_confirms_rating_accuracy",
+      "label": "I confirm rating is accurate",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "average_rating",
+      "label": "Average rating",
+      "min": 1,
+      "max": 5,
+      "step": 0.1,
+      "default": 4.9
+    },
+    {
+      "type": "range",
+      "id": "review_count",
+      "label": "Genuine review count",
+      "min": 0,
+      "max": 9000,
+      "step": 100,
+      "default": 0
+    },
+    {
+      "type": "text",
+      "id": "rating_summary_label",
+      "label": "Rating summary text",
+      "default": "from"
+    },
+    {
+      "type": "header",
+      "content": "Carousel"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_arrows",
+      "label": "Show navigation arrows",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_dots",
+      "label": "Show pagination dots",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_swipe",
+      "label": "Enable touch swipe",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_pointer_drag",
+      "label": "Enable pointer dragging",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_autoplay",
+      "label": "Auto-advance carousel",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "autoplay_speed",
+      "label": "Auto-advance interval",
+      "min": 3,
+      "max": 15,
+      "step": 1,
+      "default": 6,
+      "unit": "s"
+    },
+    {
+      "type": "checkbox",
+      "id": "pause_on_hover",
+      "label": "Pause carousel on hover",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "infinite_loop",
+      "label": "Wrap navigation at ends",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "desktop_slides",
+      "label": "Desktop visible slides",
+      "min": 1,
+      "max": 4,
+      "step": 1,
+      "default": 3
+    },
+    {
+      "type": "range",
+      "id": "tablet_slides",
+      "label": "Tablet visible slides",
+      "min": 1,
+      "max": 3,
+      "step": 1,
+      "default": 2
+    },
+    {
+      "type": "range",
+      "id": "mobile_slides",
+      "label": "Mobile visible slides",
+      "min": 1,
+      "max": 3,
+      "step": 1,
+      "default": 1
+    },
+    {
+      "type": "header",
+      "content": "Video and playback"
+    },
+    {
+      "type": "select",
+      "id": "playback_mode",
+      "label": "Playback mode",
+      "options": [
+        {
+          "value": "inline",
+          "label": "Inline"
+        },
+        {
+          "value": "modal",
+          "label": "Modal"
+        }
+      ],
+      "default": "inline"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_native_controls",
+      "label": "Use native browser controls",
+      "default": true,
+      "info": "When enabled, the browser chooses which controls appear. Disable this to use the configurable custom controls below."
+    },
+    {
+      "type": "checkbox",
+      "id": "show_custom_play_button",
+      "label": "Show play button",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "autoplay_on_interaction",
+      "label": "Play immediately on click",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "loop_video",
+      "label": "Loop Shopify-hosted videos",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "muted",
+      "label": "Start videos muted",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "plays_inline",
+      "label": "Play inline on mobile",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "pause_when_out_of_view",
+      "label": "Pause video outside view",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_duration",
+      "label": "Show duration badge",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_fullscreen_control",
+      "label": "Allow native fullscreen",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_mute_control",
+      "label": "Show mute button in custom controls",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_progress",
+      "label": "Show progress slider in custom controls",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_elapsed_time",
+      "label": "Show elapsed time in custom controls",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_volume",
+      "label": "Show volume slider in custom controls",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_fullscreen",
+      "label": "Show fullscreen button in custom controls",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_replay",
+      "label": "Show replay button in custom controls",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "require_external_consent",
+      "label": "Require third-party video consent",
+      "default": true,
+      "info": "External embeds load only after user action and Shopify marketing consent; fallback message appears otherwise."
+    },
+    {
+      "type": "checkbox",
+      "id": "require_captions",
+      "label": "Require captions or transcript",
+      "default": false,
+      "info": "Merchants must supply accurate caption files or transcripts."
+    },
+    {
+      "type": "checkbox",
+      "id": "show_transcript",
+      "label": "Display transcripts",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "transcript_label",
+      "label": "Transcript disclosure label",
+      "default": "Read transcript"
+    },
+    {
+      "type": "select",
+      "id": "transcript_behavior",
+      "label": "Transcript placement",
+      "options": [
+        {
+          "value": "accordion",
+          "label": "Collapsible below card"
+        },
+        {
+          "value": "below_video",
+          "label": "Below video"
+        }
+      ],
+      "default": "accordion"
+    },
+    {
+      "type": "header",
+      "content": "Customer information"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_customer_name",
+      "label": "Show customer name",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_customer_location",
+      "label": "Show broad location",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_customer_image",
+      "label": "Show customer avatar",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "show_verified_purchase",
+      "label": "Show verified badge",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_review_date",
+      "label": "Show review date",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "show_rating",
+      "label": "Show testimonial star rating",
+      "default": false
+    },
+    {
+      "type": "select",
+      "id": "customer_name_style",
+      "label": "Name typography",
+      "options": [
+        {
+          "value": "normal",
+          "label": "Normal"
+        },
+        {
+          "value": "bold",
+          "label": "Bold"
+        }
+      ],
+      "default": "normal"
+    },
+    {
+      "type": "select",
+      "id": "customer_image_shape",
+      "label": "Avatar shape",
+      "options": [
+        {
+          "value": "circle",
+          "label": "Circle"
+        },
+        {
+          "value": "square",
+          "label": "Square"
+        }
+      ],
+      "default": "circle"
+    },
+    {
+      "type": "range",
+      "id": "customer_image_size",
+      "label": "Avatar size",
+      "min": 32,
+      "max": 96,
+      "step": 4,
+      "default": 44,
+      "unit": "px"
+    },
+    {
+      "type": "header",
+      "content": "Product links"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_product",
+      "label": "Show linked product",
+      "default": false
+    },
+    {
+      "type": "select",
+      "id": "product_display_style",
+      "label": "Product placement",
+      "options": [
+        {
+          "value": "below_video",
+          "label": "Below video"
+        },
+        {
+          "value": "text_link",
+          "label": "Text link"
+        },
+        {
+          "value": "overlay_tag",
+          "label": "Overlay tag"
+        },
+        {
+          "value": "details_panel",
+          "label": "Details panel"
+        }
+      ],
+      "default": "below_video"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_product_image",
+      "label": "Show product image",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_product_title",
+      "label": "Show product name",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_product_price",
+      "label": "Show product price",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_product_link",
+      "label": "Link to product",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "product_link_label",
+      "label": "Product link label",
+      "default": "Shop this product"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_quick_view",
+      "label": "Enable quick view if compatible",
+      "default": false,
+      "info": "Requires the verified trigger from Spider's existing product commerce controller. This section-only patch does not create a duplicate quick-view modal; use the product link if no compatible trigger is available."
+    },
+    {
+      "type": "header",
+      "content": "Media and cards"
+    },
+    {
+      "type": "select",
+      "id": "video_ratio",
+      "label": "Card image ratio",
+      "options": [
+        {
+          "value": "portrait",
+          "label": "Near square (15:16)"
+        },
+        {
+          "value": "square",
+          "label": "Square"
+        },
+        {
+          "value": "vertical",
+          "label": "Vertical (9:16)"
+        },
+        {
+          "value": "landscape",
+          "label": "Landscape (4:3)"
+        },
+        {
+          "value": "wide",
+          "label": "Wide (16:9)"
+        }
+      ],
+      "default": "portrait"
+    },
+    {
+      "type": "select",
+      "id": "video_fit",
+      "label": "Media fit",
+      "options": [
+        {
+          "value": "cover",
+          "label": "Cover"
+        },
+        {
+          "value": "contain",
+          "label": "Contain"
+        }
+      ],
+      "default": "cover"
+    },
+    {
+      "type": "select",
+      "id": "video_position",
+      "label": "Video focal position",
+      "options": [
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "top",
+          "label": "Top"
+        },
+        {
+          "value": "bottom",
+          "label": "Bottom"
+        }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "select",
+      "id": "card_background_source",
+      "label": "Card background source",
+      "options": [
+        {
+          "value": "scheme",
+          "label": "Use Spider color scheme"
+        },
+        {
+          "value": "custom",
+          "label": "Custom color"
+        }
+      ],
+      "default": "scheme"
+    },
+    {
+      "type": "color",
+      "id": "card_background",
+      "label": "Custom card background",
+      "default": "#ffffff",
+      "info": "Used only when Card background source is set to Custom color."
+    },
+    {
+      "type": "range",
+      "id": "card_border_width",
+      "label": "Card border width",
+      "min": 0,
+      "max": 4,
+      "step": 1,
+      "default": 0,
+      "unit": "px"
+    },
+    {
+      "type": "color",
+      "id": "card_border_color",
+      "label": "Card border color",
+      "default": "#e4e4e7"
+    },
+    {
+      "type": "range",
+      "id": "card_border_radius",
+      "label": "Card radius",
+      "min": 0,
+      "max": 36,
+      "step": 2,
+      "default": 18,
+      "unit": "px"
+    },
+    {
+      "type": "select",
+      "id": "card_shadow",
+      "label": "Card shadow",
+      "options": [
+        {
+          "value": "none",
+          "label": "None"
+        },
+        {
+          "value": "small",
+          "label": "Small"
+        },
+        {
+          "value": "medium",
+          "label": "Medium"
+        }
+      ],
+      "default": "small"
+    },
+    {
+      "type": "checkbox",
+      "id": "card_equal_height",
+      "label": "Equal-height cards",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "card_content_padding",
+      "label": "Card content padding",
+      "min": 8,
+      "max": 40,
+      "step": 2,
+      "default": 18,
+      "unit": "px"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_video_overlay",
+      "label": "Enable quote readability overlay",
+      "default": true
+    },
+    {
+      "type": "color",
+      "id": "video_overlay_color",
+      "label": "Readability overlay color",
+      "default": "#000000"
+    },
+    {
+      "type": "range",
+      "id": "video_overlay_opacity",
+      "label": "Overlay strength",
+      "min": 0,
+      "max": 90,
+      "step": 5,
+      "default": 60,
+      "unit": "%"
+    },
+    {
+      "type": "select",
+      "id": "quote_position",
+      "label": "Quote position",
+      "options": [
+        {
+          "value": "bottom",
+          "label": "Bottom"
+        },
+        {
+          "value": "top",
+          "label": "Top"
+        }
+      ],
+      "default": "bottom"
+    },
+    {
+      "type": "select",
+      "id": "quote_text_alignment",
+      "label": "Quote text alignment",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        }
+      ],
+      "default": "left"
+    },
+    {
+      "type": "select",
+      "id": "hover_effect",
+      "label": "Hover effect",
+      "options": [
+        {
+          "value": "none",
+          "label": "None"
+        },
+        {
+          "value": "lift",
+          "label": "Subtle lift"
+        }
+      ],
+      "default": "none"
+    },
+    {
+      "type": "range",
+      "id": "card_gap",
+      "label": "Gap between video cards",
+      "min": 8,
+      "max": 40,
+      "step": 2,
+      "default": 20,
+      "unit": "px"
+    },
+    {
+      "type": "header",
+      "content": "Grid layout"
+    },
+    {
+      "type": "range",
+      "id": "desktop_columns",
+      "label": "Desktop grid columns",
+      "min": 1,
+      "max": 4,
+      "step": 1,
+      "default": 3
+    },
+    {
+      "type": "range",
+      "id": "tablet_columns",
+      "label": "Tablet grid columns",
+      "min": 1,
+      "max": 3,
+      "step": 1,
+      "default": 2
+    },
+    {
+      "type": "range",
+      "id": "mobile_columns",
+      "label": "Mobile grid columns",
+      "min": 1,
+      "max": 3,
+      "step": 1,
+      "default": 1
+    },
+    {
+      "type": "header",
+      "content": "Featured story"
+    },
+    {
+      "type": "select",
+      "id": "featured_position",
+      "label": "Featured video position",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ],
+      "default": "left"
+    },
+    {
+      "type": "select",
+      "id": "mobile_featured_position",
+      "label": "Featured video on mobile",
+      "options": [
+        {
+          "value": "first",
+          "label": "First"
+        },
+        {
+          "value": "last",
+          "label": "Last"
+        }
+      ],
+      "default": "first"
+    },
+    {
+      "type": "header",
+      "content": "Section button"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_section_cta",
+      "label": "Show section call to action",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "section_cta_label",
+      "label": "Button text",
+      "default": "Watch more stories"
+    },
+    {
+      "type": "url",
+      "id": "section_cta_link",
+      "label": "Button link"
+    },
+    {
+      "type": "select",
+      "id": "section_cta_style",
+      "label": "Button appearance",
+      "options": [
+        {
+          "value": "primary",
+          "label": "Primary"
+        },
+        {
+          "value": "secondary",
+          "label": "Secondary"
+        },
+        {
+          "value": "outline",
+          "label": "Outline"
+        }
+      ],
+      "default": "outline"
+    },
+    {
+      "type": "select",
+      "id": "section_cta_alignment",
+      "label": "Button alignment",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "checkbox",
+      "id": "section_cta_new_tab",
+      "label": "Open button in a new tab",
+      "default": false
+    },
+    {
+      "type": "header",
+      "content": "Responsive spacing"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "Padding top",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "default": 48,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "Padding bottom",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "default": 48,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "padding_top_tablet",
+      "label": "Padding top tablet",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "default": 48,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom_tablet",
+      "label": "Padding bottom tablet",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "default": 48,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "padding_top_mobile",
+      "label": "Padding top mobile",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "default": 32,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom_mobile",
+      "label": "Padding bottom mobile",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "default": 40,
+      "unit": "px"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "video_testimonial",
+      "name": "Video testimonial",
+      "settings": [
+        {
+          "type": "video",
+          "id": "shopify_video",
+          "label": "Shopify-hosted video"
+        },
+        {
+          "type": "video_url",
+          "id": "external_video",
+          "label": "External video URL",
+          "accept": [
+            "youtube",
+            "vimeo"
+          ]
+        },
+        {
+          "type": "image_picker",
+          "id": "poster_image",
+          "label": "Desktop poster"
+        },
+        {
+          "type": "image_picker",
+          "id": "poster_image_mobile",
+          "label": "Mobile poster"
+        },
+        {
+          "type": "image_picker",
+          "id": "customer_image",
+          "label": "Customer photo"
+        },
+        {
+          "type": "text",
+          "id": "poster_image_alt",
+          "label": "Poster alt text"
+        },
+        {
+          "type": "text",
+          "id": "duration_label",
+          "label": "Optional real video duration",
+          "info": "Enter actual duration only, e.g. 0:42."
+        },
+        {
+          "type": "textarea",
+          "id": "customer_quote",
+          "label": "Genuine customer quote"
+        },
+        {
+          "type": "text",
+          "id": "customer_name",
+          "label": "Customer name"
+        },
+        {
+          "type": "text",
+          "id": "customer_location",
+          "label": "Broad location (city, state)"
+        },
+        {
+          "type": "text",
+          "id": "customer_image_alt",
+          "label": "Customer photo alt text"
+        },
+        {
+          "type": "checkbox",
+          "id": "merchant_confirms_genuine_review",
+          "label": "Review is genuine",
+          "default": false,
+          "info": "Merchant confirms the testimonial is an authentic, accurately represented review."
+        },
+        {
+          "type": "checkbox",
+          "id": "merchant_confirms_customer_consent",
+          "label": "Customer approved public video use",
+          "default": false,
+          "info": "Consent must cover identifiable video, images, name, and quote."
+        },
+        {
+          "type": "checkbox",
+          "id": "verified_purchase",
+          "label": "Show purchase verification",
+          "default": false
+        },
+        {
+          "type": "checkbox",
+          "id": "merchant_confirms_purchase_verification",
+          "label": "I hold purchase verification records",
+          "default": false,
+          "info": "Only enable with supporting records: do not invent verification."
+        },
+        {
+          "type": "select",
+          "id": "rating",
+          "label": "Star rating",
+          "options": [
+            {
+              "value": "none",
+              "label": "No rating"
+            },
+            {
+              "value": "1",
+              "label": "1"
+            },
+            {
+              "value": "2",
+              "label": "2"
+            },
+            {
+              "value": "3",
+              "label": "3"
+            },
+            {
+              "value": "4",
+              "label": "4"
+            },
+            {
+              "value": "5",
+              "label": "5"
+            }
+          ],
+          "default": "none"
+        },
+        {
+          "type": "text",
+          "id": "review_date",
+          "label": "Review date"
+        },
+        {
+          "type": "product",
+          "id": "product",
+          "label": "Shopify product"
+        },
+        {
+          "type": "text",
+          "id": "custom_product_title",
+          "label": "Custom product title"
+        },
+        {
+          "type": "url",
+          "id": "custom_product_url",
+          "label": "Custom product link"
+        },
+        {
+          "type": "url",
+          "id": "captions_file_url",
+          "label": "WebVTT captions URL"
+        },
+        {
+          "type": "text",
+          "id": "captions_language",
+          "label": "Captions language (ISO code)",
+          "default": "en"
+        },
+        {
+          "type": "text",
+          "id": "captions_label",
+          "label": "Captions label",
+          "default": "English"
+        },
+        {
+          "type": "richtext",
+          "id": "transcript",
+          "label": "Accurate text transcript"
+        },
+        {
+          "type": "checkbox",
+          "id": "featured_testimonial",
+          "label": "Make featured story",
+          "default": false
+        }
+      ]
+    }
+  ],
+  "max_blocks": 12,
+  "presets": [
+    {
+      "name": "Video Testimonials",
+      "settings": {
+        "layout_style": "style_1",
+        "section_max_width": 1600,
+        "padding_top": 48,
+        "padding_bottom": 48,
+        "show_rating_summary": true,
+        "show_arrows": true,
+        "show_dots": true,
+        "desktop_slides": 3,
+        "tablet_slides": 2,
+        "mobile_slides": 1,
+        "video_ratio": "portrait",
+        "show_section_cta": true,
+        "section_cta_style": "outline"
+      },
+      "category": "05. Social Proof",
+      "blocks": [
+        {
+          "type": "video_testimonial"
+        },
+        {
+          "type": "video_testimonial"
+        },
+        {
+          "type": "video_testimonial"
+        }
+      ]
+    }
+  ],
+  "class": "sp-vt-section"
+}
+{% endschema %}

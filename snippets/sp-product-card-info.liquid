@@ -1,0 +1,98 @@
+{%- liquid
+  assign rating_data = product.metafields.reviews.rating.value
+  assign info_form_id = 'SpProductInfo-' | append: section_id | append: '-' | append: instance_id | append: '-' | append: product.id
+  assign show_vendor = card_settings.show_vendor
+  assign show_rating = card_settings.show_rating
+  assign show_quick_add = card_settings.show_quick_add
+  if card_settings == blank
+    assign show_vendor = settings.card_show_vendor
+    assign show_rating = settings.card_show_rating
+    assign show_quick_add = settings.card_quick_add
+  endif
+  assign sp_cta_style = 'sp-button--primary'
+  if design == '2' or design == '5'
+    assign sp_cta_style = 'sp-button--secondary'
+  endif
+  assign selected_variant = product.selected_or_first_available_variant
+-%}
+<div class="sp-product-card__content">
+  {%- if show_vendor and product.vendor != blank and context != 'bestselling-grid' -%}<small class="sp-product-card__vendor">{{ product.vendor | escape }}</small>{%- endif -%}
+  {%- if design == '3' and settings.sp_card_variant_thumbnails and product.variants.size > 1 -%}
+    {%- assign media_thumb_count = 0 -%}
+    <div class="sp-product-card__variant-preview" role="group" aria-label="Product variant image choices">
+      {%- for variant in product.variants -%}
+        {%- if variant.featured_media.preview_image != blank -%}
+          {%- assign media_thumb_count = media_thumb_count | plus: 1 -%}
+          {%- if media_thumb_count <= 4 -%}
+            <button type="button" class="sp-product-card__variant-thumb{% if variant.id == selected_variant.id %} is-selected{% endif %}" data-sp-product-card-variant-thumb data-variant-id="{{ variant.id }}" aria-label="Select {{ variant.title | escape }}" aria-pressed="{% if variant.id == selected_variant.id %}true{% else %}false{% endif %}" {% unless variant.available %}disabled aria-disabled="true"{% endunless %}>
+              {{ variant.featured_media.preview_image | image_url: width: 100 | image_tag: loading: 'lazy', widths: '50, 100', sizes: '48px', alt: variant.title }}
+            </button>
+          {%- endif -%}
+        {%- endif -%}
+      {%- endfor -%}
+    </div>
+  {%- endif -%}
+  <h3 class="sp-product-card__title"><a href="{{ product.url }}" data-product-title>{{ product.title | escape }}</a></h3>
+  {%- if show_vendor and product.vendor != blank and context == 'bestselling-grid' -%}<small class="sp-product-card__vendor">{{ product.vendor | escape }}</small>{%- endif -%}
+  {%- if show_rating and rating_data != blank -%}
+    {%- liquid
+      assign rating_number = rating_data.rating | default: rating_data
+      assign rating_max = rating_data.scale_max | default: 5
+      assign review_count = product.metafields.reviews.rating_count.value | default: product.metafields.reviews.rating_count
+    -%}
+    {%- if context == 'bestselling-grid' -%}
+      <div class="sp-product-card__rating" aria-label="{{ rating_number }} out of {{ rating_max }} stars{% if review_count != blank %}, {{ review_count }} reviews{% endif %}">
+        <span class="sp-product-card__rating-stars" aria-hidden="true">★★★★★</span>
+        <span class="sp-product-card__rating-count">{% if review_count != blank %}({{ review_count | number_with_delimiter }}){% else %}{{ rating_number }} / {{ rating_max }}{% endif %}</span>
+      </div>
+    {%- else -%}
+      <div class="sp-product-card__rating" aria-label="{{ rating_number }} out of {{ rating_max }} stars"><span aria-hidden="true">★</span><span>{{ rating_number }} / {{ rating_max }}</span></div>
+    {%- endif -%}
+  {%- endif -%}
+  {% render 'sp-product-price', product: product %}
+  {% render 'sp-product-card-swatches', product: product, card_settings: card_settings, swatch_color_map: swatch_color_map, design: design %}
+  {%- if design == '6' and settings.sp_card_show_stock -%}
+    {%- liquid
+      assign track_variant = product.selected_or_first_available_variant
+      assign track_threshold = settings.sp_card_low_stock_threshold | default: 10
+    -%}
+    <div class="sp-product-card__stock" data-sp-stock-wrap>
+      {%- if track_variant.inventory_management == 'shopify' and track_variant.inventory_policy != 'continue' -%}
+        {%- assign stock_qty = track_variant.inventory_quantity | at_least: 0 -%}
+        {%- assign stock_percent = stock_qty | times: 100 | divided_by: track_threshold | at_most: 100 -%}
+        <div class="sp-product-card__stock-track" role="progressbar" aria-label="Stock quantity relative to {{ track_threshold }} items" aria-valuemin="0" aria-valuemax="{{ track_threshold }}" aria-valuenow="{{ stock_qty | at_most: track_threshold }}"><span data-sp-stock-fill style="width:{{ stock_percent }}%"></span></div>
+        <span class="sp-product-card__stock-label" data-sp-stock-label>{% if track_variant.available %}{% if stock_qty <= track_threshold %}Only {{ stock_qty }} left{% else %}In stock{% endif %}{% else %}Sold out{% endif %}</span>
+      {%- else -%}
+        <span class="sp-product-card__stock-label" data-sp-stock-label>{% if product.available %}Available{% else %}Sold out{% endif %}</span>
+      {%- endif -%}
+    </div>
+  {%- endif -%}
+  <p class="sp-product-card__option-status" data-sp-product-card-option-status aria-live="polite"></p>
+
+  {%- if design == '8' -%}
+    <div class="sp-product-card__action"><a class="sp-button sp-button--secondary sp-product-card__quick-add sp-product-card__details" href="{{ product.url }}">View details <span aria-hidden="true">→</span></a></div>
+  {%- elsif content_cta and show_quick_add -%}
+    <div class="sp-product-card__action{% if design == '7' %} sp-product-card__action--quantity{% endif %}">
+      {%- if product.available -%}
+        {%- if product.has_only_default_variant or design == '7' -%}
+          {% form 'product', product, id: info_form_id, class: 'sp-card-form sp-product-card__form', data-product-card-form: '' %}
+            <input type="hidden" name="id" value="{{ selected_variant.id }}" data-sp-product-card-variant>
+            <input type="hidden" name="quantity" value="{{ selected_variant.quantity_rule.min | default: 1 }}" data-sp-product-card-quantity-value>
+            {%- if design == '7' and settings.sp_card_luxury_quantity and product.has_only_default_variant -%}
+              <div class="sp-product-card__quantity" role="group" aria-label="Quantity selector" data-min-quantity="{{ selected_variant.quantity_rule.min | default: 1 }}" data-max-quantity="{{ selected_variant.quantity_rule.max }}" data-increment="{{ selected_variant.quantity_rule.increment | default: 1 }}">
+                <button type="button" data-sp-card-qty-step="-1" aria-label="Decrease quantity">−</button>
+                <output data-sp-card-qty-output aria-live="polite">{{ selected_variant.quantity_rule.min | default: 1 }}</output>
+                <button type="button" data-sp-card-qty-step="1" aria-label="Increase quantity">+</button>
+              </div>
+            {%- endif -%}
+            <button class="sp-button {{ sp_cta_style }} sp-product-card__quick-add" type="{% if design == '7' and product.has_only_default_variant == false %}button{% else %}submit{% endif %}" {% if design == '7' and product.has_only_default_variant == false %}data-sp-product-quick-add aria-controls="SpProductQuickAdd"{% endif %}>{% if design == '2' %}Quick add{% elsif design == '5' %}Add to cart{% else %}Add to cart{% endif %}</button>
+          {% endform %}
+        {%- else -%}
+          <button class="sp-button {{ sp_cta_style }} sp-product-card__quick-add" type="button" data-sp-product-quick-add aria-controls="SpProductQuickAdd">{% if design == '5' %}Choose options{% else %}Choose options{% endif %}</button>
+        {%- endif -%}
+      {%- else -%}
+        <button class="sp-button {{ sp_cta_style }} sp-product-card__quick-add" type="button" disabled>Sold out</button>
+      {%- endif -%}
+    </div>
+  {%- endif -%}
+</div>

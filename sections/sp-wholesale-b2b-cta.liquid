@@ -1,0 +1,1157 @@
+{{ 'sp-wholesale-b2b-cta.css' | asset_url | stylesheet_tag }}
+{% render 'sp-section-color-scheme', section: section %}
+{%- liquid
+  assign sp = section.settings
+  assign panel_scheme_object = settings.color_schemes | where: 'id', sp.panel_scheme | first
+  assign media_scheme_object = settings.color_schemes | where: 'id', sp.media_scheme | first
+  assign strip_scheme_object = settings.color_schemes | where: 'id', sp.strip_scheme | first
+  assign panel_background = panel_scheme_object.settings.background_gradient | default: panel_scheme_object.settings.background | default: '#3159fa'
+  assign panel_text = panel_scheme_object.settings.text | default: '#FFFFFF'
+  assign panel_heading = panel_scheme_object.settings.heading | default: panel_text
+  assign panel_border = panel_scheme_object.settings.border | default: 'rgba(255,255,255,.32)'
+  assign strip_background = strip_scheme_object.settings.background_gradient | default: strip_scheme_object.settings.background | default: '#1f2024'
+  assign strip_text = strip_scheme_object.settings.text | default: '#FFFFFF'
+  assign card_background = media_scheme_object.settings.card | default: media_scheme_object.settings.background | default: '#FFFFFF'
+  assign card_text = media_scheme_object.settings.text | default: '#202124'
+  assign card_accent = media_scheme_object.settings.accent | default: '#415DFF'
+  assign has_media = false
+  if sp.desktop_image != blank
+    assign has_media = true
+  endif
+  assign can_form = false
+  unless sp.application_presentation == 'link'
+    if sp.enable_application_form and sp.primary_label != blank
+      assign can_form = true
+    endif
+  endunless
+  assign show_apply_link = false
+  if sp.primary_link != blank
+    assign show_apply_link = true
+  endif
+  assign have_benefits = false
+  assign have_features = false
+  assign have_statistics = false
+  for block in section.blocks
+    if block.type == 'benefit' and block.settings.text != blank
+      assign have_benefits = true
+    elsif block.type == 'feature' and block.settings.heading != blank
+      assign have_features = true
+    elsif block.type == 'statistic' and block.settings.value != blank and block.settings.label != blank
+      assign have_statistics = true
+    endif
+  endfor
+  assign display_statistics = false
+  if sp.show_statistics and sp.confirm_statistics and have_statistics
+    assign display_statistics = true
+  endif
+  assign show_stats_row = false
+  if display_statistics
+    if has_media == false
+      assign show_stats_row = true
+    else
+      case sp.layout_style
+        when 'style_2', 'style_4', 'style_5'
+          assign show_stats_row = true
+      endcase
+    endif
+  endif
+  assign sp_container_class = 'sp-container'
+  if sp.section_width == 'full_width'
+    assign sp_container_class = 'sp-wholesale__fluid'
+  endif
+-%}
+{%- capture sp_panel_styles -%}
+  --sp-wholesale-panel-bg:{{ panel_background }};
+  --sp-wholesale-panel-text:{{ panel_text }};
+  --sp-wholesale-panel-heading:{{ panel_heading }};
+  --sp-wholesale-panel-border:{{ panel_border }};
+  --sp-wholesale-strip-bg:{{ strip_background }};
+  --sp-wholesale-strip-text:{{ strip_text }};
+  --sp-wholesale-card-bg:{{ card_background }};
+  --sp-wholesale-card-text:{{ card_text }};
+  --sp-wholesale-card-accent:{{ card_accent }};
+  --sp-wholesale-radius:{{ sp.outer_radius }}px;
+  --sp-wholesale-title-size:{{ sp.heading_size }}px;
+  --sp-wholesale-img-min:{{ sp.image_height }}px;
+  --sp-wholesale-media-share:{{ sp.media_share }}%;
+  --sp-wholesale-pad-d:{{ sp.content_padding }}px;
+  --sp-wholesale-pad-m:{{ sp.content_padding_mobile }}px;
+  --sp-wholesale-top:{{ sp.padding_top }}px;
+  --sp-wholesale-bottom:{{ sp.padding_bottom }}px;
+  --sp-wholesale-top-m:{{ sp.padding_top_mobile }}px;
+  --sp-wholesale-bottom-m:{{ sp.padding_bottom_mobile }}px;
+  --sp-wholesale-pattern-opacity:{{ sp.pattern_opacity | divided_by: 100.0 }};
+  --sp-wholesale-media-overlay:{{ sp.image_overlay_opacity | divided_by: 100.0 }};
+  --sp-wholesale-max-width:{{ sp.max_width }}px;
+{%- endcapture -%}
+<section class="sp-wholesale sp-wholesale--{{ sp.layout_style }}{% unless has_media %} sp-wholesale--no-media{% endunless %} sp-wholesale--mobile-{{ sp.mobile_order }} sp-wholesale--image-{{ sp.desktop_image_position }} sp-wholesale--align-{{ sp.text_alignment }} sp-wholesale--mobile-align-{{ sp.mobile_alignment }}{% if sp.enable_animations %} sp-wholesale--animate{% endif %}" data-sp-wholesale data-sp-section-id="{{ section.id }}" data-sp-form-mode="{{ sp.application_presentation }}" style="{{ sp_panel_styles | strip_newlines }}" aria-labelledby="sp-wholesale-title-{{ section.id }}">
+  <div class="{{ sp_container_class }} sp-wholesale__container">
+    <div class="sp-wholesale__shell{% if sp.outer_shadow %} sp-wholesale__shell--shadow{% endif %}">
+      <div class="sp-wholesale__main">
+        <div class="sp-wholesale__copy{% if sp.show_pattern %} sp-wholesale__copy--pattern{% endif %}">
+          <div class="sp-wholesale__copy-inner">
+            {%- if sp.eyebrow != blank -%}<p class="sp-wholesale__eyebrow">{{ sp.eyebrow | escape }}</p>{%- endif -%}
+            {% if sp.heading != blank %}<h2 class="sp-wholesale__title" id="sp-wholesale-title-{{ section.id }}">{{ sp.heading | escape }}</h2>{% else %}<h2 id="sp-wholesale-title-{{ section.id }}" class="sp-wholesale__visually-hidden">Wholesale</h2>{% endif %}
+            {%- if sp.description != blank -%}<div class="sp-wholesale__description rte">{{ sp.description }}</div>{%- endif -%}
+            {%- if can_form or show_apply_link or sp.secondary_link != blank -%}
+              <div class="sp-wholesale__actions{% if sp.stack_buttons %} sp-wholesale__actions--stack{% endif %}">
+                {% if can_form %}
+                  <a href="#sp-wholesale-form-{{ section.id }}" class="sp-wholesale__button sp-wholesale__button--primary sp-button sp-button--primary" {% if sp.application_presentation == 'modal' %}data-sp-wholesale-open{% endif %}>{{ sp.primary_label | escape }}</a>
+                {% elsif show_apply_link and sp.primary_label != blank %}
+                  <a href="{{ sp.primary_link }}" class="sp-wholesale__button sp-wholesale__button--primary sp-button sp-button--primary">{{ sp.primary_label | escape }}</a>
+                {% endif %}
+                {%- if sp.show_line_sheet and sp.secondary_link != blank and sp.secondary_label != blank -%}
+                  <a class="sp-wholesale__button sp-wholesale__button--secondary sp-button sp-button--secondary" href="{{ sp.secondary_link }}" {% if sp.line_sheet_new_tab %}target="_blank" rel="noopener noreferrer"{% endif %}>{{ sp.secondary_label | escape }}</a>
+                {%- endif -%}
+              </div>
+            {%- endif -%}
+            {%- if sp.show_benefits and have_benefits -%}
+              <ul class="sp-wholesale__benefits" role="list">
+                {% for block in section.blocks %}{% if block.type == 'benefit' and block.settings.text != blank %}
+                  <li class="sp-wholesale__benefit" {{ block.shopify_attributes }}>
+                    <span class="sp-wholesale__benefit-icon">
+                      {% if block.settings.custom_icon != blank %}{{ block.settings.custom_icon | image_url: width: 72 | image_tag: loading: 'lazy', alt: '', widths: '36,72', sizes: '24px' }}{% else %}{% render 'sp-wholesale-b2b-icon', name: block.settings.icon %}{% endif %}
+                    </span>
+                    <span>{{ block.settings.text | escape }}</span>
+                  </li>
+                {% endif %}{% endfor %}
+              </ul>
+            {%- endif -%}
+            {%- if sp.show_partner and sp.partner_link != blank and sp.partner_label != blank -%}
+              <div class="sp-wholesale__partner"><span>{{ sp.partner_prefix | escape }}</span> <a href="{{ sp.partner_link }}">{{ sp.partner_label | escape }} {% render 'sp-wholesale-b2b-icon', name: 'arrow' %}</a></div>
+            {%- endif -%}
+            {%- if sp.disclaimer != blank -%}<p class="sp-wholesale__disclaimer">{{ sp.disclaimer | escape }}</p>{%- endif -%}
+          </div>
+        </div>
+        {% if has_media or request.design_mode %}
+        <div class="sp-wholesale__visual{% unless has_media %} sp-wholesale__visual--empty{% endunless %}">
+          {% if has_media %}
+            <picture class="sp-wholesale__picture">
+              {% if sp.mobile_image != blank %}<source media="(max-width: 749px)" srcset="{{ sp.mobile_image | image_url: width: 480 }} 480w, {{ sp.mobile_image | image_url: width: 750 }} 750w, {{ sp.mobile_image | image_url: width: 1100 }} 1100w" sizes="100vw">{% endif %}
+              {% render 'responsive-image', image: sp.desktop_image, widths: '480,640,800,1000,1200,1600,2000', sizes: '(min-width: 990px) 54vw, 100vw', loading: 'lazy', class: 'sp-wholesale__image', alt: sp.image_alt %}
+            </picture>
+          {% elsif request.design_mode %}
+            <div class="sp-wholesale__image-placeholder">{{ 'lifestyle-2' | placeholder_svg_tag: 'sp-wholesale__placeholder-svg' }}<p>Upload a wholesale lifestyle image</p></div>
+          {% endif %}
+          {%- if display_statistics and has_media and sp.layout_style != 'style_4' and sp.layout_style != 'style_5' and sp.layout_style != 'style_2' -%}
+            <ul class="sp-wholesale__statistics sp-wholesale__statistics--float" role="list">
+              {% for block in section.blocks %}{% if block.type == 'statistic' and block.settings.value != blank and block.settings.label != blank %}
+                <li class="sp-wholesale__stat{% if block.settings.hide_mobile %} sp-wholesale__stat--hide-mobile{% endif %} sp-wholesale__stat--{{ block.settings.position }}" {{ block.shopify_attributes }}>
+                  {% if block.settings.custom_icon != blank %}{{ block.settings.custom_icon | image_url: width: 100 | image_tag: alt: '', loading: 'lazy', widths: '50,100', sizes: '40px' }}{% else %}{% render 'sp-wholesale-b2b-icon', name: block.settings.icon %}{% endif %}
+                  <strong>{{ block.settings.value | escape }}</strong><span>{{ block.settings.label | escape }}</span>
+                </li>
+              {% endif %}{% endfor %}
+            </ul>
+          {%- endif -%}
+        </div>
+        {% endif %}
+      </div>
+      {% if show_stats_row %}
+        <ul class="sp-wholesale__statistics sp-wholesale__statistics--row" role="list">
+          {% for block in section.blocks %}{% if block.type == 'statistic' and block.settings.value != blank and block.settings.label != blank %}
+            <li class="sp-wholesale__stat{% if block.settings.hide_mobile %} sp-wholesale__stat--hide-mobile{% endif %}" {{ block.shopify_attributes }}>
+              {% render 'sp-wholesale-b2b-icon', name: block.settings.icon %}<strong>{{ block.settings.value | escape }}</strong><span>{{ block.settings.label | escape }}</span>
+            </li>
+          {% endif %}{% endfor %}
+        </ul>
+      {% endif %}
+      {%- if sp.show_features and have_features -%}
+        <ul class="sp-wholesale__features" role="list">
+          {% for block in section.blocks %}{% if block.type == 'feature' and block.settings.heading != blank %}
+            <li class="sp-wholesale__feature" {{ block.shopify_attributes }}>
+              {% if block.settings.link != blank %}<a class="sp-wholesale__feature-link" href="{{ block.settings.link }}">{% else %}<div class="sp-wholesale__feature-link">{% endif %}
+                {% if block.settings.custom_icon != blank %}{{ block.settings.custom_icon | image_url: width: 80 | image_tag: loading: 'lazy', alt: '', widths: '40,80', sizes: '36px' }}{% else %}{% render 'sp-wholesale-b2b-icon', name: block.settings.icon %}{% endif %}
+                <span class="sp-wholesale__feature-copy"><strong>{{ block.settings.heading | escape }}</strong>{% if block.settings.description != blank %}<small>{{ block.settings.description | escape }}</small>{% endif %}</span>
+              {% if block.settings.link != blank %}</a>{% else %}</div>{% endif %}
+            </li>
+          {% endif %}{% endfor %}
+        </ul>
+      {%- endif -%}
+    </div>
+    {% if can_form %}<div class="sp-wholesale__form-shell" data-sp-wholesale-form-shell>{% render 'sp-wholesale-b2b-form', section: section %}</div>{% endif %}
+  </div>
+</section>
+{% if can_form and sp.application_presentation == 'modal' %}<script src="{{ 'sp-wholesale-b2b-cta.js' | asset_url }}" defer></script>{% endif %}
+{% schema %}
+{
+  "name": "Wholesale / B2B CTA",
+  "tag": "section",
+  "class": "sp-wholesale-section",
+   "disabled_on": {
+    "groups": [
+      "header",
+      "footer",
+      "custom.system"
+    ]
+  },
+  "settings": [
+    {
+      "type": "header",
+      "content": "Content"
+    },
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Eyebrow",
+      "default": "WHOLESALE & B2B"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Let’s Grow Together"
+    },
+    {
+      "type": "richtext",
+      "id": "description",
+      "label": "Description",
+      "default": "<p>Bring Spider to your store with thoughtful products, flexible ordering, and dedicated partner support.</p>"
+    },
+    {
+      "type": "text",
+      "id": "primary_label",
+      "label": "Application button text",
+      "default": "Apply for wholesale"
+    },
+    {
+      "type": "url",
+      "id": "primary_link",
+      "label": "Application page URL",
+      "info": "Used in Link only mode or when application form is disabled."
+    },
+    {
+      "type": "text",
+      "id": "secondary_label",
+      "label": "Line sheet button text",
+      "default": "Download line sheet"
+    },
+    {
+      "type": "url",
+      "id": "secondary_link",
+      "label": "Line sheet URL",
+      "info": "Upload your PDF to Shopify Files and paste its URL."
+    },
+    {
+      "type": "checkbox",
+      "id": "show_line_sheet",
+      "label": "Show line sheet button",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "line_sheet_new_tab",
+      "label": "Open line sheet in new tab",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "partner_prefix",
+      "label": "Partner intro",
+      "default": "Already a partner?"
+    },
+    {
+      "type": "text",
+      "id": "partner_label",
+      "label": "Partner link label",
+      "default": "Sign in"
+    },
+    {
+      "type": "url",
+      "id": "partner_link",
+      "label": "Partner sign-in URL"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_partner",
+      "label": "Show partner sign-in",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "disclaimer",
+      "label": "Optional disclaimer"
+    },
+    {
+      "type": "header",
+      "content": "Layouts"
+    },
+    {
+      "type": "select",
+      "id": "layout_style",
+      "label": "Layout style",
+      "options": [
+        {
+          "value": "style_1",
+          "label": "Split showcase"
+        },
+        {
+          "value": "style_2",
+          "label": "Centered B2B banner"
+        },
+        {
+          "value": "style_3",
+          "label": "Image and content"
+        },
+        {
+          "value": "style_4",
+          "label": "Wholesale benefits grid"
+        },
+        {
+          "value": "style_5",
+          "label": "Minimal conversion CTA"
+        }
+      ],
+      "default": "style_1"
+    },
+    {
+      "type": "select",
+      "id": "section_width",
+      "label": "Section width",
+      "options": [
+        {
+          "value": "contained",
+          "label": "Contained"
+        },
+        {
+          "value": "full_width",
+          "label": "Full width"
+        }
+      ],
+      "default": "contained"
+    },
+    {
+      "type": "range",
+      "id": "max_width",
+      "label": "Maximum width",
+      "min": 900,
+      "max": 1800,
+      "step": 20,
+      "default": 1700,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "media_share",
+      "label": "Desktop image width",
+      "min": 30,
+      "max": 70,
+      "step": 5,
+      "default": 50,
+      "unit": "%"
+    },
+    {
+      "type": "select",
+      "id": "desktop_image_position",
+      "label": "Desktop image position",
+      "options": [
+        {
+          "value": "right",
+          "label": "Right"
+        },
+        {
+          "value": "left",
+          "label": "Left"
+        }
+      ],
+      "default": "right"
+    },
+    {
+      "type": "select",
+      "id": "mobile_order",
+      "label": "Mobile panel order",
+      "options": [
+        {
+          "value": "image_last",
+          "label": "Content then image"
+        },
+        {
+          "value": "image_first",
+          "label": "Image then content"
+        }
+      ],
+      "default": "image_last"
+    },
+    {
+      "type": "select",
+      "id": "text_alignment",
+      "label": "Desktop text alignment",
+      "options": [
+        {
+          "value": "start",
+          "label": "Left/start"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "end",
+          "label": "Right/end"
+        }
+      ],
+      "default": "start"
+    },
+    {
+      "type": "select",
+      "id": "mobile_alignment",
+      "label": "Mobile text alignment",
+      "options": [
+        {
+          "value": "start",
+          "label": "Left/start"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        }
+      ],
+      "default": "start"
+    },
+    {
+      "type": "checkbox",
+      "id": "stack_buttons",
+      "label": "Stack action buttons",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "outer_shadow",
+      "label": "Subtle outer shadow",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "heading_size",
+      "label": "Desktop heading size",
+      "min": 36,
+      "max": 88,
+      "step": 2,
+      "default": 72,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "outer_radius",
+      "label": "Outer corner radius",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "default": 18,
+      "unit": "px"
+    },
+    {
+      "type": "header",
+      "content": "Images and decoration"
+    },
+    {
+      "type": "image_picker",
+      "id": "desktop_image",
+      "label": "Lifestyle image"
+    },
+    {
+      "type": "image_picker",
+      "id": "mobile_image",
+      "label": "Mobile image override"
+    },
+    {
+      "type": "text",
+      "id": "image_alt",
+      "label": "Image alt text"
+    },
+    {
+      "type": "range",
+      "id": "image_height",
+      "label": "Minimum desktop panel height",
+      "min": 380,
+      "max": 860,
+      "step": 20,
+      "default": 640,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "image_overlay_opacity",
+      "label": "Image dark overlay",
+      "min": 0,
+      "max": 60,
+      "step": 5,
+      "default": 0,
+      "unit": "%"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_pattern",
+      "label": "Show subtle geometric pattern",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "pattern_opacity",
+      "label": "Pattern opacity",
+      "min": 0,
+      "max": 60,
+      "step": 5,
+      "default": 20,
+      "unit": "%"
+    },
+    {
+      "type": "header",
+      "content": "Color schemes"
+    },
+    {
+      "type": "color_scheme",
+      "id": "sp_color_scheme",
+      "label": "Section color scheme",
+      "default": "scheme-1"
+    },
+    {
+      "type": "color_scheme",
+      "id": "panel_scheme",
+      "label": "Content panel color scheme",
+      "default": "scheme-4"
+    },
+    {
+      "type": "color_scheme",
+      "id": "media_scheme",
+      "label": "Statistic card color scheme",
+      "default": "scheme-1"
+    },
+    {
+      "type": "color_scheme",
+      "id": "strip_scheme",
+      "label": "Feature strip color scheme",
+      "default": "scheme-3"
+    },
+    {
+      "type": "header",
+      "content": "Display options"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_benefits",
+      "label": "Show benefits",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_statistics",
+      "label": "Show statistics",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "confirm_statistics",
+      "label": "Business statistics are verified",
+      "default": false,
+      "info": "Enable only after checking that all statistic claims are accurate. No stats appear on the live storefront otherwise."
+    },
+    {
+      "type": "checkbox",
+      "id": "show_features",
+      "label": "Show bottom features",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_animations",
+      "label": "Enable subtle animations",
+      "default": false
+    },
+    {
+      "type": "header",
+      "content": "Application form"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_application_form",
+      "label": "Enable built-in lead form",
+      "default": false
+    },
+    {
+      "type": "select",
+      "id": "application_presentation",
+      "label": "Application presentation",
+      "options": [
+        {
+          "value": "link",
+          "label": "Link only"
+        },
+        {
+          "value": "inline",
+          "label": "Inline form"
+        },
+        {
+          "value": "modal",
+          "label": "Modal form"
+        }
+      ],
+      "default": "link",
+      "info": "Form submits to Shopify Contact, not the native B2B company approval workflow."
+    },
+    {
+      "type": "text",
+      "id": "form_heading",
+      "label": "Form heading",
+      "default": "Wholesale application"
+    },
+    {
+      "type": "richtext",
+      "id": "form_description",
+      "label": "Form introduction",
+      "default": "<p>Tell us about your business and we will follow up.</p>"
+    },
+    {
+      "type": "text",
+      "id": "email_label",
+      "label": "Required email field label",
+      "default": "Business email"
+    },
+    {
+      "type": "text",
+      "id": "submit_label",
+      "label": "Form submit label",
+      "default": "Send application"
+    },
+    {
+      "type": "text",
+      "id": "success_message",
+      "label": "Success message",
+      "default": "Thanks. Your wholesale inquiry has been sent."
+    },
+    {
+      "type": "text",
+      "id": "error_message",
+      "label": "Error message",
+      "default": "Please correct the errors below."
+    },
+    {
+      "type": "text",
+      "id": "form_disclaimer",
+      "label": "Form disclaimer",
+      "default": "Submitting an inquiry does not create or approve a wholesale account."
+    },
+    {
+      "type": "header",
+      "content": "Desktop spacing"
+    },
+    {
+      "type": "range",
+      "id": "content_padding",
+      "label": "Panel internal padding",
+      "min": 20,
+      "max": 100,
+      "step": 4,
+      "default": 64,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "Section top spacing",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "default": 48,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "Section bottom spacing",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "default": 48,
+      "unit": "px"
+    },
+    {
+      "type": "header",
+      "content": "Mobile spacing"
+    },
+    {
+      "type": "range",
+      "id": "content_padding_mobile",
+      "label": "Mobile panel padding",
+      "min": 16,
+      "max": 48,
+      "step": 2,
+      "default": 28,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "padding_top_mobile",
+      "label": "Mobile top spacing",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "default": 28,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom_mobile",
+      "label": "Mobile bottom spacing",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "default": 28,
+      "unit": "px"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "benefit",
+      "name": "Benefit",
+      "limit": 12,
+      "settings": [
+        {
+          "type": "text",
+          "id": "text",
+          "label": "Benefit text",
+          "default": "Flexible order minimums"
+        },
+        {
+          "type": "select",
+          "id": "icon",
+          "label": "Icon",
+          "options": [
+            {
+              "value": "check",
+              "label": "Check circle"
+            },
+            {
+              "value": "cube",
+              "label": "Cube"
+            },
+            {
+              "value": "globe",
+              "label": "Globe"
+            },
+            {
+              "value": "tag",
+              "label": "Tag"
+            },
+            {
+              "value": "clock",
+              "label": "Clock"
+            },
+            {
+              "value": "truck",
+              "label": "Truck"
+            },
+            {
+              "value": "headset",
+              "label": "Headset"
+            },
+            {
+              "value": "shield",
+              "label": "Shield"
+            },
+            {
+              "value": "leaf",
+              "label": "Leaf"
+            },
+            {
+              "value": "users",
+              "label": "Users"
+            },
+            {
+              "value": "chat",
+              "label": "Chat"
+            }
+          ],
+          "default": "check"
+        },
+        {
+          "type": "image_picker",
+          "id": "custom_icon",
+          "label": "Custom icon"
+        }
+      ]
+    },
+    {
+      "type": "statistic",
+      "name": "Statistic",
+      "limit": 6,
+      "settings": [
+        {
+          "type": "text",
+          "id": "value",
+          "label": "Statistic value"
+        },
+        {
+          "type": "text",
+          "id": "label",
+          "label": "Statistic label"
+        },
+        {
+          "type": "select",
+          "id": "icon",
+          "label": "Icon",
+          "options": [
+            {
+              "value": "check",
+              "label": "Check circle"
+            },
+            {
+              "value": "cube",
+              "label": "Cube"
+            },
+            {
+              "value": "globe",
+              "label": "Globe"
+            },
+            {
+              "value": "tag",
+              "label": "Tag"
+            },
+            {
+              "value": "clock",
+              "label": "Clock"
+            },
+            {
+              "value": "truck",
+              "label": "Truck"
+            },
+            {
+              "value": "headset",
+              "label": "Headset"
+            },
+            {
+              "value": "shield",
+              "label": "Shield"
+            },
+            {
+              "value": "leaf",
+              "label": "Leaf"
+            },
+            {
+              "value": "users",
+              "label": "Users"
+            },
+            {
+              "value": "chat",
+              "label": "Chat"
+            }
+          ],
+          "default": "cube"
+        },
+        {
+          "type": "image_picker",
+          "id": "custom_icon",
+          "label": "Custom icon"
+        },
+        {
+          "type": "select",
+          "id": "position",
+          "label": "Floating card position",
+          "options": [
+            {
+              "value": "top_left",
+              "label": "Top left"
+            },
+            {
+              "value": "top_right",
+              "label": "Top right"
+            },
+            {
+              "value": "bottom_left",
+              "label": "Bottom left"
+            },
+            {
+              "value": "bottom_right",
+              "label": "Bottom right"
+            }
+          ],
+          "default": "top_left"
+        },
+        {
+          "type": "checkbox",
+          "id": "hide_mobile",
+          "label": "Hide on mobile",
+          "default": false
+        }
+      ]
+    },
+    {
+      "type": "feature",
+      "name": "Bottom feature",
+      "limit": 9,
+      "settings": [
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "Feature heading",
+          "default": "Retail-ready assets"
+        },
+        {
+          "type": "text",
+          "id": "description",
+          "label": "Description"
+        },
+        {
+          "type": "select",
+          "id": "icon",
+          "label": "Icon",
+          "options": [
+            {
+              "value": "check",
+              "label": "Check circle"
+            },
+            {
+              "value": "cube",
+              "label": "Cube"
+            },
+            {
+              "value": "globe",
+              "label": "Globe"
+            },
+            {
+              "value": "tag",
+              "label": "Tag"
+            },
+            {
+              "value": "clock",
+              "label": "Clock"
+            },
+            {
+              "value": "truck",
+              "label": "Truck"
+            },
+            {
+              "value": "headset",
+              "label": "Headset"
+            },
+            {
+              "value": "shield",
+              "label": "Shield"
+            },
+            {
+              "value": "leaf",
+              "label": "Leaf"
+            },
+            {
+              "value": "users",
+              "label": "Users"
+            },
+            {
+              "value": "chat",
+              "label": "Chat"
+            }
+          ],
+          "default": "cube"
+        },
+        {
+          "type": "image_picker",
+          "id": "custom_icon",
+          "label": "Custom icon"
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "Optional link"
+        }
+      ]
+    },
+    {
+      "type": "application_field",
+      "name": "Application field",
+      "limit": 16,
+      "settings": [
+        {
+          "type": "select",
+          "id": "field_type",
+          "label": "Field type",
+          "options": [
+            {
+              "value": "company",
+              "label": "Company name"
+            },
+            {
+              "value": "contact_name",
+              "label": "Contact name"
+            },
+            {
+              "value": "email",
+              "label": "Email (uses required field)"
+            },
+            {
+              "value": "phone",
+              "label": "Phone"
+            },
+            {
+              "value": "website",
+              "label": "Website"
+            },
+            {
+              "value": "country",
+              "label": "Country"
+            },
+            {
+              "value": "business_type",
+              "label": "Business type"
+            },
+            {
+              "value": "order_volume",
+              "label": "Estimated order volume"
+            },
+            {
+              "value": "resale_id",
+              "label": "Tax/resale ID"
+            },
+            {
+              "value": "message",
+              "label": "Message"
+            },
+            {
+              "value": "consent",
+              "label": "Consent checkbox"
+            }
+          ],
+          "default": "company",
+          "info": "Email already appears once as the mandatory first field. Additional email blocks are ignored."
+        },
+        {
+          "type": "text",
+          "id": "label",
+          "label": "Label",
+          "default": "Company name"
+        },
+        {
+          "type": "text",
+          "id": "placeholder",
+          "label": "Placeholder"
+        },
+        {
+          "type": "checkbox",
+          "id": "required",
+          "label": "Required",
+          "default": false
+        },
+        {
+          "type": "select",
+          "id": "field_width",
+          "label": "Field width",
+          "options": [
+            {
+              "value": "full",
+              "label": "Full width"
+            },
+            {
+              "value": "half",
+              "label": "Half width"
+            }
+          ],
+          "default": "half"
+        },
+        {
+          "type": "text",
+          "id": "help_text",
+          "label": "Help text"
+        }
+      ]
+    }
+  ],
+  "max_blocks": 40,
+  "presets": [
+    {
+      "name": "Wholesale / B2B CTA",
+      "settings": {
+        "layout_style": "style_1",
+        "enable_application_form": true,
+        "application_presentation": "modal"
+      },
+      "category": "07. Store & Support",
+      "blocks": [
+        {
+          "type": "benefit",
+          "settings": {
+            "text": "Flexible order minimums",
+            "icon": "check"
+          }
+        },
+        {
+          "type": "benefit",
+          "settings": {
+            "text": "Dedicated account support",
+            "icon": "check"
+          }
+        },
+        {
+          "type": "benefit",
+          "settings": {
+            "text": "Fast, reliable fulfillment",
+            "icon": "check"
+          }
+        },
+        {
+          "type": "statistic",
+          "settings": {
+            "value": "48 hrs",
+            "label": "Average dispatch",
+            "icon": "cube",
+            "position": "top_left"
+          }
+        },
+        {
+          "type": "statistic",
+          "settings": {
+            "value": "32+",
+            "label": "Markets served",
+            "icon": "globe",
+            "position": "top_right"
+          }
+        },
+        {
+          "type": "feature",
+          "settings": {
+            "heading": "Retail-ready assets",
+            "icon": "cube"
+          }
+        },
+        {
+          "type": "feature",
+          "settings": {
+            "heading": "Volume pricing",
+            "icon": "tag"
+          }
+        },
+        {
+          "type": "feature",
+          "settings": {
+            "heading": "Global shipping",
+            "icon": "globe"
+          }
+        },
+        {
+          "type": "application_field",
+          "settings": {
+            "field_type": "company",
+            "label": "Company name",
+            "required": true,
+            "field_width": "half"
+          }
+        },
+        {
+          "type": "application_field",
+          "settings": {
+            "field_type": "contact_name",
+            "label": "Contact name",
+            "required": true,
+            "field_width": "half"
+          }
+        },
+        {
+          "type": "application_field",
+          "settings": {
+            "field_type": "phone",
+            "label": "Phone",
+            "field_width": "half"
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,28 @@
+<div class="sp-featured-carousel__controls" data-sp-featured-controls>
+  {%- if block.settings.show_navigation -%}
+    <div class="sp-featured-carousel__navigation" aria-label="Product carousel navigation">
+      <button class="sp-featured-carousel__arrow sp-featured-carousel__arrow--prev" type="button" data-sp-featured-prev aria-label="Previous products">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 5-7 7 7 7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <button class="sp-featured-carousel__arrow sp-featured-carousel__arrow--next" type="button" data-sp-featured-next aria-label="Next products">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 7 7-7 7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+    </div>
+  {%- endif -%}
+
+  {%- if block.settings.show_pagination -%}
+    <div
+      class="sp-featured-carousel__pagination sp-featured-carousel__pagination--{{ block.settings.pagination_style }}{% if block.settings.pagination_rounded %} is-rounded{% endif %}"
+      data-sp-featured-pagination
+      role="group"
+      aria-label="Product carousel pages"
+    ></div>
+  {%- endif -%}
+
+  {%- if block.settings.autoplay -%}
+    <button class="sp-featured-carousel__pause" type="button" data-sp-featured-pause aria-label="Pause autoplay" aria-pressed="false">
+      <svg class="sp-featured-carousel__pause-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5h4v14H7zM13 5h4v14h-4z" fill="currentColor"/></svg>
+      <svg class="sp-featured-carousel__play-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m8 5 11 7-11 7V5z" fill="currentColor"/></svg>
+    </button>
+  {%- endif -%}
+</div>

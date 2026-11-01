@@ -1,0 +1,80 @@
+{%- liquid
+  assign b = block.settings
+  assign gallery_image = b.image | default: b.mobile_image
+  assign poster = b.video_poster | default: gallery_image
+  if poster == blank and b.shopify_video != blank
+    assign poster = b.shopify_video.preview_image
+  endif
+  assign is_video = false
+  if b.media_type == 'video' and b.shopify_video != blank
+    assign is_video = true
+  endif
+  assign valid_media = false
+  if is_video or gallery_image != blank or editor_mode
+    assign valid_media = true
+  endif
+  assign linked_product = b.product
+  assign show_item_product = false
+  if linked_product != blank and section.settings.show_product
+    assign show_item_product = true
+  endif
+  assign link_alt = b.custom_accessible_label | default: b.caption | default: b.image_alt | default: 'Open gallery image'
+  assign item_image = gallery_image
+  if is_video
+    assign item_image = poster
+  endif
+-%}
+{%- if valid_media -%}
+<li class="sp-social-gallery__item{% if featured %} sp-social-gallery__item--featured{% endif %}" data-sp-item data-sp-block-id="{{ block.id }}" data-sp-type="{% if is_video %}video{% else %}image{% endif %}" data-sp-label="{{ link_alt | escape }}" data-sp-caption="{{ b.caption | escape }}" data-sp-creator="{{ b.creator_name | escape }}" data-sp-product-title="{% if show_item_product %}{{ linked_product.title | escape }}{% endif %}" data-sp-product-price="{% if show_item_product %}{{ linked_product.price | money | escape }}{% endif %}" data-sp-product-url="{% if show_item_product %}{{ linked_product.url | escape }}{% endif %}" data-sp-media-full="{% if item_image != blank %}{{ item_image | image_url: width: 1800 }}{% endif %}" data-sp-open-allowed="{{ b.open_in_lightbox }}" data-sp-video-auto="{{ b.video_autoplay }}" {{ block.shopify_attributes }}>
+  <div class="sp-social-gallery__media">
+    {%- if is_video -%}
+      {%- assign video_muted = b.video_muted -%}
+      {%- if b.video_autoplay -%}{%- assign video_muted = true -%}{%- endif -%}
+      {{ b.shopify_video | video_tag: class: 'sp-social-gallery__video', autoplay: false, loop: b.video_loop, muted: video_muted, controls: true, preload: 'none', image_size: '800x' }}
+      {%- if section.settings.enable_lightbox and b.open_in_lightbox -%}
+        <button class="sp-social-gallery__open-video" type="button" data-sp-open aria-label="Open video in gallery viewer">Expand</button>
+      {%- endif -%}
+      <span class="sp-social-gallery__reel" aria-hidden="true">{% render 'icon', name: 'play' %}<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="m9 6 9 6-9 6z"/></svg></span>
+    {%- elsif gallery_image != blank -%}
+      <picture>
+        {%- if b.mobile_image != blank -%}
+          <source media="(max-width: 749px)" srcset="{{ b.mobile_image | image_url: width: 320 }} 320w, {{ b.mobile_image | image_url: width: 480 }} 480w, {{ b.mobile_image | image_url: width: 720 }} 720w" sizes="(max-width: 749px) 50vw, 25vw">
+        {%- endif -%}
+        {{ gallery_image | image_url: width: 900 | image_tag: widths: '220,320,450,600,750,900', sizes: '(min-width: 1200px) 17vw, (min-width: 750px) 33vw, 50vw', loading: 'lazy', class: 'sp-social-gallery__image', alt: b.image_alt | default: gallery_image.alt | default: b.caption }}
+      </picture>
+    {%- elsif editor_mode -%}
+      {{ 'lifestyle-1' | placeholder_svg_tag: 'sp-social-gallery__placeholder placeholder-svg' }}
+    {%- endif -%}
+
+    {%- if section.settings.show_overlay -%}<div class="sp-social-gallery__overlay" aria-hidden="true"></div>{%- endif -%}
+    {%- if section.settings.enable_lightbox and b.open_in_lightbox and is_video == false and gallery_image != blank -%}
+      <button type="button" class="sp-social-gallery__open" data-sp-open aria-label="{{ link_alt | escape }}"></button>
+    {%- endif -%}
+    {%- if b.show_engagement -%}
+      {%- assign likes = b.likes_count | default: 0 -%}
+      {%- assign comments = b.comments_count | default: 0 -%}
+      {%- if likes > 0 or comments > 0 -%}
+        <div class="sp-social-gallery__engagement" aria-label="Engagement information, manually updated">
+          {%- if likes > 0 -%}<span>{% render 'icon', name: 'heart' %} <span>{{ likes }}</span><span class="visually-hidden"> likes</span></span>{%- endif -%}
+          {%- if comments > 0 -%}<span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M21 11.5a8.5 8.5 0 0 1-8.5 8.5 9 9 0 0 1-4-.9L3 21l1.9-5.5A9 9 0 1 1 21 11.5Z"/></svg> <span>{{ comments }}</span><span class="visually-hidden"> comments</span></span>{%- endif -%}
+        </div>
+      {%- endif -%}
+    {%- endif -%}
+    {%- if show_item_product and section.settings.show_product_hotspot and section.settings.product_display_style == 'hotspot' -%}
+      <button type="button" class="sp-social-gallery__hotspot" data-sp-hotspot style="--sp-hotspot-x:{{ b.product_hotspot_x }}%;--sp-hotspot-y:{{ b.product_hotspot_y }}%;" aria-label="Show product {{ linked_product.title | escape }}" aria-expanded="false">+</button>
+    {%- endif -%}
+  </div>
+  {%- if show_item_product -%}
+    <div class="sp-social-gallery__product sp-social-gallery__product--{{ section.settings.product_display_style }}" data-sp-product {% if section.settings.product_display_style == 'hotspot' %}hidden{% endif %}>
+      <div class="sp-social-gallery__product-content">
+        {%- if section.settings.show_product_title -%}<a href="{{ linked_product.url }}">{{ linked_product.title | escape }}</a>{%- endif -%}
+        {%- if section.settings.show_product_price -%}<span class="sp-social-gallery__price">{{ linked_product.price | money }}{% unless linked_product.available %} · Sold out{% endunless %}</span>{%- endif -%}
+        <a class="sp-social-gallery__product-link" href="{{ linked_product.url }}">{{ section.settings.product_link_label | escape }} <span aria-hidden="true">→</span></a>
+      </div>
+    </div>
+  {%- endif -%}
+  {%- if section.settings.show_captions and b.caption != blank -%}<p class="sp-social-gallery__caption">{{ b.caption | escape }}</p>{%- endif -%}
+  {%- if b.creator_handle != blank and section.settings.show_captions -%}<p class="sp-social-gallery__creator">{{ b.creator_handle | escape }}</p>{%- endif -%}
+  {%- if b.social_post_url != blank -%}<a class="sp-social-gallery__post-link" href="{{ b.social_post_url }}" target="_blank" rel="noopener noreferrer">View original post <span aria-hidden="true">↗</span></a>{%- endif -%}
+</li>
+{%- endif -%}

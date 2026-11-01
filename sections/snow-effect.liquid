@@ -1,0 +1,787 @@
+{{ 'sp-snow-effect.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'sp-snow-effect.js' | asset_url }}" defer></script>
+
+{%- liquid
+  assign page_eligible = false
+  case section.settings.page_target
+    when 'all'
+      assign page_eligible = true
+    when 'home'
+      if request.page_type == 'index'
+        assign page_eligible = true
+      endif
+    when 'selected'
+      case request.page_type
+        when 'index'
+          assign page_eligible = section.settings.page_home
+        when 'product'
+          assign page_eligible = section.settings.page_product
+        when 'collection'
+          assign page_eligible = section.settings.page_collection
+        when 'blog'
+          assign page_eligible = section.settings.page_blog
+        when 'article'
+          assign page_eligible = section.settings.page_article
+        when 'page'
+          assign page_eligible = section.settings.page_page
+        when 'cart'
+          assign page_eligible = section.settings.page_cart
+        when 'search'
+          assign page_eligible = section.settings.page_search
+      endcase
+  endcase
+  assign exclusion_paths = section.settings.excluded_paths | default: ''
+-%}
+
+{%- if section.settings.enable_snow or request.design_mode -%}
+  <sp-snow-effect
+    class="sp-snow-effect sp-snow-effect--layer-{{ section.settings.layer_position }}"
+    data-section-id="{{ section.id }}"
+  >
+    <div class="sp-snow-effect__overlay" data-sp-snow-overlay aria-hidden="true"></div>
+    <canvas class="sp-snow-effect__canvas" data-sp-snow-canvas aria-hidden="true"></canvas>
+    {%- if section.settings.dismiss_enabled -%}
+      <button type="button" class="sp-snow-effect__dismiss sp-snow-effect__dismiss--{{ section.settings.dismiss_position }}"
+        data-sp-snow-dismiss aria-label="{{ section.settings.dismiss_label | escape }}" hidden>
+        <span aria-hidden="true">✕</span><span>{{ section.settings.dismiss_label | escape }}</span>
+      </button>
+    {%- endif -%}
+
+    <script type="application/json" data-sp-snow-config>
+      {
+        "sectionId": {{ section.id | json }},
+        "enabled": {{ section.settings.enable_snow | json }},
+        "designMode": {{ request.design_mode | json }},
+        "previewEditor": {{ section.settings.preview_editor | json }},
+        "pageEligible": {{ page_eligible | json }},
+        "density": {{ section.settings.density | json }},
+        "particlesDesktop": {{ section.settings.particles_desktop | json }},
+        "particlesTablet": {{ section.settings.particles_tablet | json }},
+        "particlesMobile": {{ section.settings.particles_mobile | json }},
+        "minSize": {{ section.settings.min_size | json }},
+        "maxSize": {{ section.settings.max_size | json }},
+        "snowOpacity": {{ section.settings.snow_opacity | divided_by: 100.0 | json }},
+        "primaryColor": {{ section.settings.snow_color | json }},
+        "multiColor": {{ section.settings.multi_color | json }},
+        "secondaryColor": {{ section.settings.secondary_color | json }},
+        "style": {{ section.settings.snow_style | json }},
+        "softness": {{ section.settings.softness | json }},
+        "speed": {{ section.settings.speed | json }},
+        "windDirection": {{ section.settings.wind_direction | json }},
+        "windStrength": {{ section.settings.wind_strength | json }},
+        "sway": {{ section.settings.sway | json }},
+        "overlayEnabled": {{ section.settings.enable_overlay | json }},
+        "overlayColor": {{ section.settings.overlay_color | json }},
+        "overlayOpacity": {{ section.settings.overlay_opacity | divided_by: 100.0 | json }},
+        "showMobile": {{ section.settings.show_mobile | json }},
+        "showTablet": {{ section.settings.show_tablet | json }},
+        "showDesktop": {{ section.settings.show_desktop | json }},
+        "reduceMobile": {{ section.settings.reduce_mobile | json }},
+        "scheduleEnabled": {{ section.settings.schedule_enabled | json }},
+        "scheduleStartMonth": {{ section.settings.schedule_start_month | json }},
+        "scheduleStartDay": {{ section.settings.schedule_start_day | json }},
+        "scheduleEndMonth": {{ section.settings.schedule_end_month | json }},
+        "scheduleEndDay": {{ section.settings.schedule_end_day | json }},
+        "performanceMode": {{ section.settings.performance_mode | json }},
+        "reducedMotion": {{ section.settings.reduced_motion | json }},
+        "preset": {{ section.settings.snow_preset | json }},
+        "depthEffect": {{ section.settings.depth_effect | json }},
+        "fpsMode": {{ section.settings.fps_mode | json }},
+        "adaptiveQuality": {{ section.settings.adaptive_quality | json }},
+        "dprLimit": {{ section.settings.dpr_limit | json }},
+        "pauseOnOverlays": {{ section.settings.pause_on_overlays | json }},
+        "scheduleMode": {{ section.settings.schedule_mode | json }},
+        "scheduleStartDate": {{ section.settings.schedule_start_date | json }},
+        "scheduleEndDate": {{ section.settings.schedule_end_date | json }},
+        "scheduleStartTime": {{ section.settings.schedule_start_time | json }},
+        "scheduleEndTime": {{ section.settings.schedule_end_time | json }},
+        "timezoneMode": {{ section.settings.timezone_mode | json }},
+        "storeTimezone": {{ section.settings.store_timezone | json }},
+        "excludedPaths": {{ exclusion_paths | json }},
+        "dismissEnabled": {{ section.settings.dismiss_enabled | json }},
+        "dismissPosition": {{ section.settings.dismiss_position | json }},
+        "debug": {{ section.settings.debug_snow | json }}
+      }
+    </script>
+  </sp-snow-effect>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "❄️ Snow Effect",
+  "tag": "section",
+  "class": "sp-system-section sp-system-section--snow-effect",
+  "limit": 1,
+  "enabled_on": {
+    "groups": [
+      "custom.system"
+    ]
+  },
+  "settings": [
+    {
+      "type": "header",
+      "content": "General"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_snow",
+      "label": "Enable snow effect",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "preview_editor",
+      "label": "Preview snow in Theme Editor",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "snow_preset",
+      "label": "Snowfall look",
+      "options": [
+        {
+          "value": "legacy",
+          "label": "Existing settings (preserved)"
+        },
+        {
+          "value": "light",
+          "label": "Light snow"
+        },
+        {
+          "value": "gentle",
+          "label": "Gentle snow"
+        },
+        {
+          "value": "heavy",
+          "label": "Heavy snow"
+        },
+        {
+          "value": "custom",
+          "label": "Custom existing controls"
+        }
+      ],
+      "default": "legacy",
+      "info": "Existing merchants keep the original look until a new look is selected."
+    },
+    {
+      "type": "checkbox",
+      "id": "dismiss_enabled",
+      "label": "Allow visitor to dismiss snow for session",
+      "default": false
+    },
+    {
+      "type": "text",
+      "id": "dismiss_label",
+      "label": "Dismiss button label",
+      "default": "Turn off snow",
+      "visible_if": "{{ section.settings.dismiss_enabled }}"
+    },
+    {
+      "type": "select",
+      "id": "dismiss_position",
+      "label": "Dismiss button position",
+      "options": [
+        {
+          "value": "left",
+          "label": "Bottom left"
+        },
+        {
+          "value": "right",
+          "label": "Bottom right"
+        }
+      ],
+      "default": "left",
+      "visible_if": "{{ section.settings.dismiss_enabled }}"
+    },
+    {
+      "type": "header",
+      "content": "Snow"
+    },
+    {
+      "type": "select",
+      "id": "density",
+      "label": "Snow density",
+      "options": [
+        {
+          "value": "low",
+          "label": "Low"
+        },
+        {
+          "value": "medium",
+          "label": "Medium"
+        },
+        {
+          "value": "high",
+          "label": "High"
+        },
+        {
+          "value": "custom",
+          "label": "Custom"
+        }
+      ],
+      "default": "medium"
+    },
+    {
+      "type": "range",
+      "id": "particles_desktop",
+      "label": "Desktop particle count",
+      "min": 10,
+      "max": 250,
+      "step": 5,
+      "default": 120,
+      "visible_if": "{{ section.settings.density == 'custom' }}"
+    },
+    {
+      "type": "range",
+      "id": "particles_tablet",
+      "label": "Tablet particle count",
+      "min": 10,
+      "max": 180,
+      "step": 5,
+      "default": 75,
+      "visible_if": "{{ section.settings.density == 'custom' }}"
+    },
+    {
+      "type": "range",
+      "id": "particles_mobile",
+      "label": "Mobile particle count",
+      "min": 5,
+      "max": 100,
+      "step": 5,
+      "default": 45,
+      "visible_if": "{{ section.settings.density == 'custom' }}"
+    },
+    {
+      "type": "range",
+      "id": "min_size",
+      "label": "Minimum snowflake size",
+      "min": 1,
+      "max": 8,
+      "step": 1,
+      "unit": "px",
+      "default": 2
+    },
+    {
+      "type": "range",
+      "id": "max_size",
+      "label": "Maximum snowflake size",
+      "min": 2,
+      "max": 16,
+      "step": 1,
+      "unit": "px",
+      "default": 7
+    },
+    {
+      "type": "range",
+      "id": "snow_opacity",
+      "label": "Snow opacity",
+      "min": 0,
+      "max": 100,
+      "step": 5,
+      "unit": "%",
+      "default": 70
+    },
+    {
+      "type": "color",
+      "id": "snow_color",
+      "label": "Snow color",
+      "default": "#FFFFFF"
+    },
+    {
+      "type": "checkbox",
+      "id": "multi_color",
+      "label": "Use multiple snow colors",
+      "default": false
+    },
+    {
+      "type": "color",
+      "id": "secondary_color",
+      "label": "Secondary snow color",
+      "default": "#EAF5FF",
+      "visible_if": "{{ section.settings.multi_color }}"
+    },
+    {
+      "type": "header",
+      "content": "Movement"
+    },
+    {
+      "type": "range",
+      "id": "speed",
+      "label": "Snow speed",
+      "info": "1 is slow and 10 is fast.",
+      "min": 1,
+      "max": 10,
+      "step": 1,
+      "default": 3
+    },
+    {
+      "type": "select",
+      "id": "wind_direction",
+      "label": "Wind direction",
+      "options": [
+        {
+          "value": "none",
+          "label": "None"
+        },
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        },
+        {
+          "value": "custom",
+          "label": "Custom"
+        }
+      ],
+      "default": "none"
+    },
+    {
+      "type": "range",
+      "id": "wind_strength",
+      "label": "Wind strength",
+      "info": "For Custom, negative values drift left and positive values drift right.",
+      "min": -5,
+      "max": 5,
+      "step": 0.5,
+      "default": 1.5,
+      "visible_if": "{{ section.settings.wind_direction != 'none' }}"
+    },
+    {
+      "type": "checkbox",
+      "id": "sway",
+      "label": "Enable gentle sway",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Style"
+    },
+    {
+      "type": "select",
+      "id": "snow_style",
+      "label": "Snow style",
+      "options": [
+        {
+          "value": "soft_circle",
+          "label": "Soft Circle"
+        },
+        {
+          "value": "snowflake",
+          "label": "Snowflake"
+        },
+        {
+          "value": "mixed",
+          "label": "Mixed"
+        }
+      ],
+      "default": "soft_circle"
+    },
+    {
+      "type": "range",
+      "id": "softness",
+      "label": "Snow softness",
+      "min": 0,
+      "max": 5,
+      "step": 1,
+      "default": 1
+    },
+    {
+      "type": "select",
+      "id": "depth_effect",
+      "label": "Snow depth effect",
+      "options": [
+        {
+          "value": "legacy",
+          "label": "Existing depth (preserved)"
+        },
+        {
+          "value": "off",
+          "label": "Off"
+        },
+        {
+          "value": "subtle",
+          "label": "Subtle"
+        },
+        {
+          "value": "enhanced",
+          "label": "Enhanced"
+        }
+      ],
+      "default": "legacy"
+    },
+    {
+      "type": "select",
+      "id": "layer_position",
+      "label": "Snow layer",
+      "options": [
+        {
+          "value": "behind",
+          "label": "Behind content"
+        },
+        {
+          "value": "above",
+          "label": "Above content"
+        }
+      ],
+      "default": "above"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_overlay",
+      "label": "Enable background overlay",
+      "default": false
+    },
+    {
+      "type": "color",
+      "id": "overlay_color",
+      "label": "Overlay color",
+      "default": "#000000",
+      "visible_if": "{{ section.settings.enable_overlay }}"
+    },
+    {
+      "type": "range",
+      "id": "overlay_opacity",
+      "label": "Overlay opacity",
+      "min": 0,
+      "max": 80,
+      "step": 5,
+      "unit": "%",
+      "default": 30,
+      "visible_if": "{{ section.settings.enable_overlay }}"
+    },
+    {
+      "type": "header",
+      "content": "Responsive"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_mobile",
+      "label": "Show on mobile",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_tablet",
+      "label": "Show on tablet",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_desktop",
+      "label": "Show on desktop",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "reduce_mobile",
+      "label": "Reduce snow on mobile",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Display"
+    },
+    {
+      "type": "select",
+      "id": "page_target",
+      "label": "Show on",
+      "options": [
+        {
+          "value": "all",
+          "label": "All pages"
+        },
+        {
+          "value": "home",
+          "label": "Home only"
+        },
+        {
+          "value": "selected",
+          "label": "Selected page types"
+        }
+      ],
+      "default": "all"
+    },
+    {
+      "type": "checkbox",
+      "id": "page_home",
+      "label": "Home",
+      "default": true,
+      "visible_if": "{{ section.settings.page_target == 'selected' }}"
+    },
+    {
+      "type": "checkbox",
+      "id": "page_product",
+      "label": "Product pages",
+      "default": true,
+      "visible_if": "{{ section.settings.page_target == 'selected' }}"
+    },
+    {
+      "type": "checkbox",
+      "id": "page_collection",
+      "label": "Collection pages",
+      "default": true,
+      "visible_if": "{{ section.settings.page_target == 'selected' }}"
+    },
+    {
+      "type": "checkbox",
+      "id": "page_blog",
+      "label": "Blog pages",
+      "default": true,
+      "visible_if": "{{ section.settings.page_target == 'selected' }}"
+    },
+    {
+      "type": "checkbox",
+      "id": "page_article",
+      "label": "Article pages",
+      "default": true,
+      "visible_if": "{{ section.settings.page_target == 'selected' }}"
+    },
+    {
+      "type": "checkbox",
+      "id": "page_page",
+      "label": "Pages",
+      "default": true,
+      "visible_if": "{{ section.settings.page_target == 'selected' }}"
+    },
+    {
+      "type": "checkbox",
+      "id": "page_cart",
+      "label": "Cart page",
+      "default": true,
+      "visible_if": "{{ section.settings.page_target == 'selected' }}"
+    },
+    {
+      "type": "checkbox",
+      "id": "page_search",
+      "label": "Search page",
+      "default": true,
+      "visible_if": "{{ section.settings.page_target == 'selected' }}"
+    },
+    {
+      "type": "textarea",
+      "id": "excluded_paths",
+      "label": "Exclude paths (one per line)",
+      "info": "Exact /pages/name or prefix /collections/* . Applies to all page targeting modes."
+    },
+    {
+      "type": "checkbox",
+      "id": "schedule_enabled",
+      "label": "Enable date schedule",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "schedule_start_month",
+      "label": "Start month",
+      "min": 1,
+      "max": 12,
+      "step": 1,
+      "default": 12,
+      "visible_if": "{{ section.settings.schedule_enabled }}"
+    },
+    {
+      "type": "range",
+      "id": "schedule_start_day",
+      "label": "Start day",
+      "min": 1,
+      "max": 31,
+      "step": 1,
+      "default": 1,
+      "visible_if": "{{ section.settings.schedule_enabled }}"
+    },
+    {
+      "type": "range",
+      "id": "schedule_end_month",
+      "label": "End month",
+      "min": 1,
+      "max": 12,
+      "step": 1,
+      "default": 1,
+      "visible_if": "{{ section.settings.schedule_enabled }}"
+    },
+    {
+      "type": "range",
+      "id": "schedule_end_day",
+      "label": "End day",
+      "min": 1,
+      "max": 31,
+      "step": 1,
+      "default": 10,
+      "visible_if": "{{ section.settings.schedule_enabled }}"
+    },
+    {
+      "type": "select",
+      "id": "schedule_mode",
+      "label": "Schedule type",
+      "options": [
+        {
+          "value": "annual",
+          "label": "Repeat every year (existing dates)"
+        },
+        {
+          "value": "once",
+          "label": "One-time full date range"
+        }
+      ],
+      "default": "annual",
+      "visible_if": "{{ section.settings.schedule_enabled }}"
+    },
+    {
+      "type": "text",
+      "id": "schedule_start_date",
+      "label": "One-time start date (YYYY-MM-DD)",
+      "default": "2026-12-01",
+      "visible_if": "{{ section.settings.schedule_enabled and section.settings.schedule_mode == 'once' }}"
+    },
+    {
+      "type": "text",
+      "id": "schedule_end_date",
+      "label": "One-time end date (YYYY-MM-DD)",
+      "default": "2027-01-10",
+      "visible_if": "{{ section.settings.schedule_enabled and section.settings.schedule_mode == 'once' }}"
+    },
+    {
+      "type": "text",
+      "id": "schedule_start_time",
+      "label": "Start time (HH:MM, 24-hour)",
+      "default": "00:00",
+      "visible_if": "{{ section.settings.schedule_enabled }}"
+    },
+    {
+      "type": "text",
+      "id": "schedule_end_time",
+      "label": "End time (HH:MM, 24-hour)",
+      "default": "23:59",
+      "visible_if": "{{ section.settings.schedule_enabled }}"
+    },
+    {
+      "type": "select",
+      "id": "timezone_mode",
+      "label": "Schedule timezone",
+      "options": [
+        {
+          "value": "store",
+          "label": "Configured store timezone"
+        },
+        {
+          "value": "visitor",
+          "label": "Visitor device timezone"
+        }
+      ],
+      "default": "store",
+      "visible_if": "{{ section.settings.schedule_enabled }}"
+    },
+    {
+      "type": "text",
+      "id": "store_timezone",
+      "label": "Store timezone (IANA format)",
+      "info": "For example America/New_York. Shopify Liquid does not expose the IANA store timezone; enter it manually. If blank/invalid, the schedule uses visitor time.",
+      "visible_if": "{{ section.settings.schedule_enabled and section.settings.timezone_mode == 'store' }}"
+    },
+    {
+      "type": "header",
+      "content": "Performance"
+    },
+    {
+      "type": "select",
+      "id": "performance_mode",
+      "label": "Performance mode",
+      "options": [
+        {
+          "value": "auto",
+          "label": "Auto"
+        },
+        {
+          "value": "high",
+          "label": "High Quality"
+        },
+        {
+          "value": "balanced",
+          "label": "Balanced"
+        },
+        {
+          "value": "battery",
+          "label": "Battery Saver"
+        }
+      ],
+      "default": "auto"
+    },
+    {
+      "type": "select",
+      "id": "fps_mode",
+      "label": "Frame rate",
+      "options": [
+        {
+          "value": "auto",
+          "label": "Auto"
+        },
+        {
+          "value": "30",
+          "label": "30 FPS"
+        },
+        {
+          "value": "60",
+          "label": "60 FPS"
+        }
+      ],
+      "default": "auto"
+    },
+    {
+      "type": "checkbox",
+      "id": "adaptive_quality",
+      "label": "Adapt particle count to actual frame performance",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "dpr_limit",
+      "label": "Maximum Canvas pixel ratio",
+      "min": 1,
+      "max": 3,
+      "step": 0.5,
+      "default": 2
+    },
+    {
+      "type": "checkbox",
+      "id": "pause_on_overlays",
+      "label": "Pause snowfall during blocking dialogs",
+      "default": true,
+      "info": "Detects native dialogs and common accessible overlay markers without modifying other components."
+    },
+    {
+      "type": "select",
+      "id": "reduced_motion",
+      "label": "Reduced motion behaviour",
+      "options": [
+        {
+          "value": "disable",
+          "label": "Disable Snow"
+        },
+        {
+          "value": "static",
+          "label": "Show Static Snow"
+        },
+        {
+          "value": "reduced",
+          "label": "Reduced Snow"
+        }
+      ],
+      "default": "disable"
+    },
+    {
+      "type": "checkbox",
+      "id": "debug_snow",
+      "label": "Debug scheduling warnings (console)",
+      "default": false
+    }
+  ],
+  "presets": [
+    {
+      "name": "❄️ Snow Effect"
+    }
+  ]
+}
+{% endschema %}

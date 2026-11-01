@@ -1,0 +1,76 @@
+{% comment %}
+  Shopify Predictive Search HTML response for Spider Global Search Modal.
+  Requested through /search/suggest?section_id=sp-search-modal-predictive
+  This section is NOT added to a theme template or System Group.
+{% endcomment %}
+<div data-sp-smodal-predictive-content>
+  {% if predictive_search.performed %}
+    {%- assign sp_results = predictive_search.resources -%}
+    {%- assign sp_products = sp_results.products -%}
+    {%- assign sp_collections = sp_results.collections -%}
+    {%- assign sp_articles = sp_results.articles -%}
+    {%- assign sp_pages = sp_results.pages -%}
+    {% if sp_products.size > 0 %}
+      <section class="sp-smodal__result-group" data-sp-smodal-product-group>
+        <div class="sp-smodal__results-heading"><h3>Products <span class="sp-smodal__result-count">({{ sp_products.size }})</span></h3><a href="{{ routes.search_url }}?q={{ predictive_search.terms | url_encode }}">View all results <span aria-hidden="true">→</span></a></div>
+        <div class="sp-smodal__product-results">
+          {% for product in sp_products %}
+            <div class="sp-smodal__product" data-sp-smodal-product>
+              <a class="sp-smodal__product-image" href="{{ product.url }}" aria-label="{{ product.title | escape }}">
+                {% if product.featured_media.preview_image != blank %}
+                  {{ product.featured_media.preview_image | image_url: width: 360 | image_tag: widths: '120,240,360', loading: 'lazy', alt: product.title }}
+                {% elsif product.featured_image != blank %}
+                  {{ product.featured_image | image_url: width: 360 | image_tag: widths: '120,240,360', loading: 'lazy', alt: product.title }}
+                {% else %}<span aria-hidden="true">◫</span>{% endif %}
+              </a>
+              <div class="sp-smodal__product-meta">
+                {% if product.vendor != blank %}<span class="sp-smodal__vendor" data-sp-smodal-vendor>{{ product.vendor | escape }}</span>{% endif %}
+                {% if product.compare_at_price > product.price %}<span class="sp-smodal__sale-badge" data-sp-smodal-sale>Sale</span>{% endif %}
+                <a class="sp-smodal__product-title" href="{{ product.url }}">{{ product.title | escape }}</a>
+                {% assign sp_rating = product.metafields.reviews.rating.value %}
+                {% assign sp_rating_count = product.metafields.reviews.rating_count.value %}
+                {% if sp_rating != blank and sp_rating.rating != blank %}
+                  <p class="sp-smodal__rating" data-sp-smodal-rating aria-label="Rated {{ sp_rating.rating }} out of {{ sp_rating.scale_max | default: 5 }}">★ <span>{{ sp_rating.rating }}</span>{% if sp_rating_count != blank %}<small>({{ sp_rating_count }})</small>{% endif %}</p>
+                {% endif %}
+                <p class="sp-smodal__prices"><strong>{{ product.price | money }}</strong>{% if product.compare_at_price > product.price %}<s data-sp-smodal-compare>{{ product.compare_at_price | money }}</s>{% endif %}</p>
+              </div>
+              <a class="sp-smodal__product-arrow" href="{{ product.url }}" aria-label="View {{ product.title | escape }}">→</a>
+            </div>
+          {% endfor %}
+        </div>
+      </section>
+    {% endif %}
+    {% if sp_collections.size > 0 %}
+      <section class="sp-smodal__result-group" data-sp-smodal-collection-group>
+        <div class="sp-smodal__results-heading"><h3>Collections <span class="sp-smodal__result-count">({{ sp_collections.size }})</span></h3><a href="/collections">View all collections <span aria-hidden="true">→</span></a></div>
+        <div class="sp-smodal__collection-grid">
+          {% for collection in sp_collections %}
+            <a class="sp-smodal__collection" href="{{ collection.url }}" data-sp-smodal-collection>
+              {% if collection.image != blank %}{{ collection.image | image_url: width: 360 | image_tag: widths: '160,240,360', loading: 'lazy', class: 'sp-smodal__collection-photo', alt: collection.title }}
+              {% elsif collection.products.first.featured_image != blank %}{{ collection.products.first.featured_image | image_url: width: 360 | image_tag: widths: '160,240,360', loading: 'lazy', class: 'sp-smodal__collection-photo', alt: collection.title }}
+              {% else %}<span class="sp-smodal__collection-empty" aria-hidden="true">◫</span>{% endif %}
+              <span class="sp-smodal__collection-details"><strong>{{ collection.title | escape }}</strong>
+                {% if collection.all_products_count != blank %}<small data-sp-smodal-collection-count>{{ collection.all_products_count }} products</small>{% endif %}
+              </span>
+            </a>
+          {% endfor %}
+        </div>
+      </section>
+    {% endif %}
+    {% if sp_articles.size > 0 %}
+      <section class="sp-smodal__result-group"><div class="sp-smodal__results-heading"><h3>Articles</h3></div><ul class="sp-smodal__other-list">{% for article in sp_articles %}<li><a href="{{ article.url }}">{{ article.title | escape }} <span aria-hidden="true">→</span></a></li>{% endfor %}</ul></section>
+    {% endif %}
+    {% if sp_pages.size > 0 %}
+      <section class="sp-smodal__result-group"><div class="sp-smodal__results-heading"><h3>Pages</h3></div><ul class="sp-smodal__other-list">{% for page in sp_pages %}<li><a href="{{ page.url }}">{{ page.title | escape }} <span aria-hidden="true">→</span></a></li>{% endfor %}</ul></section>
+    {% endif %}
+    {% if sp_products.size == 0 and sp_collections.size == 0 and sp_articles.size == 0 and sp_pages.size == 0 %}
+      <div class="sp-smodal__message" role="status"><strong>No matching results</strong><span>Try another search term.</span><a href="{{ routes.search_url }}?q={{ predictive_search.terms | url_encode }}">Search all results →</a></div>
+    {% endif %}
+  {% endif %}
+</div>
+{% schema %}
+{
+  "name": "Search modal suggestions",
+  "settings": []
+}
+{% endschema %}

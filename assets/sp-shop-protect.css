@@ -1,0 +1,6 @@
+/* Spider Shop Protect v2 — behavior-only system component.
+   No global user-select / user-drag restrictions: event delegation scopes all protection. */
+sp-shop-protect.sp-shop-protect__runtime[hidden] { display: none !important; }
+/* Native sort controls remain reversible (including when Theme Editor reloads). */
+[data-sp-main-collection] [data-sp-shop-protect-sort-hidden],
+.sp-main-search [data-sp-shop-protect-sort-hidden] { display: none !important; }

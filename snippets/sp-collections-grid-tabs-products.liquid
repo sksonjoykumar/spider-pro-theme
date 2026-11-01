@@ -1,0 +1,11 @@
+{%- if products != blank -%}
+  {%- if limit != blank -%}
+    {%- for product in products limit: limit -%}
+      {% render 'sp-collections-grid-tabs-product-card', card_product: product, block: block, sizes: sizes, section_id: section_id, product_index: forloop.index, section_index: section_index, swatch_color_map: swatch_color_map %}
+    {%- endfor -%}
+  {%- else -%}
+    {%- for product in products -%}
+      {% render 'sp-collections-grid-tabs-product-card', card_product: product, block: block, sizes: sizes, section_id: section_id, product_index: forloop.index, section_index: section_index, swatch_color_map: swatch_color_map %}
+    {%- endfor -%}
+  {%- endif -%}
+{%- endif -%}

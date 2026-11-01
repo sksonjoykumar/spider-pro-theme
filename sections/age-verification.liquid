@@ -1,0 +1,1186 @@
+{{ 'sp-age-verification.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'sp-age-verification.js' | asset_url }}" defer></script>
+
+{%- liquid
+  assign page_eligible = false
+  if section.settings.page_target_mode == 'all'
+    assign page_eligible = true
+  else
+    case request.page_type
+      when 'index'
+        assign page_eligible = section.settings.show_home
+      when 'product'
+        assign page_eligible = section.settings.show_product
+      when 'collection'
+        assign page_eligible = section.settings.show_collection
+      when 'page'
+        assign page_eligible = section.settings.show_page
+      when 'blog'
+        assign page_eligible = section.settings.show_blog
+      when 'article'
+        assign page_eligible = section.settings.show_article
+      when 'cart'
+        assign page_eligible = section.settings.show_cart
+      when 'search'
+        assign page_eligible = section.settings.show_search
+      when '404'
+        assign page_eligible = section.settings.show_404
+    endcase
+  endif
+
+  assign should_render = false
+  if section.settings.enable_age_verification and page_eligible
+    assign should_render = true
+  endif
+  if request.design_mode
+    assign should_render = true
+  endif
+
+  assign image_loading = 'lazy'
+  if section.settings.gate_behavior == 'blocking' and section.settings.display_delay == 0
+    assign image_loading = 'eager'
+  endif
+
+  assign media_desktop = false
+  assign media_mobile = false
+  if section.settings.enable_left_image and section.settings.image != blank
+    assign media_desktop = true
+  endif
+  if section.settings.enable_left_image and section.settings.mobile_image_layout != 'hidden'
+    if section.settings.image_mobile != blank or section.settings.image != blank
+      assign media_mobile = true
+    endif
+  endif
+  assign show_effective_close = false
+  if section.settings.gate_behavior == 'dismissible' and section.settings.show_close_button
+    assign show_effective_close = true
+  elsif request.design_mode and section.settings.preview_in_editor
+    assign show_effective_close = true
+  endif
+  assign gate_class = 'sp-age-verification__dialog--centered'
+  if section.settings.display_style == 'fullscreen'
+    assign gate_class = 'sp-age-verification__dialog--fullscreen'
+  endif
+-%}
+
+{%- if should_render -%}
+  <sp-age-verification
+    class="sp-age-verification sp-age-verification--layout-{{ section.settings.content_layout }}{% if media_desktop %} sp-age-verification--desktop-media{% endif %}{% if media_mobile %} sp-age-verification--mobile-media{% endif %} sp-age-verification--mobile-media-{{ section.settings.mobile_image_layout }}{% if section.settings.follow_global_colors %} sp-age-verification--global-colors{% endif %}"
+    data-section-id="{{ section.id }}"
+    data-page-eligible="{{ page_eligible }}"
+    data-design-mode="{{ request.design_mode }}"
+    style="
+      --sp-age-bg: {% if section.settings.follow_global_colors %}var(--sp-color-background, #fff){% else %}{{ section.settings.background_color }}{% endif %};
+      --sp-age-heading: {% if section.settings.follow_global_colors %}var(--sp-color-heading, #171717){% else %}{{ section.settings.heading_color }}{% endif %};
+      --sp-age-text: {% if section.settings.follow_global_colors %}var(--sp-color-text, #3f3f46){% else %}{{ section.settings.text_color }}{% endif %};
+      --sp-age-muted: {% if section.settings.follow_global_colors %}var(--sp-color-muted, #71717a){% else %}{{ section.settings.muted_text_color }}{% endif %};
+      --sp-age-border: {% if section.settings.follow_global_colors %}var(--sp-color-border, #e4e4e7){% else %}{{ section.settings.border_color }}{% endif %};
+      --sp-age-input-bg: {{ section.settings.input_background }};
+      --sp-age-input-text: {{ section.settings.input_text_color }};
+      --sp-age-input-border: {{ section.settings.input_border_color }};
+      --sp-age-verify-bg: {% if section.settings.follow_global_colors %}var(--sp-color-accent, #415dff){% else %}{{ section.settings.verify_background }}{% endif %};
+      --sp-age-verify-text: {% if section.settings.follow_global_colors %}#ffffff{% else %}{{ section.settings.verify_text_color }}{% endif %};
+      --sp-age-verify-border: {% if section.settings.follow_global_colors %}var(--sp-color-accent, #415dff){% else %}{{ section.settings.verify_border_color }}{% endif %};
+      --sp-age-exit-bg: {% if section.settings.follow_global_colors %}var(--sp-color-background, #fff){% else %}{{ section.settings.exit_background }}{% endif %};
+      --sp-age-exit-text: {% if section.settings.follow_global_colors %}var(--sp-color-heading, #171717){% else %}{{ section.settings.exit_text_color }}{% endif %};
+      --sp-age-exit-border: {% if section.settings.follow_global_colors %}var(--sp-color-border, #d6d9df){% else %}{{ section.settings.exit_border_color }}{% endif %};
+      --sp-age-overlay: {{ section.settings.overlay_color }};
+      --sp-age-overlay-opacity: {{ section.settings.overlay_opacity | divided_by: 100.0 }};
+      --sp-age-backdrop: {{ section.settings.backdrop_color }};
+      --sp-age-backdrop-opacity: {{ section.settings.backdrop_opacity | divided_by: 100.0 }};
+      --sp-age-content-width: {{ section.settings.content_width }}px;
+      --sp-age-modal-width: {{ section.settings.modal_width }}px;
+      --sp-age-radius: {{ section.settings.modal_radius }}px;
+      --sp-age-padding-d-y: {{ section.settings.padding_desktop_y }}px;
+      --sp-age-padding-d-x: {{ section.settings.padding_desktop_x }}px;
+      --sp-age-padding-t-y: {{ section.settings.padding_tablet_y }}px;
+      --sp-age-padding-t-x: {{ section.settings.padding_tablet_x }}px;
+      --sp-age-padding-m-y: {{ section.settings.padding_mobile_y }}px;
+      --sp-age-padding-m-x: {{ section.settings.padding_mobile_x }}px;
+      --sp-age-button-radius: {% if section.settings.follow_global_colors %}var(--sp-radius-md, 8px){% else %}{{ section.settings.button_radius }}px{% endif %};
+      --sp-age-media-width: {{ section.settings.image_column_width }}%;
+      --sp-age-heading-size: {{ section.settings.heading_size_desktop }}px;
+      --sp-age-heading-mobile: {{ section.settings.heading_size_mobile }}px;
+      --sp-age-body-size: {{ section.settings.description_size }}px;
+      --sp-age-button-height: {{ section.settings.button_height }}px;
+      --sp-age-image-height-mobile: {{ section.settings.mobile_image_height }}px;
+      --sp-age-backdrop-blur: {% if section.settings.enable_backdrop_blur %}{{ section.settings.backdrop_blur }}px{% else %}0px{% endif %};
+    "
+  >
+    <dialog
+      id="SpAgeVerification-{{ section.id }}"
+      class="sp-age-verification__dialog {{ gate_class }} sp-age-verification__shadow--{{ section.settings.shadow }}"
+      aria-labelledby="SpAgeVerificationTitle-{{ section.id }}"
+      aria-describedby="SpAgeVerificationDescription-{{ section.id }}"
+      data-sp-age-dialog
+    >
+      <div class="sp-age-verification__shell">
+        {% if section.settings.enable_left_image and section.settings.content_layout != 'content' %}
+          {% render 'sp-age-verification-media', section: section, loading: image_loading %}
+        {% endif %}
+
+        <div class="sp-age-verification__content-wrap">
+          {%- if show_effective_close -%}
+            <button
+              type="button"
+              class="sp-age-verification__close"
+              data-sp-age-close
+              aria-label="Close age verification"
+            >
+              {% render 'sp-age-verification-icon', name: 'close' %}
+            </button>
+          {%- endif -%}
+
+          {% render 'sp-age-verification-content', section: section %}
+        </div>
+      </div>
+    </dialog>
+
+    <script type="application/json" data-sp-age-config>
+      {
+        "sectionId": {{ section.id | json }},
+        "enabled": {{ section.settings.enable_age_verification | json }},
+        "pageEligible": {{ page_eligible | json }},
+        "designMode": {{ request.design_mode | json }},
+        "previewInEditor": {{ section.settings.preview_in_editor | json }},
+        "method": {{ section.settings.verification_method | json }},
+        "gateBehavior": {{ section.settings.gate_behavior | json }},
+        "minimumAge": {{ section.settings.minimum_age | json }},
+        "displayDelay": {{ section.settings.display_delay | json }},
+        "rememberMode": {{ section.settings.remember_mode | json }},
+        "rememberCheckbox": {{ section.settings.show_remember_checkbox | json }},
+        "customRememberDays": {{ section.settings.custom_remember_days | json }},
+        "gateVersion": {{ section.settings.gate_version | json }},
+        "underageAction": {{ section.settings.underage_action | json }},
+        "underageRedirectUrl": {{ section.settings.underage_redirect_url | json }},
+        "underageMessage": {{ section.settings.underage_message | json }},
+        "allowEscape": {{ section.settings.allow_escape | json }},
+        "allowBackdropClose": {{ section.settings.allow_backdrop_close | json }},
+        "currentPath": {{ request.path | json }},
+        "rootUrl": {{ routes.root_url | json }}
+      }
+    </script>
+  </sp-age-verification>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Age verification",
+  "tag": "section",
+  "class": "sp-section-group sp-section-age-verification",
+  "limit": 1,
+  "enabled_on": {
+    "groups": [
+      "custom.system"
+    ]
+  },
+  "settings": [
+    {
+      "type": "header",
+      "content": "General"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_age_verification",
+      "label": "Enable age verification",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "verification_method",
+      "label": "Verification method",
+      "options": [
+        {
+          "value": "confirm",
+          "label": "Confirm age"
+        },
+        {
+          "value": "dob",
+          "label": "Date of birth"
+        }
+      ],
+      "default": "confirm"
+    },
+    {
+      "type": "select",
+      "id": "gate_behavior",
+      "label": "Gate behaviour",
+      "options": [
+        {
+          "value": "blocking",
+          "label": "Blocking"
+        },
+        {
+          "value": "dismissible",
+          "label": "Dismissible"
+        }
+      ],
+      "default": "blocking"
+    },
+    {
+      "type": "range",
+      "id": "display_delay",
+      "label": "Display delay",
+      "min": 0,
+      "max": 10,
+      "step": 1,
+      "unit": "s",
+      "default": 0
+    },
+    {
+      "type": "checkbox",
+      "id": "preview_in_editor",
+      "label": "Preview in Theme Editor",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Age / date of birth"
+    },
+    {
+      "type": "range",
+      "id": "minimum_age",
+      "label": "Minimum age",
+      "min": 13,
+      "max": 30,
+      "step": 1,
+      "default": 18
+    },
+    {
+      "type": "select",
+      "id": "dob_order",
+      "label": "Date field order",
+      "options": [
+        {
+          "value": "ymd",
+          "label": "Year / Month / Day"
+        },
+        {
+          "value": "dmy",
+          "label": "Day / Month / Year"
+        },
+        {
+          "value": "mdy",
+          "label": "Month / Day / Year"
+        }
+      ],
+      "default": "ymd",
+      "info": "Used only with Date of birth verification."
+    },
+    {
+      "type": "header",
+      "content": "Persistence"
+    },
+    {
+      "type": "select",
+      "id": "remember_mode",
+      "label": "Remember verification for",
+      "options": [
+        {
+          "value": "session",
+          "label": "Session only"
+        },
+        {
+          "value": "1",
+          "label": "1 day"
+        },
+        {
+          "value": "3",
+          "label": "3 days"
+        },
+        {
+          "value": "7",
+          "label": "7 days"
+        },
+        {
+          "value": "14",
+          "label": "14 days"
+        },
+        {
+          "value": "30",
+          "label": "30 days"
+        },
+        {
+          "value": "90",
+          "label": "90 days"
+        },
+        {
+          "value": "custom",
+          "label": "Custom"
+        }
+      ],
+      "default": "30"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_remember_checkbox",
+      "label": "Show remember choice checkbox",
+      "default": true,
+      "info": "When unchecked, successful verification stays only in current page memory."
+    },
+    {
+      "type": "checkbox",
+      "id": "remember_default_checked",
+      "label": "Remember checkbox checked by default",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "remember_label",
+      "label": "Remember checkbox label",
+      "default": "Remember my choice",
+      "info": "Duration is shown automatically from the remember setting."
+    },
+    {
+      "type": "number",
+      "id": "custom_remember_days",
+      "label": "Custom remember days",
+      "default": 30,
+      "info": "Number of days for Custom persistence (1–365)."
+    },
+    {
+      "type": "range",
+      "id": "gate_version",
+      "label": "Gate version",
+      "min": 1,
+      "max": 100,
+      "step": 1,
+      "default": 1,
+      "info": "Increase this to ask previously verified visitors to verify again."
+    },
+    {
+      "type": "header",
+      "content": "Under-age action"
+    },
+    {
+      "type": "select",
+      "id": "underage_action",
+      "label": "Under-age action",
+      "options": [
+        {
+          "value": "message",
+          "label": "Show message"
+        },
+        {
+          "value": "redirect",
+          "label": "Redirect to URL"
+        },
+        {
+          "value": "back",
+          "label": "Go back"
+        }
+      ],
+      "default": "message"
+    },
+    {
+      "type": "textarea",
+      "id": "underage_message",
+      "label": "Under-age message",
+      "default": "Sorry, you must meet the minimum age requirement to enter this site."
+    },
+    {
+      "type": "url",
+      "id": "underage_redirect_url",
+      "label": "Under-age redirect URL",
+      "info": "Used for Redirect to URL, and as a fallback for Go back."
+    },
+    {
+      "type": "header",
+      "content": "Content"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Age verification"
+    },
+    {
+      "type": "richtext",
+      "id": "description",
+      "label": "Description",
+      "default": "<p>You must be 18 years or older to enter this store. Please confirm your age before continuing.</p>"
+    },
+    {
+      "type": "text",
+      "id": "verify_button_text",
+      "label": "Verify button text",
+      "default": "Yes, I am 18+"
+    },
+    {
+      "type": "text",
+      "id": "exit_button_text",
+      "label": "Exit button text",
+      "default": "No, I am under 18"
+    },
+    {
+      "type": "richtext",
+      "id": "legal_text",
+      "label": "Legal text",
+      "default": "<p>By entering, you confirm that you meet the minimum age requirement.</p>"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_brand_eyebrow",
+      "label": "Show brand eyebrow",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "brand_eyebrow",
+      "label": "Brand eyebrow text",
+      "default": "SPIDER STORE",
+      "info": "Customize this label for your store."
+    },
+    {
+      "type": "checkbox",
+      "id": "show_primary_arrow",
+      "label": "Show arrow on verify button",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_legal_icon",
+      "label": "Show shield icon beside legal text",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_legal_divider",
+      "label": "Show divider above legal note",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    {
+      "type": "select",
+      "id": "display_style",
+      "label": "Display style",
+      "options": [
+        {
+          "value": "fullscreen",
+          "label": "Full screen gate"
+        },
+        {
+          "value": "centered",
+          "label": "Centered modal"
+        }
+      ],
+      "default": "centered"
+    },
+    {
+      "type": "select",
+      "id": "content_layout",
+      "label": "Modal content layout",
+      "options": [
+        {
+          "value": "split",
+          "label": "Premium split image + content"
+        },
+        {
+          "value": "content",
+          "label": "Content only"
+        },
+        {
+          "value": "background",
+          "label": "Legacy background image"
+        }
+      ],
+      "default": "split"
+    },
+    {
+      "type": "range",
+      "id": "image_column_width",
+      "label": "Left image column width",
+      "min": 35,
+      "max": 65,
+      "step": 1,
+      "unit": "%",
+      "default": 49
+    },
+    {
+      "type": "range",
+      "id": "modal_width",
+      "label": "Centered modal width",
+      "min": 320,
+      "max": 1200,
+      "step": 10,
+      "unit": "px",
+      "default": 940
+    },
+    {
+      "type": "range",
+      "id": "content_width",
+      "label": "Content max width",
+      "min": 280,
+      "max": 800,
+      "step": 10,
+      "unit": "px",
+      "default": 560
+    },
+    {
+      "type": "select",
+      "id": "desktop_alignment",
+      "label": "Desktop text alignment",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ],
+      "default": "left"
+    },
+    {
+      "type": "select",
+      "id": "mobile_alignment",
+      "label": "Mobile text alignment",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ],
+      "default": "left"
+    },
+    {
+      "type": "select",
+      "id": "vertical_alignment",
+      "label": "Vertical alignment",
+      "options": [
+        {
+          "value": "start",
+          "label": "Top"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "end",
+          "label": "Bottom"
+        }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "select",
+      "id": "button_layout",
+      "label": "Desktop button layout",
+      "options": [
+        {
+          "value": "inline",
+          "label": "Inline"
+        },
+        {
+          "value": "stacked",
+          "label": "Stacked"
+        }
+      ],
+      "default": "stacked"
+    },
+    {
+      "type": "range",
+      "id": "modal_radius",
+      "label": "Modal radius",
+      "min": 0,
+      "max": 40,
+      "step": 1,
+      "unit": "px",
+      "default": 18
+    },
+    {
+      "type": "select",
+      "id": "shadow",
+      "label": "Shadow",
+      "options": [
+        {
+          "value": "none",
+          "label": "None"
+        },
+        {
+          "value": "soft",
+          "label": "Soft"
+        },
+        {
+          "value": "medium",
+          "label": "Medium"
+        },
+        {
+          "value": "strong",
+          "label": "Strong"
+        }
+      ],
+      "default": "medium"
+    },
+    {
+      "type": "range",
+      "id": "padding_desktop_y",
+      "label": "Desktop vertical padding",
+      "min": 20,
+      "max": 100,
+      "step": 2,
+      "unit": "px",
+      "default": 60
+    },
+    {
+      "type": "range",
+      "id": "padding_desktop_x",
+      "label": "Desktop horizontal padding",
+      "min": 20,
+      "max": 100,
+      "step": 2,
+      "unit": "px",
+      "default": 68
+    },
+    {
+      "type": "range",
+      "id": "padding_tablet_y",
+      "label": "Tablet vertical padding",
+      "min": 16,
+      "max": 80,
+      "step": 2,
+      "unit": "px",
+      "default": 44
+    },
+    {
+      "type": "range",
+      "id": "padding_tablet_x",
+      "label": "Tablet horizontal padding",
+      "min": 16,
+      "max": 80,
+      "step": 2,
+      "unit": "px",
+      "default": 36
+    },
+    {
+      "type": "range",
+      "id": "padding_mobile_y",
+      "label": "Mobile vertical padding",
+      "min": 14,
+      "max": 60,
+      "step": 2,
+      "unit": "px",
+      "default": 30
+    },
+    {
+      "type": "range",
+      "id": "padding_mobile_x",
+      "label": "Mobile horizontal padding",
+      "min": 14,
+      "max": 50,
+      "step": 2,
+      "unit": "px",
+      "default": 20
+    },
+    {
+      "type": "header",
+      "content": "Images"
+    },
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "Desktop background image"
+    },
+    {
+      "type": "image_picker",
+      "id": "image_mobile",
+      "label": "Mobile background image"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_left_image",
+      "label": "Enable optional image",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "mobile_image_layout",
+      "label": "Mobile image placement",
+      "options": [
+        {
+          "value": "top",
+          "label": "Above content"
+        },
+        {
+          "value": "bottom",
+          "label": "Below content"
+        },
+        {
+          "value": "hidden",
+          "label": "Hide image on mobile"
+        }
+      ],
+      "default": "top"
+    },
+    {
+      "type": "range",
+      "id": "mobile_image_height",
+      "label": "Mobile image height",
+      "min": 120,
+      "max": 360,
+      "step": 10,
+      "unit": "px",
+      "default": 200
+    },
+    {
+      "type": "select",
+      "id": "image_fit",
+      "label": "Image fit",
+      "options": [
+        {
+          "value": "cover",
+          "label": "Cover"
+        },
+        {
+          "value": "contain",
+          "label": "Contain"
+        }
+      ],
+      "default": "cover"
+    },
+    {
+      "type": "select",
+      "id": "desktop_image_position",
+      "label": "Desktop image position",
+      "options": [
+        {
+          "value": "left top",
+          "label": "Top left"
+        },
+        {
+          "value": "center top",
+          "label": "Top center"
+        },
+        {
+          "value": "right top",
+          "label": "Top right"
+        },
+        {
+          "value": "left center",
+          "label": "Middle left"
+        },
+        {
+          "value": "center center",
+          "label": "Middle center"
+        },
+        {
+          "value": "right center",
+          "label": "Middle right"
+        },
+        {
+          "value": "left bottom",
+          "label": "Bottom left"
+        },
+        {
+          "value": "center bottom",
+          "label": "Bottom center"
+        },
+        {
+          "value": "right bottom",
+          "label": "Bottom right"
+        }
+      ],
+      "default": "center center"
+    },
+    {
+      "type": "select",
+      "id": "mobile_image_position",
+      "label": "Mobile image position",
+      "options": [
+        {
+          "value": "left top",
+          "label": "Top left"
+        },
+        {
+          "value": "center top",
+          "label": "Top center"
+        },
+        {
+          "value": "right top",
+          "label": "Top right"
+        },
+        {
+          "value": "left center",
+          "label": "Middle left"
+        },
+        {
+          "value": "center center",
+          "label": "Middle center"
+        },
+        {
+          "value": "right center",
+          "label": "Middle right"
+        },
+        {
+          "value": "left bottom",
+          "label": "Bottom left"
+        },
+        {
+          "value": "center bottom",
+          "label": "Bottom center"
+        },
+        {
+          "value": "right bottom",
+          "label": "Bottom right"
+        }
+      ],
+      "default": "center center"
+    },
+    {
+      "type": "select",
+      "id": "image_alt_mode",
+      "label": "Image purpose",
+      "options": [
+        {
+          "value": "decorative",
+          "label": "Decorative"
+        },
+        {
+          "value": "informative",
+          "label": "Informative"
+        }
+      ],
+      "default": "decorative"
+    },
+    {
+      "type": "text",
+      "id": "image_alt",
+      "label": "Image alt text",
+      "info": "Used only when Image purpose is Informative."
+    },
+    {
+      "type": "color",
+      "id": "overlay_color",
+      "label": "Image overlay color",
+      "default": "#000000"
+    },
+    {
+      "type": "range",
+      "id": "overlay_opacity",
+      "label": "Image overlay opacity",
+      "min": 0,
+      "max": 100,
+      "step": 5,
+      "unit": "%",
+      "default": 0
+    },
+    {
+      "type": "header",
+      "content": "Premium typography"
+    },
+    {
+      "type": "range",
+      "id": "heading_size_desktop",
+      "label": "Desktop heading size",
+      "min": 28,
+      "max": 60,
+      "step": 1,
+      "unit": "px",
+      "default": 44
+    },
+    {
+      "type": "range",
+      "id": "heading_size_mobile",
+      "label": "Mobile heading size",
+      "min": 24,
+      "max": 40,
+      "step": 1,
+      "unit": "px",
+      "default": 30
+    },
+    {
+      "type": "range",
+      "id": "description_size",
+      "label": "Description size",
+      "min": 14,
+      "max": 20,
+      "step": 1,
+      "unit": "px",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "button_height",
+      "label": "Action button height",
+      "min": 44,
+      "max": 72,
+      "step": 2,
+      "unit": "px",
+      "default": 56
+    },
+    {
+      "type": "header",
+      "content": "Style"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Background",
+      "default": "#242424"
+    },
+    {
+      "type": "color",
+      "id": "heading_color",
+      "label": "Heading",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "muted_text_color",
+      "label": "Muted text",
+      "default": "#d8d8d8"
+    },
+    {
+      "type": "color",
+      "id": "border_color",
+      "label": "Border",
+      "default": "#343434"
+    },
+    {
+      "type": "color",
+      "id": "input_background",
+      "label": "Input background",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "input_text_color",
+      "label": "Input text",
+      "default": "#171717"
+    },
+    {
+      "type": "color",
+      "id": "input_border_color",
+      "label": "Input border",
+      "default": "#d6d6d6"
+    },
+    {
+      "type": "color",
+      "id": "verify_background",
+      "label": "Verify button background",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "verify_text_color",
+      "label": "Verify button text",
+      "default": "#171717"
+    },
+    {
+      "type": "color",
+      "id": "verify_border_color",
+      "label": "Verify button border",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "exit_background",
+      "label": "Exit button background",
+      "default": "#151515"
+    },
+    {
+      "type": "color",
+      "id": "exit_text_color",
+      "label": "Exit button text",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "exit_border_color",
+      "label": "Exit button border",
+      "default": "#151515"
+    },
+    {
+      "type": "color",
+      "id": "backdrop_color",
+      "label": "Backdrop",
+      "default": "#000000"
+    },
+    {
+      "type": "range",
+      "id": "backdrop_opacity",
+      "label": "Backdrop opacity",
+      "min": 0,
+      "max": 90,
+      "step": 5,
+      "unit": "%",
+      "default": 60
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_backdrop_blur",
+      "label": "Blur backdrop",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "backdrop_blur",
+      "label": "Backdrop blur amount",
+      "min": 0,
+      "max": 16,
+      "step": 1,
+      "unit": "px",
+      "default": 6
+    },
+    {
+      "type": "checkbox",
+      "id": "follow_global_colors",
+      "label": "Follow Spider global premium colors",
+      "default": true,
+      "info": "Turn off to use the legacy color settings below."
+    },
+    {
+      "type": "range",
+      "id": "button_radius",
+      "label": "Button radius",
+      "min": 0,
+      "max": 50,
+      "step": 1,
+      "unit": "px",
+      "default": 8
+    },
+    {
+      "type": "header",
+      "content": "Dismissible behaviour"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_close_button",
+      "label": "Show close button",
+      "default": true,
+      "info": "Used only in Dismissible mode."
+    },
+    {
+      "type": "checkbox",
+      "id": "allow_escape",
+      "label": "Allow Escape key to close",
+      "default": true,
+      "info": "Ignored in Blocking mode."
+    },
+    {
+      "type": "checkbox",
+      "id": "allow_backdrop_close",
+      "label": "Allow backdrop click to close",
+      "default": true,
+      "info": "Ignored in Blocking mode."
+    },
+    {
+      "type": "header",
+      "content": "Page targeting"
+    },
+    {
+      "type": "select",
+      "id": "page_target_mode",
+      "label": "Show on",
+      "options": [
+        {
+          "value": "all",
+          "label": "All storefront pages"
+        },
+        {
+          "value": "selected",
+          "label": "Selected page types"
+        }
+      ],
+      "default": "all"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_home",
+      "label": "Home page",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_product",
+      "label": "Product pages",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_collection",
+      "label": "Collection pages",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_page",
+      "label": "Pages",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_blog",
+      "label": "Blog pages",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_article",
+      "label": "Article pages",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_cart",
+      "label": "Cart page",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_search",
+      "label": "Search page",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_404",
+      "label": "404 page",
+      "default": true
+    }
+  ],
+  "presets": [
+    {
+      "name": "🔒 Age Verification",
+      "settings": {
+        "enable_age_verification": true,
+        "verification_method": "confirm",
+        "gate_behavior": "blocking",
+        "minimum_age": 18,
+        "display_delay": 0,
+        "remember_mode": "30",
+        "gate_version": 1,
+        "heading": "Age verification",
+        "verify_button_text": "Yes, I am 18+",
+        "exit_button_text": "No, I am under 18",
+        "display_style": "centered",
+        "content_layout": "split",
+        "show_remember_checkbox": true
+      }
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,54 @@
+{%- comment -%}
+ Spider Choose Options v2 — existing global Quick Add slot; no product images.
+ Keeps original data-sp-commerce-* hooks and Spider cart form architecture.
+ Settings are global Theme settings because this is a global modal, not an addable section.
+{%- endcomment -%}
+{% if settings.sp_qa_enabled != false %}
+<dialog id="SpProductQuickAdd" class="sp-commerce-qa sp-qa-v2" data-sp-commerce-qa aria-labelledby="SpProductQuickAddTitle"
+  style="--sp-qa-width:{{ settings.sp_qa_width | default: 720 }}px;--sp-qa-radius:{{ settings.sp_qa_radius | default: 16 }}px;--sp-qa-padding:{{ settings.sp_qa_padding | default: 40 }}px;--sp-qa-overlay:{{ settings.sp_qa_overlay | default: 54 | times: 0.01 }};--sp-qa-button-height:{{ settings.sp_qa_button_height | default: 56 }}px;--sp-qa-swatch-size:{{ settings.sp_qa_swatch_size | default: 46 }}px"
+  data-sp-qa-badge="{{ settings.sp_qa_badge | default: true, allow_false: true }}"
+  data-sp-qa-badge-source="{{ settings.sp_qa_badge_source | default: 'auto' | escape }}"
+  data-sp-qa-badge-text="{{ settings.sp_qa_badge_custom | escape }}"
+  data-sp-qa-show-description="{{ settings.sp_qa_description | default: true, allow_false: true }}"
+  data-sp-qa-description-length="{{ settings.sp_qa_desc_length | default: 170 }}"
+  data-sp-qa-show-compare="{{ settings.sp_qa_compare_price | default: true, allow_false: true }}"
+  data-sp-qa-show-savings="{{ settings.sp_qa_savings | default: true, allow_false: true }}"
+  data-sp-qa-stock="{{ settings.sp_qa_stock | default: true, allow_false: true }}"
+  data-sp-qa-swatches="{{ settings.sp_qa_swatches | default: true, allow_false: true }}"
+  data-sp-qa-quantity="{{ settings.sp_qa_quantity | default: true, allow_false: true }}"
+  data-sp-qa-buy="{{ settings.sp_qa_buy_now | default: true, allow_false: true }}"
+  data-sp-qa-button-layout="{{ settings.sp_qa_button_layout | default: 'inline' | escape }}">
+  <div class="sp-commerce-qa__shell">
+    {% render 'sp-commerce-close-button', label: 'Close choose options' %}
+    <div class="sp-commerce-qa__content">
+      <div class="sp-qa-v2__intro">
+        <span class="sp-qa-v2__badge" data-sp-qa-badge-label hidden><svg viewBox="0 0 24 24" width="17" height="17" aria-hidden="true" fill="currentColor"><path d="m12 2.7 2.8 5.7 6.3.9-4.5 4.4 1.1 6.3-5.7-3-5.7 3 1.1-6.3L2.9 9.3l6.3-.9z"/></svg><span data-sp-qa-badge-text></span></span>
+        <h2 id="SpProductQuickAddTitle" class="sp-commerce-qa__title" data-sp-commerce-title>Product</h2>
+        <div class="sp-commerce-qa__price" data-sp-commerce-price aria-live="polite"></div>
+        <div class="sp-qa-v2__description-wrap" data-sp-commerce-description-wrap hidden>
+          <p class="sp-qa-v2__description" data-sp-commerce-description></p>
+        </div>
+      </div>
+      <div class="sp-commerce-qa__options sp-commerce-dialog__options" data-sp-commerce-options></div>
+      <div class="sp-qa-v2__purchase">
+        <div class="sp-qa-v2__quantity-group" data-sp-qa-quantity-group>
+          <label class="sp-qa-v2__field-label" for="SpQaQuantity">Quantity</label>
+          <div class="sp-commerce-dialog__quantity" role="group" aria-label="Quantity">
+            <button type="button" data-sp-commerce-minus aria-label="Decrease quantity">−</button>
+            <input id="SpQaQuantity" type="number" min="1" step="1" value="1" inputmode="numeric" data-sp-commerce-quantity aria-label="Quantity">
+            <button type="button" data-sp-commerce-plus aria-label="Increase quantity">+</button>
+          </div>
+        </div>
+        <p class="sp-qa-v2__stock" data-sp-commerce-availability role="status" aria-live="polite"></p>
+      </div>
+      <p class="sp-commerce-dialog__status" data-sp-commerce-status aria-live="polite"></p>
+      <form class="sp-commerce-dialog__form sp-qa-v2__form" method="post" action="{{ routes.cart_add_url }}" enctype="multipart/form-data" data-product-card-form>
+        <input type="hidden" name="id" data-sp-commerce-variant>
+        <input type="hidden" name="quantity" value="1" data-sp-commerce-form-quantity>
+        <button class="sp-button sp-commerce-dialog__add" type="submit" data-sp-commerce-add>Add to cart</button>
+        <button class="sp-commerce-dialog__buy" type="button" data-sp-commerce-buy>Buy it now</button>
+      </form>
+    </div>
+  </div>
+</dialog>
+{% endif %}

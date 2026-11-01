@@ -1,0 +1,16 @@
+{%- assign placeholder_count = count | default: 4 | at_most: 8 -%}
+{%- unless bare -%}<div class="sp-featured-products sp-featured-empty sp-featured-empty--{{ mode }}" data-sp-featured-items{% unless request.design_mode %} hidden{% endunless %}>{%- endunless -%}
+  {%- for i in (1..placeholder_count) -%}
+    <div class="sp-featured-card sp-featured-card--style-2 sp-featured-card--placeholder" data-sp-featured-card{% if bare and request.design_mode == false %} hidden{% endif %}>
+      <article class="sp-product-card sp-featured-card__card">
+        <div class="sp-product-card__media sp-featured-card__media">
+          {% render 'placeholder-image', name: 'product-1', class: 'sp-placeholder sp-featured-card__placeholder' %}
+        </div>
+        <div class="sp-product-card__content sp-featured-card__content">
+          <h3 class="sp-featured-card__title">Product {{ i }}</h3>
+          <div class="sp-price"><span>$00.00</span></div>
+        </div>
+      </article>
+    </div>
+  {%- endfor -%}
+{%- unless bare -%}</div>{%- endunless -%}

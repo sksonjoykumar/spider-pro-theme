@@ -1,0 +1,29 @@
+{% render 'sp-section-color-scheme', section: section %}
+<section class="sp-section" data-section-id="{{ section.id }}"><div class="sp-container">{{ section.settings.custom_liquid }}</div></section>{% schema %}
+{
+  "name": "Custom Liquid",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Global design system"
+    },
+    {
+      "type": "color_scheme",
+      "id": "sp_color_scheme",
+      "label": "Color scheme",
+      "default": "scheme-1",
+      "info": "Shared Spider color panel. Edit schemes once in Theme settings → Spider Color Schemes."
+    },
+    {
+      "type": "liquid",
+      "id": "custom_liquid",
+      "label": "Custom Liquid"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Custom Liquid"
+    }
+  ]
+}
+{% endschema %}

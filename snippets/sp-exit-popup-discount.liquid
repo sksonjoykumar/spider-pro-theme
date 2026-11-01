@@ -1,0 +1,22 @@
+{%- if block.settings.code != blank -%}
+  <div class="sp-exit-popup__discount" {{ block.shopify_attributes }}>
+    <div class="sp-exit-popup__discount-box sp-exit-popup__discount-box--{{ section.settings.discount_style }}">
+      <code class="sp-exit-popup__discount-code" data-sp-exit-popup-discount-code>{{ block.settings.code | truncate: 40, '' | escape }}</code>
+      {%- if block.settings.copy_button -%}
+        <button
+          type="button"
+          class="sp-exit-popup__copy"
+          data-sp-exit-popup-copy
+          aria-label="{{ block.settings.copy_label | default: 'Copy code' | escape }}: {{ block.settings.code | escape }}"
+        >
+          <svg aria-hidden="true" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          <span>{{ block.settings.copy_label | default: 'Copy code' | escape }}</span>
+        </button>
+      {%- endif -%}
+    </div>
+    <span class="sp-exit-popup__copy-status visually-hidden" data-sp-exit-popup-copy-status role="status" aria-live="polite"></span>
+    {%- if block.settings.discount_url != blank -%}
+      <a class="sp-exit-popup__discount-link" href="{{ block.settings.discount_url }}" data-sp-exit-popup-cta>View offer</a>
+    {%- endif -%}
+  </div>
+{%- endif -%}

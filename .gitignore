@@ -1,0 +1,40 @@
+# Operating systems
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Node / package tooling if added by an approved workflow
+node_modules/
+.npm/
+.pnpm-store/
+
+# Ruby / Bundler
+vendor/bundle/
+.bundle/
+
+# Shopify local state and credentials
+.shopify/
+.env
+.env.*
+!.env.example
+
+# Logs, caches, and generated output
+*.log
+coverage/
+.cache/
+.tmp/
+temp/
+tmp/
+
+# Local editor and IDE state
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+*.swp
+*.swo
+
+# Editor backups
+*~
+*.bak
+*.orig

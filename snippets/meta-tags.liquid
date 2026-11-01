@@ -1,0 +1,12 @@
+{% liquid
+  assign sp_title = page_title | default: shop.name
+  unless settings.seo_clean_titles
+    unless sp_title contains shop.name
+      assign sp_title = sp_title | append: ' – ' | append: shop.name
+    endunless
+  endunless
+%}
+<title>{{ sp_title | escape }}{% if current_page != 1 %} – {{ 'general.pagination.page' | t: number: current_page }}{% endif %}</title>
+{% if page_description %}<meta name="description" content="{{ page_description | escape }}">{% endif %}
+{% if settings.seo_canonical %}<link rel="canonical" href="{{ canonical_url }}">{% endif %}
+<meta name="theme-color" content="{{ settings.seo_theme_color | default: '#FFFFFF' }}">

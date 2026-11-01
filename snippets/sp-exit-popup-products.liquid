@@ -1,0 +1,20 @@
+<aside class="sp-exit-popup__products" aria-label="{{ section.settings.products_heading | default: 'Recommended products' | escape }}">
+  {%- if section.settings.products_heading != blank or section.settings.show_product_carousel and product_count > 1 -%}
+    <div class="sp-exit-popup__products-header">
+      {%- if section.settings.products_heading != blank -%}<h2>{{ section.settings.products_heading | escape }}</h2>{%- else -%}<span class="visually-hidden">Recommended products</span>{%- endif -%}
+      {%- if section.settings.show_product_carousel and product_count > 1 -%}
+        <div class="sp-exit-popup__carousel-controls" data-sp-exit-popup-carousel-controls>
+          <button type="button" data-sp-exit-popup-carousel-prev aria-label="Previous products">←</button>
+          <span class="sp-exit-popup__carousel-status" data-sp-exit-popup-carousel-status>1 / {{ product_count }}</span>
+          <button type="button" data-sp-exit-popup-carousel-next aria-label="Next products">→</button>
+        </div>
+      {%- endif -%}
+    </div>
+  {%- endif -%}
+
+  <div class="sp-exit-popup__products-list{% if section.settings.show_product_carousel and product_count > 1 %} is-carousel{% endif %}" data-sp-exit-popup-products-list>
+    {%- for product in products limit: section.settings.product_limit -%}
+      {% render 'sp-exit-popup-product-card', product: product, section: section %}
+    {%- endfor -%}
+  </div>
+</aside>

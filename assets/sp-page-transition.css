@@ -1,0 +1,184 @@
+/* Spider global loader + full-page transition system. All selectors are intentionally Spider-scoped. */
+html.sp-page-transition-lock,
+html.sp-page-transition-lock body {
+  overflow: hidden;
+}
+
+.sp-global-loader {
+  position: fixed;
+  inset: 0;
+  z-index: calc(var(--sp-overlay-z-base, 1000) + 200);
+  display: grid;
+  width: 100%;
+  height: 100vh;
+  height: 100dvh;
+  place-items: center;
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+  isolation: isolate;
+  color: var(--sp-loader-color, #111111);
+  transition: opacity var(--sp-page-transition-duration, 350ms) ease, visibility 0s linear var(--sp-page-transition-duration, 350ms);
+}
+
+.sp-global-loader::before {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  content: '';
+  background: var(--sp-loader-background, #ffffff);
+  opacity: var(--sp-loader-background-opacity, 1);
+}
+
+.sp-global-loader.is-active,
+html.sp-loader-resume .sp-global-loader {
+  visibility: visible;
+  opacity: 1;
+  pointer-events: auto;
+  transition-delay: 0s;
+}
+
+.sp-global-loader.is-hiding {
+  visibility: visible;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* If destination bootstrap runs but the main controller fails, the resumed overlay still self-dismisses. */
+html.sp-loader-resume .sp-global-loader {
+  animation: sp-loader-resume-fallback 1ms linear var(--sp-loader-resume-remaining, 0ms) forwards;
+}
+
+.sp-global-loader__inner {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  gap: 14px;
+  max-width: min(88vw, 420px);
+  text-align: center;
+}
+
+.sp-global-loader__spinner,
+.sp-global-loader__pulse {
+  display: block;
+  width: var(--sp-loader-size, 64px);
+  height: var(--sp-loader-size, 64px);
+  flex: 0 0 auto;
+}
+
+.sp-global-loader__spinner {
+  box-sizing: border-box;
+  border: clamp(2px, calc(var(--sp-loader-size, 64px) * .06), 8px) solid currentColor;
+  border-inline-end-color: transparent;
+  border-radius: 50%;
+  animation: sp-loader-spin .8s linear infinite;
+}
+
+.sp-global-loader__dots {
+  display: flex;
+  width: var(--sp-loader-size, 64px);
+  min-height: calc(var(--sp-loader-size, 64px) * .25);
+  align-items: center;
+  justify-content: space-between;
+}
+
+.sp-global-loader__dot {
+  display: block;
+  width: calc(var(--sp-loader-size, 64px) * .2);
+  height: calc(var(--sp-loader-size, 64px) * .2);
+  border-radius: 50%;
+  background: currentColor;
+  animation: sp-loader-dot 1s ease-in-out infinite;
+}
+
+.sp-global-loader__dot:nth-child(2) { animation-delay: .12s; }
+.sp-global-loader__dot:nth-child(3) { animation-delay: .24s; }
+
+.sp-global-loader__pulse {
+  border: clamp(2px, calc(var(--sp-loader-size, 64px) * .05), 7px) solid currentColor;
+  border-radius: 50%;
+  animation: sp-loader-pulse 1.15s ease-out infinite;
+}
+
+.sp-global-loader__logo {
+  display: block;
+  width: var(--sp-loader-logo-size, 80px);
+  max-width: min(80vw, 200px);
+  height: auto;
+  max-height: min(70vh, 70dvh);
+  object-fit: contain;
+  animation: sp-loader-logo 1.35s ease-in-out infinite alternate;
+}
+
+.sp-global-loader__text {
+  max-width: 34ch;
+  color: currentColor;
+  font: inherit;
+  font-size: .9rem;
+  line-height: 1.4;
+}
+
+/* Destination content animation. The head bootstrap adds these classes only after a Spider page navigation. */
+html.sp-page-entry #MainContent {
+  will-change: opacity, transform;
+  animation-duration: var(--sp-page-transition-duration, 350ms);
+  animation-delay: var(--sp-loader-resume-remaining, 0ms);
+  animation-timing-function: cubic-bezier(.2, .8, .2, 1);
+  animation-fill-mode: both;
+}
+
+html.sp-page-entry--fade #MainContent { animation-name: sp-page-enter-fade; }
+html.sp-page-entry--fade_scale #MainContent { animation-name: sp-page-enter-fade-scale; }
+html.sp-page-entry--slide_up #MainContent { animation-name: sp-page-enter-slide-up; }
+html.sp-page-entry--none #MainContent { animation-name: none; }
+
+@keyframes sp-loader-spin { to { transform: rotate(360deg); } }
+@keyframes sp-loader-dot {
+  0%, 60%, 100% { transform: translateY(0) scale(.72); opacity: .45; }
+  30% { transform: translateY(-16%) scale(1); opacity: 1; }
+}
+@keyframes sp-loader-pulse {
+  0% { transform: scale(.72); opacity: .4; }
+  55% { transform: scale(1); opacity: 1; }
+  100% { transform: scale(1.12); opacity: 0; }
+}
+@keyframes sp-loader-logo {
+  from { transform: scale(.96); opacity: .72; }
+  to { transform: scale(1); opacity: 1; }
+}
+@keyframes sp-page-enter-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes sp-page-enter-fade-scale {
+  from { opacity: 0; transform: scale(.985); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes sp-page-enter-slide-up {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes sp-loader-resume-fallback {
+  to { visibility: hidden; opacity: 0; pointer-events: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sp-global-loader,
+  .sp-global-loader.is-hiding {
+    transition-duration: 1ms;
+  }
+
+  .sp-global-loader__spinner,
+  .sp-global-loader__dot,
+  .sp-global-loader__pulse,
+  .sp-global-loader__logo {
+    animation: none;
+  }
+
+  html.sp-page-entry #MainContent {
+    animation-duration: 1ms;
+    animation-name: sp-page-enter-fade;
+    transform: none;
+  }
+}

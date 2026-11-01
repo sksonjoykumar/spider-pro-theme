@@ -1,0 +1,1871 @@
+{% comment %}
+  Spider native Certifications & Product Badges.
+  Demo blocks are editor-only until explicitly enabled. No fabricated certification evidence.
+{% endcomment %}
+{% render 'sp-section-color-scheme', section: section %}
+{{ 'sp-section-heading.css' | asset_url | stylesheet_tag }}
+{{ 'sp-certifications-product-badges.css' | asset_url | stylesheet_tag }}
+{%- if section.settings.layout_style == 'style_4' or section.settings.layout_style == 'style_5' or section.settings.details_behavior == 'modal' or section.settings.details_behavior == 'drawer' -%}
+  <script src="{{ 'sp-certifications-product-badges.js' | asset_url }}" defer="defer"></script>
+{%- endif -%}
+{%- liquid
+  assign s = section.settings
+  assign active_ids = '|'
+  assign inapplicable_ids = '|'
+  assign active_categories = '|'
+  assign featured_id = ''
+  assign first_id = ''
+  assign active_count = 0
+  for block in section.blocks
+    assign b = block.settings
+    assign applicable = false
+    case b.applicability_mode
+      when 'all_products'
+        assign applicable = true
+      when 'informational_only'
+        assign applicable = true
+      when 'selected_products'
+        if product != blank and b.applicable_products != blank
+          for chosen in b.applicable_products
+            if product.id == chosen.id
+              assign applicable = true
+              break
+            endif
+          endfor
+        endif
+      when 'selected_collections'
+        if product != blank and b.applicable_collections != blank
+          for chosen_collection in b.applicable_collections
+            for current_collection in product.collections
+              if chosen_collection.id == current_collection.id
+                assign applicable = true
+                break
+              endif
+            endfor
+            if applicable
+              break
+            endif
+          endfor
+        endif
+      when 'product_type'
+        if product != blank and b.applicable_product_types != blank
+          assign type_list = b.applicable_product_types | split: ','
+          for given_type in type_list
+            assign clean_type = given_type | strip
+            if clean_type != blank and clean_type == product.type
+              assign applicable = true
+              break
+            endif
+          endfor
+        endif
+      when 'product_tag'
+        if product != blank and b.applicable_tags != blank
+          assign tags_list = b.applicable_tags | split: ','
+          for given_tag in tags_list
+            assign clean_tag = given_tag | strip
+            if clean_tag != blank and product.tags contains clean_tag
+              assign applicable = true
+              break
+            endif
+          endfor
+        endif
+    endcase
+    assign show_badge_now = false
+    if b.enable_badge and applicable
+      assign show_badge_now = true
+    elsif b.enable_badge and b.show_when_not_applicable and product != blank
+      assign show_badge_now = true
+      assign inapplicable_ids = inapplicable_ids | append: block.id | append: '|'
+    endif
+    if request.design_mode
+      assign show_badge_now = true
+    endif
+    if show_badge_now
+      assign active_count = active_count | plus: 1
+      assign active_ids = active_ids | append: block.id | append: '|'
+      if first_id == blank
+        assign first_id = block.id
+      endif
+      if b.featured_badge and featured_id == blank
+        assign featured_id = block.id
+      endif
+      assign category_key = '|' | append: b.category | append: '|'
+      unless active_categories contains category_key
+        assign active_categories = active_categories | append: b.category | append: '|'
+      endunless
+    endif
+  endfor
+  if featured_id == blank
+    assign featured_id = first_id
+  endif
+  assign container_class = 'sp-container'
+  if s.section_max_width == 'wide'
+    assign container_class = 'sp-container sp-container--wide'
+  endif
+  assign root_class = 'sp-cpb sp-cpb--' | append: s.layout_style | append: ' sp-cpb--heading-' | append: s.heading_size | append: ' sp-cpb--hover-' | append: s.card_hover_effect | append: ' sp-cpb--highlight-' | append: s.highlight_style | append: ' sp-cpb--media-' | append: s.media_style | append: ' sp-cpb--logo-fit-' | append: s.logo_fit | append: ' sp-cpb--notice-' | append: s.notice_style | append: ' sp-cpb--category-' | append: s.category_navigation_style | append: ' sp-cpb--mobile-category-' | append: s.mobile_category_navigation | append: ' sp-cpb--feature-' | append: s.featured_badge_position | append: ' sp-cpb--mobile-feature-' | append: s.mobile_featured_position
+  unless s.card_equal_height
+    assign root_class = root_class | append: ' sp-cpb--unequal'
+  endunless
+  assign cta_attributes = ''
+  if s.section_button_new_tab
+    assign cta_attributes = 'target="_blank" rel="noopener noreferrer"'
+  endif
+  assign safe_button_label = s.section_button_label | escape
+-%}
+{%- if active_count > 0 -%}
+<section id="sp-cpb-{{ section.id }}" class="sp-section {{ root_class }}" data-sp-cpb-root data-sp-cpb-style="{{ s.layout_style }}" data-sp-cpb-infinite="{{ s.infinite_loop }}" data-sp-cpb-autoplay="{{ s.enable_autoplay }}" data-sp-cpb-autoplay-speed="{{ s.autoplay_speed }}" data-sp-cpb-pause-hover="{{ s.pause_on_hover }}" data-sp-cpb-pointer-drag="{{ s.enable_pointer_drag }}" data-sp-cpb-swipe="{{ s.enable_swipe }}" data-sp-cpb-details="{{ s.details_behavior }}" data-sp-cpb-default-category="{{ s.default_category }}" data-sp-cpb-details-navigation="{{ s.show_details_navigation }}" data-sp-cpb-rtl="{% if request.locale.direction == 'rtl' %}true{% else %}false{% endif %}" style="
+--sp-cpb-pt:{{ s.padding_top }}px;--sp-cpb-pb:{{ s.padding_bottom }}px;
+--sp-cpb-pt-t:{{ s.padding_top_tablet }}px;--sp-cpb-pb-t:{{ s.padding_bottom_tablet }}px;
+--sp-cpb-pt-m:{{ s.padding_top_mobile }}px;--sp-cpb-pb-m:{{ s.padding_bottom_mobile }}px;
+--sp-cpb-cols-d:{{ s.desktop_columns }};--sp-cpb-cols-t:{{ s.tablet_columns }};--sp-cpb-cols-m:{{ s.mobile_columns }};
+--sp-cpb-gap-d:{{ s.grid_gap_desktop }}px;--sp-cpb-gap-t:{{ s.grid_gap_tablet }}px;--sp-cpb-gap-m:{{ s.grid_gap_mobile }}px;
+--sp-cpb-radius:{{ s.card_border_radius }}px;--sp-cpb-bw:{{ s.card_border_width }}px;
+--sp-cpb-card-pad:{{ s.card_padding_desktop }}px;--sp-cpb-card-min-height:{{ s.card_min_height | default: 184 }}px;--sp-cpb-card-pad-m:{{ s.card_padding_mobile }}px;
+--sp-cpb-media-size:{{ s.media_size_desktop }}px;--sp-cpb-media-size-m:{{ s.media_size_mobile }}px;
+--sp-cpb-media-radius:{{ s.media_border_radius }}px;--sp-cpb-logo-w:{{ s.logo_max_width }}px;--sp-cpb-logo-h:{{ s.logo_max_height }}px;
+--sp-cpb-card-gap:{{ s.card_content_gap }}px;--sp-cpb-header-gap:{{ s.header_bottom_spacing }}px;
+--sp-cpb-grid-to-notice:{{ s.grid_to_notice_spacing }}px;--sp-cpb-button-to-grid:{{ s.button_to_grid_spacing }}px;
+--sp-cpb-header-to-button:{{ s.header_to_button_spacing }}px;
+--sp-cpb-slides-d:{{ s.desktop_slides }};--sp-cpb-slides-t:{{ s.tablet_slides }};--sp-cpb-slides-m:{{ s.mobile_slides }};
+--sp-cpb-card-bg:{% if s.use_custom_colors %}{{ s.card_background }}{% else %}var(--sp-section-card, var(--sp-color-card, #fff)){% endif %};
+--sp-cpb-border:{% if s.use_custom_colors %}{{ s.card_border_color }}{% else %}var(--sp-section-border, #E4E4E7){% endif %};
+--sp-cpb-icon-bg:{% if s.use_custom_colors %}{{ s.media_background }}{% else %}color-mix(in srgb, var(--sp-section-accent, #415DFF) 8%, var(--sp-section-card, #fff)){% endif %};
+--sp-cpb-accent:{% if s.use_custom_colors %}{{ s.accent_color }}{% else %}var(--sp-section-accent, #415DFF){% endif %};
+--sp-cpb-note-bg:color-mix(in srgb, var(--sp-cpb-accent) 7%, var(--sp-section-card,#fff));
+--sp-cpb-card-align:{{ s.card_text_alignment }};
+--sp-cpb-vertical-align:{{ s.content_vertical_alignment }};
+--sp-cpb-shadow:{% if s.card_shadow == 'subtle' %}0 8px 25px rgba(0,0,0,.055){% elsif s.card_shadow == 'medium' %}0 14px 38px rgba(0,0,0,.10){% else %}none{% endif %};
+--sp-cpb-logo-opacity:{{ s.logo_opacity | divided_by: 100.0 }};
+--sp-cpb-logo-filter:{% if s.logo_grayscale %}grayscale(1){% else %}none{% endif %};
+" aria-label="{{ s.heading | default: 'Standards and badges' | escape }}">
+  <div class="{{ container_class }}">
+    {%- if s.show_header -%}
+      <div class="sp-cpb__intro sp-cpb__intro--{{ s.heading_alignment }}" style="--sp-cpb-header-width:{{ s.header_max_width }}px;--sp-cpb-desc-width:{{ s.description_width }}px;">
+        {%- if s.eyebrow != blank -%}<p class="sp-cpb__eyebrow">{{ s.eyebrow | escape }}</p>{%- endif -%}
+        {% render 'sp-section-heading', heading_settings: s, heading: s.heading, subheading: s.description, heading_tag: 'h2', alignment: s.heading_alignment, mobile_alignment: 'center', bottom_spacing: 0 %}
+        {%- if s.show_section_button and s.section_button_label != blank -%}
+          <div class="sp-cpb__cta sp-cpb__cta--{{ s.section_button_position }}">
+            {%- if s.section_button_link != blank -%}
+              {% render 'button', label: safe_button_label, href: s.section_button_link, style: s.section_button_style, class: 'sp-cpb__cta-button', attributes: cta_attributes %}
+            {%- elsif request.design_mode -%}
+              <span class="sp-button sp-button--{{ s.section_button_style }} sp-cpb__cta-button sp-cpb__cta-demo" title="Set a button link to publish this action">{{ s.section_button_label | escape }}</span>
+            {%- endif -%}
+          </div>
+        {%- endif -%}
+      </div>
+    {%- endif -%}
+    {%- if s.layout_style == 'style_4' -%}
+      <div class="sp-cpb__filters" data-sp-cpb-filters aria-label="Filter standards by category">
+        {%- if s.show_all_category -%}<button type="button" class="sp-cpb__filter" data-sp-cpb-filter="all" aria-pressed="true">{{ s.all_category_label | default: 'All standards' | escape }}</button>{%- endif -%}
+        {%- assign cats = 'materials,sustainability,safety,ethics,warranty,other' | split: ',' -%}
+        {%- for cat in cats -%}
+          {%- assign cat_lookup = '|' | append: cat | append: '|' -%}
+          {%- if active_categories contains cat_lookup -%}<button class="sp-cpb__filter" type="button" data-sp-cpb-filter="{{ cat }}" aria-pressed="false">{{ cat | capitalize }}</button>{%- endif -%}
+        {%- endfor -%}
+        <label class="sp-cpb__filter-select-wrap" for="sp-cpb-filter-select-{{ section.id }}"><span class="sp-cpb__visually-hidden">Choose category</span><select id="sp-cpb-filter-select-{{ section.id }}" data-sp-cpb-filter-select class="sp-cpb__filter-select">
+          {%- if s.show_all_category -%}<option value="all">{{ s.all_category_label | escape }}</option>{%- endif -%}
+          {%- for cat in cats -%}{%- assign cat_lookup = '|' | append: cat | append: '|' -%}{%- if active_categories contains cat_lookup -%}<option value="{{ cat }}">{{ cat | capitalize }}</option>{%- endif -%}{%- endfor -%}
+        </select></label>
+      </div>
+    {%- endif -%}
+    {%- if s.notice_position == 'before' -%}
+    {%- if s.show_notice and s.notice_text != blank -%}
+      <aside class="sp-cpb__notice sp-cpb__notice--{{ s.notice_position }}">
+        {%- if s.notice_icon != 'none' -%}<span class="sp-cpb__notice-icon" aria-hidden="true">{% render 'sp-content-icon', name: s.notice_icon %}</span>{%- endif -%}
+        <div>{%- if s.notice_heading != blank -%}<strong>{{ s.notice_heading | escape }}</strong>{%- endif -%}<div class="rte">{{ s.notice_text }}</div></div>
+      </aside>
+    {%- endif -%}
+    {%- endif -%}
+    <div class="sp-cpb__list-wrap{% if s.show_partial_next_card %} sp-cpb__list-wrap--peek{% endif %}" data-sp-cpb-track-wrap>
+      <ul class="sp-cpb__list" data-sp-cpb-track aria-label="Standards and product badges">
+        {%- for block in section.blocks -%}
+          {%- assign needle = '|' | append: block.id | append: '|' -%}
+          {%- if active_ids contains needle -%}
+            {%- assign demo_badge = false -%}
+            {%- unless block.settings.enable_badge -%}{%- assign demo_badge = true -%}{%- endunless -%}
+            {%- assign not_applicable = false -%}
+            {%- if inapplicable_ids contains needle -%}{%- assign not_applicable = true -%}{%- endif -%}
+            {%- assign feature_this = false -%}
+            {%- if block.id == featured_id and s.layout_style == 'style_3' -%}{%- assign feature_this = true -%}{%- endif -%}
+            {% render 'sp-certification-badge-card', block: block, section: section, is_featured: feature_this, demo: demo_badge, not_applicable: not_applicable %}
+          {%- endif -%}
+        {%- endfor -%}
+      </ul>
+    </div>
+    {%- if s.layout_style == 'style_5' and active_count > 1 -%}
+      <div class="sp-cpb__carousel-controls" data-sp-cpb-controls>
+        {%- if s.show_arrows -%}<button type="button" data-sp-cpb-prev class="sp-cpb__arrow" aria-label="Previous standards"><span aria-hidden="true">{% if request.locale.direction == 'rtl' %}→{% else %}←{% endif %}</span></button>{%- endif -%}
+        {%- if s.show_dots -%}<div class="sp-cpb__dots" data-sp-cpb-dots aria-label="Carousel pages"></div>{%- endif -%}
+        {%- if s.show_progress_bar -%}<div class="sp-cpb__progress" aria-hidden="true"><span data-sp-cpb-progress></span></div>{%- endif -%}
+        {%- if s.show_arrows -%}<button type="button" data-sp-cpb-next class="sp-cpb__arrow" aria-label="Next standards"><span aria-hidden="true">{% if request.locale.direction == 'rtl' %}←{% else %}→{% endif %}</span></button>{%- endif -%}
+      </div>
+    {%- endif -%}
+
+    {%- if s.notice_position == 'after' -%}
+    {%- if s.show_notice and s.notice_text != blank -%}
+      <aside class="sp-cpb__notice sp-cpb__notice--{{ s.notice_position }}">
+        {%- if s.notice_icon != 'none' -%}<span class="sp-cpb__notice-icon" aria-hidden="true">{% render 'sp-content-icon', name: s.notice_icon %}</span>{%- endif -%}
+        <div>{%- if s.notice_heading != blank -%}<strong>{{ s.notice_heading | escape }}</strong>{%- endif -%}<div class="rte">{{ s.notice_text }}</div></div>
+      </aside>
+    {%- endif -%}
+    {%- endif -%}
+    {%- if s.show_product_disclaimer and product != blank and s.product_disclaimer != blank -%}<div class="sp-cpb__product-disclaimer rte">{{ s.product_disclaimer }}</div>{%- endif -%}
+  </div>
+  {%- if s.details_behavior == 'modal' or s.details_behavior == 'drawer' -%}
+    <dialog class="sp-cpb__dialog{% if s.details_behavior == 'drawer' %} sp-cpb__dialog--drawer{% endif %}" data-sp-cpb-dialog data-sp-cpb-overlay-close="{{ s.close_on_overlay }}" aria-labelledby="sp-cpb-dialog-title-{{ section.id }}">
+      <div class="sp-cpb__dialog-inner"><div class="sp-cpb__dialog-head"><h2 id="sp-cpb-dialog-title-{{ section.id }}" data-sp-cpb-dialog-title>{{ s.details_modal_title | escape }}</h2><div class="sp-cpb__dialog-actions">{% if s.show_details_navigation %}<button type="button" class="sp-cpb__dialog-nav" data-sp-cpb-detail-prev aria-label="Previous standard">←</button><button type="button" class="sp-cpb__dialog-nav" data-sp-cpb-detail-next aria-label="Next standard">→</button>{% endif %}<button type="button" data-sp-cpb-close class="sp-cpb__close" aria-label="Close details">×</button></div></div><div data-sp-cpb-dialog-content class="sp-cpb__dialog-content"></div></div>
+    </dialog>
+  {%- endif -%}
+</section>
+{%- elsif request.design_mode -%}
+  <div class="sp-container"><p>Add certification blocks to preview this section.</p></div>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Certifications & Badges",
+  "tag": "section",
+  "class": "sp-cpb-shopify-section",
+  "disabled_on": {
+    "groups": [
+      "header",
+      "footer",
+      "custom.system"
+    ]
+  },
+  "settings": [
+    {
+      "type": "header",
+      "content": "Native color scheme"
+    },
+    {
+      "type": "color_scheme",
+      "id": "sp_color_scheme",
+      "label": "Color scheme",
+      "default": "scheme-1",
+      "info": "Uses Spider Theme global color schemes."
+    },
+    {
+      "type": "header",
+      "content": "Content"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_header",
+      "label": "Show section header",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Eyebrow",
+      "default": "STANDARDS THAT MATTER"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Made Better. Verified Clearly."
+    },
+    {
+      "type": "richtext",
+      "id": "description",
+      "label": "Description",
+      "default": "<p>Transparent materials, responsible practices, and quality you can trust.</p>"
+    },
+    {
+      "type": "select",
+      "id": "heading_alignment",
+      "label": "Header alignment",
+      "default": "center",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "heading_size",
+      "label": "Heading size",
+      "default": "large",
+      "options": [
+        {
+          "value": "global",
+          "label": "Theme heading"
+        },
+        {
+          "value": "small",
+          "label": "Compact"
+        },
+        {
+          "value": "large",
+          "label": "Large"
+        }
+      ]
+    },
+    {
+      "type": "range",
+      "id": "description_width",
+      "label": "Description width",
+      "default": 800,
+      "min": 300,
+      "max": 1100,
+      "step": 10,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "header_max_width",
+      "label": "Header max width",
+      "default": 1180,
+      "min": 600,
+      "max": 1400,
+      "step": 20,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "header_bottom_spacing",
+      "label": "Header to cards",
+      "default": 36,
+      "min": 0,
+      "max": 100,
+      "step": 2,
+      "unit": "px"
+    },
+    {
+      "type": "header",
+      "content": "Layout style"
+    },
+    {
+      "type": "select",
+      "id": "layout_style",
+      "label": "Badge layout",
+      "default": "style_1",
+      "options": [
+        {
+          "value": "style_1",
+          "label": "Certification Card Grid"
+        },
+        {
+          "value": "style_2",
+          "label": "Minimal Badge Wall"
+        },
+        {
+          "value": "style_3",
+          "label": "Featured Standard"
+        },
+        {
+          "value": "style_4",
+          "label": "Categorized Standards"
+        },
+        {
+          "value": "style_5",
+          "label": "Certification Carousel"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "section_max_width",
+      "label": "Section width",
+      "default": "wide",
+      "options": [
+        {
+          "value": "standard",
+          "label": "Standard"
+        },
+        {
+          "value": "wide",
+          "label": "Wide"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "desktop_columns",
+      "label": "Desktop columns",
+      "default": "3",
+      "options": [
+        {
+          "value": "2",
+          "label": "2"
+        },
+        {
+          "value": "3",
+          "label": "3"
+        },
+        {
+          "value": "4",
+          "label": "4"
+        },
+        {
+          "value": "5",
+          "label": "5"
+        },
+        {
+          "value": "6",
+          "label": "6"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "tablet_columns",
+      "label": "Tablet columns",
+      "default": "2",
+      "options": [
+        {
+          "value": "1",
+          "label": "1"
+        },
+        {
+          "value": "2",
+          "label": "2"
+        },
+        {
+          "value": "3",
+          "label": "3"
+        },
+        {
+          "value": "4",
+          "label": "4"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "mobile_columns",
+      "label": "Mobile columns",
+      "default": "1",
+      "options": [
+        {
+          "value": "1",
+          "label": "One"
+        },
+        {
+          "value": "2",
+          "label": "Two (compact)"
+        }
+      ]
+    },
+    {
+      "type": "range",
+      "id": "grid_gap_desktop",
+      "label": "Desktop card gap",
+      "default": 20,
+      "min": 0,
+      "max": 64,
+      "step": 2,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "grid_gap_tablet",
+      "label": "Tablet card gap",
+      "default": 18,
+      "min": 0,
+      "max": 64,
+      "step": 2,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "grid_gap_mobile",
+      "label": "Mobile card gap",
+      "default": 14,
+      "min": 0,
+      "max": 64,
+      "step": 2,
+      "unit": "px"
+    },
+    {
+      "type": "checkbox",
+      "id": "card_equal_height",
+      "label": "Equal-height cards",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "content_vertical_alignment",
+      "label": "Content alignment",
+      "default": "center",
+      "options": [
+        {
+          "value": "start",
+          "label": "Top"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "end",
+          "label": "Bottom"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "card_text_alignment",
+      "label": "Card text alignment",
+      "default": "start",
+      "options": [
+        {
+          "value": "start",
+          "label": "Start"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "end",
+          "label": "End"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "featured_badge_position",
+      "label": "Featured position",
+      "default": "start",
+      "options": [
+        {
+          "value": "start",
+          "label": "Start"
+        },
+        {
+          "value": "end",
+          "label": "End"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "mobile_featured_position",
+      "label": "Mobile featured position",
+      "default": "first",
+      "options": [
+        {
+          "value": "first",
+          "label": "First"
+        },
+        {
+          "value": "natural",
+          "label": "Original order"
+        }
+      ]
+    },
+    {
+      "type": "header",
+      "content": "Section button"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_section_button",
+      "label": "Show section button",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "section_button_label",
+      "label": "Button text",
+      "default": "View our standards"
+    },
+    {
+      "type": "url",
+      "id": "section_button_link",
+      "label": "Button link"
+    },
+    {
+      "type": "select",
+      "id": "section_button_style",
+      "label": "Button style",
+      "default": "secondary",
+      "options": [
+        {
+          "value": "primary",
+          "label": "Primary"
+        },
+        {
+          "value": "secondary",
+          "label": "Secondary"
+        },
+        {
+          "value": "outline",
+          "label": "Outline"
+        }
+      ]
+    },
+    {
+      "type": "checkbox",
+      "id": "section_button_new_tab",
+      "label": "Open in new tab",
+      "default": false
+    },
+    {
+      "type": "select",
+      "id": "section_button_position",
+      "label": "Button alignment",
+      "default": "center",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ]
+    },
+    {
+      "type": "range",
+      "id": "header_to_button_spacing",
+      "label": "Heading to button",
+      "default": 22,
+      "min": 0,
+      "max": 64,
+      "step": 2,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "button_to_grid_spacing",
+      "label": "Button to grid",
+      "default": 36,
+      "min": 0,
+      "max": 80,
+      "step": 2,
+      "unit": "px"
+    },
+    {
+      "type": "header",
+      "content": "Badge cards"
+    },
+    {
+      "type": "select",
+      "id": "card_shadow",
+      "label": "Card shadow",
+      "default": "subtle",
+      "options": [
+        {
+          "value": "none",
+          "label": "None"
+        },
+        {
+          "value": "subtle",
+          "label": "Subtle"
+        },
+        {
+          "value": "medium",
+          "label": "Medium"
+        }
+      ]
+    },
+    {
+      "type": "range",
+      "id": "card_border_width",
+      "label": "Border width",
+      "default": 1,
+      "min": 0,
+      "max": 5,
+      "step": 1,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "card_border_radius",
+      "label": "Corner radius",
+      "default": 14,
+      "min": 0,
+      "max": 36,
+      "step": 1,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "card_min_height",
+      "label": "Minimum card height (desktop)",
+      "min": 0,
+      "max": 320,
+      "step": 4,
+      "unit": "px",
+      "default": 184,
+      "info": "0 lets cards fit their content; applies to the classic card grid."
+    },
+    {
+      "type": "range",
+      "id": "card_padding_desktop",
+      "label": "Card padding desktop",
+      "default": 24,
+      "min": 8,
+      "max": 60,
+      "step": 1,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "card_padding_mobile",
+      "label": "Card padding mobile",
+      "default": 17,
+      "min": 8,
+      "max": 40,
+      "step": 1,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "card_content_gap",
+      "label": "Icon to text gap",
+      "default": 24,
+      "min": 8,
+      "max": 44,
+      "step": 1,
+      "unit": "px"
+    },
+    {
+      "type": "select",
+      "id": "card_hover_effect",
+      "label": "Hover animation",
+      "default": "border_emphasis",
+      "options": [
+        {
+          "value": "none",
+          "label": "None"
+        },
+        {
+          "value": "subtle_lift",
+          "label": "Subtle lift"
+        },
+        {
+          "value": "border_emphasis",
+          "label": "Border emphasis"
+        },
+        {
+          "value": "icon_emphasis",
+          "label": "Icon emphasis"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "highlight_style",
+      "label": "Highlighted badge",
+      "default": "accent_border",
+      "options": [
+        {
+          "value": "accent_border",
+          "label": "Accent border"
+        },
+        {
+          "value": "accent_background",
+          "label": "Accent background"
+        },
+        {
+          "value": "strong_shadow",
+          "label": "Accent shadow"
+        },
+        {
+          "value": "none",
+          "label": "None"
+        }
+      ]
+    },
+    {
+      "type": "checkbox",
+      "id": "show_badge_type",
+      "label": "Show badge type",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "show_issuer",
+      "label": "Show issuer",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "show_scope",
+      "label": "Show scope",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "show_verification_status",
+      "label": "Show verification status",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_certificate_number",
+      "label": "Show certificate number",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "show_dates",
+      "label": "Show issue and expiry dates",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "show_learn_more",
+      "label": "Show Learn more actions",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Icons and logos"
+    },
+    {
+      "type": "select",
+      "id": "media_style",
+      "label": "Icon shape",
+      "default": "circle",
+      "options": [
+        {
+          "value": "circle",
+          "label": "Circle"
+        },
+        {
+          "value": "square",
+          "label": "Square"
+        },
+        {
+          "value": "rounded",
+          "label": "Rounded square"
+        },
+        {
+          "value": "none",
+          "label": "No background"
+        }
+      ]
+    },
+    {
+      "type": "range",
+      "id": "media_size_desktop",
+      "label": "Desktop icon size",
+      "default": 104,
+      "min": 48,
+      "max": 160,
+      "step": 2,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "media_size_mobile",
+      "label": "Mobile icon size",
+      "default": 70,
+      "min": 44,
+      "max": 104,
+      "step": 2,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "media_border_radius",
+      "label": "Icon radius",
+      "default": 100,
+      "min": 0,
+      "max": 100,
+      "step": 2,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "logo_max_width",
+      "label": "Logo max width",
+      "default": 100,
+      "min": 50,
+      "max": 160,
+      "step": 2,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "logo_max_height",
+      "label": "Logo max height",
+      "default": 90,
+      "min": 40,
+      "max": 150,
+      "step": 2,
+      "unit": "px"
+    },
+    {
+      "type": "checkbox",
+      "id": "logo_grayscale",
+      "label": "Grayscale logos",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "logo_opacity",
+      "label": "Logo opacity",
+      "default": 100,
+      "min": 20,
+      "max": 100,
+      "step": 5,
+      "unit": "%"
+    },
+    {
+      "type": "select",
+      "id": "logo_fit",
+      "label": "Logo fit",
+      "default": "contain",
+      "options": [
+        {
+          "value": "contain",
+          "label": "Contain, uncropped"
+        },
+        {
+          "value": "scale_down",
+          "label": "Scale down, uncropped"
+        }
+      ]
+    },
+    {
+      "type": "header",
+      "content": "Categories"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_all_category",
+      "label": "Show all category",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "all_category_label",
+      "label": "All category label",
+      "default": "All standards"
+    },
+    {
+      "type": "select",
+      "id": "default_category",
+      "label": "Initial category",
+      "default": "all",
+      "options": [
+        {
+          "value": "all",
+          "label": "All"
+        },
+        {
+          "value": "materials",
+          "label": "Materials"
+        },
+        {
+          "value": "sustainability",
+          "label": "Sustainability"
+        },
+        {
+          "value": "safety",
+          "label": "Safety"
+        },
+        {
+          "value": "ethics",
+          "label": "Ethics"
+        },
+        {
+          "value": "warranty",
+          "label": "Warranty"
+        },
+        {
+          "value": "other",
+          "label": "Other"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "category_navigation_style",
+      "label": "Filter style",
+      "default": "buttons",
+      "options": [
+        {
+          "value": "buttons",
+          "label": "Pill buttons"
+        },
+        {
+          "value": "tabs",
+          "label": "Underlined tabs"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "mobile_category_navigation",
+      "label": "Mobile navigation",
+      "default": "scroll",
+      "options": [
+        {
+          "value": "scroll",
+          "label": "Scrollable"
+        },
+        {
+          "value": "wrap",
+          "label": "Wrap"
+        },
+        {
+          "value": "select",
+          "label": "Mobile select"
+        }
+      ]
+    },
+    {
+      "type": "header",
+      "content": "Carousel"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_swipe",
+      "label": "Enable touch swiping",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_pointer_drag",
+      "label": "Enable mouse/pen drag",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_arrows",
+      "label": "Show arrows",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_dots",
+      "label": "Show pagination dots",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_progress_bar",
+      "label": "Show progress bar",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "show_partial_next_card",
+      "label": "Show next card preview",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_autoplay",
+      "label": "Enable autoplay",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "autoplay_speed",
+      "label": "Autoplay delay",
+      "default": 5000,
+      "min": 2000,
+      "max": 9000,
+      "step": 500,
+      "unit": "ms"
+    },
+    {
+      "type": "checkbox",
+      "id": "pause_on_hover",
+      "label": "Pause on hover",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "infinite_loop",
+      "label": "Loop carousel navigation",
+      "default": false
+    },
+    {
+      "type": "select",
+      "id": "desktop_slides",
+      "label": "Desktop slides",
+      "default": "3",
+      "options": [
+        {
+          "value": "1",
+          "label": "1"
+        },
+        {
+          "value": "2",
+          "label": "2"
+        },
+        {
+          "value": "3",
+          "label": "3"
+        },
+        {
+          "value": "4",
+          "label": "4"
+        },
+        {
+          "value": "5",
+          "label": "5"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "tablet_slides",
+      "label": "Tablet slides",
+      "default": "2",
+      "options": [
+        {
+          "value": "1",
+          "label": "1"
+        },
+        {
+          "value": "2",
+          "label": "2"
+        },
+        {
+          "value": "3",
+          "label": "3"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "mobile_slides",
+      "label": "Mobile slides",
+      "default": "1",
+      "options": [
+        {
+          "value": "1",
+          "label": "1"
+        },
+        {
+          "value": "2",
+          "label": "2"
+        }
+      ]
+    },
+    {
+      "type": "header",
+      "content": "Details behaviour"
+    },
+    {
+      "type": "select",
+      "id": "details_behavior",
+      "label": "Learn more action",
+      "default": "expand_card",
+      "options": [
+        {
+          "value": "direct_link",
+          "label": "Direct link"
+        },
+        {
+          "value": "expand_card",
+          "label": "Expand card"
+        },
+        {
+          "value": "modal",
+          "label": "Modal dialog"
+        },
+        {
+          "value": "drawer",
+          "label": "Drawer dialog"
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "id": "details_modal_title",
+      "label": "Dialog fallback title",
+      "default": "Standard details"
+    },
+    {
+      "type": "checkbox",
+      "id": "close_on_overlay",
+      "label": "Close on backdrop click",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_details_navigation",
+      "label": "Show details navigation",
+      "default": false
+    },
+    {
+      "type": "header",
+      "content": "Verification links"
+    },
+    {
+      "type": "text",
+      "id": "verification_link_label",
+      "label": "Verification link label",
+      "default": "View evidence"
+    },
+    {
+      "type": "text",
+      "id": "certificate_download_label",
+      "label": "Certificate file link label",
+      "default": "Open certificate"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_verification_icon",
+      "label": "Show verification icon",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "show_external_link_indicator",
+      "label": "Indicate external link",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Information notice"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_notice",
+      "label": "Show notice",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "notice_icon",
+      "label": "Notice icon",
+      "default": "check",
+      "options": [
+        {
+          "value": "check",
+          "label": "Info / check"
+        },
+        {
+          "value": "shield",
+          "label": "Shield"
+        },
+        {
+          "value": "none",
+          "label": "None"
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "id": "notice_heading",
+      "label": "Notice heading"
+    },
+    {
+      "type": "richtext",
+      "id": "notice_text",
+      "label": "Notice copy",
+      "default": "<p>Certification availability may vary by product. Check each product page for verified details.</p>"
+    },
+    {
+      "type": "select",
+      "id": "notice_style",
+      "label": "Notice style",
+      "default": "information",
+      "options": [
+        {
+          "value": "information",
+          "label": "Information"
+        },
+        {
+          "value": "neutral",
+          "label": "Neutral"
+        },
+        {
+          "value": "warning",
+          "label": "Warning"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "notice_position",
+      "label": "Notice position",
+      "default": "after",
+      "options": [
+        {
+          "value": "after",
+          "label": "After cards"
+        },
+        {
+          "value": "before",
+          "label": "Before cards"
+        }
+      ]
+    },
+    {
+      "type": "checkbox",
+      "id": "show_product_disclaimer",
+      "label": "Show product-page disclaimer",
+      "default": false
+    },
+    {
+      "type": "richtext",
+      "id": "product_disclaimer",
+      "label": "Product disclaimer",
+      "default": "<p>Certification applicability depends on the specific product.</p>"
+    },
+    {
+      "type": "range",
+      "id": "grid_to_notice_spacing",
+      "label": "Cards to notice spacing",
+      "default": 30,
+      "min": 0,
+      "max": 80,
+      "step": 2,
+      "unit": "px"
+    },
+    {
+      "type": "header",
+      "content": "Colors"
+    },
+    {
+      "type": "checkbox",
+      "id": "use_custom_colors",
+      "label": "Override global scheme colors",
+      "default": false
+    },
+    {
+      "type": "color",
+      "id": "card_background",
+      "label": "Card background",
+      "default": "#FFFFFF"
+    },
+    {
+      "type": "color",
+      "id": "card_border_color",
+      "label": "Card border",
+      "default": "#DBDEE4"
+    },
+    {
+      "type": "color",
+      "id": "media_background",
+      "label": "Icon circle background",
+      "default": "#EFF3FF"
+    },
+    {
+      "type": "color",
+      "id": "accent_color",
+      "label": "Accent color",
+      "default": "#375BFF"
+    },
+    {
+      "type": "header",
+      "content": "Desktop spacing"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "Section top spacing",
+      "default": 84,
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "Section bottom spacing",
+      "default": 84,
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "px"
+    },
+    {
+      "type": "header",
+      "content": "Tablet spacing"
+    },
+    {
+      "type": "range",
+      "id": "padding_top_tablet",
+      "label": "Tablet top spacing",
+      "default": 64,
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom_tablet",
+      "label": "Tablet bottom spacing",
+      "default": 64,
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px"
+    },
+    {
+      "type": "header",
+      "content": "Mobile spacing"
+    },
+    {
+      "type": "range",
+      "id": "padding_top_mobile",
+      "label": "Mobile top spacing",
+      "default": 42,
+      "min": 0,
+      "max": 100,
+      "step": 2,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom_mobile",
+      "label": "Mobile bottom spacing",
+      "default": 42,
+      "min": 0,
+      "max": 100,
+      "step": 2,
+      "unit": "px"
+    },
+    {
+      "type": "header",
+      "content": "Compliance and accessibility"
+    },
+    {
+      "type": "paragraph",
+      "content": "Default card claims are demonstration content. Every badge starts disabled. Enable only accurate, substantiated claims. Generic icons are NOT certification logos."
+    },
+    {
+      "type": "paragraph",
+      "content": "Use merchant-supplied evidence for third-party verification; check product scope and expiry dates. Verify applicable advertising rules."
+    }
+  ],
+  "blocks": [
+    {
+      "type": "certification",
+      "name": "Certification / Badge",
+      "limit": 18,
+      "settings": [
+        {
+          "type": "checkbox",
+          "id": "enable_badge",
+          "label": "Enable on live storefront",
+          "default": false
+        },
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Badge title",
+          "default": "Standard title"
+        },
+        {
+          "type": "text",
+          "id": "short_description",
+          "label": "Short description"
+        },
+        {
+          "type": "richtext",
+          "id": "detailed_description",
+          "label": "Detailed description"
+        },
+        {
+          "type": "select",
+          "id": "category",
+          "label": "Category",
+          "default": "materials",
+          "options": [
+            {
+              "value": "materials",
+              "label": "Materials"
+            },
+            {
+              "value": "sustainability",
+              "label": "Sustainability"
+            },
+            {
+              "value": "safety",
+              "label": "Safety"
+            },
+            {
+              "value": "ethics",
+              "label": "Ethics"
+            },
+            {
+              "value": "warranty",
+              "label": "Warranty"
+            },
+            {
+              "value": "other",
+              "label": "Other"
+            }
+          ]
+        },
+        {
+          "type": "select",
+          "id": "badge_type",
+          "label": "Badge type",
+          "default": "product_claim",
+          "options": [
+            {
+              "value": "third_party_certification",
+              "label": "Third-party certification"
+            },
+            {
+              "value": "self_declared_standard",
+              "label": "Self-declared standard"
+            },
+            {
+              "value": "product_claim",
+              "label": "Product claim"
+            },
+            {
+              "value": "quality_test",
+              "label": "Quality test"
+            },
+            {
+              "value": "warranty",
+              "label": "Warranty"
+            },
+            {
+              "value": "policy",
+              "label": "Policy"
+            },
+            {
+              "value": "membership",
+              "label": "Membership"
+            },
+            {
+              "value": "other",
+              "label": "Other"
+            }
+          ]
+        },
+        {
+          "type": "select",
+          "id": "icon",
+          "label": "Generic illustration",
+          "default": "shield",
+          "options": [
+            {
+              "value": "leaf",
+              "label": "Leaf"
+            },
+            {
+              "value": "recycle",
+              "label": "Recycle"
+            },
+            {
+              "value": "paw",
+              "label": "Paw"
+            },
+            {
+              "value": "shield",
+              "label": "Shield"
+            },
+            {
+              "value": "package",
+              "label": "Packaging"
+            },
+            {
+              "value": "award",
+              "label": "Award"
+            },
+            {
+              "value": "check",
+              "label": "Check"
+            },
+            {
+              "value": "heart",
+              "label": "Heart"
+            },
+            {
+              "value": "star",
+              "label": "Star"
+            },
+            {
+              "value": "diamond",
+              "label": "Diamond"
+            }
+          ]
+        },
+        {
+          "type": "image_picker",
+          "id": "custom_icon",
+          "label": "Custom icon image"
+        },
+        {
+          "type": "image_picker",
+          "id": "certification_logo",
+          "label": "Official logo (merchant upload)"
+        },
+        {
+          "type": "text",
+          "id": "certification_logo_alt",
+          "label": "Official logo alt text"
+        },
+        {
+          "type": "text",
+          "id": "issuer_name",
+          "label": "Issuer name"
+        },
+        {
+          "type": "text",
+          "id": "certificate_number",
+          "label": "Certificate number"
+        },
+        {
+          "type": "select",
+          "id": "verification_status",
+          "label": "Verification status",
+          "default": "not_shown",
+          "options": [
+            {
+              "value": "not_shown",
+              "label": "Not shown"
+            },
+            {
+              "value": "verified",
+              "label": "Verified - evidence required"
+            },
+            {
+              "value": "pending",
+              "label": "Pending"
+            },
+            {
+              "value": "expired",
+              "label": "Expired"
+            },
+            {
+              "value": "self_declared",
+              "label": "Self-declared"
+            },
+            {
+              "value": "custom",
+              "label": "Other / merchant statement"
+            }
+          ]
+        },
+        {
+          "type": "url",
+          "id": "verification_url",
+          "label": "Verification evidence URL"
+        },
+        {
+          "type": "url",
+          "id": "certificate_file_url",
+          "label": "Certificate file URL"
+        },
+        {
+          "type": "text",
+          "id": "scope",
+          "label": "Certification scope"
+        },
+        {
+          "type": "text",
+          "id": "applicability_note",
+          "label": "Applicability note"
+        },
+        {
+          "type": "text",
+          "id": "issue_date",
+          "label": "Issued (YYYY-MM-DD)"
+        },
+        {
+          "type": "text",
+          "id": "expiry_date",
+          "label": "Expires (YYYY-MM-DD)"
+        },
+        {
+          "type": "text",
+          "id": "link_label",
+          "label": "Learn more text",
+          "default": "Learn more"
+        },
+        {
+          "type": "url",
+          "id": "link_url",
+          "label": "Learn more URL"
+        },
+        {
+          "type": "checkbox",
+          "id": "open_in_new_tab",
+          "label": "Open Learn more in new tab",
+          "default": false
+        },
+        {
+          "type": "checkbox",
+          "id": "featured_badge",
+          "label": "Feature in Style 3",
+          "default": false
+        },
+        {
+          "type": "checkbox",
+          "id": "highlight_badge",
+          "label": "Highlight card",
+          "default": false
+        },
+        {
+          "type": "header",
+          "content": "Product applicability"
+        },
+        {
+          "type": "select",
+          "id": "applicability_mode",
+          "label": "Applies to",
+          "default": "informational_only",
+          "options": [
+            {
+              "value": "all_products",
+              "label": "Global / all products"
+            },
+            {
+              "value": "selected_products",
+              "label": "Selected products"
+            },
+            {
+              "value": "selected_collections",
+              "label": "Selected collections"
+            },
+            {
+              "value": "product_type",
+              "label": "Product types"
+            },
+            {
+              "value": "product_tag",
+              "label": "Product tags"
+            },
+            {
+              "value": "informational_only",
+              "label": "Informational only"
+            }
+          ]
+        },
+        {
+          "type": "product_list",
+          "id": "applicable_products",
+          "label": "Products",
+          "limit": 50
+        },
+        {
+          "type": "collection_list",
+          "id": "applicable_collections",
+          "label": "Collections",
+          "limit": 50
+        },
+        {
+          "type": "text",
+          "id": "applicable_product_types",
+          "label": "Product types (comma-separated)"
+        },
+        {
+          "type": "text",
+          "id": "applicable_tags",
+          "label": "Product tags (comma-separated)"
+        },
+        {
+          "type": "checkbox",
+          "id": "show_when_not_applicable",
+          "label": "Show information when not applicable",
+          "default": false
+        }
+      ]
+    }
+  ],
+  "max_blocks": 18,
+  "presets": [
+    {
+      "name": "Certifications & Badges",
+      "settings": {
+        "layout_style": "style_1"
+      },
+      "category": "04. Content",
+      "blocks": [
+        {
+          "type": "certification",
+          "settings": {
+            "title": "Responsibly Sourced",
+            "short_description": "Materials selected with people and planet in mind.",
+            "category": "materials",
+            "icon": "leaf",
+            "highlight_badge": true,
+            "featured_badge": true,
+            "detailed_description": "<p>Demonstration content only. Replace with accurate supporting information before publishing this badge.</p>"
+          }
+        },
+        {
+          "type": "certification",
+          "settings": {
+            "title": "Recycled Materials",
+            "short_description": "Contains recycled materials. Confirm actual product details.",
+            "category": "sustainability",
+            "icon": "recycle",
+            "highlight_badge": false,
+            "featured_badge": false,
+            "detailed_description": "<p>Demonstration content only. Replace with accurate supporting information before publishing this badge.</p>"
+          }
+        },
+        {
+          "type": "certification",
+          "settings": {
+            "title": "Cruelty-Free",
+            "short_description": "Review this claim and its supporting policy.",
+            "category": "ethics",
+            "icon": "paw",
+            "highlight_badge": false,
+            "featured_badge": false,
+            "detailed_description": "<p>Demonstration content only. Replace with accurate supporting information before publishing this badge.</p>"
+          }
+        },
+        {
+          "type": "certification",
+          "settings": {
+            "title": "Quality Tested",
+            "short_description": "Quality testing details vary by item.",
+            "category": "safety",
+            "icon": "shield",
+            "highlight_badge": false,
+            "featured_badge": false,
+            "detailed_description": "<p>Demonstration content only. Replace with accurate supporting information before publishing this badge.</p>"
+          }
+        },
+        {
+          "type": "certification",
+          "settings": {
+            "title": "Reduced Packaging",
+            "short_description": "Packaging choices vary by product.",
+            "category": "sustainability",
+            "icon": "package",
+            "highlight_badge": false,
+            "featured_badge": false,
+            "detailed_description": "<p>Demonstration content only. Replace with accurate supporting information before publishing this badge.</p>"
+          }
+        },
+        {
+          "type": "certification",
+          "settings": {
+            "title": "Warranty Information",
+            "short_description": "Review the applicable product warranty.",
+            "category": "warranty",
+            "icon": "award",
+            "highlight_badge": false,
+            "featured_badge": false,
+            "detailed_description": "<p>Demonstration content only. Replace with accurate supporting information before publishing this badge.</p>"
+          }
+        }
+      ]
+    }
+  ]
+}
+
+{% endschema %}

@@ -1,0 +1,86 @@
+/* Spider Premium Snow Effect — fixed, decorative, pointer-safe viewport layer. */
+.sp-snow-effect {
+  position: fixed;
+  inset: 0;
+  display: none;
+  overflow: hidden;
+  pointer-events: none;
+  contain: layout paint style;
+  isolation: isolate;
+}
+
+.sp-snow-effect.is-active {
+  display: block;
+}
+
+.sp-snow-effect--layer-behind {
+  z-index: var(--sp-z-snow-behind, 0);
+}
+
+.sp-snow-effect--layer-above {
+  z-index: var(--sp-z-snow-effect, 20);
+}
+
+.sp-snow-effect__overlay,
+.sp-snow-effect__canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.sp-snow-effect__overlay {
+  z-index: 0;
+  background: var(--sp-snow-overlay-color, #000);
+  opacity: var(--sp-snow-overlay-opacity, 0);
+}
+
+.sp-snow-effect__canvas {
+  z-index: 1;
+  display: block;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sp-snow-effect,
+  .sp-snow-effect__canvas,
+  .sp-snow-effect__overlay {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
+/* Optional visitor control: it is the only pointer-interactive snow descendant. */
+.sp-snow-effect__dismiss {
+  position: absolute;
+  z-index: 2;
+  bottom: calc(72px + env(safe-area-inset-bottom, 0px));
+  left: 18px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border: 1px solid var(--sp-border-color, rgba(255, 255, 255, .28));
+  border-radius: var(--sp-button-radius, 8px);
+  background: var(--sp-surface, #171717);
+  color: var(--sp-text-color, #fff);
+  font-family: inherit;
+  font-size: 13px;
+  line-height: 1.2;
+  cursor: pointer;
+  pointer-events: auto;
+  box-shadow: 0 8px 22px rgba(0,0,0,.14);
+}
+.sp-snow-effect__dismiss--right { left: auto; right: 18px; }
+.sp-snow-effect__dismiss[hidden] { display: none !important; }
+.sp-snow-effect__dismiss:hover { border-color: var(--sp-accent-color, #415dff); }
+.sp-snow-effect__dismiss:focus-visible {
+  outline: 2px solid var(--sp-accent-color, #415dff);
+  outline-offset: 3px;
+}
+@media (max-width: 749px) {
+  .sp-snow-effect__dismiss { bottom: calc(95px + env(safe-area-inset-bottom, 0px)); left: 12px; }
+  .sp-snow-effect__dismiss--right { left: auto; right: 12px; }
+}

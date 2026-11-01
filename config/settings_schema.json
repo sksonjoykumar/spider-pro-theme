@@ -1,0 +1,4979 @@
+[
+  {
+    "name": "theme_info",
+    "theme_name": "Spider Pro",
+    "theme_author": "Sonjoy Kumar",
+    "theme_version": "1.0.0",
+    "theme_support_email": "support@spiderthemes.com",
+    "theme_documentation_url": "https://sonjoykumar.vercel.app/blogs/spider-pro-shopify-theme-english"
+  },
+  {
+    "name": "Brand System",
+    "settings": [
+      {
+        "type": "header",
+        "content": "Brand identity"
+      },
+      {
+        "type": "image_picker",
+        "id": "sp_logo",
+        "label": "Logo",
+        "info": "Primary desktop logo. Use an SVG or a high-resolution transparent image."
+      },
+      {
+        "type": "image_picker",
+        "id": "sp_logo_mobile",
+        "label": "Mobile logo",
+        "info": "Optional compact logo for mobile headers."
+      },
+      {
+        "type": "image_picker",
+        "id": "sp_favicon",
+        "label": "Favicon",
+        "info": "Square favicon image. Shopify will resize it for browser use."
+      },
+      {
+        "type": "header",
+        "content": "Brand assets"
+      },
+      {
+        "type": "image_picker",
+        "id": "sp_social_image",
+        "label": "Social sharing image",
+        "info": "Fallback image for Open Graph and social sharing metadata."
+      },
+      {
+        "type": "image_picker",
+        "id": "sp_brand_image",
+        "label": "Custom brand image",
+        "info": "Reusable brand artwork for compatible sections and empty states."
+      },
+      {
+        "type": "header",
+        "content": "Custom code"
+      },
+      {
+        "type": "paragraph",
+        "content": "Shopify provides a native global Custom CSS editor. Spider intentionally does not duplicate that platform-controlled setting."
+      },
+      {
+        "type": "liquid",
+        "id": "sp_custom_liquid",
+        "label": "Custom Liquid",
+        "info": "Optional global Liquid output. Render only in a controlled snippet and review before publishing.",
+        "default": "{% comment %}Spider custom Liquid{% endcomment %}"
+      },
+      {
+        "type": "header",
+        "content": "Developer tools"
+      },
+      {
+        "type": "checkbox",
+        "id": "sp_dev_mode",
+        "label": "Developer mode",
+        "info": "Enables non-production diagnostics and developer hooks.",
+        "default": false
+      },
+      {
+        "type": "checkbox",
+        "id": "sp_debug_info",
+        "label": "Show debug information",
+        "info": "Shows diagnostic data only when developer mode is enabled.",
+        "default": false
+      },
+      {
+        "type": "select",
+        "id": "sp_log_level",
+        "label": "Console log level",
+        "info": "Controls Spider console output in developer mode.",
+        "default": "error",
+        "options": [
+          {
+            "value": "silent",
+            "label": "Silent"
+          },
+          {
+            "value": "error",
+            "label": "Errors only"
+          },
+          {
+            "value": "warn",
+            "label": "Warnings"
+          },
+          {
+            "value": "debug",
+            "label": "Debug"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "Design System",
+    "settings": [
+      {
+        "type": "header",
+        "content": "Core color tokens"
+      },
+      {
+        "type": "color",
+        "id": "sp_primary",
+        "label": "Primary color",
+        "info": "Primary interactive and brand color token.",
+        "default": "#171717"
+      },
+      {
+        "type": "color",
+        "id": "sp_secondary",
+        "label": "Secondary color",
+        "info": "Secondary brand and supporting UI color token.",
+        "default": "#3F3F46"
+      },
+      {
+        "type": "color",
+        "id": "sp_accent",
+        "label": "Accent color",
+        "info": "Accent color for highlights and conversion elements.",
+        "default": "#415DFF"
+      },
+      {
+        "type": "header",
+        "content": "Text colors"
+      },
+      {
+        "type": "color",
+        "id": "sp_heading",
+        "label": "Heading color",
+        "info": "Global heading color token.",
+        "default": "#171717"
+      },
+      {
+        "type": "color",
+        "id": "sp_text",
+        "label": "Body text color",
+        "info": "Global body text color token.",
+        "default": "#3F3F46"
+      },
+      {
+        "type": "color",
+        "id": "sp_muted",
+        "label": "Muted text color",
+        "info": "Secondary and muted copy color token.",
+        "default": "#71717A"
+      },
+      {
+        "type": "header",
+        "content": "Background colors"
+      },
+      {
+        "type": "color",
+        "id": "sp_background",
+        "label": "Main background",
+        "info": "Primary page background color.",
+        "default": "#FFFFFF"
+      },
+      {
+        "type": "color",
+        "id": "sp_surface",
+        "label": "Secondary background",
+        "info": "Secondary surface and alternate section background.",
+        "default": "#F5F5F5"
+      },
+      {
+        "type": "color",
+        "id": "sp_card_bg",
+        "label": "Card background",
+        "info": "Default product, article, and content card background.",
+        "default": "#FFFFFF"
+      },
+      {
+        "type": "header",
+        "content": "Borders and states"
+      },
+      {
+        "type": "color",
+        "id": "sp_border",
+        "label": "Border color",
+        "info": "Default control and card border color.",
+        "default": "#E4E4E7"
+      },
+      {
+        "type": "color",
+        "id": "sp_divider",
+        "label": "Divider color",
+        "info": "Subtle divider and separator color.",
+        "default": "#EFEFF1"
+      },
+      {
+        "type": "color",
+        "id": "sp_sale",
+        "label": "Sale color",
+        "info": "Sale price and badge color.",
+        "default": "#DC2626"
+      },
+      {
+        "type": "color",
+        "id": "sp_success",
+        "label": "Success color",
+        "info": "Success messages and confirmation states.",
+        "default": "#16A34A"
+      },
+      {
+        "type": "color",
+        "id": "sp_warning",
+        "label": "Warning color",
+        "info": "Warning messages and low-stock states.",
+        "default": "#D97706"
+      },
+      {
+        "type": "color",
+        "id": "sp_error",
+        "label": "Error color",
+        "info": "Error messages and invalid input states.",
+        "default": "#B91C1C"
+      },
+      {
+        "type": "header",
+        "content": "Primary button"
+      },
+      {
+        "type": "color",
+        "id": "btn_primary_bg",
+        "label": "Background",
+        "info": "Primary button background.",
+        "default": "#171717"
+      },
+      {
+        "type": "color",
+        "id": "btn_primary_text",
+        "label": "Text",
+        "info": "Primary button text color.",
+        "default": "#FFFFFF"
+      },
+      {
+        "type": "color",
+        "id": "btn_primary_hover_bg",
+        "label": "Hover background",
+        "info": "Primary button hover and active background.",
+        "default": "#2C2C2C"
+      },
+      {
+        "type": "color",
+        "id": "btn_primary_hover_text",
+        "label": "Hover text",
+        "info": "Primary button hover and active text color.",
+        "default": "#FFFFFF"
+      },
+      {
+        "type": "color",
+        "id": "btn_primary_border",
+        "label": "Border",
+        "info": "Primary button border color.",
+        "default": "#171717"
+      },
+      {
+        "type": "header",
+        "content": "Secondary button"
+      },
+      {
+        "type": "color",
+        "id": "btn_second_bg",
+        "label": "Background",
+        "info": "Secondary button background.",
+        "default": "#FFFFFF"
+      },
+      {
+        "type": "color",
+        "id": "btn_second_text",
+        "label": "Text",
+        "info": "Secondary button text color.",
+        "default": "#171717"
+      },
+      {
+        "type": "color",
+        "id": "btn_second_border",
+        "label": "Border",
+        "info": "Secondary button border color.",
+        "default": "#171717"
+      },
+      {
+        "type": "color",
+        "id": "btn_second_hover_bg",
+        "label": "Hover background",
+        "info": "Secondary button hover background.",
+        "default": "#171717"
+      },
+      {
+        "type": "color",
+        "id": "btn_second_hover_text",
+        "label": "Hover text",
+        "info": "Secondary button hover text color.",
+        "default": "#FFFFFF"
+      },
+      {
+        "type": "header",
+        "content": "Global button geometry"
+      },
+      {
+        "type": "range",
+        "id": "sp_button_radius",
+        "label": "Border radius",
+        "info": "Global button corner radius.",
+        "default": 8,
+        "min": 0,
+        "max": 40,
+        "step": 1,
+        "unit": "px"
+      },
+      {
+        "type": "range",
+        "id": "sp_button_size",
+        "label": "Font size",
+        "info": "Default desktop button font size.",
+        "default": 15,
+        "min": 11,
+        "max": 20,
+        "step": 1,
+        "unit": "px"
+      },
+      {
+        "type": "select",
+        "id": "sp_button_weight",
+        "label": "Font weight",
+        "info": "Default button font weight.",
+        "default": "600",
+        "options": [
+          {
+            "value": "400",
+            "label": "Regular"
+          },
+          {
+            "value": "500",
+            "label": "Medium"
+          },
+          {
+            "value": "600",
+            "label": "Semibold"
+          },
+          {
+            "value": "700",
+            "label": "Bold"
+          }
+        ]
+      },
+      {
+        "type": "range",
+        "id": "sp_button_tracking",
+        "label": "Letter spacing",
+        "info": "Global button letter spacing.",
+        "default": 0.2,
+        "min": -0.5,
+        "max": 3,
+        "step": 0.1,
+        "unit": "px"
+      },
+      {
+        "type": "select",
+        "id": "sp_button_transform",
+        "label": "Text transform",
+        "info": "Global button capitalization style.",
+        "default": "none",
+        "options": [
+          {
+            "value": "none",
+            "label": "None"
+          },
+          {
+            "value": "uppercase",
+            "label": "Uppercase"
+          },
+          {
+            "value": "capitalize",
+            "label": "Capitalize"
+          },
+          {
+            "value": "lowercase",
+            "label": "Lowercase"
+          }
+        ]
+      },
+      {
+        "type": "range",
+        "id": "sp_button_pad_x",
+        "label": "Horizontal padding",
+        "info": "Default horizontal button padding.",
+        "default": 24,
+        "min": 12,
+        "max": 48,
+        "step": 2,
+        "unit": "px"
+      },
+      {
+        "type": "range",
+        "id": "sp_button_pad_y",
+        "label": "Vertical padding",
+        "info": "Default vertical button padding.",
+        "default": 14,
+        "min": 8,
+        "max": 28,
+        "step": 1,
+        "unit": "px"
+      },
+      {
+        "type": "range",
+        "id": "sp_button_border_w",
+        "label": "Border width",
+        "info": "Default button border width.",
+        "default": 1,
+        "min": 0,
+        "max": 3,
+        "step": 1,
+        "unit": "px"
+      }
+    ]
+  },
+  {
+    "name": "Color Schemes",
+    "settings": [
+      {
+        "type": "paragraph",
+        "content": "Premium shared color panels. Scheme 1 = Default Light, Scheme 2 = Soft, Scheme 3 = Premium Dark, Scheme 4 = Accent, Scheme 5 = Warm Contrast. Sections using a scheme update automatically when that scheme is edited."
+      },
+      {
+        "type": "color_scheme_group",
+        "id": "sp_color_schemes",
+        "definition": [
+          {
+            "type": "color",
+            "id": "background",
+            "label": "Background",
+            "default": "#FFFFFF"
+          },
+          {
+            "type": "color_background",
+            "id": "background_gradient",
+            "label": "Background gradient"
+          },
+          {
+            "type": "color",
+            "id": "heading",
+            "label": "Heading",
+            "default": "#171717"
+          },
+          {
+            "type": "color",
+            "id": "text",
+            "label": "Text",
+            "default": "#3F3F46"
+          },
+          {
+            "type": "color",
+            "id": "muted",
+            "label": "Muted text",
+            "default": "#71717A"
+          },
+          {
+            "type": "color",
+            "id": "card",
+            "label": "Card / surface",
+            "default": "#FFFFFF"
+          },
+          {
+            "type": "color",
+            "id": "border",
+            "label": "Border",
+            "default": "#E4E4E7"
+          },
+          {
+            "type": "color",
+            "id": "accent",
+            "label": "Accent / links",
+            "default": "#415DFF"
+          },
+          {
+            "type": "color",
+            "id": "primary_button",
+            "label": "Primary button",
+            "default": "#171717"
+          },
+          {
+            "type": "color",
+            "id": "primary_button_label",
+            "label": "Primary button text",
+            "default": "#FFFFFF"
+          },
+          {
+            "type": "color",
+            "id": "primary_button_hover",
+            "label": "Primary button hover",
+            "default": "#2C2C2C"
+          },
+          {
+            "type": "color",
+            "id": "primary_button_hover_label",
+            "label": "Primary hover text",
+            "default": "#FFFFFF"
+          },
+          {
+            "type": "color",
+            "id": "secondary_button",
+            "label": "Secondary button",
+            "default": "#FFFFFF"
+          },
+          {
+            "type": "color",
+            "id": "secondary_button_label",
+            "label": "Secondary button text",
+            "default": "#171717"
+          },
+          {
+            "type": "color",
+            "id": "secondary_button_border",
+            "label": "Secondary button border",
+            "default": "#171717"
+          },
+          {
+            "type": "color",
+            "id": "focus",
+            "label": "Focus ring",
+            "default": "#2563EB"
+          }
+        ],
+        "role": {
+          "text": "text",
+          "background": {
+            "solid": "background",
+            "gradient": "background_gradient"
+          },
+          "links": "accent",
+          "icons": "text",
+          "primary_button": "primary_button",
+          "on_primary_button": "primary_button_label",
+          "primary_button_border": "primary_button",
+          "secondary_button": "secondary_button",
+          "on_secondary_button": "secondary_button_label",
+          "secondary_button_border": "secondary_button_border"
+        }
+      }
+    ]
+  },
+  {
+    "name": "Advanced Typography",
+    "settings": [
+      {
+        "type": "header",
+        "content": "Font families"
+      },
+      {
+        "type": "font_picker",
+        "id": "sp_heading_font",
+        "label": "Heading font",
+        "info": "Shopify-hosted font used for headings.",
+        "default": "assistant_n6"
+      },
+      {
+        "type": "select",
+        "id": "heading_font_source",
+        "label": "Heading font source",
+        "info": "Choose Shopify font picker or a custom WOFF2 file.",
+        "default": "shopify",
+        "options": [
+          {
+            "value": "shopify",
+            "label": "Shopify font"
+          },
+          {
+            "value": "custom",
+            "label": "Custom WOFF2"
+          }
+        ]
+      },
+      {
+        "type": "text",
+        "id": "heading_custom_family",
+        "label": "Custom heading family",
+        "info": "CSS family name for the custom heading font.",
+        "default": "Spider Custom Heading"
+      },
+      {
+        "type": "text",
+        "id": "heading_custom_woff2",
+        "label": "Heading WOFF2 URL",
+        "info": "Upload a WOFF2 file to Shopify Files and paste its CDN URL.",
+        "placeholder": "Paste Shopify Files WOFF2 URL"
+      },
+      {
+        "type": "select",
+        "id": "heading_custom_style",
+        "label": "Heading font style",
+        "info": "Style metadata for the custom heading font.",
+        "default": "normal",
+        "options": [
+          {
+            "value": "normal",
+            "label": "Normal"
+          },
+          {
+            "value": "italic",
+            "label": "Italic"
+          }
+        ]
+      },
+      {
+        "type": "font_picker",
+        "id": "sp_body_font",
+        "label": "Body font",
+        "info": "Shopify-hosted font used for body text.",
+        "default": "assistant_n4"
+      },
+      {
+        "type": "select",
+        "id": "body_font_source",
+        "label": "Body font source",
+        "info": "Choose Shopify font picker or a custom WOFF2 file.",
+        "default": "shopify",
+        "options": [
+          {
+            "value": "shopify",
+            "label": "Shopify font"
+          },
+          {
+            "value": "custom",
+            "label": "Custom WOFF2"
+          }
+        ]
+      },
+      {
+        "type": "text",
+        "id": "body_custom_family",
+        "label": "Custom body family",
+        "info": "CSS family name for the custom body font.",
+        "default": "Spider Custom Body"
+      },
+      {
+        "type": "text",
+        "id": "body_custom_woff2",
+        "label": "Body WOFF2 URL",
+        "info": "Upload a WOFF2 file to Shopify Files and paste its CDN URL.",
+        "placeholder": "Paste Shopify Files WOFF2 URL"
+      },
+      {
+        "type": "select",
+        "id": "body_custom_style",
+        "label": "Body font style",
+        "info": "Style metadata for the custom body font.",
+        "default": "normal",
+        "options": [
+          {
+            "value": "normal",
+            "label": "Normal"
+          },
+          {
+            "value": "italic",
+            "label": "Italic"
+          }
+        ]
+      },
+      {
+        "type": "font_picker",
+        "id": "sp_button_font",
+        "label": "Button font",
+        "info": "Shopify-hosted font used for buttons and controls.",
+        "default": "assistant_n6"
+      },
+      {
+        "type": "header",
+        "content": "H1"
+      },
+      {
+        "type": "range",
+        "id": "h1_size_d",
+        "label": "Desktop size",
+        "info": "H1 font size on desktop screens.",
+        "default": 64,
+        "min": 16,
+        "max": 96,
+        "step": 1,
+        "unit": "px"
+      },
+      {
+        "type": "range",
+        "id": "h1_size_t",
+        "label": "Tablet size",
+        "info": "H1 font size on tablet screens.",
+        "default": 52,
+        "min": 15,
+        "max": 80,
+        "step": 1,
+        "unit": "px"
+      },
+      {
+        "type": "range",
+        "id": "h1_size_m",
+        "label": "Mobile size",
+        "info": "H1 font size on mobile screens.",
+        "default": 40,
+        "min": 14,
+        "max": 64,
+        "step": 1,
+        "unit": "px"
+      },
+      {
+        "type": "select",
+        "id": "h1_weight",
+        "label": "Font weight",
+        "info": "Global H1 font weight.",
+        "default": "700",
+        "options": [
+          {
+            "value": "400",
+            "label": "Regular"
+          },
+          {
+            "value": "500",
+            "label": "Medium"
+          },
+          {
+            "value": "600",
+            "label": "Semibold"
+          },
+          {
+            "value": "700",
+            "label": "Bold"
+          },
+          {
+            "value": "800",
+            "label": "Extra bold"
+          }
+        ]
+      },
+      {
+        "type": "range",
+        "id": "h1_line_height",
+        "label": "Line height",
+        "info": "Global H1 unitless line height.",
+        "default": 1.1,
+        "min": 0.8,
+        "max": 2.0,
+        "step": 0.1
+      },
+      {
+        "type": "range",
+        "id": "h1_tracking",
+        "label": "Letter spacing",
+        "info": "Global H1 letter spacing.",
+        "default": 0,
+        "min": -3,
+        "max": 6,
+        "step": 0.1,
+        "unit": "px"
+      },
+      {
+        "type": "select",
+        "id": "h1_transform",
+        "label": "Text transform",
+        "info": "Global H1 capitalization style.",
+        "default": "none",
+        "options": [
+          {
+            "value": "none",
+            "label": "None"
+          },
+          {
+            "value": "uppercase",
+            "label": "Uppercase"
+          },
+          {
+            "value": "capitalize",
+            "label": "Capitalize"
+          },
+          {
+            "value": "lowercase",
+            "label": "Lowercase"
+          }
+        ]
+      },
+      {
+        "type": "header",
+        "content": "H2"
+      },
+      {
+        "type": "range",
+        "id": "h2_size_d",
+        "label": "Desktop size",
+        "info": "H2 font size on desktop screens.",
+        "default": 48,
+        "min": 16,
+        "max": 96,
+        "step": 1,
+        "unit": "px"
+      },
+      {
+        "type": "range",
+        "id": "h2_size_t",
+        "label": "Tablet size",
+        "info": "H2 font size on tablet screens.",
+        "default": 40,
+        "min": 15,
+        "max": 80,
+        "step": 1,
+        "unit": "px"
+      },
+      {
+        "type": "range",
+        "id": "h2_size_m",
+        "label": "Mobile size",
+        "info": "H2 font size on mobile screens.",
+        "default": 32,
+        "min": 14,
+        "max": 64,
+        "step": 1,
+        "unit": "px"
+      },
+      {
+        "type": "select",
+        "id": "h2_weight",
+        "label": "Font weight",
+        "info": "Global H2 font weight.",
+        "default": "700",
+        "options": [
+          {
+            "value": "400",
+            "label": "Regular"
+          },
+          {
+            "value": "500",
+            "label": "Medium"
+          },
+          {
+            "value": "600",
+            "label": "Semibold"
+          },
+          {
+            "value": "700",
+            "label": "Bold"
+          },
+          {
+            "value": "800",
+            "label": "Extra bold"
+          }
+        ]
+      },
+      {
+        "type": "range",
+        "id": "h2_line_height",
+        "label": "Line height",
+        "info": "Global H2 unitless line height.",
+        "default": 1.2,
+        "min": 0.8,
+        "max": 2.0,
+        "step": 0.1
+      },
+      {
+        "type": "range",
+        "id": "h2_tracking",
+        "label": "Letter spacing",
+        "info": "Global H2 letter spacing.",
+        "default": 0,
+        "min": -3,
+        "max": 6,
+        "step": 0.1,
+        "unit": "px"
+      },
+      {
+        "type": "select",
+        "id": "h2_transform",
+        "label": "Text transform",
+        "info": "Global H2 capitalization style.",
+        "default": "none",
+        "options": [
+          {
+            "value": "none",
+            "label": "None"
+          },
+          {
+            "value": "uppercase",
+            "label": "Uppercase"
+          },
+          {
+            "value": "capitalize",
+            "label": "Capitalize"
+          },
+          {
+            "value": "lowercase",
+            "label": "Lowercase"
+          }
+        ]
+      },
+      {
+        "type": "header",
+        "content": "H3"
+      },
+      {
+        "type": "range",
+        "id": "h3_size_d",
+        "label": "Desktop size",
+        "info": "H3 font size on desktop screens.",
+        "default": 36,
+        "min": 16,
+        "max": 96,
+        "step": 1,
+        "unit": "px"
+      },
+      {
+        "type": "range",
+        "id": "h3_size_t",
+        "label": "Tablet size",
+        "info": "H3 font size on tablet screens.",
+        "default": 32,
+        "min": 15,
+        "max": 80,
+        "step": 1,
+        "unit": "px"
+      },
+      {
+        "type": "range",
+        "id": "h3_size_m",
+        "label": "Mobile size",
+        "info": "H3 font size on mobile screens.",
+        "default": 26,
+        "min": 14,
+        "max": 64,
+        "step": 1,
+        "unit": "px"
+      },
+      {
+        "type": "select",
+        "id": "h3_weight",
+        "label": "Font weight",
+        "info": "Global H3 font weight.",
+        "default": "600",
+        "options": [
+          {
+            "value": "400",
+            "label": "Regular"
+          },
+          {
+            "value": "500",
+            "label": "Medium"
+          },
+          {
+            "value": "600",
+            "label": "Semibold"
+          },
+          {
+            "value": "700",
+            "label": "Bold"
+          },
+          {
+            "value": "800",
+            "label": "Extra bold"
+          }
+        ]
+      },
+      {
+        "type": "range",
+        "id": "h3_line_height",
+        "label": "Line height",
+        "info": "Global H3 unitless line height.",
+        "default": 1.2,
+        "min": 0.8,
+        "max": 2.0,
+        "step": 0.1
+      },
+      {
+        "type": "range",
+        "id": "h3_tracking",
+        "label": "Letter spacing",
+        "info": "Global H3 letter spacing.",
+        "default": 0,
+        "min": -3,
+        "max": 6,
+        "step": 0.1,
+        "unit": "px"
+      },
+      {
+        "type": "select",
+        "id": "h3_transform",
+        "label": "Text transform",
+        "info": "Global H3 capitalization style.",
+        "default": "none",
+        "options": [
+          {
+            "value": "none",
+            "label": "None"
+          },
+          {
+            "value": "uppercase",
+            "label": "Uppercase"
+          },
+          {
+            "value": "capitalize",
+            "label": "Capitalize"
+          },
+          {
+            "value": "lowercase",
+            "label": "Lowercase"
+          }
+        ]
+      },
+      {
+        "type": "header",
+        "content": "H4"
+      },
+      {
+        "type": "range",
+        "id": "h4_size_d",
+        "label": "Desktop size",
+        "info": "H4 font size on desktop screens.",
+        "default": 28,
+        "min": 16,
+        "max": 96,
+        "step": 1,
+        "unit": "px"
+      },
+      {
+        "type": "range",
+        "id": "h4_size_t",
+        "label": "Tablet size",
+        "info": "H4 font size on tablet screens.",
+        "default": 26,
+        "min": 15,
+        "max": 80,
+        "step": 1,
+        "unit": "px"
+      },
+      {
+        "type": "range",
+        "id": "h4_size_m",
+        "label": "Mobile size",
+        "info": "H4 font size on mobile screens.",
+        "default": 22,
+        "min": 14,
+        "max": 64,
+        "step": 1,
+        "unit": "px"
+      },
+      {
+        "type": "select",
+        "id": "h4_weight",
+        "label": "Font weight",
+        "info": "Global H4 font weight.",
+        "default": "600",
+        "options": [
+          {
+            "value": "400",
+            "label": "Regular"
+          },
+          {
+            "value": "500",
+            "label": "Medium"
+          },
+          {
+            "value": "600",
+            "label": "Semibold"
+          },
+          {
+            "value": "700",
+            "label": "Bold"
+          },
+          {
+            "value": "800",
+            "label": "Extra bold"
+          }
+        ]
+      },
+      {
+        "type": "range",
+        "id": "h4_line_height",
+        "label": "Line height",
+        "info": "Global H4 unitless line height.",
+        "default": 1.3,
+        "min": 0.8,
+        "max": 2.0,
+        "step": 0.1
+      },
+      {
+        "type": "range",
+        "id": "h4_tracking",
+        "label": "Letter spacing",
+        "info": "Global H4 letter spacing.",
+        "default": 0,
+        "min": -3,
+        "max": 6,
+        "step": 0.1,
+        "unit": "px"
+      },
+      {
+        "type": "select",
+        "id": "h4_transform",
+        "label": "Text transform",
+        "info": "Global H4 capitalization style.",
+        "default": "none",
+        "options": [
+          {
+            "value": "none",
+            "label": "None"
+          },
+          {
+            "value": "uppercase",
+            "label": "Uppercase"
+          },
+          {
+            "value": "capitalize",
+            "label": "Capitalize"
+          },
+          {
+            "value": "lowercase",
+            "label": "Lowercase"
+          }
+        ]
+      },
+      {
+        "type": "header",
+        "content": "H5"
+      },
+      {
+        "type": "range",
+        "id": "h5_size_d",
+        "label": "Desktop size",
+        "info": "H5 font size on desktop screens.",
+        "default": 22,
+        "min": 16,
+        "max": 96,
+        "step": 1,
+        "unit": "px"
+      },
+      {
+        "type": "range",
+        "id": "h5_size_t",
+        "label": "Tablet size",
+        "info": "H5 font size on tablet screens.",
+        "default": 21,
+        "min": 15,
+        "max": 80,
+        "step": 1,
+        "unit": "px"
+      },
+      {
+        "type": "range",
+        "id": "h5_size_m",
+        "label": "Mobile size",
+        "info": "H5 font size on mobile screens.",
+        "default": 19,
+        "min": 14,
+        "max": 64,
+        "step": 1,
+        "unit": "px"
+      },
+      {
+        "type": "select",
+        "id": "h5_weight",
+        "label": "Font weight",
+        "info": "Global H5 font weight.",
+        "default": "600",
+        "options": [
+          {
+            "value": "400",
+            "label": "Regular"
+          },
+          {
+            "value": "500",
+            "label": "Medium"
+          },
+          {
+            "value": "600",
+            "label": "Semibold"
+          },
+          {
+            "value": "700",
+            "label": "Bold"
+          },
+          {
+            "value": "800",
+            "label": "Extra bold"
+          }
+        ]
+      },
+      {
+        "type": "range",
+        "id": "h5_line_height",
+        "label": "Line height",
+        "info": "Global H5 unitless line height.",
+        "default": 1.3,
+        "min": 0.8,
+        "max": 2.0,
+        "step": 0.1
+      },
+      {
+        "type": "range",
+        "id": "h5_tracking",
+        "label": "Letter spacing",
+        "info": "Global H5 letter spacing.",
+        "default": 0,
+        "min": -3,
+        "max": 6,
+        "step": 0.1,
+        "unit": "px"
+      },
+      {
+        "type": "select",
+        "id": "h5_transform",
+        "label": "Text transform",
+        "info": "Global H5 capitalization style.",
+        "default": "none",
+        "options": [
+          {
+            "value": "none",
+            "label": "None"
+          },
+          {
+            "value": "uppercase",
+            "label": "Uppercase"
+          },
+          {
+            "value": "capitalize",
+            "label": "Capitalize"
+          },
+          {
+            "value": "lowercase",
+            "label": "Lowercase"
+          }
+        ]
+      },
+      {
+        "type": "header",
+        "content": "H6"
+      },
+      {
+        "type": "range",
+        "id": "h6_size_d",
+        "label": "Desktop size",
+        "info": "H6 font size on desktop screens.",
+        "default": 18,
+        "min": 16,
+        "max": 96,
+        "step": 1,
+        "unit": "px"
+      },
+      {
+        "type": "range",
+        "id": "h6_size_t",
+        "label": "Tablet size",
+        "info": "H6 font size on tablet screens.",
+        "default": 18,
+        "min": 15,
+        "max": 80,
+        "step": 1,
+        "unit": "px"
+      },
+      {
+        "type": "range",
+        "id": "h6_size_m",
+        "label": "Mobile size",
+        "info": "H6 font size on mobile screens.",
+        "default": 16,
+        "min": 14,
+        "max": 64,
+        "step": 1,
+        "unit": "px"
+      },
+      {
+        "type": "select",
+        "id": "h6_weight",
+        "label": "Font weight",
+        "info": "Global H6 font weight.",
+        "default": "600",
+        "options": [
+          {
+            "value": "400",
+            "label": "Regular"
+          },
+          {
+            "value": "500",
+            "label": "Medium"
+          },
+          {
+            "value": "600",
+            "label": "Semibold"
+          },
+          {
+            "value": "700",
+            "label": "Bold"
+          },
+          {
+            "value": "800",
+            "label": "Extra bold"
+          }
+        ]
+      },
+      {
+        "type": "range",
+        "id": "h6_line_height",
+        "label": "Line height",
+        "info": "Global H6 unitless line height.",
+        "default": 1.4,
+        "min": 0.8,
+        "max": 2.0,
+        "step": 0.1
+      },
+      {
+        "type": "range",
+        "id": "h6_tracking",
+        "label": "Letter spacing",
+        "info": "Global H6 letter spacing.",
+        "default": 0,
+        "min": -3,
+        "max": 6,
+        "step": 0.1,
+        "unit": "px"
+      },
+      {
+        "type": "select",
+        "id": "h6_transform",
+        "label": "Text transform",
+        "info": "Global H6 capitalization style.",
+        "default": "none",
+        "options": [
+          {
+            "value": "none",
+            "label": "None"
+          },
+          {
+            "value": "uppercase",
+            "label": "Uppercase"
+          },
+          {
+            "value": "capitalize",
+            "label": "Capitalize"
+          },
+          {
+            "value": "lowercase",
+            "label": "Lowercase"
+          }
+        ]
+      },
+      {
+        "type": "header",
+        "content": "Body text"
+      },
+      {
+        "type": "range",
+        "id": "body_size_d",
+        "label": "Desktop font size",
+        "info": "Default paragraph font size on desktop.",
+        "default": 16,
+        "min": 12,
+        "max": 24,
+        "step": 1,
+        "unit": "px"
+      },
+      {
+        "type": "range",
+        "id": "body_size_t",
+        "label": "Tablet font size",
+        "info": "Default paragraph font size on tablets.",
+        "default": 16,
+        "min": 12,
+        "max": 22,
+        "step": 1,
+        "unit": "px"
+      },
+      {
+        "type": "range",
+        "id": "body_size_m",
+        "label": "Mobile font size",
+        "info": "Default paragraph font size on mobile.",
+        "default": 16,
+        "min": 12,
+        "max": 20,
+        "step": 1,
+        "unit": "px"
+      },
+      {
+        "type": "select",
+        "id": "body_weight",
+        "label": "Font weight",
+        "info": "Default paragraph font weight.",
+        "default": "400",
+        "options": [
+          {
+            "value": "300",
+            "label": "Light"
+          },
+          {
+            "value": "400",
+            "label": "Regular"
+          },
+          {
+            "value": "500",
+            "label": "Medium"
+          },
+          {
+            "value": "600",
+            "label": "Semibold"
+          }
+        ]
+      },
+      {
+        "type": "range",
+        "id": "body_line_height",
+        "label": "Line height",
+        "info": "Default unitless paragraph line height.",
+        "default": 1.6,
+        "min": 1.0,
+        "max": 2.2,
+        "step": 0.1
+      },
+      {
+        "type": "range",
+        "id": "body_tracking",
+        "label": "Letter spacing",
+        "info": "Default body text letter spacing.",
+        "default": 0,
+        "min": -1,
+        "max": 3,
+        "step": 0.1,
+        "unit": "px"
+      },
+      {
+        "type": "header",
+        "content": "Small text"
+      },
+      {
+        "type": "range",
+        "id": "small_size",
+        "label": "Font size",
+        "info": "Default font size for captions and metadata.",
+        "default": 14,
+        "min": 10,
+        "max": 16,
+        "step": 1,
+        "unit": "px"
+      },
+      {
+        "type": "select",
+        "id": "small_weight",
+        "label": "Font weight",
+        "info": "Default font weight for captions and metadata.",
+        "default": "500",
+        "options": [
+          {
+            "value": "400",
+            "label": "Regular"
+          },
+          {
+            "value": "500",
+            "label": "Medium"
+          },
+          {
+            "value": "600",
+            "label": "Semibold"
+          },
+          {
+            "value": "700",
+            "label": "Bold"
+          }
+        ]
+      },
+      {
+        "type": "range",
+        "id": "small_line_height",
+        "label": "Line height",
+        "info": "Default unitless line height for small text.",
+        "default": 1.4,
+        "min": 1.0,
+        "max": 2.0,
+        "step": 0.1
+      }
+    ]
+  },
+  {
+    "name": "Layout Settings",
+    "settings": [
+      {
+        "type": "header",
+        "content": "Page container"
+      },
+      {
+        "type": "select",
+        "id": "sp_layout_style",
+        "label": "Page layout",
+        "info": "Controls the global page canvas.",
+        "default": "full",
+        "options": [
+          {
+            "value": "full",
+            "label": "Full width"
+          },
+          {
+            "value": "boxed",
+            "label": "Boxed"
+          }
+        ]
+      },
+      {
+        "type": "range",
+        "id": "sp_container_width",
+        "label": "Container width",
+        "info": "Standard content container width.",
+        "default": 1280,
+        "min": 960,
+        "max": 1600,
+        "step": 20,
+        "unit": "px"
+      },
+      {
+        "type": "range",
+        "id": "sp_wide_width",
+        "label": "Wide container width",
+        "info": "Wide content container width.",
+        "default": 1600,
+        "min": 1200,
+        "max": 1920,
+        "step": 20,
+        "unit": "px"
+      },
+      {
+        "type": "range",
+        "id": "sp_narrow_width",
+        "label": "Narrow container width",
+        "info": "Reading and compact content width.",
+        "default": 800,
+        "min": 640,
+        "max": 1000,
+        "step": 20,
+        "unit": "px"
+      },
+      {
+        "type": "range",
+        "id": "sp_page_gutter_d",
+        "label": "Desktop page gutter",
+        "info": "Horizontal page padding on desktop.",
+        "default": 32,
+        "min": 16,
+        "max": 80,
+        "step": 2,
+        "unit": "px"
+      },
+      {
+        "type": "range",
+        "id": "sp_page_gutter_m",
+        "label": "Mobile page gutter",
+        "info": "Horizontal page padding on mobile.",
+        "default": 20,
+        "min": 12,
+        "max": 36,
+        "step": 2,
+        "unit": "px"
+      },
+      {
+        "type": "header",
+        "content": "Global spacing"
+      },
+      {
+        "type": "range",
+        "id": "sp_section_gap",
+        "label": "Section spacing",
+        "info": "Default vertical space between sections.",
+        "default": 72,
+        "min": 32,
+        "max": 160,
+        "step": 4,
+        "unit": "px"
+      },
+      {
+        "type": "range",
+        "id": "section_pad_top",
+        "label": "Section top padding",
+        "info": "Default desktop section top padding.",
+        "default": 72,
+        "min": 0,
+        "max": 160,
+        "step": 4,
+        "unit": "px"
+      },
+      {
+        "type": "range",
+        "id": "section_pad_bottom",
+        "label": "Section bottom padding",
+        "info": "Default desktop section bottom padding.",
+        "default": 72,
+        "min": 0,
+        "max": 160,
+        "step": 4,
+        "unit": "px"
+      },
+      {
+        "type": "range",
+        "id": "section_pad_mobile",
+        "label": "Mobile section padding",
+        "info": "Default mobile section top and bottom padding.",
+        "default": 44,
+        "min": 0,
+        "max": 100,
+        "step": 4,
+        "unit": "px"
+      },
+      {
+        "type": "header",
+        "content": "Grid spacing"
+      },
+      {
+        "type": "range",
+        "id": "sp_grid_gap",
+        "label": "Default column gap",
+        "info": "Default responsive grid gap.",
+        "default": 24,
+        "min": 8,
+        "max": 64,
+        "step": 2,
+        "unit": "px"
+      },
+      {
+        "type": "range",
+        "id": "product_grid_gap",
+        "label": "Product grid gap",
+        "info": "Default gap between product cards.",
+        "default": 24,
+        "min": 8,
+        "max": 48,
+        "step": 2,
+        "unit": "px"
+      },
+      {
+        "type": "range",
+        "id": "sp_content_gap",
+        "label": "Content gap",
+        "info": "Default gap between content elements.",
+        "default": 24,
+        "min": 8,
+        "max": 64,
+        "step": 2,
+        "unit": "px"
+      },
+      {
+        "type": "header",
+        "content": "Corner radius"
+      },
+      {
+        "type": "range",
+        "id": "sp_radius_small",
+        "label": "Small radius",
+        "info": "Radius token for small controls and badges.",
+        "default": 4,
+        "min": 0,
+        "max": 24,
+        "step": 1,
+        "unit": "px"
+      },
+      {
+        "type": "range",
+        "id": "sp_radius_medium",
+        "label": "Medium radius",
+        "info": "Radius token for cards and controls.",
+        "default": 8,
+        "min": 0,
+        "max": 40,
+        "step": 1,
+        "unit": "px"
+      },
+      {
+        "type": "range",
+        "id": "sp_radius_large",
+        "label": "Large radius",
+        "info": "Radius token for large media and banners.",
+        "default": 16,
+        "min": 0,
+        "max": 64,
+        "step": 1,
+        "unit": "px"
+      },
+      {
+        "type": "header",
+        "content": "Shadows"
+      },
+      {
+        "type": "select",
+        "id": "sp_card_shadow",
+        "label": "Card shadow",
+        "info": "Default elevation preset for cards.",
+        "default": "soft",
+        "options": [
+          {
+            "value": "none",
+            "label": "None"
+          },
+          {
+            "value": "soft",
+            "label": "Soft"
+          },
+          {
+            "value": "medium",
+            "label": "Medium"
+          },
+          {
+            "value": "strong",
+            "label": "Strong"
+          }
+        ]
+      },
+      {
+        "type": "select",
+        "id": "sp_popup_shadow",
+        "label": "Popup shadow",
+        "info": "Default elevation preset for drawers, menus, and modals.",
+        "default": "strong",
+        "options": [
+          {
+            "value": "soft",
+            "label": "Soft"
+          },
+          {
+            "value": "medium",
+            "label": "Medium"
+          },
+          {
+            "value": "strong",
+            "label": "Strong"
+          }
+        ]
+      },
+      {
+        "type": "color",
+        "id": "sp_shadow_color",
+        "label": "Shadow color",
+        "info": "Base color used to build component shadows.",
+        "default": "#000000"
+      },
+      {
+        "type": "range",
+        "id": "sp_shadow_opacity",
+        "label": "Shadow opacity",
+        "info": "Global shadow opacity.",
+        "default": 10,
+        "min": 0,
+        "max": 30,
+        "step": 1,
+        "unit": "%"
+      }
+    ]
+  },
+  {
+    "name": "Section Defaults",
+    "settings": [
+      {
+        "type": "header",
+        "content": "Default layout"
+      },
+      {
+        "type": "header",
+        "content": "Default spacing"
+      },
+      {
+        "type": "range",
+        "id": "section_default_pt",
+        "label": "Desktop padding top",
+        "info": "Default section top padding on desktop.",
+        "default": 64,
+        "min": 0,
+        "max": 160,
+        "step": 4,
+        "unit": "px"
+      },
+      {
+        "type": "range",
+        "id": "section_default_pb",
+        "label": "Desktop padding bottom",
+        "info": "Default section bottom padding on desktop.",
+        "default": 64,
+        "min": 0,
+        "max": 160,
+        "step": 4,
+        "unit": "px"
+      },
+      {
+        "type": "range",
+        "id": "section_default_mpt",
+        "label": "Mobile padding top",
+        "info": "Default section top padding on mobile.",
+        "default": 40,
+        "min": 0,
+        "max": 100,
+        "step": 4,
+        "unit": "px"
+      },
+      {
+        "type": "range",
+        "id": "section_default_mpb",
+        "label": "Mobile padding bottom",
+        "info": "Default section bottom padding on mobile.",
+        "default": 40,
+        "min": 0,
+        "max": 100,
+        "step": 4,
+        "unit": "px"
+      },
+      {
+        "type": "header",
+        "content": "Default background"
+      },
+      {
+        "type": "image_picker",
+        "id": "section_default_image",
+        "label": "Background image",
+        "info": "Optional global fallback background image for compatible sections."
+      },
+      {
+        "type": "color_background",
+        "id": "section_default_grad",
+        "label": "Background gradient",
+        "info": "Optional default gradient used by compatible sections.",
+        "default": "linear-gradient(135deg, #FFFFFF 0%, #F7F7F7 100%)"
+      },
+      {
+        "type": "header",
+        "content": "Default content styling"
+      }
+    ]
+  },
+  {
+    "name": "Responsive Controls",
+    "settings": [
+      {
+        "type": "header",
+        "content": "Desktop"
+      },
+      {
+        "type": "range",
+        "id": "desktop_base_scale",
+        "label": "Typography scale",
+        "info": "Percentage multiplier for desktop typography tokens.",
+        "default": 100,
+        "min": 90,
+        "max": 120,
+        "step": 1,
+        "unit": "%"
+      },
+      {
+        "type": "header",
+        "content": "Tablet"
+      },
+      {
+        "type": "range",
+        "id": "tablet_grid_cols",
+        "label": "Default columns",
+        "info": "Default tablet grid column count for compatible sections.",
+        "default": 3,
+        "min": 1,
+        "max": 4,
+        "step": 1
+      },
+      {
+        "type": "range",
+        "id": "tablet_type_scale",
+        "label": "Typography scale",
+        "info": "Percentage multiplier for tablet typography tokens.",
+        "default": 92,
+        "min": 75,
+        "max": 110,
+        "step": 1,
+        "unit": "%"
+      },
+      {
+        "type": "range",
+        "id": "tablet_section_gap",
+        "label": "Section spacing",
+        "info": "Tablet spacing between major sections.",
+        "default": 72,
+        "min": 32,
+        "max": 140,
+        "step": 4,
+        "unit": "px"
+      },
+      {
+        "type": "header",
+        "content": "Mobile"
+      },
+      {
+        "type": "range",
+        "id": "mobile_type_scale",
+        "label": "Typography scale",
+        "info": "Percentage multiplier for mobile typography tokens.",
+        "default": 88,
+        "min": 70,
+        "max": 110,
+        "step": 1,
+        "unit": "%"
+      },
+      {
+        "type": "range",
+        "id": "mobile_section_gap",
+        "label": "Section spacing",
+        "info": "Mobile spacing between major sections.",
+        "default": 48,
+        "min": 24,
+        "max": 100,
+        "step": 4,
+        "unit": "px"
+      },
+      {
+        "type": "select",
+        "id": "mobile_product_cols",
+        "label": "Product columns",
+        "info": "Default product grid columns on mobile.",
+        "default": "2",
+        "options": [
+          {
+            "value": "1",
+            "label": "1 column"
+          },
+          {
+            "value": "2",
+            "label": "2 columns"
+          }
+        ]
+      },
+      {
+        "type": "range",
+        "id": "mobile_grid_gap",
+        "label": "Grid gap",
+        "info": "Default mobile grid gap.",
+        "default": 12,
+        "min": 8,
+        "max": 28,
+        "step": 2,
+        "unit": "px"
+      }
+    ]
+  },
+  {
+    "name": "Forms & Inputs",
+    "settings": [
+      {
+        "type": "header",
+        "content": "Global premium input design"
+      },
+      {
+        "type": "paragraph",
+        "content": "Applies to Spider-owned forms. Product-specific and Shopify checkout controls retain their own behavior."
+      },
+      {
+        "type": "range",
+        "id": "sp_form_height_d",
+        "label": "Desktop field height",
+        "default": 52,
+        "min": 40,
+        "max": 64,
+        "step": 2,
+        "unit": "px"
+      },
+      {
+        "type": "range",
+        "id": "sp_form_height_m",
+        "label": "Mobile field height",
+        "default": 48,
+        "min": 40,
+        "max": 60,
+        "step": 2,
+        "unit": "px"
+      },
+      {
+        "type": "range",
+        "id": "sp_form_radius",
+        "label": "Field border radius",
+        "default": 8,
+        "min": 0,
+        "max": 24,
+        "step": 1,
+        "unit": "px"
+      },
+      {
+        "type": "range",
+        "id": "sp_form_border_width",
+        "label": "Field border width",
+        "default": 1,
+        "min": 1,
+        "max": 3,
+        "step": 1,
+        "unit": "px"
+      },
+      {
+        "type": "color",
+        "id": "sp_form_border_color",
+        "label": "Field border color",
+        "default": "#D6D9DF"
+      },
+      {
+        "type": "color",
+        "id": "sp_form_hover_border",
+        "label": "Hover border color",
+        "default": "#999FA9"
+      },
+      {
+        "type": "color",
+        "id": "sp_form_placeholder_color",
+        "label": "Placeholder color",
+        "default": "#9299A5"
+      },
+      {
+        "type": "select",
+        "id": "sp_form_focus_source",
+        "label": "Focus accent source",
+        "default": "accent",
+        "options": [
+          {
+            "value": "accent",
+            "label": "Global accent"
+          },
+          {
+            "value": "custom",
+            "label": "Custom focus color"
+          }
+        ]
+      },
+      {
+        "type": "color",
+        "id": "sp_form_custom_focus",
+        "label": "Custom focus color",
+        "default": "#415DFF"
+      },
+      {
+        "type": "range",
+        "id": "sp_form_ring_width",
+        "label": "Focus ring size",
+        "default": 3,
+        "min": 1,
+        "max": 5,
+        "step": 1,
+        "unit": "px"
+      },
+      {
+        "type": "range",
+        "id": "sp_form_ring_opacity",
+        "label": "Focus ring opacity",
+        "default": 13,
+        "min": 5,
+        "max": 30,
+        "step": 1,
+        "unit": "%"
+      },
+      {
+        "type": "range",
+        "id": "sp_form_transition",
+        "label": "Focus transition duration",
+        "default": 200,
+        "min": 100,
+        "max": 400,
+        "step": 25,
+        "unit": "ms"
+      },
+      {
+        "type": "range",
+        "id": "sp_form_textarea_height",
+        "label": "Textarea minimum height",
+        "default": 120,
+        "min": 80,
+        "max": 240,
+        "step": 10,
+        "unit": "px"
+      },
+      {
+        "type": "header",
+        "content": "Validation and accessibility"
+      },
+      {
+        "type": "color",
+        "id": "sp_form_error_color",
+        "label": "Validation error color",
+        "default": "#B91C1C"
+      },
+      {
+        "type": "paragraph",
+        "content": "Keyboard focus remains clearly visible. High-contrast and reduced-motion preferences are supported automatically."
+      }
+    ]
+  },
+  {
+    "name": "Premium Interactions",
+    "settings": [
+      {
+        "type": "header",
+        "content": "Premium hover defaults"
+      },
+      {
+        "type": "checkbox",
+        "id": "sp_ui_hover_enabled",
+        "label": "Enable premium hover transitions",
+        "default": true
+      },
+      {
+        "type": "select",
+        "id": "sp_ui_button_hover",
+        "label": "Button hover motion",
+        "default": "lift",
+        "options": [
+          {
+            "value": "lift",
+            "label": "Subtle lift"
+          },
+          {
+            "value": "color",
+            "label": "Color shift only"
+          },
+          {
+            "value": "none",
+            "label": "None"
+          }
+        ]
+      },
+      {
+        "type": "range",
+        "id": "sp_ui_button_duration",
+        "label": "Button transition",
+        "default": 225,
+        "min": 100,
+        "max": 400,
+        "step": 25,
+        "unit": "ms"
+      },
+      {
+        "type": "range",
+        "id": "sp_ui_button_height",
+        "label": "Standard button minimum height",
+        "min": 44,
+        "max": 60,
+        "step": 2,
+        "unit": "px",
+        "default": 50
+      },
+      {
+        "type": "range",
+        "id": "sp_ui_button_lift",
+        "label": "Button hover lift",
+        "default": 1,
+        "min": 0,
+        "max": 3,
+        "step": 1,
+        "unit": "px"
+      },
+      {
+        "type": "select",
+        "id": "sp_ui_card_hover",
+        "label": "General card hover",
+        "default": "subtle",
+        "options": [
+          {
+            "value": "subtle",
+            "label": "Soft lift and shadow"
+          },
+          {
+            "value": "border",
+            "label": "Border only"
+          },
+          {
+            "value": "none",
+            "label": "None"
+          }
+        ]
+      },
+      {
+        "type": "range",
+        "id": "sp_ui_card_duration",
+        "label": "Card transition",
+        "default": 275,
+        "min": 150,
+        "max": 450,
+        "step": 25,
+        "unit": "ms"
+      },
+      {
+        "type": "header",
+        "content": "Drawer and modal motion"
+      },
+      {
+        "type": "checkbox",
+        "id": "sp_ui_drawer_motion",
+        "label": "Enable smooth drawer transitions",
+        "default": true
+      },
+      {
+        "type": "range",
+        "id": "sp_ui_drawer_duration",
+        "label": "Drawer animation duration",
+        "default": 300,
+        "min": 150,
+        "max": 500,
+        "step": 25,
+        "unit": "ms"
+      },
+      {
+        "type": "range",
+        "id": "sp_ui_modal_duration",
+        "label": "Modal animation duration",
+        "default": 250,
+        "min": 150,
+        "max": 450,
+        "step": 25,
+        "unit": "ms"
+      },
+      {
+        "type": "range",
+        "id": "sp_ui_overlay_opacity",
+        "label": "Default overlay opacity",
+        "default": 45,
+        "min": 15,
+        "max": 80,
+        "step": 5,
+        "unit": "%"
+      },
+      {
+        "type": "paragraph",
+        "content": "Individual drawers may retain their own overlay color, width and animation settings. This is a fallback for components without local overrides."
+      }
+    ]
+  },
+  {
+    "name": "Animations",
+    "settings": [
+      {
+        "type": "header",
+        "content": "Global animation"
+      },
+      {
+        "type": "checkbox",
+        "id": "sp_motion_enable",
+        "label": "Enable animations",
+        "info": "Enables the Spider motion engine globally.",
+        "default": true
+      },
+      {
+        "type": "select",
+        "id": "sp_motion_style",
+        "label": "Default animation",
+        "info": "Fallback animation for elements without a local style.",
+        "default": "fade-up",
+        "options": [
+          {
+            "value": "fade",
+            "label": "Fade"
+          },
+          {
+            "value": "fade-up",
+            "label": "Fade up"
+          },
+          {
+            "value": "fade-down",
+            "label": "Fade down"
+          },
+          {
+            "value": "slide-left",
+            "label": "Slide left"
+          },
+          {
+            "value": "slide-right",
+            "label": "Slide right"
+          },
+          {
+            "value": "zoom",
+            "label": "Zoom"
+          },
+          {
+            "value": "scale",
+            "label": "Scale"
+          },
+          {
+            "value": "reveal",
+            "label": "Reveal"
+          }
+        ]
+      },
+      {
+        "type": "range",
+        "id": "sp_motion_duration",
+        "label": "Duration",
+        "info": "Default animation duration.",
+        "default": 600,
+        "min": 100,
+        "max": 1600,
+        "step": 50,
+        "unit": "ms"
+      },
+      {
+        "type": "range",
+        "id": "sp_motion_delay",
+        "label": "Delay",
+        "info": "Default animation delay.",
+        "default": 0,
+        "min": 0,
+        "max": 1000,
+        "step": 50,
+        "unit": "ms"
+      },
+      {
+        "type": "select",
+        "id": "sp_motion_easing",
+        "label": "Easing",
+        "info": "Default motion timing function.",
+        "default": "cubic",
+        "options": [
+          {
+            "value": "ease",
+            "label": "Ease"
+          },
+          {
+            "value": "ease-out",
+            "label": "Ease out"
+          },
+          {
+            "value": "ease-in-out",
+            "label": "Ease in-out"
+          },
+          {
+            "value": "cubic",
+            "label": "Premium cubic"
+          }
+        ]
+      },
+      {
+        "type": "checkbox",
+        "id": "sp_motion_repeat",
+        "label": "Repeat on re-entry",
+        "info": "Replays eligible scroll animations when elements re-enter the viewport.",
+        "default": false
+      },
+      {
+        "type": "header",
+        "content": "Scroll animation"
+      },
+      {
+        "type": "checkbox",
+        "id": "scroll_motion_enable",
+        "label": "Enable scroll animations",
+        "info": "Uses IntersectionObserver to animate eligible content.",
+        "default": true
+      },
+      {
+        "type": "range",
+        "id": "scroll_trigger_dist",
+        "label": "Trigger distance",
+        "info": "Viewport offset before scroll animations start.",
+        "default": 12,
+        "min": 0,
+        "max": 40,
+        "step": 2,
+        "unit": "%"
+      },
+      {
+        "type": "range",
+        "id": "scroll_stagger",
+        "label": "Stagger interval",
+        "info": "Delay added between children in animated groups.",
+        "default": 80,
+        "min": 0,
+        "max": 300,
+        "step": 10,
+        "unit": "ms"
+      },
+      {
+        "type": "header",
+        "content": "Reduced motion"
+      },
+      {
+        "type": "checkbox",
+        "id": "sp_reduce_motion",
+        "label": "Respect reduced motion",
+        "info": "Disables non-essential motion when the customer requests reduced motion.",
+        "default": true
+      },
+      {
+        "type": "checkbox",
+        "id": "sp_motion_a11y_mode",
+        "label": "Accessibility motion mode",
+        "info": "Uses opacity-only transitions as a safe fallback.",
+        "default": true
+      },
+      {
+        "type": "header",
+        "content": "Page transitions"
+      },
+      {
+        "type": "checkbox",
+        "id": "sp_page_transition_enabled",
+        "label": "Enable page transitions",
+        "info": "Shows Spider's global loader for normal internal page navigation.",
+        "default": true
+      },
+      {
+        "type": "checkbox",
+        "id": "sp_loader_design_mode",
+        "label": "Preview loader in Theme Editor",
+        "info": "Shows a short, non-blocking loader preview in the Shopify Theme Editor.",
+        "default": false
+      },
+      {
+        "type": "select",
+        "id": "sp_page_transition_style",
+        "label": "Page transition style",
+        "default": "fade",
+        "options": [
+          {
+            "value": "fade",
+            "label": "Fade"
+          },
+          {
+            "value": "fade_scale",
+            "label": "Fade + Scale"
+          },
+          {
+            "value": "slide_up",
+            "label": "Slide Up"
+          },
+          {
+            "value": "none",
+            "label": "No content animation"
+          }
+        ]
+      },
+      {
+        "type": "range",
+        "id": "sp_page_transition_duration",
+        "label": "Transition speed",
+        "default": 350,
+        "min": 150,
+        "max": 1000,
+        "step": 50,
+        "unit": "ms"
+      },
+      {
+        "type": "header",
+        "content": "Global loader"
+      },
+      {
+        "type": "select",
+        "id": "sp_loader_style",
+        "label": "Loader style",
+        "default": "spinner",
+        "options": [
+          {
+            "value": "spinner",
+            "label": "Spinner"
+          },
+          {
+            "value": "dots",
+            "label": "Dots"
+          },
+          {
+            "value": "pulse",
+            "label": "Pulse"
+          },
+          {
+            "value": "custom_logo",
+            "label": "Custom logo"
+          }
+        ]
+      },
+      {
+        "type": "range",
+        "id": "sp_loader_size",
+        "label": "Loading size",
+        "default": 64,
+        "min": 24,
+        "max": 160,
+        "step": 4,
+        "unit": "px"
+      },
+      {
+        "type": "color",
+        "id": "sp_loader_color",
+        "label": "Loading color",
+        "default": "#111111"
+      },
+      {
+        "type": "color",
+        "id": "sp_loader_background",
+        "label": "Loading background",
+        "default": "#FFFFFF"
+      },
+      {
+        "type": "range",
+        "id": "sp_loader_background_opacity",
+        "label": "Background opacity",
+        "default": 100,
+        "min": 0,
+        "max": 100,
+        "step": 5,
+        "unit": "%"
+      },
+      {
+        "type": "image_picker",
+        "id": "sp_loader_logo",
+        "label": "Custom loader logo",
+        "info": "Upload a square or near-square image. Recommended size: 128×128px or larger."
+      },
+      {
+        "type": "range",
+        "id": "sp_loader_logo_size",
+        "label": "Custom logo size",
+        "default": 80,
+        "min": 24,
+        "max": 200,
+        "step": 4,
+        "unit": "px"
+      },
+      {
+        "type": "range",
+        "id": "sp_loader_delay",
+        "label": "Loader delay",
+        "info": "Avoids a loader flash when navigation completes very quickly.",
+        "default": 100,
+        "min": 0,
+        "max": 500,
+        "step": 50,
+        "unit": "ms"
+      },
+      {
+        "type": "range",
+        "id": "sp_loader_min_duration",
+        "label": "Minimum display time",
+        "info": "If the loader becomes visible, keep it visible for at least this long without delaying the browser navigation itself.",
+        "default": 250,
+        "min": 0,
+        "max": 1000,
+        "step": 50,
+        "unit": "ms"
+      },
+      {
+        "type": "checkbox",
+        "id": "sp_loader_lock_scroll",
+        "label": "Lock scrolling while loading",
+        "default": true
+      },
+      {
+        "type": "checkbox",
+        "id": "sp_loader_show_text",
+        "label": "Show loader text",
+        "default": false
+      },
+      {
+        "type": "text",
+        "id": "sp_loader_text",
+        "label": "Loader text",
+        "default": "Loading…"
+      }
+    ]
+  },
+  {
+    "name": "Header Settings",
+    "settings": [
+      {
+        "type": "header",
+        "content": "Header layout"
+      },
+      {
+        "type": "select",
+        "id": "header_layout",
+        "label": "Desktop layout",
+        "info": "Global desktop layout used when the Header section is set to Use global Header settings.",
+        "default": "logo-left",
+        "options": [
+          {
+            "value": "logo-left",
+            "label": "Logo left / menu center"
+          },
+          {
+            "value": "logo-center",
+            "label": "Logo center"
+          },
+          {
+            "value": "split-menu",
+            "label": "Center logo + split menu"
+          },
+          {
+            "value": "menu-below-left",
+            "label": "Menu below / left"
+          },
+          {
+            "value": "menu-below-center",
+            "label": "Menu below / centered"
+          }
+        ]
+      },
+      {
+        "type": "range",
+        "id": "header_height",
+        "label": "Desktop height",
+        "info": "Header height on desktop.",
+        "default": 80,
+        "min": 56,
+        "max": 140,
+        "step": 2,
+        "unit": "px"
+      },
+      {
+        "type": "range",
+        "id": "header_height_mobile",
+        "label": "Mobile height",
+        "info": "Header height on mobile.",
+        "default": 64,
+        "min": 48,
+        "max": 100,
+        "step": 2,
+        "unit": "px"
+      },
+      {
+        "type": "header",
+        "content": "Logo"
+      },
+      {
+        "type": "range",
+        "id": "header_logo_width",
+        "label": "Desktop width",
+        "info": "Maximum desktop logo width.",
+        "default": 160,
+        "min": 60,
+        "max": 320,
+        "step": 5,
+        "unit": "px"
+      },
+      {
+        "type": "range",
+        "id": "header_logo_mobile",
+        "label": "Mobile width",
+        "info": "Maximum mobile logo width.",
+        "default": 120,
+        "min": 50,
+        "max": 220,
+        "step": 5,
+        "unit": "px"
+      },
+      {
+        "type": "header",
+        "content": "Sticky behavior"
+      },
+      {
+        "type": "checkbox",
+        "id": "header_sticky",
+        "label": "Enable sticky header",
+        "info": "Keeps the header available while scrolling.",
+        "default": true
+      },
+      {
+        "type": "select",
+        "id": "header_sticky_mode",
+        "label": "Sticky behavior",
+        "info": "Controls how the sticky header reacts to scroll.",
+        "default": "smart",
+        "options": [
+          {
+            "value": "always",
+            "label": "Always visible"
+          },
+          {
+            "value": "smart",
+            "label": "Hide down, show up"
+          },
+          {
+            "value": "after-hero",
+            "label": "After first section"
+          }
+        ]
+      },
+      {
+        "type": "checkbox",
+        "id": "header_sticky_shadow",
+        "label": "Show sticky shadow",
+        "info": "Adds subtle elevation after the global sticky Header has scrolled.",
+        "default": true
+      },
+      {
+        "type": "header",
+        "content": "Navigation"
+      },
+      {
+        "type": "range",
+        "id": "nav_font_size",
+        "label": "Font size",
+        "info": "Desktop navigation font size.",
+        "default": 14,
+        "min": 11,
+        "max": 20,
+        "step": 1,
+        "unit": "px"
+      },
+      {
+        "type": "select",
+        "id": "nav_font_weight",
+        "label": "Font weight",
+        "info": "Desktop navigation font weight.",
+        "default": "500",
+        "options": [
+          {
+            "value": "400",
+            "label": "Regular"
+          },
+          {
+            "value": "500",
+            "label": "Medium"
+          },
+          {
+            "value": "600",
+            "label": "Semibold"
+          },
+          {
+            "value": "700",
+            "label": "Bold"
+          }
+        ]
+      },
+      {
+        "type": "range",
+        "id": "nav_letter_space",
+        "label": "Letter spacing",
+        "info": "Desktop navigation letter spacing.",
+        "default": 0.2,
+        "min": -0.5,
+        "max": 3,
+        "step": 0.1,
+        "unit": "px"
+      },
+      {
+        "type": "select",
+        "id": "nav_text_transform",
+        "label": "Text transform",
+        "info": "Desktop navigation capitalization style.",
+        "default": "none",
+        "options": [
+          {
+            "value": "none",
+            "label": "None"
+          },
+          {
+            "value": "uppercase",
+            "label": "Uppercase"
+          },
+          {
+            "value": "capitalize",
+            "label": "Capitalize"
+          }
+        ]
+      },
+      {
+        "type": "header",
+        "content": "Icons and actions"
+      },
+      {
+        "type": "range",
+        "id": "header_icon_size",
+        "label": "Icon size",
+        "info": "Header action icon size.",
+        "default": 22,
+        "min": 16,
+        "max": 32,
+        "step": 1,
+        "unit": "px"
+      },
+      {
+        "type": "range",
+        "id": "header_icon_gap",
+        "label": "Icon spacing",
+        "info": "Spacing between header action icons.",
+        "default": 16,
+        "min": 0,
+        "max": 32,
+        "step": 1,
+        "unit": "px"
+      },
+      {
+        "type": "checkbox",
+        "id": "header_cart_drawer",
+        "label": "Enable cart drawer",
+        "info": "Opens the cart drawer instead of navigating to the cart page.",
+        "default": true
+      },
+      {
+        "type": "range",
+        "id": "mobile_menu_width",
+        "label": "Mobile drawer width",
+        "info": "Maximum mobile menu drawer width.",
+        "default": 360,
+        "min": 280,
+        "max": 420,
+        "step": 10,
+        "unit": "px"
+      }
+    ]
+  },
+  {
+    "name": "Footer Settings",
+    "settings": [
+      {
+        "type": "header",
+        "content": "Layout"
+      },
+      {
+        "type": "range",
+        "id": "footer_gap",
+        "label": "Column gap",
+        "info": "Desktop gap between footer columns.",
+        "default": 40,
+        "min": 16,
+        "max": 80,
+        "step": 4,
+        "unit": "px"
+      },
+      {
+        "type": "range",
+        "id": "footer_pad_top",
+        "label": "Top padding",
+        "info": "Footer top padding on desktop.",
+        "default": 80,
+        "min": 24,
+        "max": 160,
+        "step": 4,
+        "unit": "px"
+      },
+      {
+        "type": "range",
+        "id": "footer_pad_bottom",
+        "label": "Bottom padding",
+        "info": "Footer bottom padding on desktop.",
+        "default": 40,
+        "min": 16,
+        "max": 120,
+        "step": 4,
+        "unit": "px"
+      },
+      {
+        "type": "header",
+        "content": "Typography"
+      },
+      {
+        "type": "range",
+        "id": "footer_heading_size",
+        "label": "Heading size",
+        "info": "Footer column heading size.",
+        "default": 16,
+        "min": 12,
+        "max": 28,
+        "step": 1,
+        "unit": "px"
+      },
+      {
+        "type": "select",
+        "id": "footer_heading_weight",
+        "label": "Heading weight",
+        "info": "Footer column heading weight.",
+        "default": "600",
+        "options": [
+          {
+            "value": "500",
+            "label": "Medium"
+          },
+          {
+            "value": "600",
+            "label": "Semibold"
+          },
+          {
+            "value": "700",
+            "label": "Bold"
+          }
+        ]
+      },
+      {
+        "type": "range",
+        "id": "footer_text_size",
+        "label": "Text size",
+        "info": "Footer body and link size.",
+        "default": 14,
+        "min": 11,
+        "max": 20,
+        "step": 1,
+        "unit": "px"
+      },
+      {
+        "type": "header",
+        "content": "Features"
+      },
+      {
+        "type": "checkbox",
+        "id": "footer_newsletter",
+        "label": "Show newsletter",
+        "info": "Enables the footer newsletter region when the section supports it.",
+        "default": true
+      },
+      {
+        "type": "header",
+        "content": "Colors"
+      },
+      {
+        "type": "color",
+        "id": "footer_bg",
+        "label": "Background",
+        "info": "Global footer background color.",
+        "default": "#18181B"
+      },
+      {
+        "type": "color",
+        "id": "footer_heading_color",
+        "label": "Heading color",
+        "info": "Footer heading color.",
+        "default": "#FFFFFF"
+      },
+      {
+        "type": "color",
+        "id": "footer_text_color",
+        "label": "Text color",
+        "info": "Footer text and link color.",
+        "default": "#D4D4D8"
+      },
+      {
+        "type": "color",
+        "id": "footer_border_color",
+        "label": "Border color",
+        "info": "Footer divider and border color.",
+        "default": "#3F3F46"
+      }
+    ]
+  },
+  {
+    "name": "Product Settings",
+    "settings": [
+      {
+        "type": "header",
+        "content": "Card layout"
+      },
+      {
+        "type": "select",
+        "id": "card_style",
+        "label": "Product design",
+        "info": "Eight premium Spider card styles; Style 01 is the recommended default. Existing style selections 09–16 migrate to 01.",
+        "default": "01",
+        "options": [
+          {
+            "value": "01",
+            "label": "01 — Classic Premium"
+          },
+          {
+            "value": "02",
+            "label": "02 — Modern Badges"
+          },
+          {
+            "value": "03",
+            "label": "03 — Variant Preview"
+          },
+          {
+            "value": "04",
+            "label": "04 — Image Overlay"
+          },
+          {
+            "value": "05",
+            "label": "05 — Apparel Swatches"
+          },
+          {
+            "value": "06",
+            "label": "06 — Stock Status"
+          },
+          {
+            "value": "07",
+            "label": "07 — Minimal Luxury"
+          },
+          {
+            "value": "08",
+            "label": "08 — Lifestyle Wide"
+          }
+        ]
+      },
+      {
+        "type": "select",
+        "id": "card_text_align",
+        "label": "Text alignment",
+        "info": "Product card content alignment.",
+        "default": "left",
+        "options": [
+          {
+            "value": "left",
+            "label": "Left"
+          },
+          {
+            "value": "center",
+            "label": "Center"
+          }
+        ]
+      },
+      {
+        "type": "range",
+        "id": "card_radius",
+        "label": "Card radius",
+        "info": "Product card corner radius.",
+        "default": 8,
+        "min": 0,
+        "max": 40,
+        "step": 1,
+        "unit": "px"
+      },
+      {
+        "type": "select",
+        "id": "card_shadow",
+        "label": "Card shadow",
+        "info": "Global base elevation. Individual Product Designs may add their own stronger presentation where visually required.",
+        "default": "none",
+        "options": [
+          {
+            "value": "none",
+            "label": "None"
+          },
+          {
+            "value": "soft",
+            "label": "Soft"
+          },
+          {
+            "value": "medium",
+            "label": "Medium"
+          },
+          {
+            "value": "strong",
+            "label": "Strong"
+          }
+        ]
+      },
+      {
+        "type": "header",
+        "content": "Product image"
+      },
+      {
+        "type": "select",
+        "id": "card_image_ratio",
+        "label": "Image ratio",
+        "info": "Default product card media ratio.",
+        "default": "portrait",
+        "options": [
+          {
+            "value": "adapt",
+            "label": "Adapt to image"
+          },
+          {
+            "value": "square",
+            "label": "Square"
+          },
+          {
+            "value": "portrait",
+            "label": "Portrait"
+          },
+          {
+            "value": "landscape",
+            "label": "Landscape"
+          }
+        ]
+      },
+      {
+        "type": "select",
+        "id": "card_image_fit",
+        "label": "Image fit",
+        "info": "Global product-card media fit when global Product Settings are enabled.",
+        "default": "cover",
+        "options": [
+          {
+            "value": "cover",
+            "label": "Cover"
+          },
+          {
+            "value": "contain",
+            "label": "Contain"
+          }
+        ]
+      },
+      {
+        "type": "checkbox",
+        "id": "card_second_image",
+        "label": "Show hover image",
+        "info": "Shows the second product image on pointer hover.",
+        "default": true
+      },
+      {
+        "type": "checkbox",
+        "id": "card_lazy_images",
+        "label": "Lazy load card images",
+        "info": "Defers non-critical product-card images while preserving eager loading for the first above-the-fold card.",
+        "default": true
+      },
+      {
+        "type": "header",
+        "content": "Product information"
+      },
+      {
+        "type": "checkbox",
+        "id": "card_show_vendor",
+        "label": "Show vendor",
+        "info": "Displays the product vendor above the title.",
+        "default": false
+      },
+      {
+        "type": "range",
+        "id": "card_title_size",
+        "label": "Title size",
+        "info": "Product card title font size.",
+        "default": 18,
+        "min": 12,
+        "max": 24,
+        "step": 1,
+        "unit": "px"
+      },
+      {
+        "type": "select",
+        "id": "card_title_weight",
+        "label": "Title weight",
+        "info": "Product card title font weight.",
+        "default": "600",
+        "options": [
+          {
+            "value": "400",
+            "label": "Regular"
+          },
+          {
+            "value": "500",
+            "label": "Medium"
+          },
+          {
+            "value": "600",
+            "label": "Semibold"
+          },
+          {
+            "value": "700",
+            "label": "Bold"
+          }
+        ]
+      },
+      {
+        "type": "range",
+        "id": "card_price_size",
+        "label": "Price size",
+        "info": "Product card price font size.",
+        "default": 18,
+        "min": 12,
+        "max": 24,
+        "step": 1,
+        "unit": "px"
+      },
+      {
+        "type": "select",
+        "id": "card_price_weight",
+        "label": "Price weight",
+        "info": "Product card price font weight.",
+        "default": "600",
+        "options": [
+          {
+            "value": "400",
+            "label": "Regular"
+          },
+          {
+            "value": "500",
+            "label": "Medium"
+          },
+          {
+            "value": "600",
+            "label": "Semibold"
+          },
+          {
+            "value": "700",
+            "label": "Bold"
+          }
+        ]
+      },
+      {
+        "type": "checkbox",
+        "id": "card_show_rating",
+        "label": "Show rating",
+        "info": "Displays review rating markup when rating metafields are available.",
+        "default": true
+      },
+      {
+        "type": "checkbox",
+        "id": "card_show_swatches",
+        "label": "Show swatches",
+        "info": "Displays the shared Spider color swatches across collection, search, Featured Collection, Grid Tabs and Wishlist cards when those components use global Product Settings.",
+        "default": true
+      },
+      {
+        "type": "checkbox",
+        "id": "card_show_size_swatches",
+        "label": "Show size swatches",
+        "info": "Shows compact size options on compatible global Product Cards.",
+        "default": false
+      },
+      {
+        "type": "range",
+        "id": "card_swatch_limit",
+        "label": "Swatch limit",
+        "info": "Maximum color or size swatches shown before the +N indicator.",
+        "default": 5,
+        "min": 3,
+        "max": 10,
+        "step": 1
+      },
+      {
+        "type": "select",
+        "id": "card_size_swatch_shape",
+        "label": "Size swatch shape",
+        "default": "square",
+        "options": [
+          {
+            "value": "square",
+            "label": "Square"
+          },
+          {
+            "value": "rounded",
+            "label": "Rounded"
+          },
+          {
+            "value": "pill",
+            "label": "Pill"
+          }
+        ]
+      },
+      {
+        "type": "select",
+        "id": "swatch_shape",
+        "label": "Swatch shape",
+        "info": "Global color and image swatch shape.",
+        "default": "circle",
+        "options": [
+          {
+            "value": "circle",
+            "label": "Circle"
+          },
+          {
+            "value": "square",
+            "label": "Square"
+          },
+          {
+            "value": "rounded",
+            "label": "Rounded"
+          }
+        ]
+      },
+      {
+        "type": "range",
+        "id": "swatch_size",
+        "label": "Swatch size",
+        "info": "Product page swatch size.",
+        "default": 32,
+        "min": 20,
+        "max": 52,
+        "step": 2,
+        "unit": "px"
+      },
+      {
+        "type": "header",
+        "content": "Card actions"
+      },
+      {
+        "type": "header",
+        "content": "Reference style options"
+      },
+      {
+        "type": "checkbox",
+        "id": "sp_card_variant_thumbnails",
+        "label": "Style 03 · Show variant image previews",
+        "default": true
+      },
+      {
+        "type": "checkbox",
+        "id": "sp_card_apparel_sizes",
+        "label": "Style 05 · Show available sizes",
+        "default": true
+      },
+      {
+        "type": "checkbox",
+        "id": "sp_card_show_stock",
+        "label": "Style 06 · Show inventory status",
+        "default": true
+      },
+      {
+        "type": "range",
+        "id": "sp_card_low_stock_threshold",
+        "label": "Style 06 · Low stock threshold",
+        "default": 10,
+        "min": 1,
+        "max": 50,
+        "step": 1
+      },
+      {
+        "type": "checkbox",
+        "id": "sp_card_luxury_quantity",
+        "label": "Style 07 · Show quantity for single-variant products",
+        "default": true
+      },
+      {
+        "type": "checkbox",
+        "id": "card_quick_view",
+        "label": "Enable quick view",
+        "info": "Shows a quick-view action when the supporting component is installed.",
+        "default": true
+      },
+      {
+        "type": "checkbox",
+        "id": "card_wishlist",
+        "label": "Enable wishlist",
+        "info": "Shows the Spider wishlist action. Keep disabled for Theme Store review unless compliant.",
+        "default": true
+      },
+      {
+        "type": "checkbox",
+        "id": "card_compare",
+        "label": "Enable compare",
+        "info": "Shows the Spider compare action. Keep disabled for Theme Store review unless compliant.",
+        "default": true
+      },
+      {
+        "type": "checkbox",
+        "id": "card_quick_add",
+        "label": "Enable quick add",
+        "info": "Shows an add-to-cart or choose-options action.",
+        "default": true
+      },
+      {
+        "type": "header",
+        "content": "Badges"
+      },
+      {
+        "type": "checkbox",
+        "id": "badge_sale",
+        "label": "Show sale badge",
+        "info": "Displays a badge for discounted products.",
+        "default": true
+      },
+      {
+        "type": "checkbox",
+        "id": "badge_sold_out",
+        "label": "Show sold-out badge",
+        "info": "Displays a badge for unavailable products.",
+        "default": true
+      },
+      {
+        "type": "select",
+        "id": "badge_position",
+        "label": "Badge position",
+        "info": "Global badge placement on Product Card media.",
+        "default": "top-left",
+        "options": [
+          {
+            "value": "top-left",
+            "label": "Top left"
+          },
+          {
+            "value": "top-right",
+            "label": "Top right"
+          },
+          {
+            "value": "bottom-left",
+            "label": "Bottom left"
+          },
+          {
+            "value": "bottom-right",
+            "label": "Bottom right"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "Quick View Modal",
+    "settings": [
+      {
+        "type": "header",
+        "content": "Quick View modal"
+      },
+      {
+        "type": "checkbox",
+        "id": "sp_qv_enabled",
+        "label": "Enable Quick View",
+        "default": true
+      },
+      {
+        "type": "range",
+        "id": "sp_qv_width",
+        "label": "Modal maximum width",
+        "default": 1380,
+        "min": 920,
+        "max": 1500,
+        "step": 20,
+        "unit": "px"
+      },
+      {
+        "type": "range",
+        "id": "sp_qv_radius",
+        "label": "Modal corner radius",
+        "default": 16,
+        "min": 4,
+        "max": 32,
+        "step": 1,
+        "unit": "px"
+      },
+      {
+        "type": "range",
+        "id": "sp_qv_overlay",
+        "label": "Backdrop opacity",
+        "default": 50,
+        "min": 20,
+        "max": 80,
+        "step": 5,
+        "unit": "%"
+      },
+      {
+        "type": "range",
+        "id": "sp_qv_gap",
+        "label": "Desktop column spacing",
+        "default": 42,
+        "min": 16,
+        "max": 64,
+        "step": 2,
+        "unit": "px"
+      },
+      {
+        "type": "range",
+        "id": "sp_qv_padding",
+        "label": "Desktop content padding",
+        "default": 30,
+        "min": 16,
+        "max": 48,
+        "step": 2,
+        "unit": "px"
+      },
+      {
+        "type": "select",
+        "id": "sp_qv_image_fit",
+        "label": "Image fit",
+        "default": "cover",
+        "options": [
+          {
+            "value": "cover",
+            "label": "Cover"
+          },
+          {
+            "value": "contain",
+            "label": "Contain"
+          }
+        ]
+      },
+      {
+        "type": "checkbox",
+        "id": "sp_qv_arrows",
+        "label": "Show gallery arrows",
+        "default": true
+      },
+      {
+        "type": "checkbox",
+        "id": "sp_qv_zoom",
+        "label": "Enable image zoom",
+        "default": true
+      },
+      {
+        "type": "header",
+        "content": "Product content"
+      },
+      {
+        "type": "checkbox",
+        "id": "sp_qv_badge",
+        "label": "Show sale badge",
+        "default": true
+      },
+      {
+        "type": "checkbox",
+        "id": "sp_qv_vendor",
+        "label": "Show vendor",
+        "default": false
+      },
+      {
+        "type": "checkbox",
+        "id": "sp_qv_rating",
+        "label": "Show product rating when available",
+        "default": true
+      },
+      {
+        "type": "checkbox",
+        "id": "sp_qv_description",
+        "label": "Show short description",
+        "default": true
+      },
+      {
+        "type": "range",
+        "id": "sp_qv_description_length",
+        "label": "Description characters",
+        "default": 170,
+        "min": 80,
+        "max": 300,
+        "step": 10
+      },
+      {
+        "type": "checkbox",
+        "id": "sp_qv_availability",
+        "label": "Show availability",
+        "default": true
+      },
+      {
+        "type": "text",
+        "id": "sp_qv_shipping_text",
+        "label": "Shipping information (optional)"
+      },
+      {
+        "type": "header",
+        "content": "Purchase controls"
+      },
+      {
+        "type": "checkbox",
+        "id": "sp_qv_buy_now",
+        "label": "Show Buy It Now",
+        "default": true
+      },
+      {
+        "type": "checkbox",
+        "id": "sp_qv_details",
+        "label": "Show View Full Details link",
+        "default": false
+      },
+      {
+        "type": "header",
+        "content": "Bottom benefits"
+      },
+      {
+        "type": "checkbox",
+        "id": "sp_qv_benefits",
+        "label": "Show trust benefits",
+        "default": true
+      },
+      {
+        "type": "text",
+        "id": "sp_qv_benefit_1_title",
+        "label": "Benefit 1 title",
+        "default": "Easy returns"
+      },
+      {
+        "type": "text",
+        "id": "sp_qv_benefit_1_text",
+        "label": "Benefit 1 description",
+        "default": "See return policy"
+      },
+      {
+        "type": "text",
+        "id": "sp_qv_benefit_2_title",
+        "label": "Benefit 2 title",
+        "default": "Secure checkout"
+      },
+      {
+        "type": "text",
+        "id": "sp_qv_benefit_2_text",
+        "label": "Benefit 2 description",
+        "default": "Shop with confidence"
+      },
+      {
+        "type": "text",
+        "id": "sp_qv_benefit_3_title",
+        "label": "Benefit 3 title",
+        "default": "Customer support"
+      },
+      {
+        "type": "text",
+        "id": "sp_qv_benefit_3_text",
+        "label": "Benefit 3 description",
+        "default": "Here to help"
+      }
+    ]
+  },
+  {
+    "name": "Choose Options Modal",
+    "settings": [
+      {
+        "type": "header",
+        "content": "General"
+      },
+      {
+        "type": "checkbox",
+        "id": "sp_qa_enabled",
+        "label": "Enable Choose Options",
+        "default": true
+      },
+      {
+        "type": "range",
+        "id": "sp_qa_width",
+        "label": "Modal maximum width",
+        "default": 720,
+        "min": 500,
+        "max": 900,
+        "step": 20,
+        "unit": "px"
+      },
+      {
+        "type": "range",
+        "id": "sp_qa_radius",
+        "label": "Modal corner radius",
+        "default": 16,
+        "min": 4,
+        "max": 32,
+        "step": 1,
+        "unit": "px"
+      },
+      {
+        "type": "range",
+        "id": "sp_qa_padding",
+        "label": "Desktop content padding",
+        "default": 40,
+        "min": 24,
+        "max": 56,
+        "step": 2,
+        "unit": "px"
+      },
+      {
+        "type": "range",
+        "id": "sp_qa_overlay",
+        "label": "Backdrop opacity",
+        "default": 54,
+        "min": 20,
+        "max": 80,
+        "step": 2,
+        "unit": "%"
+      },
+      {
+        "type": "header",
+        "content": "Product information"
+      },
+      {
+        "type": "checkbox",
+        "id": "sp_qa_badge",
+        "label": "Show product badge",
+        "default": true
+      },
+      {
+        "type": "select",
+        "id": "sp_qa_badge_source",
+        "label": "Badge source",
+        "default": "auto",
+        "options": [
+          {
+            "value": "auto",
+            "label": "Automatic from tags or sale"
+          },
+          {
+            "value": "sale",
+            "label": "Sale products only"
+          },
+          {
+            "value": "custom",
+            "label": "Custom label"
+          }
+        ]
+      },
+      {
+        "type": "text",
+        "id": "sp_qa_badge_custom",
+        "label": "Custom badge label",
+        "default": "Featured"
+      },
+      {
+        "type": "checkbox",
+        "id": "sp_qa_description",
+        "label": "Show description",
+        "default": true
+      },
+      {
+        "type": "range",
+        "id": "sp_qa_desc_length",
+        "label": "Description characters",
+        "default": 170,
+        "min": 60,
+        "max": 400,
+        "step": 10
+      },
+      {
+        "type": "checkbox",
+        "id": "sp_qa_compare_price",
+        "label": "Show compare-at price",
+        "default": true
+      },
+      {
+        "type": "checkbox",
+        "id": "sp_qa_savings",
+        "label": "Show savings badge",
+        "default": true
+      },
+      {
+        "type": "checkbox",
+        "id": "sp_qa_stock",
+        "label": "Show availability",
+        "default": true
+      },
+      {
+        "type": "header",
+        "content": "Options and quantity"
+      },
+      {
+        "type": "checkbox",
+        "id": "sp_qa_swatches",
+        "label": "Use circular color swatches",
+        "default": true
+      },
+      {
+        "type": "range",
+        "id": "sp_qa_swatch_size",
+        "label": "Color swatch size",
+        "default": 46,
+        "min": 36,
+        "max": 56,
+        "step": 2,
+        "unit": "px"
+      },
+      {
+        "type": "checkbox",
+        "id": "sp_qa_quantity",
+        "label": "Show quantity selector",
+        "default": true
+      },
+      {
+        "type": "header",
+        "content": "Purchase actions"
+      },
+      {
+        "type": "checkbox",
+        "id": "sp_qa_buy_now",
+        "label": "Show Buy It Now",
+        "default": true
+      },
+      {
+        "type": "select",
+        "id": "sp_qa_button_layout",
+        "label": "Desktop buttons",
+        "default": "inline",
+        "options": [
+          {
+            "value": "inline",
+            "label": "Side by side"
+          },
+          {
+            "value": "stack",
+            "label": "Stacked"
+          }
+        ]
+      },
+      {
+        "type": "range",
+        "id": "sp_qa_button_height",
+        "label": "Button height",
+        "default": 56,
+        "min": 44,
+        "max": 64,
+        "step": 2,
+        "unit": "px"
+      }
+    ]
+  },
+  {
+    "name": "Compare System",
+    "settings": [
+      {
+        "type": "checkbox",
+        "id": "sp_cmp_enabled",
+        "label": "Enable comparison",
+        "default": true
+      },
+      {
+        "type": "range",
+        "id": "sp_cmp_max",
+        "label": "Maximum products",
+        "default": 4,
+        "min": 2,
+        "max": 4,
+        "step": 1
+      },
+      {
+        "type": "checkbox",
+        "id": "sp_cmp_persist",
+        "label": "Remember selected products",
+        "default": true
+      },
+      {
+        "type": "header",
+        "content": "Compare Bottom Bar"
+      },
+      {
+        "type": "text",
+        "id": "sp_cmp_bar_title",
+        "label": "Bar heading",
+        "default": "Compare Products"
+      },
+      {
+        "type": "text",
+        "id": "sp_cmp_bar_subtitle",
+        "label": "Bar description",
+        "default": "Compare up to 4 products"
+      },
+      {
+        "type": "text",
+        "id": "sp_cmp_compare_label",
+        "label": "Compare action label",
+        "default": "Compare"
+      },
+      {
+        "type": "text",
+        "id": "sp_cmp_clear_text",
+        "label": "Clear action label",
+        "default": "Clear all"
+      },
+      {
+        "type": "checkbox",
+        "id": "sp_cmp_show_heading",
+        "label": "Show bar heading",
+        "default": true
+      },
+      {
+        "type": "checkbox",
+        "id": "sp_cmp_show_thumbnails",
+        "label": "Show product thumbnails",
+        "default": true
+      },
+      {
+        "type": "checkbox",
+        "id": "sp_cmp_show_names",
+        "label": "Show product names",
+        "default": true
+      },
+      {
+        "type": "checkbox",
+        "id": "sp_cmp_show_clear",
+        "label": "Show Clear all",
+        "default": true
+      },
+      {
+        "type": "range",
+        "id": "sp_cmp_bar_height",
+        "label": "Desktop / tablet bar height",
+        "default": 158,
+        "min": 100,
+        "max": 280,
+        "step": 2,
+        "unit": "px",
+        "info": "Minimum height; the bar grows if its contents require more space."
+      },
+      {
+        "type": "range",
+        "id": "sp_cmp_bar_mobile_height",
+        "label": "Mobile bar height",
+        "default": 0,
+        "min": 0,
+        "max": 240,
+        "step": 4,
+        "unit": "px",
+        "info": "0 = automatic height. Larger values set a minimum without clipping content."
+      },
+      {
+        "type": "range",
+        "id": "sp_cmp_bar_width",
+        "label": "Bar maximum width",
+        "default": 1800,
+        "min": 800,
+        "max": 2000,
+        "step": 20,
+        "unit": "px"
+      },
+      {
+        "type": "range",
+        "id": "sp_cmp_bar_radius",
+        "label": "Bar corner radius",
+        "default": 24,
+        "min": 8,
+        "max": 40,
+        "step": 1,
+        "unit": "px"
+      },
+      {
+        "type": "range",
+        "id": "sp_cmp_bar_image_size",
+        "label": "Product thumbnail size",
+        "default": 74,
+        "min": 44,
+        "max": 100,
+        "step": 2,
+        "unit": "px"
+      },
+      {
+        "type": "range",
+        "id": "sp_cmp_bar_bottom",
+        "label": "Bottom offset",
+        "default": 0,
+        "min": 0,
+        "max": 120,
+        "step": 4,
+        "unit": "px"
+      },
+      {
+        "type": "header",
+        "content": "Compare Modal"
+      },
+      {
+        "type": "text",
+        "id": "sp_cmp_modal_eyebrow",
+        "label": "Small heading",
+        "default": "COMPARE PRODUCTS"
+      },
+      {
+        "type": "text",
+        "id": "sp_cmp_modal_title",
+        "label": "Main heading",
+        "default": "Find the perfect"
+      },
+      {
+        "type": "text",
+        "id": "sp_cmp_modal_highlight",
+        "label": "Highlighted word",
+        "default": "fit"
+      },
+      {
+        "type": "textarea",
+        "id": "sp_cmp_modal_description",
+        "label": "Description",
+        "default": "Compare key features, specs and benefits to choose the products that match your lifestyle."
+      },
+      {
+        "type": "range",
+        "id": "sp_cmp_modal_width",
+        "label": "Modal maximum width",
+        "default": 1320,
+        "min": 800,
+        "max": 1600,
+        "step": 20,
+        "unit": "px"
+      },
+      {
+        "type": "range",
+        "id": "sp_cmp_modal_radius",
+        "label": "Modal corner radius",
+        "default": 16,
+        "min": 0,
+        "max": 40,
+        "step": 1,
+        "unit": "px"
+      },
+      {
+        "type": "range",
+        "id": "sp_cmp_backdrop_opacity",
+        "label": "Backdrop opacity",
+        "default": 55,
+        "min": 20,
+        "max": 90,
+        "step": 5,
+        "unit": "%"
+      },
+      {
+        "type": "checkbox",
+        "id": "sp_cmp_show_ratings",
+        "label": "Show ratings if available",
+        "default": true
+      },
+      {
+        "type": "checkbox",
+        "id": "sp_cmp_show_savings",
+        "label": "Show valid savings badges",
+        "default": true
+      },
+      {
+        "type": "checkbox",
+        "id": "sp_cmp_show_compare_at",
+        "label": "Show compare-at prices",
+        "default": true
+      },
+      {
+        "type": "checkbox",
+        "id": "sp_cmp_show_cart",
+        "label": "Show purchase actions",
+        "default": true
+      },
+      {
+        "type": "header",
+        "content": "Specification Comparison"
+      },
+      {
+        "type": "checkbox",
+        "id": "sp_cmp_show_icons",
+        "label": "Show feature icons",
+        "default": true
+      },
+      {
+        "type": "checkbox",
+        "id": "sp_cmp_show_missing",
+        "label": "Display missing values",
+        "default": true
+      },
+      {
+        "type": "checkbox",
+        "id": "sp_cmp_hide_empty_rows",
+        "label": "Hide completely empty rows",
+        "default": true
+      },
+      {
+        "type": "checkbox",
+        "id": "sp_cmp_show_colors",
+        "label": "Show available color options",
+        "default": true
+      },
+      {
+        "type": "paragraph",
+        "content": "Map genuine Shopify product metafields using the syntax Category~Label~namespace.key~type, separated by |. Types: text, boolean, number. Use Common for all categories; Audio, Clothing or Electronics for category-specific rows."
+      },
+      {
+        "type": "textarea",
+        "id": "sp_cmp_field_map",
+        "label": "Comparison metafield mappings",
+        "default": "Audio~Noise Cancellation~custom.noise_cancellation~text|Audio~Battery Life~custom.battery_life~text|Audio~Driver Size~custom.driver_size~text|Audio~Bluetooth Version~custom.bluetooth_version~text|Audio~Microphone~custom.microphone~text|Audio~Weight~custom.weight~text|Audio~Water Resistance~custom.water_resistance~text|Audio~Multi-Device Pairing~custom.multi_device_pairing~boolean|Audio~Travel Case Included~custom.travel_case_included~boolean|Clothing~Material~custom.material~text|Clothing~Fit~custom.fit~text|Common~Warranty~custom.warranty~text"
+      }
+    ]
+  },
+  {
+    "name": "Product Page",
+    "settings": [
+      {
+        "type": "header",
+        "content": "Gallery"
+      },
+      {
+        "type": "select",
+        "id": "product_gallery",
+        "label": "Gallery style",
+        "info": "Default desktop product media gallery.",
+        "default": "thumbnail",
+        "options": [
+          {
+            "value": "stacked",
+            "label": "Stacked"
+          },
+          {
+            "value": "slider",
+            "label": "Slider"
+          },
+          {
+            "value": "grid",
+            "label": "Grid"
+          },
+          {
+            "value": "thumbnail",
+            "label": "Thumbnail gallery"
+          }
+        ]
+      },
+      {
+        "type": "select",
+        "id": "thumb_position",
+        "label": "Thumbnail position",
+        "info": "Thumbnail placement for compatible galleries.",
+        "default": "left",
+        "options": [
+          {
+            "value": "left",
+            "label": "Left"
+          },
+          {
+            "value": "bottom",
+            "label": "Bottom"
+          },
+          {
+            "value": "right",
+            "label": "Right"
+          }
+        ]
+      },
+      {
+        "type": "checkbox",
+        "id": "product_zoom",
+        "label": "Enable image zoom",
+        "info": "Enables accessible product image zoom.",
+        "default": true
+      },
+      {
+        "type": "checkbox",
+        "id": "product_video",
+        "label": "Enable product video",
+        "info": "Renders Shopify-hosted and external product video media.",
+        "default": true
+      },
+      {
+        "type": "checkbox",
+        "id": "product_video_loop",
+        "label": "Loop videos",
+        "info": "Loops product videos after playback ends.",
+        "default": false
+      },
+      {
+        "type": "checkbox",
+        "id": "product_video_muted",
+        "label": "Mute autoplay video",
+        "info": "Keeps autoplay-compatible video muted.",
+        "default": true
+      },
+      {
+        "type": "header",
+        "content": "Product information"
+      },
+      {
+        "type": "range",
+        "id": "product_title_size",
+        "label": "Title size",
+        "info": "Desktop product title font size.",
+        "default": 36,
+        "min": 22,
+        "max": 64,
+        "step": 1,
+        "unit": "px"
+      },
+      {
+        "type": "range",
+        "id": "product_price_size",
+        "label": "Price size",
+        "info": "Desktop product price font size.",
+        "default": 24,
+        "min": 16,
+        "max": 40,
+        "step": 1,
+        "unit": "px"
+      },
+      {
+        "type": "checkbox",
+        "id": "product_show_vendor",
+        "label": "Show vendor",
+        "info": "Displays the product vendor.",
+        "default": false
+      },
+      {
+        "type": "checkbox",
+        "id": "product_show_sku",
+        "label": "Show SKU",
+        "info": "Displays the selected variant SKU.",
+        "default": true
+      },
+      {
+        "type": "header",
+        "content": "Variant picker"
+      },
+      {
+        "type": "header",
+        "content": "Conversion features"
+      },
+      {
+        "type": "checkbox",
+        "id": "dynamic_checkout",
+        "label": "Dynamic checkout button",
+        "info": "Shows Shopify accelerated checkout when available.",
+        "default": true
+      },
+      {
+        "type": "checkbox",
+        "id": "show_quantity",
+        "label": "Quantity selector",
+        "info": "Displays quantity controls in the product form.",
+        "default": true
+      },
+      {
+        "type": "checkbox",
+        "id": "show_trust_badge",
+        "label": "Trust badge",
+        "info": "Displays the configured trust badge area.",
+        "default": false
+      },
+      {
+        "type": "image_picker",
+        "id": "product_trust_image",
+        "label": "Trust badge image",
+        "info": "Optional payment or trust artwork displayed near the product form."
+      },
+      {
+        "type": "checkbox",
+        "id": "show_shipping_info",
+        "label": "Shipping information",
+        "info": "Displays product shipping information or policy link.",
+        "default": true
+      },
+      {
+        "type": "page",
+        "id": "shipping_info_page",
+        "label": "Shipping information page",
+        "info": "Page used for product shipping information."
+      },
+      {
+        "type": "checkbox",
+        "id": "show_product_upsell",
+        "label": "Upsell products",
+        "info": "Shows merchant-selected complementary products.",
+        "default": false
+      },
+      {
+        "type": "product_list",
+        "id": "product_upsells",
+        "label": "Default upsell products",
+        "info": "Fallback products for product-page upsells.",
+        "limit": 8
+      },
+      {
+        "type": "checkbox",
+        "id": "show_pickup",
+        "label": "Pickup availability",
+        "info": "Displays Shopify pickup availability for the selected variant.",
+        "default": true
+      }
+    ]
+  },
+  {
+    "name": "Collection Settings",
+    "settings": [
+      {
+        "type": "header",
+        "content": "Product grid"
+      },
+      {
+        "type": "range",
+        "id": "collection_cols_d",
+        "label": "Desktop columns",
+        "info": "Product columns on desktop collection pages.",
+        "default": 4,
+        "min": 2,
+        "max": 6,
+        "step": 1
+      },
+      {
+        "type": "range",
+        "id": "collection_cols_t",
+        "label": "Tablet columns",
+        "info": "Product columns on tablet collection pages.",
+        "default": 3,
+        "min": 2,
+        "max": 4,
+        "step": 1
+      },
+      {
+        "type": "select",
+        "id": "collection_cols_m",
+        "label": "Mobile columns",
+        "info": "Product columns on mobile collection pages.",
+        "default": "2",
+        "options": [
+          {
+            "value": "1",
+            "label": "1 column"
+          },
+          {
+            "value": "2",
+            "label": "2 columns"
+          }
+        ]
+      },
+      {
+        "type": "range",
+        "id": "collection_per_page",
+        "label": "Products per page",
+        "info": "Products rendered per collection page.",
+        "default": 24,
+        "min": 8,
+        "max": 48,
+        "step": 4
+      },
+      {
+        "type": "checkbox",
+        "id": "collection_show_count",
+        "label": "Show product count",
+        "info": "Displays the collection result count.",
+        "default": true
+      },
+      {
+        "type": "header",
+        "content": "Filtering and sorting"
+      },
+      {
+        "type": "checkbox",
+        "id": "collection_filters",
+        "label": "Enable filters",
+        "info": "Renders Shopify storefront filtering.",
+        "default": true
+      },
+      {
+        "type": "checkbox",
+        "id": "ajax_filtering",
+        "label": "Ajax filtering",
+        "info": "Updates collection results without a full page reload.",
+        "default": true
+      },
+      {
+        "type": "checkbox",
+        "id": "collection_sorting",
+        "label": "Enable sorting",
+        "info": "Shows Shopify collection sorting controls.",
+        "default": true
+      },
+      {
+        "type": "header",
+        "content": "Pagination"
+      },
+      {
+        "type": "select",
+        "id": "collection_paging",
+        "label": "Pagination style",
+        "info": "How customers load additional collection products.",
+        "default": "load-more",
+        "options": [
+          {
+            "value": "pages",
+            "label": "Pagination"
+          },
+          {
+            "value": "load-more",
+            "label": "Load more"
+          },
+          {
+            "value": "infinite",
+            "label": "Infinite scroll"
+          }
+        ]
+      },
+      {
+        "type": "checkbox",
+        "id": "paging_history",
+        "label": "Update browser history",
+        "info": "Updates the URL as Ajax pages load.",
+        "default": true
+      },
+      {
+        "type": "range",
+        "id": "load_more_threshold",
+        "label": "Infinite trigger distance",
+        "info": "Distance from the page end before infinite loading starts.",
+        "default": 400,
+        "min": 100,
+        "max": 1200,
+        "step": 50,
+        "unit": "px"
+      },
+      {
+        "type": "header",
+        "content": "Collection header"
+      },
+      {
+        "type": "checkbox",
+        "id": "collection_show_image",
+        "label": "Show collection image",
+        "info": "Displays the collection image when available.",
+        "default": true
+      },
+      {
+        "type": "checkbox",
+        "id": "collection_show_desc",
+        "label": "Show description",
+        "info": "Displays the collection description.",
+        "default": true
+      },
+      {
+        "type": "select",
+        "id": "collection_header_align",
+        "label": "Header alignment",
+        "info": "Collection heading and description alignment.",
+        "default": "center",
+        "options": [
+          {
+            "value": "left",
+            "label": "Left"
+          },
+          {
+            "value": "center",
+            "label": "Center"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "Cart Settings",
+    "settings": [
+      {
+        "type": "header",
+        "content": "Cart experience"
+      },
+      {
+        "type": "select",
+        "id": "cart_type",
+        "label": "Cart type",
+        "info": "Default cart experience.",
+        "default": "drawer",
+        "options": [
+          {
+            "value": "drawer",
+            "label": "Drawer"
+          },
+          {
+            "value": "page",
+            "label": "Page"
+          },
+          {
+            "value": "notification",
+            "label": "Notification then page"
+          }
+        ]
+      },
+      {
+        "type": "checkbox",
+        "id": "cart_ajax_updates",
+        "label": "Ajax quantity updates",
+        "info": "Updates cart quantities without a full page reload.",
+        "default": true
+      },
+      {
+        "type": "checkbox",
+        "id": "cart_open_after_add",
+        "label": "Open after add",
+        "info": "Opens the selected cart experience after a successful add.",
+        "default": true
+      },
+      {
+        "type": "header",
+        "content": "Cart features"
+      },
+      {
+        "type": "checkbox",
+        "id": "cart_notes",
+        "label": "Cart notes",
+        "info": "Allows customers to add an order note.",
+        "default": true
+      },
+      {
+        "type": "checkbox",
+        "id": "cart_shipping_bar",
+        "label": "Shipping progress bar",
+        "info": "Shows progress toward the free-shipping goal.",
+        "default": true
+      },
+      {
+        "type": "range",
+        "id": "cart_shipping_goal",
+        "label": "Free-shipping goal",
+        "info": "Goal in the store base currency major unit.",
+        "default": 100,
+        "min": 0,
+        "max": 1000,
+        "step": 10
+      },
+      {
+        "type": "text",
+        "id": "cart_shipping_before",
+        "label": "Progress message",
+        "info": "Message shown before reaching the shipping goal. Use [amount] as the placeholder.",
+        "default": "You are [amount] away from free shipping."
+      },
+      {
+        "type": "text",
+        "id": "cart_shipping_after",
+        "label": "Success message",
+        "info": "Message shown after reaching the shipping goal.",
+        "default": "You unlocked free shipping!"
+      },
+      {
+        "type": "checkbox",
+        "id": "cart_upsell",
+        "label": "Upsell products",
+        "info": "Displays merchant-selected products in the cart experience.",
+        "default": false
+      },
+      {
+        "type": "product_list",
+        "id": "cart_upsell_products",
+        "label": "Upsell product list",
+        "info": "Fallback products for cart upsells.",
+        "limit": 8
+      },
+      {
+        "type": "checkbox",
+        "id": "cart_terms",
+        "label": "Terms checkbox",
+        "info": "Requires customers to acknowledge store terms before checkout.",
+        "default": false
+      },
+      {
+        "type": "page",
+        "id": "cart_terms_page",
+        "label": "Terms page",
+        "info": "Page linked from the cart terms acknowledgement."
+      },
+      {
+        "type": "header",
+        "content": "Drawer styling"
+      },
+      {
+        "type": "checkbox",
+        "id": "cart_show_vendor",
+        "label": "Show product vendor",
+        "info": "Displays vendor names for cart items.",
+        "default": false
+      },
+      {
+        "type": "checkbox",
+        "id": "cart_show_properties",
+        "label": "Show line properties",
+        "info": "Displays customer-entered line item properties.",
+        "default": true
+      }
+    ]
+  },
+  {
+    "name": "Search Settings",
+    "settings": [
+      {
+        "type": "header",
+        "content": "Predictive search"
+      },
+      {
+        "type": "checkbox",
+        "id": "search_predictive",
+        "label": "Enable predictive search",
+        "info": "Loads Shopify predictive search results as the customer types.",
+        "default": true
+      },
+      {
+        "type": "range",
+        "id": "search_result_limit",
+        "label": "Result limit",
+        "info": "Maximum predictive results per resource type.",
+        "default": 6,
+        "min": 3,
+        "max": 12,
+        "step": 1
+      },
+      {
+        "type": "header",
+        "content": "Search presentation"
+      },
+      {
+        "type": "checkbox",
+        "id": "search_show_price",
+        "label": "Show product price",
+        "info": "Displays product prices in predictive results.",
+        "default": true
+      },
+      {
+        "type": "header",
+        "content": "Search page"
+      },
+      {
+        "type": "range",
+        "id": "search_cols_d",
+        "label": "Desktop columns",
+        "info": "Product columns on the search results page.",
+        "default": 4,
+        "min": 2,
+        "max": 6,
+        "step": 1
+      },
+      {
+        "type": "select",
+        "id": "search_cols_m",
+        "label": "Mobile columns",
+        "info": "Product columns on mobile search results.",
+        "default": "2",
+        "options": [
+          {
+            "value": "1",
+            "label": "1 column"
+          },
+          {
+            "value": "2",
+            "label": "2 columns"
+          }
+        ]
+      },
+      {
+        "type": "range",
+        "id": "search_per_page",
+        "label": "Results per page",
+        "info": "Items shown per search results page.",
+        "default": 24,
+        "min": 8,
+        "max": 48,
+        "step": 4
+      }
+    ]
+  },
+  {
+    "name": "Performance Optimization",
+    "settings": [
+      {
+        "type": "header",
+        "content": "Images"
+      },
+      {
+        "type": "checkbox",
+        "id": "perf_lazy_images",
+        "label": "Lazy loading",
+        "info": "Adds lazy loading to non-critical images.",
+        "default": true
+      },
+      {
+        "type": "checkbox",
+        "id": "perf_responsive_images",
+        "label": "Responsive images",
+        "info": "Uses responsive srcset and sizes attributes.",
+        "default": true
+      },
+      {
+        "type": "header",
+        "content": "JavaScript"
+      },
+      {
+        "type": "checkbox",
+        "id": "perf_defer_scripts",
+        "label": "Defer scripts",
+        "info": "Loads non-critical theme scripts without blocking rendering.",
+        "default": true
+      },
+      {
+        "type": "checkbox",
+        "id": "perf_prefetch_navigation",
+        "label": "Prefetch navigation",
+        "info": "Prefetches eligible same-origin navigation after intent.",
+        "default": false
+      },
+      {
+        "type": "header",
+        "content": "Runtime safeguards"
+      },
+      {
+        "type": "checkbox",
+        "id": "perf_reduce_motion",
+        "label": "Reduce non-essential motion",
+        "info": "Suppresses expensive decorative motion on constrained or reduced-motion devices.",
+        "default": true
+      },
+      {
+        "type": "checkbox",
+        "id": "perf_monitor",
+        "label": "Performance monitor",
+        "info": "Records development performance marks when developer mode is enabled.",
+        "default": false
+      },
+      {
+        "type": "range",
+        "id": "perf_dom_warning",
+        "label": "DOM warning threshold",
+        "info": "Developer warning threshold for total DOM nodes.",
+        "default": 1500,
+        "min": 800,
+        "max": 3000,
+        "step": 100
+      },
+      {
+        "type": "range",
+        "id": "perf_longtask_warning",
+        "label": "Long-task threshold",
+        "info": "Developer warning threshold for main-thread tasks.",
+        "default": 100,
+        "min": 50,
+        "max": 300,
+        "step": 10,
+        "unit": "ms"
+      },
+      {
+        "type": "paragraph",
+        "content": "Shopify CDN format negotiation, minification, critical CSS generation and font preloading are build/platform responsibilities and are intentionally not exposed as fake runtime toggles."
+      }
+    ]
+  },
+  {
+    "name": "Accessibility",
+    "settings": [
+      {
+        "type": "paragraph",
+        "content": "Keyboard navigation, screen-reader semantics, cart announcements and reduced-motion support are always enabled as core accessibility requirements. These are not optional merchant toggles."
+      },
+      {
+        "type": "header",
+        "content": "Core accessibility"
+      },
+      {
+        "type": "checkbox",
+        "id": "a11y_high_contrast",
+        "label": "High contrast mode",
+        "info": "Increases UI contrast using Spider accessibility tokens.",
+        "default": false
+      },
+      {
+        "type": "checkbox",
+        "id": "a11y_skip_link",
+        "label": "Skip-to-content link",
+        "info": "Shows an accessible skip link when it receives focus.",
+        "default": true
+      },
+      {
+        "type": "header",
+        "content": "Focus styling"
+      },
+      {
+        "type": "color",
+        "id": "a11y_focus_color",
+        "label": "Focus color",
+        "info": "Color used for visible focus rings.",
+        "default": "#415DFF"
+      },
+      {
+        "type": "range",
+        "id": "a11y_focus_width",
+        "label": "Focus width",
+        "info": "Focus ring thickness.",
+        "default": 2,
+        "min": 1,
+        "max": 5,
+        "step": 1,
+        "unit": "px"
+      },
+      {
+        "type": "range",
+        "id": "a11y_focus_offset",
+        "label": "Focus offset",
+        "info": "Space between the focused element and its ring.",
+        "default": 3,
+        "min": 0,
+        "max": 8,
+        "step": 1,
+        "unit": "px"
+      },
+      {
+        "type": "header",
+        "content": "Interaction"
+      },
+      {
+        "type": "range",
+        "id": "a11y_touch_target",
+        "label": "Minimum touch target",
+        "info": "Minimum target size for key mobile controls.",
+        "default": 44,
+        "min": 40,
+        "max": 56,
+        "step": 2,
+        "unit": "px"
+      }
+    ]
+  },
+  {
+    "name": "SEO Optimization",
+    "settings": [
+      {
+        "type": "paragraph",
+        "content": "Only SEO controls implemented by Spider are exposed. Shopify-native behavior is not duplicated with cosmetic toggles."
+      },
+      {
+        "type": "header",
+        "content": "Structured data"
+      },
+      {
+        "type": "checkbox",
+        "id": "seo_breadcrumb_schema",
+        "label": "Breadcrumb schema",
+        "info": "Outputs breadcrumb structured data on supported templates.",
+        "default": true
+      },
+      {
+        "type": "checkbox",
+        "id": "seo_product_schema",
+        "label": "Product schema",
+        "info": "Outputs product structured data without duplicating app markup.",
+        "default": true
+      },
+      {
+        "type": "checkbox",
+        "id": "seo_org_schema",
+        "label": "Organization schema",
+        "info": "Outputs organization structured data from shop and brand settings.",
+        "default": true
+      },
+      {
+        "type": "checkbox",
+        "id": "seo_article_schema",
+        "label": "Article schema",
+        "info": "Outputs article structured data on blog article templates.",
+        "default": true
+      },
+      {
+        "type": "checkbox",
+        "id": "seo_website_schema",
+        "label": "WebSite schema",
+        "info": "Outputs WebSite and SearchAction structured data.",
+        "default": true
+      },
+      {
+        "type": "header",
+        "content": "Social metadata"
+      },
+      {
+        "type": "checkbox",
+        "id": "seo_open_graph",
+        "label": "Open Graph metadata",
+        "info": "Outputs Open Graph metadata for supported templates.",
+        "default": true
+      },
+      {
+        "type": "checkbox",
+        "id": "seo_twitter_cards",
+        "label": "Twitter cards",
+        "info": "Outputs Twitter card metadata.",
+        "default": true
+      },
+      {
+        "type": "text",
+        "id": "seo_twitter_site",
+        "label": "Twitter site handle",
+        "info": "Optional site handle without the @ symbol.",
+        "placeholder": "yourbrand"
+      },
+      {
+        "type": "select",
+        "id": "seo_twitter_card",
+        "label": "Twitter card type",
+        "info": "Default Twitter card format.",
+        "default": "summary_large_image",
+        "options": [
+          {
+            "value": "summary_large_image",
+            "label": "Large image"
+          },
+          {
+            "value": "summary",
+            "label": "Summary"
+          }
+        ]
+      },
+      {
+        "type": "header",
+        "content": "Technical SEO"
+      },
+      {
+        "type": "checkbox",
+        "id": "seo_canonical",
+        "label": "Canonical URLs",
+        "info": "Outputs Shopify canonical URLs in the document head.",
+        "default": true
+      },
+      {
+        "type": "color",
+        "id": "seo_theme_color",
+        "label": "Browser theme color",
+        "info": "Theme color used for supported browser UI metadata.",
+        "default": "#FFFFFF"
+      },
+      {
+        "type": "checkbox",
+        "id": "seo_clean_titles",
+        "label": "Clean page titles",
+        "info": "Avoids duplicate shop names and redundant title fragments.",
+        "default": true
+      }
+    ]
+  },
+  {
+    "name": "Social Media",
+    "settings": [
+      {
+        "type": "header",
+        "content": "Social profiles"
+      },
+      {
+        "type": "url",
+        "id": "social_instagram",
+        "label": "Instagram",
+        "info": "Instagram profile URL."
+      },
+      {
+        "type": "url",
+        "id": "social_facebook",
+        "label": "Facebook",
+        "info": "Facebook page URL."
+      },
+      {
+        "type": "url",
+        "id": "social_tiktok",
+        "label": "TikTok",
+        "info": "TikTok profile URL."
+      },
+      {
+        "type": "url",
+        "id": "social_youtube",
+        "label": "YouTube",
+        "info": "YouTube channel URL."
+      },
+      {
+        "type": "url",
+        "id": "social_pinterest",
+        "label": "Pinterest",
+        "info": "Pinterest profile URL."
+      },
+      {
+        "type": "url",
+        "id": "social_twitter",
+        "label": "X / Twitter",
+        "info": "X or Twitter profile URL."
+      },
+      {
+        "type": "url",
+        "id": "social_linkedin",
+        "label": "LinkedIn",
+        "info": "LinkedIn company or profile URL."
+      },
+      {
+        "type": "header",
+        "content": "Social icon styling"
+      },
+      {
+        "type": "checkbox",
+        "id": "social_new_tab",
+        "label": "Open in new tab",
+        "info": "Opens social profile links in a new browser tab.",
+        "default": true
+      },
+      {
+        "type": "header",
+        "content": "Social sharing"
+      },
+      {
+        "type": "paragraph",
+        "content": "Social links use the shared Spider text/icon treatment in compatible Header/Footer components."
+      }
+    ]
+  },
+  {
+    "name": "App Compatibility",
+    "settings": [
+      {
+        "type": "paragraph",
+        "content": "Spider preserves app-owned styles by default. Only the overlay z-index base and carefully scoped CSS overrides are exposed globally."
+      },
+      {
+        "type": "header",
+        "content": "Theme app extensions"
+      },
+      {
+        "type": "header",
+        "content": "Compatibility events"
+      },
+      {
+        "type": "range",
+        "id": "apps_z_base",
+        "label": "Overlay z-index base",
+        "info": "Base z-index reserved for theme overlays so apps can coordinate layering.",
+        "default": 1000,
+        "min": 100,
+        "max": 9000,
+        "step": 100
+      },
+      {
+        "type": "header",
+        "content": "Optional app overrides"
+      },
+      {
+        "type": "textarea",
+        "id": "apps_css_overrides",
+        "label": "App CSS overrides",
+        "info": "Advanced scoped CSS for known app containers. Avoid broad selectors.",
+        "default": "/* Scope overrides to a specific app container */",
+        "placeholder": "Example: .shopify-app-block[data-block-handle=\"...\"] { }"
+      }
+    ]
+  }
+]

@@ -1,0 +1,46 @@
+{%- assign sp_dialog_id = 'SpHeroImageVideo-' | append: section.id | append: '-' | append: block.id -%}
+<dialog
+  id="{{ sp_dialog_id }}"
+  class="sp-hero-image__video-dialog sp-dialog"
+  data-sp-hero-video-dialog
+  aria-modal="true" aria-labelledby="{{ sp_dialog_id }}-title"
+>
+  <div class="sp-hero-image__video-dialog-inner">
+    <h2 id="{{ sp_dialog_id }}-title" class="visually-hidden">{{ block.settings.label | default: 'Video' | escape }}</h2>
+    <button type="button" class="sp-hero-image__video-close" data-sp-hero-video-close aria-label="Close video">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+    </button>
+    <div class="sp-hero-image__video-dialog-media" data-sp-hero-video-mount>
+      {%- case block.settings.source -%}
+        {%- when 'shopify' -%}
+          {%- if block.settings.video != blank -%}
+            {{ block.settings.video | video_tag: controls: true, autoplay: false, loop: false, muted: false, preload: 'none', class: 'sp-hero-image__video-player' }}
+          {%- endif -%}
+        {%- when 'external' -%}
+          {%- if block.settings.external_video_url != blank -%}
+            {%- assign sp_video_type = block.settings.external_video_url.type -%}
+            {%- assign sp_video_id = block.settings.external_video_url.id -%}
+            {%- if sp_video_type == 'youtube' -%}
+              <iframe
+                class="sp-hero-image__video-player"
+                title="{{ block.settings.label | default: 'Video' | escape }}"
+                data-sp-external-video
+                data-src="https://www.youtube.com/embed/{{ sp_video_id }}?autoplay=1&rel=0"
+                allow="autoplay; encrypted-media; picture-in-picture"
+                allowfullscreen
+              ></iframe>
+            {%- elsif sp_video_type == 'vimeo' -%}
+              <iframe
+                class="sp-hero-image__video-player"
+                title="{{ block.settings.label | default: 'Video' | escape }}"
+                data-sp-external-video
+                data-src="https://player.vimeo.com/video/{{ sp_video_id }}?autoplay=1"
+                allow="autoplay; fullscreen; picture-in-picture"
+                allowfullscreen
+              ></iframe>
+            {%- endif -%}
+          {%- endif -%}
+      {%- endcase -%}
+    </div>
+  </div>
+</dialog>

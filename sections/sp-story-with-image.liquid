@@ -1,0 +1,709 @@
+{% render 'sp-section-color-scheme', section: section %}
+{{ 'sp-content-sections.css' | asset_url | stylesheet_tag }}
+
+{%- liquid
+  assign story_style = section.settings.layout_style | default: 'original'
+  assign desktop_class = 'sp-story-with-image--image-right'
+  if section.settings.image_position == 'left'
+    assign desktop_class = 'sp-story-with-image--image-left'
+  endif
+  assign mobile_class = 'sp-story-with-image--mobile-image-last'
+  if section.settings.mobile_image_position == 'first'
+    assign mobile_class = 'sp-story-with-image--mobile-image-first'
+  endif
+  assign story_width_class = ''
+  if section.settings.container_width == 'wide'
+    assign story_width_class = 'sp-container--wide'
+  elsif section.settings.container_width == 'narrow'
+    assign story_width_class = 'sp-container--narrow'
+  endif
+  assign story_button_style = section.settings.button_style | default: 'primary'
+  assign story_image = section.settings.image
+  if story_image == blank and section.settings.mobile_image != blank
+    assign story_image = section.settings.mobile_image
+  endif
+  assign story_image_loading = section.settings.image_loading | default: 'auto'
+  if story_image_loading == 'auto'
+    if story_style == 'original'
+      assign story_image_loading = 'eager'
+    else
+      assign story_image_loading = 'lazy'
+    endif
+  endif
+  assign content_percent = section.settings.content_ratio | default: 42
+  assign media_percent = 100 | minus: content_percent
+  assign story_radius = 'var(--sp-radius-lg, 16px)'
+  unless section.settings.use_global_radius
+    assign story_radius = section.settings.custom_image_radius | append: 'px'
+  endunless
+  assign story_media_ratio = section.settings.image_ratio | default: '3_2'
+  assign story_mobile_ratio = section.settings.mobile_image_ratio | default: '4_3'
+-%}
+
+<section
+  class="sp-section sp-story-with-image sp-story-with-image--{{ story_style | escape }} {{ desktop_class }} {{ mobile_class }}{% if section.settings.mobile_button_full %} sp-story-with-image--mobile-button-full{% endif %}"
+  data-section-id="{{ section.id }}"
+  aria-labelledby="SpStoryWithImageTitle-{{ section.id }}"
+  style="
+    --sp-story-columns: minmax(0, {{ content_percent }}fr) minmax(0, {{ media_percent }}fr);
+    --sp-story-column-gap: {{ section.settings.column_gap }}px;
+    --sp-story-mobile-gap: {{ section.settings.mobile_gap }}px;
+    --sp-story-heading-size: {{ section.settings.heading_size }}px;
+    --sp-story-mobile-heading-size: {{ section.settings.mobile_heading_size }}px;
+    --sp-story-body-size: {{ section.settings.description_size }}px;
+    --sp-story-mobile-body-size: {{ section.settings.mobile_description_size }}px;
+    --sp-story-eyebrow-size: {{ section.settings.eyebrow_size }}px;
+    --sp-story-text-width: {{ section.settings.content_max_width }}px;
+    --sp-story-check-gap: {{ section.settings.check_gap }}px;
+    --sp-story-check-text-size: {{ section.settings.check_text_size }}px;
+    --sp-story-icon-size: {{ section.settings.check_icon_size }}px;
+    --sp-story-button-gap: {{ section.settings.button_top_gap }}px;
+    --sp-story-image-radius: {{ story_radius }};
+    --sp-story-image-fit: {{ section.settings.image_fit }};
+    --sp-story-image-position-x: {{ section.settings.image_position_x }}%;
+    --sp-story-image-position-y: {{ section.settings.image_position_y }}%;
+    --sp-story-mobile-image-position-x: {{ section.settings.mobile_position_x }}%;
+    --sp-story-mobile-image-position-y: {{ section.settings.mobile_position_y }}%;
+    --sp-story-image-ratio: {% case story_media_ratio %}{% when '16_10' %}1.6{% when '4_3' %}1.3333{% when 'square' %}1{% else %}1.5{% endcase %};
+    --sp-story-mobile-image-ratio: {% case story_mobile_ratio %}{% when 'square' %}1{% when '3_2' %}1.5{% else %}1.3333{% endcase %};
+    {% unless section.settings.use_global_spacing %}
+      --sp-story-padding-top: {{ section.settings.padding_top }}px;
+      --sp-story-padding-bottom: {{ section.settings.padding_bottom }}px;
+      --sp-story-mobile-padding-top: {{ section.settings.mobile_padding_top }}px;
+      --sp-story-mobile-padding-bottom: {{ section.settings.mobile_padding_bottom }}px;
+    {% endunless %}
+  "
+>
+  <div class="sp-container {{ story_width_class }} sp-story-with-image__grid">
+    <div class="sp-story-with-image__content">
+      {% if section.settings.eyebrow != blank %}
+        <p class="sp-content-eyebrow">{{ section.settings.eyebrow | escape }}</p>
+      {% endif %}
+
+      <h2 id="SpStoryWithImageTitle-{{ section.id }}" class="sp-story-with-image__title">
+        {{ section.settings.heading | escape }}
+      </h2>
+
+      {% if section.settings.text != blank %}
+        <div class="sp-content-copy rte">{{ section.settings.text }}</div>
+      {% endif %}
+
+      {% if section.settings.show_checklist and section.blocks.size > 0 %}
+        <ul class="sp-content-checks" role="list">
+          {% for block in section.blocks %}
+            {% if block.settings.text != blank %}
+              <li class="sp-content-check" {{ block.shopify_attributes }}>
+                {% render 'sp-content-icon', name: 'check', class: 'sp-content-check__icon' %}
+                <span>{{ block.settings.text | escape }}</span>
+              </li>
+            {% endif %}
+          {% endfor %}
+        </ul>
+      {% endif %}
+
+      {% if section.settings.button_label != blank and section.settings.button_link != blank %}
+        <div class="sp-content-actions">
+          {% capture story_button_content %}
+            {{ section.settings.button_label | escape }}
+            {% if section.settings.show_button_arrow and story_style != 'original' %}
+              <svg class="sp-story-with-image__button-arrow" viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false"><path d="M4 12h15m-6-6 6 6-6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            {% endif %}
+          {% endcapture %}
+          {% render 'button', label: story_button_content, href: section.settings.button_link, style: story_button_style, class: 'sp-story-with-image__button' %}
+        </div>
+      {% endif %}
+    </div>
+
+    <div class="sp-story-with-image__media">
+      <div class="sp-content-media{% if section.settings.image_ratio == 'natural' and story_style != 'original' %} sp-story-with-image__media--natural{% endif %}">
+        {% if story_image != blank %}
+          {% if section.settings.mobile_image != blank %}
+            <picture>
+              <source media="(max-width: 749px)" srcset="{{ section.settings.mobile_image | image_url: width: 360 }} 360w, {{ section.settings.mobile_image | image_url: width: 540 }} 540w, {{ section.settings.mobile_image | image_url: width: 750 }} 750w, {{ section.settings.mobile_image | image_url: width: 990 }} 990w" sizes="(max-width: 749px) calc(100vw - 32px), 100vw">
+              {% render 'responsive-image', image: story_image, widths: '480, 640, 800, 1000, 1200, 1440, 1600, 2000', sizes: '(min-width: 990px) min(58vw, 1000px), (min-width: 750px) 55vw, calc(100vw - 32px)', loading: story_image_loading, class: 'sp-content-media__image', alt: section.settings.image_alt %}
+            </picture>
+          {% else %}
+            {% render 'responsive-image', image: story_image, widths: '480, 640, 800, 1000, 1200, 1440, 1600, 2000', sizes: '(min-width: 990px) min(58vw, 1000px), (min-width: 750px) 55vw, calc(100vw - 32px)', loading: story_image_loading, class: 'sp-content-media__image', alt: section.settings.image_alt %}
+          {% endif %}
+        {% else %}
+          {% render 'placeholder-image', name: 'lifestyle-1', class: 'sp-placeholder' %}
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Story with image",
+  "disabled_on": {
+    "groups": [
+      "header",
+      "footer",
+      "custom.system"
+    ]
+  },
+  "settings": [
+    {
+      "type": "header",
+      "content": "Global design system"
+    },
+    {
+      "type": "color_scheme",
+      "id": "sp_color_scheme",
+      "label": "Color scheme",
+      "default": "scheme-1",
+      "info": "Uses the shared Spider color panel from Theme settings."
+    },
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Eyebrow",
+      "default": "OUR STORY"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Tell your story"
+    },
+    {
+      "type": "richtext",
+      "id": "text",
+      "label": "Text",
+      "default": "<p>Share what makes your brand, products, or approach different. Keep the message clear, useful, and easy to scan.</p>"
+    },
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "Image"
+    },
+    {
+      "type": "text",
+      "id": "image_alt",
+      "label": "Image alt text",
+      "info": "Leave blank to use the image alt text from Shopify Files."
+    },
+    {
+      "type": "select",
+      "id": "image_position",
+      "label": "Desktop image position",
+      "default": "right",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "mobile_image_position",
+      "label": "Mobile image position",
+      "default": "last",
+      "options": [
+        {
+          "value": "first",
+          "label": "First"
+        },
+        {
+          "value": "last",
+          "label": "Last"
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "id": "button_label",
+      "label": "Button label",
+      "default": "Learn More"
+    },
+    {
+      "type": "url",
+      "id": "button_link",
+      "label": "Button link"
+    },
+    {
+      "type": "header",
+      "content": "Presentation"
+    },
+    {
+      "type": "select",
+      "id": "layout_style",
+      "label": "Design style",
+      "options": [
+        {
+          "value": "original",
+          "label": "Original Spider"
+        },
+        {
+          "value": "premium",
+          "label": "Premium lifestyle — Reference"
+        },
+        {
+          "value": "editorial",
+          "label": "Editorial split"
+        },
+        {
+          "value": "minimal",
+          "label": "Minimal split"
+        }
+      ],
+      "default": "original"
+    },
+    {
+      "type": "select",
+      "id": "container_width",
+      "label": "Container width",
+      "options": [
+        {
+          "value": "default",
+          "label": "Global default"
+        },
+        {
+          "value": "wide",
+          "label": "Global wide"
+        },
+        {
+          "value": "narrow",
+          "label": "Narrow"
+        }
+      ],
+      "default": "default"
+    },
+    {
+      "type": "header",
+      "content": "Layout & typography"
+    },
+    {
+      "type": "range",
+      "id": "content_ratio",
+      "label": "Content width ratio",
+      "min": 30,
+      "max": 60,
+      "step": 1,
+      "default": 42,
+      "unit": "%"
+    },
+    {
+      "type": "range",
+      "id": "column_gap",
+      "label": "Desktop column gap",
+      "min": 16,
+      "max": 120,
+      "step": 4,
+      "default": 56,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "mobile_gap",
+      "label": "Mobile content gap",
+      "min": 12,
+      "max": 64,
+      "step": 4,
+      "default": 28,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "heading_size",
+      "label": "Desktop heading size",
+      "min": 30,
+      "max": 90,
+      "step": 2,
+      "default": 66,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "mobile_heading_size",
+      "label": "Mobile heading size",
+      "min": 24,
+      "max": 56,
+      "step": 2,
+      "default": 36,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "description_size",
+      "label": "Desktop description size",
+      "min": 14,
+      "max": 26,
+      "step": 1,
+      "default": 19,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "mobile_description_size",
+      "label": "Mobile description size",
+      "min": 14,
+      "max": 22,
+      "step": 1,
+      "default": 16,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "eyebrow_size",
+      "label": "Desktop eyebrow size",
+      "min": 10,
+      "max": 20,
+      "step": 1,
+      "default": 15,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "content_max_width",
+      "label": "Text column max width",
+      "min": 320,
+      "max": 800,
+      "step": 20,
+      "default": 620,
+      "unit": "px"
+    },
+    {
+      "type": "header",
+      "content": "Checklist"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_checklist",
+      "label": "Show checklist",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "check_icon_size",
+      "label": "Checklist icon circle",
+      "min": 24,
+      "max": 56,
+      "step": 2,
+      "default": 34,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "check_gap",
+      "label": "Checklist spacing",
+      "min": 4,
+      "max": 32,
+      "step": 2,
+      "default": 12,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "check_text_size",
+      "label": "Checklist text size",
+      "min": 14,
+      "max": 24,
+      "step": 1,
+      "default": 17,
+      "unit": "px"
+    },
+    {
+      "type": "header",
+      "content": "Media appearance"
+    },
+    {
+      "type": "image_picker",
+      "id": "mobile_image",
+      "label": "Optional mobile image"
+    },
+    {
+      "type": "select",
+      "id": "image_ratio",
+      "label": "Desktop image ratio",
+      "options": [
+        {
+          "value": "3_2",
+          "label": "Landscape 3:2"
+        },
+        {
+          "value": "16_10",
+          "label": "Wide 16:10"
+        },
+        {
+          "value": "4_3",
+          "label": "Classic 4:3"
+        },
+        {
+          "value": "square",
+          "label": "Square"
+        },
+        {
+          "value": "natural",
+          "label": "Original image ratio"
+        }
+      ],
+      "default": "3_2"
+    },
+    {
+      "type": "select",
+      "id": "mobile_image_ratio",
+      "label": "Mobile image ratio",
+      "options": [
+        {
+          "value": "4_3",
+          "label": "4:3"
+        },
+        {
+          "value": "3_2",
+          "label": "3:2"
+        },
+        {
+          "value": "square",
+          "label": "Square"
+        }
+      ],
+      "default": "4_3"
+    },
+    {
+      "type": "select",
+      "id": "image_fit",
+      "label": "Image fit",
+      "options": [
+        {
+          "value": "cover",
+          "label": "Cover"
+        },
+        {
+          "value": "contain",
+          "label": "Contain"
+        }
+      ],
+      "default": "cover"
+    },
+    {
+      "type": "range",
+      "id": "image_position_x",
+      "label": "Desktop image focal X",
+      "min": 0,
+      "max": 100,
+      "step": 5,
+      "default": 50,
+      "unit": "%"
+    },
+    {
+      "type": "range",
+      "id": "image_position_y",
+      "label": "Desktop image focal Y",
+      "min": 0,
+      "max": 100,
+      "step": 5,
+      "default": 50,
+      "unit": "%"
+    },
+    {
+      "type": "range",
+      "id": "mobile_position_x",
+      "label": "Mobile image focal X",
+      "min": 0,
+      "max": 100,
+      "step": 5,
+      "default": 50,
+      "unit": "%"
+    },
+    {
+      "type": "range",
+      "id": "mobile_position_y",
+      "label": "Mobile image focal Y",
+      "min": 0,
+      "max": 100,
+      "step": 5,
+      "default": 50,
+      "unit": "%"
+    },
+    {
+      "type": "checkbox",
+      "id": "use_global_radius",
+      "label": "Use global image radius",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "custom_image_radius",
+      "label": "Custom image radius",
+      "min": 0,
+      "max": 48,
+      "step": 2,
+      "default": 16,
+      "unit": "px"
+    },
+    {
+      "type": "select",
+      "id": "image_loading",
+      "label": "Image loading",
+      "options": [
+        {
+          "value": "auto",
+          "label": "Automatic"
+        },
+        {
+          "value": "lazy",
+          "label": "Lazy"
+        },
+        {
+          "value": "eager",
+          "label": "Eager"
+        }
+      ],
+      "default": "auto"
+    },
+    {
+      "type": "header",
+      "content": "Button"
+    },
+    {
+      "type": "select",
+      "id": "button_style",
+      "label": "Button style",
+      "options": [
+        {
+          "value": "primary",
+          "label": "Primary"
+        },
+        {
+          "value": "secondary",
+          "label": "Secondary"
+        },
+        {
+          "value": "accent",
+          "label": "Accent"
+        }
+      ],
+      "default": "primary"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_button_arrow",
+      "label": "Show arrow for premium styles",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "button_top_gap",
+      "label": "Space above button",
+      "min": 12,
+      "max": 64,
+      "step": 2,
+      "default": 28,
+      "unit": "px"
+    },
+    {
+      "type": "checkbox",
+      "id": "mobile_button_full",
+      "label": "Full-width mobile button",
+      "default": false
+    },
+    {
+      "type": "header",
+      "content": "Section spacing"
+    },
+    {
+      "type": "checkbox",
+      "id": "use_global_spacing",
+      "label": "Use global section spacing",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "Desktop top padding",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "default": 88,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "Desktop bottom padding",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "default": 88,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "mobile_padding_top",
+      "label": "Mobile top padding",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "default": 40,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "mobile_padding_bottom",
+      "label": "Mobile bottom padding",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "default": 40,
+      "unit": "px"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "check",
+      "name": "Checklist item",
+      "limit": 5,
+      "settings": [
+        {
+          "type": "text",
+          "id": "text",
+          "label": "Text",
+          "default": "Carefully curated, quality products"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Story with image",
+     "category": "04. Content",
+      "settings": {
+        "layout_style": "premium",
+        "container_width": "wide",
+        "eyebrow": "OUR STORY",
+        "heading": "A More Mindful Way of Living",
+        "text": "<p>We create thoughtfully designed essentials to help you slow down, feel better, and make everyday moments more meaningful.</p>",
+        "image_position": "right",
+        "mobile_image_position": "last"
+      },
+      "blocks": [
+        {
+          "type": "check",
+          "settings": {
+            "text": "Carefully curated, quality products"
+          }
+        },
+        {
+          "type": "check",
+          "settings": {
+            "text": "Designed for function and simplicity"
+          }
+        },
+        {
+          "type": "check",
+          "settings": {
+            "text": "Made to elevate your everyday"
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

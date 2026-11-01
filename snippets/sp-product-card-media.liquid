@@ -1,0 +1,70 @@
+{%- liquid
+  assign featured_image = product.featured_media.preview_image
+  assign second_image = blank
+  assign show_second_image = card_settings.show_second_image
+  assign show_quick_add = card_settings.show_quick_add
+  assign media_sizing_mode = card_settings.media_sizing_mode
+  if card_settings == blank
+    assign show_second_image = settings.card_second_image
+    assign show_quick_add = settings.card_quick_add
+    assign media_sizing_mode = settings.card_image_ratio
+  endif
+  if show_second_image and product.images.size > 1
+    assign second_image = product.images[1]
+  endif
+  assign image_alt = featured_image.alt | default: product.title
+  assign on_sale = false
+  if product.compare_at_price_max > product.price
+    assign on_sale = true
+  endif
+  assign sale_percent = 0
+  assign image_loading = 'lazy'
+  unless settings.card_lazy_images
+    assign image_loading = 'eager'
+  endunless
+  assign image_priority = 'auto'
+  if section_index != blank and section_index <= 2 and product_index == 1
+    assign image_loading = 'eager'
+    assign image_priority = 'high'
+  endif
+  if on_sale and product.compare_at_price_max > 0
+    assign sale_difference = product.compare_at_price_max | minus: product.price
+    assign sale_percent = sale_difference | times: 100.0 | divided_by: product.compare_at_price_max | round
+  endif
+-%}
+<div class="sp-product-card__media-shell">
+  <a class="sp-product-card__media{% if media_sizing_mode == 'adapt' %} sp-product-card__media--adapt{% endif %}" href="{{ product.url }}" data-sp-product-media-link aria-label="{{ product.title | escape }}">
+    {%- if featured_image != blank -%}
+      {{ featured_image | image_url: width: 1000 | image_tag: class: 'sp-product-card__image sp-product-card__image--primary', widths: '160, 220, 280, 360, 440, 560, 720, 900, 1000', sizes: sizes, loading: image_loading, fetchpriority: image_priority, alt: image_alt }}
+      {%- if second_image != blank -%}
+        {{ second_image | image_url: width: 1000 | image_tag: class: 'sp-product-card__image sp-product-card__image--secondary', widths: '160, 220, 280, 360, 440, 560, 720, 900, 1000', sizes: sizes, loading: 'lazy', alt: '' }}
+      {%- endif -%}
+    {%- else -%}
+      {% render 'placeholder-image', name: 'product-1', class: 'sp-placeholder sp-product-card__placeholder' %}
+    {%- endif -%}
+  </a>
+  {% render 'sp-product-badges', product: product, on_sale: on_sale, sale_percent: sale_percent, card_settings: card_settings, design: design %}
+
+  {%- if media_actions -%}
+    {%- assign sp_suppress_media_quick_add = media_cta -%}
+    {%- unless design == '4' -%}{%- assign sp_suppress_media_quick_add = true -%}{%- endunless -%}
+    {% render 'sp-product-card-actions', product: product, card_settings: card_settings, section_id: section_id, instance_id: instance_id, design: design, location: 'media', suppress_quick_add: sp_suppress_media_quick_add, context: context %}
+  {%- endif -%}
+
+  {%- if media_cta and show_quick_add -%}
+    <div class="sp-product-card__media-cta">
+      {%- if product.available -%}
+        {%- if product.has_only_default_variant -%}
+          {%- assign form_id = 'SpProductMediaCta-' | append: section_id | append: '-' | append: instance_id | append: '-' | append: product.id -%}
+          {% form 'product', product, id: form_id, class: 'sp-product-card__media-cta-form', data-product-card-form: '' %}
+            <input type="hidden" name="id" value="{{ product.selected_or_first_available_variant.id }}" data-sp-product-card-variant>
+            <input type="hidden" name="quantity" value="1">
+            <button class="sp-product-card__media-cta-button" type="submit" aria-label="Add {{ product.title | escape }} to cart">Add to cart</button>
+          {% endform %}
+        {%- else -%}
+          <button class="sp-product-card__media-cta-button" type="button" data-sp-product-quick-add aria-controls="SpProductQuickAdd">Choose options</button>
+        {%- endif -%}
+      {%- endif -%}
+    </div>
+  {%- endif -%}
+</div>

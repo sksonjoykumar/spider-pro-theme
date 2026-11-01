@@ -1,0 +1,47 @@
+{% comment %}
+  Canonical Shopify product form shell / buy buttons.
+  Parameters: product, product_form_id, variant, block.
+  Variant and quantity controls may live in reorderable blocks and use the HTML form attribute.
+{% endcomment %}
+{% assign current_variant = variant | default: product.selected_or_first_available_variant %}
+{% assign form_id = product_form_id %}
+{% if form_id == blank %}{% assign form_id = 'ProductForm-' | append: section.id %}{% endif %}
+{% assign show_dynamic = settings.dynamic_checkout %}
+{% if block != blank %}{% assign show_dynamic = block.settings.show_dynamic_checkout %}{% endif %}
+{% assign button_style = block.settings.button_style | default: 'primary' %}
+{% assign full_width = true %}
+{% if block != blank %}{% assign full_width = block.settings.full_width %}{% endif %}
+{% assign product_added_label = 'products.product.added_to_cart' | t %}
+{% assign add_to_cart_label_override = add_to_cart_label | default: blank %}
+{% form 'product', product, id: form_id, class: 'sp-product-form', data-product-form: '', data-added-label: product_added_label %}
+  <input type="hidden" name="id" value="{{ current_variant.id }}" data-variant-input{% if product.has_only_default_variant == false and has_options_block %} disabled{% endif %}>
+
+  {% render 'selling-plan-selector', product: product, form_id: form_id %}
+
+  {% if product.gift_card? %}
+    <fieldset class="sp-gift-recipient">
+      <legend>Gift card recipient</legend>
+      <label><input type="checkbox" name="properties[__shopify_send_gift_card_to_recipient]" value="if_present"> Send as a gift</label>
+      <div class="sp-field"><label for="RecipientEmail-{{ section.id }}">Recipient email</label><input id="RecipientEmail-{{ section.id }}" type="email" name="properties[Recipient email]" autocomplete="email"></div>
+      <div class="sp-field"><label for="RecipientName-{{ section.id }}">Recipient name</label><input id="RecipientName-{{ section.id }}" type="text" name="properties[Recipient name]" autocomplete="name"></div>
+      <div class="sp-field"><label for="RecipientMessage-{{ section.id }}">Message</label><textarea id="RecipientMessage-{{ section.id }}" name="properties[Message]" maxlength="200"></textarea></div>
+    </fieldset>
+  {% endif %}
+
+  {% render 'volume-pricing', product: product, variant: current_variant %}
+
+  <button
+    class="sp-button sp-button--{{ button_style }} sp-product-form__submit{% if full_width %} sp-product-form__submit--full{% endif %}"
+    type="submit"
+    name="add"
+    data-add-to-cart
+    data-can-submit="{% if current_variant.available %}true{% else %}false{% endif %}"
+    {% unless current_variant.available %}disabled{% endunless %}
+  >
+    <span class="sp-product-form__spinner" aria-hidden="true"></span>
+    <span data-add-to-cart-text>{% if current_variant.available %}{% if add_to_cart_label_override != blank %}{{ add_to_cart_label_override | escape }}{% else %}{{ 'products.product.add_to_cart' | t }}{% endif %}{% else %}{{ 'products.product.sold_out' | t }}{% endif %}</span>
+  </button>
+
+  {% if show_dynamic %}<div class="sp-product-form__dynamic" data-dynamic-checkout{% unless current_variant.available %} hidden{% endunless %}>{{ form | payment_button }}</div>{% endif %}
+  <div class="sp-form-message" role="status" aria-live="polite" data-product-message></div>
+{% endform %}

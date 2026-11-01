@@ -1,0 +1,21 @@
+<div class="sp-wishlist-empty" data-sp-wishlist-empty hidden>
+  <div class="sp-wishlist-empty__icon" aria-hidden="true">
+    <svg viewBox="0 0 48 48"><path d="M24 40 8.8 25.6A10 10 0 0 1 23 11.5l1 1.1 1-1.1a10 10 0 0 1 14.2 14.1L24 40Z" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>
+  </div>
+  <h2>{{ section.settings.empty_heading | escape }}</h2>
+  <p>{{ section.settings.empty_description | escape }}</p>
+  <a class="sp-wishlist-empty__button" href="{{ continue_url }}">{{ section.settings.continue_label | escape }}</a>
+</div>
+
+<div class="sp-wishlist-error" data-sp-wishlist-error hidden role="status" aria-live="polite">
+  <div class="sp-wishlist-empty__icon" aria-hidden="true">
+    <svg viewBox="0 0 48 48"><path d="M24 5 44 40H4L24 5Zm0 12v10m0 6v.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  </div>
+  <h2 data-sp-wishlist-error-title>Wishlist service couldn't start</h2>
+  <p data-sp-wishlist-error-message>Please retry.</p>
+  <div class="sp-wishlist-error__actions">
+    <button type="button" class="sp-wishlist-error__button" data-sp-wishlist-retry>Retry</button>
+    <button type="button" class="sp-wishlist-error__button sp-wishlist-error__button--secondary" data-sp-wishlist-clear-unresolved hidden>Clear unresolved items</button>
+    <a class="sp-wishlist-error__button sp-wishlist-error__button--secondary" href="{{ continue_url }}">{{ section.settings.continue_label | escape }}</a>
+  </div>
+</div>

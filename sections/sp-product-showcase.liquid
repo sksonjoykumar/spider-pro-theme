@@ -1,0 +1,460 @@
+{{ 'sp-main-product.css' | asset_url | stylesheet_tag }}
+{{ 'sp-product-showcase.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'sp-product-showcase.js' | asset_url }}" defer></script>
+{% render 'sp-section-color-scheme', section: section %}
+
+{%- liquid
+  assign showcase_product = section.settings.product
+  assign current_variant = blank
+  assign product_form_id = 'ProductShowcaseForm-' | append: section.id
+  assign main_image = section.settings.main_image
+  assign custom_gallery_count = 0
+  assign feature_count = 0
+  assign benefit_count = 0
+
+  if showcase_product != blank
+    assign current_variant = showcase_product.selected_or_first_available_variant
+    if main_image == blank
+      assign main_image = current_variant.featured_image | default: showcase_product.featured_image
+    endif
+  endif
+
+  for block in section.blocks
+    case block.type
+      when 'gallery_image'
+        if block.settings.image != blank
+          assign custom_gallery_count = custom_gallery_count | plus: 1
+        endif
+      when 'product_feature'
+        if block.settings.text != blank
+          assign feature_count = feature_count | plus: 1
+        endif
+      when 'benefit_card'
+        if block.settings.heading != blank or block.settings.description != blank
+          assign benefit_count = benefit_count | plus: 1
+        endif
+    endcase
+  endfor
+
+  assign variant_meta_prefix = 'Variant'
+  assign variant_meta_index = 0
+  if showcase_product != blank and showcase_product.options.size > 0
+    assign variant_meta_prefix = showcase_product.options.first
+    for option_name in showcase_product.options
+      assign option_name_downcase = option_name | downcase
+      if option_name_downcase contains 'color' or option_name_downcase contains 'colour'
+        assign variant_meta_prefix = option_name
+        assign variant_meta_index = forloop.index0
+        break
+      endif
+    endfor
+  endif
+-%}
+
+<section
+  class="sp-section sp-main-product sp-product-showcase"
+  data-sp-product-showcase
+  data-section-id="{{ section.id }}"
+  data-global-spacing="{{ section.settings.use_global_spacing }}"
+  data-show-availability="{{ section.settings.show_availability }}"
+  data-show-variant-meta="{{ section.settings.show_variant_meta }}"
+  data-variant-meta-prefix="{{ variant_meta_prefix | escape }}"
+  data-variant-meta-index="{{ variant_meta_index }}"
+  data-add-label="{{ section.settings.add_to_cart_label | escape }}"
+  data-sold-label="{{ section.settings.sold_out_label | escape }}"
+  style="
+    --sp-showcase-max-width: {{ section.settings.container_width }}px;
+    --sp-showcase-column-gap: {{ section.settings.column_gap }}px;
+    --sp-showcase-main-ratio: {{ section.settings.main_image_ratio }};
+    --sp-showcase-mobile-ratio: {{ section.settings.mobile_image_ratio }};
+    --sp-showcase-thumb-ratio: {{ section.settings.thumbnail_ratio }};
+    --sp-showcase-image-fit: {{ section.settings.image_fit }};
+    --sp-showcase-image-position: {{ section.settings.image_position }};
+    --sp-showcase-heading-size: {{ section.settings.heading_size }}px;
+    --sp-showcase-heading-size-mobile: {{ section.settings.mobile_heading_size }}px;
+    --sp-showcase-padding-top: {{ section.settings.padding_top }}px;
+    --sp-showcase-padding-bottom: {{ section.settings.padding_bottom }}px;
+    --sp-showcase-mobile-padding-top: {{ section.settings.mobile_padding_top }}px;
+    --sp-showcase-mobile-padding-bottom: {{ section.settings.mobile_padding_bottom }}px;
+  "
+  {% if showcase_product != blank %}
+    data-main-product
+    data-product-id="{{ showcase_product.id }}"
+    data-product-handle="{{ showcase_product.handle | escape }}"
+    data-product-url="{{ request.path }}"
+    data-featured-product-url="{{ showcase_product.url }}"
+    data-selected-variant-id="{{ current_variant.id }}"
+    data-unavailable-label="{{ 'products.product.unavailable' | t | escape }}"
+    data-in-stock-label="{{ section.settings.available_label | escape }}"
+    data-out-stock-label="{{ section.settings.sold_out_label | escape }}"
+    data-low-stock-label="{{ 'products.product.inventory_low_stock' | t | escape }}"
+    data-low-stock-count-template="{{ 'products.product.inventory_low_stock_show_count' | t: quantity: '__QTY__' | escape }}"
+    data-cart-ajax-updates="{{ settings.cart_ajax_updates }}"
+    data-cart-open-after-add="{{ settings.cart_open_after_add }}"
+    data-cart-type="{{ settings.cart_type | default: 'drawer' | escape }}"
+  {% endif %}
+>
+  <div class="sp-product-showcase__container">
+    <header class="sp-product-showcase__header">
+      {% if section.settings.eyebrow != blank %}
+        <p class="sp-product-showcase__eyebrow">{{ section.settings.eyebrow | escape }}</p>
+      {% endif %}
+      {% if section.settings.heading != blank %}
+        <h2 class="sp-product-showcase__heading sp-heading--h2">{{ section.settings.heading | escape }}</h2>
+      {% endif %}
+      {% if section.settings.description != blank %}
+        <div class="sp-product-showcase__intro rte">{{ section.settings.description }}</div>
+      {% endif %}
+    </header>
+
+    {% if showcase_product != blank %}
+      {%- liquid
+        assign details_url = showcase_product.url
+        if current_variant != blank
+          assign details_url = showcase_product.url | append: '?variant=' | append: current_variant.id
+        endif
+        assign product_description = showcase_product.description | strip_html | strip | truncatewords: section.settings.description_words
+      -%}
+
+      <div class="sp-product-showcase__main">
+        <article class="sp-product-showcase__info-card" aria-label="{{ showcase_product.title | escape }} product information">
+          {% if section.settings.product_eyebrow != blank %}
+            <p class="sp-product-showcase__product-eyebrow">{{ section.settings.product_eyebrow | escape }}</p>
+          {% endif %}
+
+          <h3 class="sp-product-showcase__product-title">{{ showcase_product.title | escape }}</h3>
+
+          {% if section.settings.show_description %}
+            {% if section.settings.description_source == 'custom' and section.settings.custom_product_description != blank %}
+              <div class="sp-product-showcase__product-description rte">{{ section.settings.custom_product_description }}</div>
+            {% elsif showcase_product.description != blank %}
+              <div class="sp-product-showcase__product-description rte"><p>{{ product_description }}</p></div>
+            {% endif %}
+          {% endif %}
+
+          {% if feature_count > 0 %}
+            <ul class="sp-product-showcase__features" role="list">
+              {% for block in section.blocks %}
+                {% if block.type == 'product_feature' and block.settings.text != blank %}
+                  <li class="sp-product-showcase__feature" {{ block.shopify_attributes }}>
+                    <span class="sp-product-showcase__check" aria-hidden="true">
+                      <svg viewBox="0 0 20 20" focusable="false"><path d="m5 10.2 3.1 3.1L15.3 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </span>
+                    <span>{{ block.settings.text | escape }}</span>
+                  </li>
+                {% endif %}
+              {% endfor %}
+            </ul>
+          {% endif %}
+
+          {% if section.settings.show_price %}
+            <div class="sp-product-showcase__price-wrap">
+              {% render 'product-price', product: showcase_product, variant: current_variant, show_compare: section.settings.show_compare_at_price, show_savings: false %}
+            </div>
+          {% endif %}
+
+          {% unless showcase_product.has_only_default_variant %}
+            {% if section.settings.show_variant_picker %}
+              <div class="sp-product-showcase__variants">
+                {% render 'variant-picker', product: showcase_product, product_form_id: product_form_id, block: section %}
+              </div>
+            {% endif %}
+          {% endunless %}
+
+          <div class="sp-product-showcase__actions{% unless section.settings.show_details_button and section.settings.details_label != blank %} sp-product-showcase__actions--single{% endunless %}">
+            <div class="sp-product-showcase__add-wrap">
+              {% render 'product-form', product: showcase_product, product_form_id: product_form_id, variant: current_variant, block: section, has_options_block: section.settings.show_variant_picker %}
+            </div>
+            {% if section.settings.show_details_button and section.settings.details_label != blank %}
+              {% render 'button', label: section.settings.details_label, href: details_url, style: 'secondary', class: 'sp-product-showcase__details-button', attributes: 'data-showcase-details' %}
+            {% endif %}
+          </div>
+
+          {% if section.settings.show_variant_meta or section.settings.show_shipping_note or section.settings.show_availability %}
+            <div class="sp-product-showcase__meta" aria-label="Product details">
+              {% if section.settings.show_variant_meta and showcase_product.has_only_default_variant == false %}
+                <div class="sp-product-showcase__meta-item" data-showcase-variant-meta>
+                  <span class="sp-product-showcase__color-dot" aria-hidden="true"></span>
+                  <span><span data-showcase-variant-prefix>{{ variant_meta_prefix | escape }}</span>: <span data-showcase-variant-value>{{ current_variant.options[variant_meta_index] | escape }}</span></span>
+                </div>
+              {% endif %}
+              {% if section.settings.show_shipping_note and section.settings.shipping_note_text != blank %}
+                <div class="sp-product-showcase__meta-item">
+                  <span class="sp-product-showcase__meta-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" focusable="false"><path d="M3 6h11v11H3zM14 10h4l3 3v4h-7z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><circle cx="7" cy="19" r="2" fill="none" stroke="currentColor" stroke-width="1.7"/><circle cx="18" cy="19" r="2" fill="none" stroke="currentColor" stroke-width="1.7"/></svg>
+                  </span>
+                  <span>{{ section.settings.shipping_note_text | escape }}</span>
+                </div>
+              {% endif %}
+              {% if section.settings.show_availability %}
+                <div class="sp-product-showcase__meta-item sp-product-showcase__availability{% unless current_variant.available %} is-unavailable{% endunless %}" data-showcase-availability aria-live="polite">
+                  <span class="sp-product-showcase__availability-icon" aria-hidden="true">
+                    <svg viewBox="0 0 20 20" focusable="false"><path d="m4.5 10.2 3.2 3.1 7.8-7.1" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  </span>
+                  <span data-showcase-availability-text>{% if current_variant.available %}{{ section.settings.available_label | escape }}{% else %}{{ section.settings.sold_out_label | escape }}{% endif %}</span>
+                </div>
+              {% endif %}
+            </div>
+          {% endif %}
+        </article>
+
+        <div class="sp-product-showcase__gallery-card" data-showcase-gallery>
+          <div class="sp-product-showcase__hero-media">
+            {% if main_image != blank %}
+              <img
+                class="sp-product-showcase__main-image"
+                data-showcase-main-image
+                data-image-id="{% if section.settings.main_image == blank %}{{ main_image.id }}{% else %}custom-main{% endif %}"
+                src="{{ main_image | image_url: width: 1800 }}"
+                srcset="{{ main_image | image_url: width: 600 }} 600w, {{ main_image | image_url: width: 900 }} 900w, {{ main_image | image_url: width: 1200 }} 1200w, {{ main_image | image_url: width: 1800 }} 1800w"
+                sizes="(min-width: 1000px) 58vw, 100vw"
+                width="{{ main_image.width }}"
+                height="{{ main_image.height }}"
+                alt="{{ main_image.alt | default: showcase_product.title | escape }}"
+                loading="eager"
+                fetchpriority="high"
+              >
+            {% else %}
+              <div class="sp-product-showcase__placeholder">{{ 'product-1' | placeholder_svg_tag: 'sp-product-showcase__placeholder-svg' }}</div>
+            {% endif %}
+          </div>
+
+          {% if section.settings.show_thumbnails %}
+            {% if custom_gallery_count > 0 %}
+              <div class="sp-product-showcase__thumbnails" role="group" aria-label="Product image thumbnails">
+                {% assign custom_gallery_index = 0 %}
+                {% for block in section.blocks %}
+                  {% if block.type == 'gallery_image' and block.settings.image != blank %}
+                    {% assign gallery_image = block.settings.image %}
+                    {% assign custom_gallery_index = custom_gallery_index | plus: 1 %}
+                    <button
+                      class="sp-product-showcase__thumbnail{% if section.settings.main_image == blank and gallery_image.id == showcase_product.featured_image.id %} is-active{% endif %}"
+                      type="button"
+                      data-showcase-thumbnail
+                      data-image-id="custom-{{ block.id }}"
+                      data-image-src="{{ gallery_image | image_url: width: 1800 }}"
+                      data-image-srcset="{{ gallery_image | image_url: width: 600 }} 600w, {{ gallery_image | image_url: width: 900 }} 900w, {{ gallery_image | image_url: width: 1200 }} 1200w, {{ gallery_image | image_url: width: 1800 }} 1800w"
+                      data-image-alt="{{ gallery_image.alt | default: showcase_product.title | escape }}"
+                      aria-label="Show product image {{ custom_gallery_index }}"
+                      aria-pressed="{% if section.settings.main_image == blank and gallery_image.id == showcase_product.featured_image.id %}true{% else %}false{% endif %}"
+                      {{ block.shopify_attributes }}
+                    >
+                      <img src="{{ gallery_image | image_url: width: 480 }}" srcset="{{ gallery_image | image_url: width: 240 }} 240w, {{ gallery_image | image_url: width: 480 }} 480w" sizes="(min-width: 1000px) 18vw, 32vw" width="{{ gallery_image.width }}" height="{{ gallery_image.height }}" alt="{{ gallery_image.alt | default: showcase_product.title | escape }}" loading="lazy">
+                    </button>
+                  {% endif %}
+                {% endfor %}
+              </div>
+            {% elsif showcase_product.images.size > 1 %}
+              <div class="sp-product-showcase__thumbnails" role="group" aria-label="Product image thumbnails">
+                {% for gallery_image in showcase_product.images limit: 3 %}
+                  <button
+                    class="sp-product-showcase__thumbnail{% if gallery_image.id == main_image.id %} is-active{% endif %}"
+                    type="button"
+                    data-showcase-thumbnail
+                    data-image-id="{{ gallery_image.id }}"
+                    data-image-src="{{ gallery_image | image_url: width: 1800 }}"
+                    data-image-srcset="{{ gallery_image | image_url: width: 600 }} 600w, {{ gallery_image | image_url: width: 900 }} 900w, {{ gallery_image | image_url: width: 1200 }} 1200w, {{ gallery_image | image_url: width: 1800 }} 1800w"
+                    data-image-alt="{{ gallery_image.alt | default: showcase_product.title | escape }}"
+                    aria-label="Show product image {{ forloop.index }}"
+                    aria-pressed="{% if gallery_image.id == main_image.id %}true{% else %}false{% endif %}"
+                  >
+                    <img src="{{ gallery_image | image_url: width: 480 }}" srcset="{{ gallery_image | image_url: width: 240 }} 240w, {{ gallery_image | image_url: width: 480 }} 480w" sizes="(min-width: 1000px) 18vw, 32vw" width="{{ gallery_image.width }}" height="{{ gallery_image.height }}" alt="{{ gallery_image.alt | default: showcase_product.title | escape }}" loading="lazy">
+                  </button>
+                {% endfor %}
+              </div>
+            {% endif %}
+          {% endif %}
+        </div>
+      </div>
+
+      {% if section.settings.show_benefit_cards and benefit_count > 0 %}
+        <div class="sp-product-showcase__benefits">
+          {% for block in section.blocks %}
+            {% if block.type == 'benefit_card' and block.settings.heading != blank or block.type == 'benefit_card' and block.settings.description != blank %}
+              <article class="sp-product-showcase__benefit-card" {{ block.shopify_attributes }}>
+                <span class="sp-product-showcase__benefit-icon" aria-hidden="true">
+                  {% case block.settings.icon %}
+                    {% when 'materials' %}
+                      <svg viewBox="0 0 48 48" focusable="false"><circle cx="24" cy="12" r="7" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="15" cy="28" r="7" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="33" cy="28" r="7" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="24" cy="39" r="5" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>
+                    {% when 'design' %}
+                      <svg viewBox="0 0 48 48" focusable="false"><path d="m9 34 4-12L31 4l13 13-18 18-12 4z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="m27 8 13 13M13 22l13 13M9 34l8-8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+                    {% when 'utility' %}
+                      <svg viewBox="0 0 48 48" focusable="false"><path d="M13 12h22l-2 29H15zM17 12V7h14v5M35 18h5v12a5 5 0 0 1-5 5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+                    {% when 'leaf' %}
+                      <svg viewBox="0 0 48 48" focusable="false"><path d="M40 7C20 7 8 14 8 28c0 7 5 12 12 12C34 40 40 23 40 7Z" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M7 42c8-12 15-18 27-27" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+                    {% when 'shield' %}
+                      <svg viewBox="0 0 48 48" focusable="false"><path d="m24 5 16 6v11c0 10-6.5 17-16 21C14.5 39 8 32 8 22V11z" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="m16 24 5 5 11-12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    {% when 'truck' %}
+                      <svg viewBox="0 0 48 48" focusable="false"><path d="M5 10h25v23H5zM30 18h8l6 7v8H30z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><circle cx="14" cy="36" r="4" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="36" cy="36" r="4" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>
+                    {% else %}
+                      <svg viewBox="0 0 48 48" focusable="false"><path d="m24 4 4.7 14.3L43 23l-14.3 4.7L24 42l-4.7-14.3L5 23l14.3-4.7z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="m38 4 1.5 4.5L44 10l-4.5 1.5L38 16l-1.5-4.5L32 10l4.5-1.5z" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>
+                  {% endcase %}
+                </span>
+                <div class="sp-product-showcase__benefit-copy">
+                  {% if block.settings.heading != blank %}<h3>{{ block.settings.heading | escape }}</h3>{% endif %}
+                  {% if block.settings.description != blank %}<p>{{ block.settings.description | escape }}</p>{% endif %}
+                </div>
+              </article>
+            {% endif %}
+          {% endfor %}
+        </div>
+      {% endif %}
+
+      <script type="application/json" data-product-json>
+        {
+          "id": {{ showcase_product.id | json }},
+          "handle": {{ showcase_product.handle | json }},
+          "title": {{ showcase_product.title | json }},
+          "vendor": {{ showcase_product.vendor | json }},
+          "url": {{ showcase_product.url | json }},
+          "featuredImage": {% if showcase_product.featured_image %}{{ showcase_product.featured_image | image_url: width: 900 | json }}{% else %}null{% endif %},
+          "options": [{% for option in showcase_product.options_with_values %}{"name":{{ option.name | json }},"position":{{ option.position | json }},"values":{{ option.values | json }}}{% unless forloop.last %},{% endunless %}{% endfor %}],
+          "variants": [
+            {% for variant in showcase_product.variants %}
+              {
+                "id": {{ variant.id | json }},
+                "available": {{ variant.available | json }},
+                "options": {{ variant.options | json }},
+                "price": {{ variant.price | json }},
+                "compare_at_price": {{ variant.compare_at_price | json }},
+                "sku": {{ variant.sku | json }},
+                "barcode": {{ variant.barcode | json }},
+                "featured_media_id": {% if variant.featured_media %}{{ variant.featured_media.id | json }}{% else %}null{% endif %},
+                "featured_image_id": {% if variant.featured_image %}{{ variant.featured_image.id | json }}{% else %}null{% endif %},
+                "price_formatted": {{ variant.price | money | json }},
+                "compare_at_price_formatted": {% if variant.compare_at_price %}{{ variant.compare_at_price | money | json }}{% else %}null{% endif %},
+                "savings_amount_formatted": {% if variant.compare_at_price and variant.compare_at_price > variant.price %}{{ variant.compare_at_price | minus: variant.price | money | json }}{% else %}null{% endif %},
+                "unit_price_formatted": {% if variant.unit_price %}{{ variant.unit_price | money | json }}{% else %}null{% endif %},
+                "inventory_management": {{ variant.inventory_management | json }},
+                "inventory_quantity": {{ variant.inventory_quantity | json }},
+                "quantity_rule": {"min":{{ variant.quantity_rule.min | default: 1 | json }},"max":{{ variant.quantity_rule.max | json }},"increment":{{ variant.quantity_rule.increment | default: 1 | json }}},
+                "unit_price": {% if variant.unit_price %}{{ variant.unit_price | json }}{% else %}null{% endif %},
+                "unit_price_measurement": {% if variant.unit_price_measurement %}{"reference_value":{{ variant.unit_price_measurement.reference_value | json }},"reference_unit":{{ variant.unit_price_measurement.reference_unit | json }}}{% else %}null{% endif %}
+              }{% unless forloop.last %},{% endunless %}
+            {% endfor %}
+          ],
+          "money_format": {{ shop.money_format | json }}
+        }
+      </script>
+    {% else %}
+      <div class="sp-product-showcase__empty">
+        <div class="sp-product-showcase__empty-icon" aria-hidden="true">{% render 'icon', name: 'cart' %}</div>
+        <h3>{{ section.settings.empty_heading | escape }}</h3>
+        <p>{{ section.settings.empty_text | escape }}</p>
+      </div>
+    {% endif %}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Product Showcase",
+  "tag": "section",
+  "class": "sp-product-showcase-section",
+  "max_blocks": 11,
+ "disabled_on": {
+    "groups": [
+      "header",
+      "footer",
+      "custom.system"
+    ]
+  },
+  "settings": [
+    { "type": "header", "content": "Section header" },
+    { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "DESIGNED FOR EVERYDAY LIVING" },
+    { "type": "text", "id": "heading", "label": "Heading", "default": "Product Showcase" },
+    { "type": "richtext", "id": "description", "label": "Description", "default": "<p>Discover thoughtfully designed essentials that combine simplicity, function, and timeless style.</p>" },
+    { "type": "range", "id": "heading_size", "label": "Desktop heading size", "min": 28, "max": 64, "step": 2, "unit": "px", "default": 48 },
+    { "type": "range", "id": "mobile_heading_size", "label": "Mobile heading size", "min": 24, "max": 40, "step": 2, "unit": "px", "default": 30 },
+    { "type": "color_scheme", "id": "sp_color_scheme", "label": "Color scheme", "default": "scheme-1" },
+
+    { "type": "header", "content": "Product" },
+    { "type": "product", "id": "product", "label": "Featured product" },
+    { "type": "text", "id": "product_eyebrow", "label": "Product label", "default": "FEATURED ESSENTIAL" },
+    { "type": "checkbox", "id": "show_description", "label": "Show product description", "default": true },
+    { "type": "select", "id": "description_source", "label": "Product description source", "options": [ { "value": "product", "label": "Selected product" }, { "value": "custom", "label": "Custom description" } ], "default": "product", "visible_if": "{{ section.settings.show_description }}" },
+    { "type": "richtext", "id": "custom_product_description", "label": "Custom product description", "default": "<p>Built for your daily routine, with thoughtful details and dependable performance.</p>", "visible_if": "{{ section.settings.show_description and section.settings.description_source == 'custom' }}" },
+    { "type": "range", "id": "description_words", "label": "Product description word limit", "min": 10, "max": 80, "step": 5, "default": 35, "visible_if": "{{ section.settings.show_description and section.settings.description_source == 'product' }}" },
+    { "type": "checkbox", "id": "show_price", "label": "Show product price", "default": true },
+    { "type": "checkbox", "id": "show_compare_at_price", "label": "Show compare-at price", "default": true, "visible_if": "{{ section.settings.show_price }}" },
+    { "type": "checkbox", "id": "show_variant_picker", "label": "Show variant selector", "default": true },
+    { "type": "checkbox", "id": "show_variant_meta", "label": "Show selected variant in details row", "default": true },
+    { "type": "checkbox", "id": "show_availability", "label": "Show availability status", "default": true },
+    { "type": "text", "id": "available_label", "label": "Available status text", "default": "Available now", "visible_if": "{{ section.settings.show_availability }}" },
+    { "type": "text", "id": "sold_out_label", "label": "Unavailable status text", "default": "Currently unavailable", "visible_if": "{{ section.settings.show_availability }}" },
+    { "type": "checkbox", "id": "show_shipping_note", "label": "Show shipping information", "default": true },
+    { "type": "text", "id": "shipping_note_text", "label": "Shipping information text", "default": "Shipping information at checkout", "visible_if": "{{ section.settings.show_shipping_note }}" },
+    { "type": "text", "id": "add_to_cart_label", "label": "Add to cart button label", "default": "Add to cart" },
+    { "type": "checkbox", "id": "show_details_button", "label": "Show View details button", "default": true },
+    { "type": "text", "id": "details_label", "label": "View details button label", "default": "View details", "visible_if": "{{ section.settings.show_details_button }}" },
+    { "type": "select", "id": "button_style", "label": "Add-to-cart button style", "options": [ { "value": "primary", "label": "Primary" }, { "value": "secondary", "label": "Secondary" }, { "value": "accent", "label": "Accent" } ], "default": "primary" },
+
+    { "type": "header", "content": "Product gallery" },
+    { "type": "image_picker", "id": "main_image", "label": "Optional main image override" },
+    { "type": "checkbox", "id": "show_thumbnails", "label": "Show image thumbnails", "default": true },
+    { "type": "select", "id": "main_image_ratio", "label": "Desktop main image ratio", "options": [ { "value": "2 / 1", "label": "Wide (2:1)" }, { "value": "16 / 9", "label": "Landscape (16:9)" }, { "value": "4 / 3", "label": "Standard (4:3)" }, { "value": "1 / 1", "label": "Square (1:1)" } ], "default": "2 / 1" },
+    { "type": "select", "id": "mobile_image_ratio", "label": "Mobile main image ratio", "options": [ { "value": "5 / 4", "label": "Portrait (5:4)" }, { "value": "4 / 3", "label": "Landscape (4:3)" }, { "value": "1 / 1", "label": "Square (1:1)" } ], "default": "4 / 3" },
+    { "type": "select", "id": "thumbnail_ratio", "label": "Thumbnail ratio", "options": [ { "value": "2 / 1", "label": "Wide (2:1)" }, { "value": "3 / 2", "label": "Landscape (3:2)" }, { "value": "1 / 1", "label": "Square (1:1)" } ], "default": "2 / 1" },
+    { "type": "select", "id": "image_fit", "label": "Image fit", "options": [ { "value": "cover", "label": "Cover" }, { "value": "contain", "label": "Contain" } ], "default": "cover" },
+    { "type": "select", "id": "image_position", "label": "Main image focal position", "options": [ { "value": "center", "label": "Center" }, { "value": "center top", "label": "Top" }, { "value": "center bottom", "label": "Bottom" }, { "value": "left center", "label": "Left" }, { "value": "right center", "label": "Right" } ], "default": "center" },
+
+    { "type": "header", "content": "Benefit cards" },
+    { "type": "checkbox", "id": "show_benefit_cards", "label": "Show benefit cards", "default": true },
+
+    { "type": "header", "content": "Layout and spacing" },
+    { "type": "range", "id": "container_width", "label": "Content maximum width", "min": 1000, "max": 1600, "step": 40, "unit": "px", "default": 1440 },
+    { "type": "range", "id": "column_gap", "label": "Column gap", "min": 8, "max": 32, "step": 2, "unit": "px", "default": 12 },
+    { "type": "checkbox", "id": "use_global_spacing", "label": "Use Spider global section spacing", "default": true },
+    { "type": "range", "id": "padding_top", "label": "Desktop top padding", "min": 0, "max": 160, "step": 4, "unit": "px", "default": 64, "visible_if": "{{ section.settings.use_global_spacing == false }}" },
+    { "type": "range", "id": "padding_bottom", "label": "Desktop bottom padding", "min": 0, "max": 160, "step": 4, "unit": "px", "default": 64, "visible_if": "{{ section.settings.use_global_spacing == false }}" },
+    { "type": "range", "id": "mobile_padding_top", "label": "Mobile top padding", "min": 0, "max": 100, "step": 4, "unit": "px", "default": 40, "visible_if": "{{ section.settings.use_global_spacing == false }}" },
+    { "type": "range", "id": "mobile_padding_bottom", "label": "Mobile bottom padding", "min": 0, "max": 100, "step": 4, "unit": "px", "default": 40, "visible_if": "{{ section.settings.use_global_spacing == false }}" },
+
+    { "type": "header", "content": "Empty product state" },
+    { "type": "text", "id": "empty_heading", "label": "Empty state heading", "default": "Choose a product to showcase" },
+    { "type": "text", "id": "empty_text", "label": "Empty state description", "default": "Select a product in this section's settings to display its details and images." }
+  ],
+  "blocks": [
+    {
+      "type": "product_feature",
+      "name": "Product feature",
+      "limit": 5,
+      "settings": [
+        { "type": "text", "id": "text", "label": "Feature text", "default": "Thoughtfully designed for everyday use" }
+      ]
+    },
+    {
+      "type": "gallery_image",
+      "name": "Gallery image",
+      "limit": 3,
+      "settings": [
+        { "type": "image_picker", "id": "image", "label": "Image" }
+      ]
+    },
+    {
+      "type": "benefit_card",
+      "name": "Benefit card",
+      "limit": 3,
+      "settings": [
+        { "type": "select", "id": "icon", "label": "Icon", "options": [ { "value": "materials", "label": "Premium materials" }, { "value": "design", "label": "Thoughtful design" }, { "value": "utility", "label": "Everyday utility" }, { "value": "leaf", "label": "Leaf" }, { "value": "shield", "label": "Shield" }, { "value": "truck", "label": "Shipping" }, { "value": "sparkle", "label": "Sparkle" } ], "default": "materials" },
+        { "type": "text", "id": "heading", "label": "Heading", "default": "Premium Materials" },
+        { "type": "textarea", "id": "description", "label": "Description", "default": "High-grade materials chosen for durability and long-lasting performance." }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Product Showcase",
+      "category": "02. Products",
+      "blocks": [
+        { "type": "product_feature", "settings": { "text": "Double-wall insulation" } },
+        { "type": "product_feature", "settings": { "text": "Leak-proof carry lid" } },
+        { "type": "product_feature", "settings": { "text": "Premium stainless steel build" } },
+        { "type": "benefit_card", "settings": { "icon": "materials", "heading": "Premium Materials", "description": "High-grade stainless steel ensures durability, safety, and long-lasting performance." } },
+        { "type": "benefit_card", "settings": { "icon": "design", "heading": "Thoughtful Design", "description": "Minimalist form with smart details for comfort, grip, and effortless use." } },
+        { "type": "benefit_card", "settings": { "icon": "utility", "heading": "Everyday Utility", "description": "Made to keep up with your day—reliable performance, wherever you go." } }
+      ]
+    }
+  ]
+}
+{% endschema %}

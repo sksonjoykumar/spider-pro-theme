@@ -1,0 +1,38 @@
+{% comment %}Reference-design premium progress. Uses existing Spider global cart shipping goal/settings.{% endcomment %}
+{%- liquid
+  assign goal_major = settings.cart_shipping_goal | default: 0 | plus: 0
+  assign goal = goal_major | times: 100
+  assign current = cart.total_price | default: 0
+  assign remaining = goal | minus: current
+  assign percent = 0
+  if goal > 0
+    assign percent = current | times: 100.0 | divided_by: goal
+  endif
+  if percent > 100
+    assign percent = 100
+  endif
+  if percent < 0
+    assign percent = 0
+  endif
+-%}
+{% if settings.cart_shipping_bar and goal > 0 %}
+  <div class="sp-premium-cart__shipping" data-shipping-progress>
+    <span class="sp-premium-cart__shipping-icon" aria-hidden="true"><svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 7h17v16H3zM20 13h5l4 5v5h-9z"/><circle cx="9" cy="24" r="3"/><circle cx="24" cy="24" r="3"/></svg></span>
+    <div class="sp-premium-cart__shipping-message">
+      {% if remaining > 0 %}
+        {% assign money_left = remaining | money %}
+        {% assign message = settings.cart_shipping_before | default: 'You are [amount] away from free shipping.' | replace: '[amount]', money_left %}
+        {% assign submessage = section.settings.shipping_reminder | replace: '[amount]', money_left %}
+        <strong>{{ message | escape }}</strong>
+        <span>{{ submessage | escape }}</span>
+      {% else %}
+        <strong>{{ settings.cart_shipping_after | default: 'You unlocked free shipping!' | escape }}</strong>
+        <span>{{ section.settings.shipping_success_description | escape }}</span>
+      {% endif %}
+    </div>
+    <div class="sp-premium-cart__shipping-meter">
+      <div class="sp-premium-cart__shipping-track" role="progressbar" aria-label="Free shipping progress" aria-valuenow="{{ percent | round }}" aria-valuemin="0" aria-valuemax="100"><span style="width:{{ percent }}%"></span></div>
+      <span class="sp-premium-cart__shipping-values">{{ current | money_without_trailing_zeros }} / {{ goal | money_without_trailing_zeros }}</span>
+    </div>
+  </div>
+{% endif %}

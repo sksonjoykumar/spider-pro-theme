@@ -1,0 +1,32 @@
+{% comment %}Spider runtime settings. Visual design stays in CSS custom properties; JS receives only behavior it consumes.{% endcomment %}
+<script type="application/json" id="SpiderGlobalSettings">
+{
+  "sp_ui_drawer_motion": {{ settings.sp_ui_drawer_motion | json }},
+  "sp_ui_drawer_duration": {{ settings.sp_ui_drawer_duration | default: 300 | json }},
+  "sp_ui_modal_duration": {{ settings.sp_ui_modal_duration | default: 250 | json }},
+  "sp_dev_mode": {{ settings.sp_dev_mode | json }},
+  "sp_debug_info": {{ settings.sp_debug_info | json }},
+  "sp_log_level": {{ settings.sp_log_level | json }},
+  "sp_reduce_motion": {{ settings.sp_reduce_motion | json }},
+  "sp_motion_enable": {{ settings.sp_motion_enable | json }},
+  "sp_motion_style": {{ settings.sp_motion_style | json }},
+  "sp_motion_repeat": {{ settings.sp_motion_repeat | json }},
+  "sp_motion_a11y_mode": {{ settings.sp_motion_a11y_mode | json }},
+  "scroll_motion_enable": {{ settings.scroll_motion_enable | json }},
+  "scroll_trigger_dist": {{ settings.scroll_trigger_dist | json }},
+  "scroll_stagger": {{ settings.scroll_stagger | json }},
+  "perf_prefetch_navigation": {{ settings.perf_prefetch_navigation | json }},
+  "perf_reduce_motion": {{ settings.perf_reduce_motion | json }},
+  "perf_monitor": {{ settings.perf_monitor | json }},
+  "perf_dom_warning": {{ settings.perf_dom_warning | json }},
+  "perf_longtask_warning": {{ settings.perf_longtask_warning | json }},
+  "ajax_filtering": {{ settings.ajax_filtering | json }},
+  "paging_history": {{ settings.paging_history | json }},
+  "load_more_threshold": {{ settings.load_more_threshold | json }},
+  "search_predictive": {{ settings.search_predictive | json }},
+  "search_result_limit": {{ settings.search_result_limit | json }},
+  "cart_ajax_updates": {{ settings.cart_ajax_updates | json }},
+  "cart_open_after_add": {{ settings.cart_open_after_add | json }},
+  "cart_type": {{ settings.cart_type | default: 'drawer' | json }}
+}
+</script>

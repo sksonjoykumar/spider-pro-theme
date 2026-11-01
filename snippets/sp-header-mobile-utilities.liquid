@@ -1,0 +1,64 @@
+{% comment %}Spider mobile drawer utility rows. Params: section{% endcomment %}
+{%- liquid
+  assign show_any = false
+  if section.settings.mobile_wishlist_url != blank
+    assign show_any = true
+  endif
+  if section.settings.mobile_drawer_show_search and section.settings.show_search
+    assign show_any = true
+  endif
+  if section.settings.mobile_drawer_show_account and section.settings.show_account and shop.customer_accounts_enabled
+    assign show_any = true
+  endif
+  if section.settings.mobile_drawer_show_cart and section.settings.show_cart
+    assign show_any = true
+  endif
+-%}
+{% if show_any %}
+  <div class="sp-header-mobile-utilities" aria-label="Account and store utilities">
+    {% render 'sp-header-wishlist', section: section %}
+
+    {% if section.settings.mobile_drawer_show_search and section.settings.show_search %}
+      {% if section.settings.search_style == 'drawer' %}
+        <button class="sp-header-mobile-utilities__row" type="button" data-sp-mobile-search-utility>
+          <span class="sp-header-mobile-utilities__icon">{% render 'icon', name: 'search' %}</span>
+          <span class="sp-header-mobile-utilities__label">Search</span>
+        </button>
+      {% else %}
+        <a class="sp-header-mobile-utilities__row" href="{{ routes.search_url }}">
+          <span class="sp-header-mobile-utilities__icon">{% render 'icon', name: 'search' %}</span>
+          <span class="sp-header-mobile-utilities__label">Search</span>
+        </a>
+      {% endif %}
+    {% endif %}
+
+    {% if section.settings.mobile_drawer_show_account and section.settings.show_account and shop.customer_accounts_enabled %}
+      <a
+        class="sp-header-mobile-utilities__row"
+        href="{% if customer %}{{ routes.account_url }}{% else %}{{ routes.account_login_url }}{% endif %}">
+        <span class="sp-header-mobile-utilities__icon">{% render 'icon', name: 'account' %}</span>
+        <span class="sp-header-mobile-utilities__label">Account</span>
+      </a>
+    {% endif %}
+
+    {% if section.settings.mobile_drawer_show_cart and section.settings.show_cart %}
+      {% if settings.header_cart_drawer and settings.cart_type == 'drawer' %}
+        <button class="sp-header-mobile-utilities__row" type="button" data-sp-mobile-cart-utility data-cart-target="CartDrawer" data-cart-url="{{ routes.cart_url }}">
+          <span class="sp-header-mobile-utilities__icon">{% render 'icon', name: 'cart' %}</span>
+          <span class="sp-header-mobile-utilities__label">Cart</span>
+          <span class="sp-header-mobile-utilities__count" data-cart-count>
+            {% if section.settings.cart_count_cap and cart.item_count > 99 %}99+{% else %}{{ cart.item_count }}{% endif %}
+          </span>
+        </button>
+      {% else %}
+        <a class="sp-header-mobile-utilities__row" href="{{ routes.cart_url }}">
+          <span class="sp-header-mobile-utilities__icon">{% render 'icon', name: 'cart' %}</span>
+          <span class="sp-header-mobile-utilities__label">Cart</span>
+          <span class="sp-header-mobile-utilities__count" data-cart-count>
+            {% if section.settings.cart_count_cap and cart.item_count > 99 %}99+{% else %}{{ cart.item_count }}{% endif %}
+          </span>
+        </a>
+      {% endif %}
+    {% endif %}
+  </div>
+{% endif %}

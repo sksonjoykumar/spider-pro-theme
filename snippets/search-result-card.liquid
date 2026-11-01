@@ -1,0 +1,11 @@
+{% comment %}LiquidDoc: Search result card. Parameter: item required.{% endcomment %}
+{% if item.object_type == 'product' %}
+  {% render 'sp-product-card', product: item, context: 'search', section_id: section.id, instance_id: 'search', sizes: '(min-width: 990px) 25vw, 50vw' %}
+{% else %}
+  <article class="sp-search-card">
+    <a href="{{ item.url }}">
+      <small>{{ item.object_type | capitalize }}</small>
+      <h3>{{ item.title | escape }}</h3>
+    </a>
+  </article>
+{% endif %}

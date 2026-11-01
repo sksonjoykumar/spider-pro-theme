@@ -1,0 +1,17 @@
+{% assign social_image = page_image | default: settings.sp_social_image %}
+{% assign social_title = page_title | default: shop.name %}
+{% if settings.seo_open_graph %}
+  <meta property="og:site_name" content="{{ shop.name | escape }}">
+  <meta property="og:url" content="{{ canonical_url }}">
+  <meta property="og:title" content="{{ social_title | escape }}">
+  <meta property="og:type" content="{% if request.page_type == 'product' %}product{% elsif request.page_type == 'article' %}article{% else %}website{% endif %}">
+  {% if page_description != blank %}<meta property="og:description" content="{{ page_description | escape }}">{% endif %}
+  {% if social_image %}<meta property="og:image" content="https:{{ social_image | image_url: width: 1200 }}"><meta property="og:image:width" content="1200">{% endif %}
+{% endif %}
+{% if settings.seo_twitter_cards %}
+  <meta name="twitter:card" content="{{ settings.seo_twitter_card | default: 'summary_large_image' }}">
+  {% if settings.seo_twitter_site != blank %}<meta name="twitter:site" content="@{{ settings.seo_twitter_site | remove: '@' | escape }}">{% endif %}
+  <meta name="twitter:title" content="{{ social_title | escape }}">
+  {% if page_description != blank %}<meta name="twitter:description" content="{{ page_description | escape }}">{% endif %}
+  {% if social_image %}<meta name="twitter:image" content="https:{{ social_image | image_url: width: 1200 }}">{% endif %}
+{% endif %}

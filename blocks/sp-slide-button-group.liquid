@@ -1,0 +1,115 @@
+<div
+  id="SpiderSlideButtonGroup-{{ block.id }}"
+  class="sp-slide-button-group"
+  data-direction-d="{{ block.settings.desktop_direction }}"
+  data-direction-m="{{ block.settings.mobile_direction }}"
+  {% if block.settings.mobile_full_width %}data-mobile-full-width="true"{% endif %}
+  data-sp-slide-anim
+  {{ block.shopify_attributes }}
+  style="--sp-btn-group-gap-d: {{ block.settings.desktop_gap }}px; --sp-btn-group-gap-t: {{ block.settings.tablet_gap }}px; --sp-btn-group-gap-m: {{ block.settings.mobile_gap }}px;"
+>{% content_for 'blocks' %}</div>
+{% schema %}
+{
+  "name": "Slide Button Group",
+  "tag": null,
+  "blocks": [
+    {
+      "type": "sp-slide-button"
+    },
+    {
+      "type": "sp-slide-custom-button"
+    }
+  ],
+  "settings": [
+    {
+      "type": "select",
+      "id": "desktop_direction",
+      "label": "Desktop layout",
+      "default": "horizontal",
+      "options": [
+        {
+          "value": "horizontal",
+          "label": "Horizontal"
+        },
+        {
+          "value": "vertical",
+          "label": "Vertical"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "mobile_direction",
+      "label": "Mobile layout",
+      "default": "stacked",
+      "options": [
+        {
+          "value": "horizontal",
+          "label": "Horizontal"
+        },
+        {
+          "value": "stacked",
+          "label": "Stacked"
+        }
+      ]
+    },
+    {
+      "type": "range",
+      "id": "desktop_gap",
+      "label": "Desktop gap",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "default": 12
+    },
+    {
+      "type": "range",
+      "id": "tablet_gap",
+      "label": "Tablet gap",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "default": 10
+    },
+    {
+      "type": "range",
+      "id": "mobile_gap",
+      "label": "Mobile gap",
+      "min": 0,
+      "max": 32,
+      "step": 2,
+      "unit": "px",
+      "default": 10
+    },
+    {
+      "type": "checkbox",
+      "id": "mobile_full_width",
+      "label": "Full-width buttons on mobile",
+      "default": true
+    }
+  ],
+  "presets": [
+    {
+      "name": "Slide Button Group",
+      "blocks": [
+        {
+          "type": "sp-slide-button",
+          "settings": {
+            "label": "Shop women",
+            "style": "primary"
+          }
+        },
+        {
+          "type": "sp-slide-button",
+          "settings": {
+            "label": "Shop men",
+            "style": "outline"
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,1144 @@
+{{ 'sp-recently-purchased.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'sp-recently-purchased.js' | asset_url }}" defer></script>
+{% render 'sp-section-color-scheme', section: section %}
+
+{%- liquid
+  assign sp_rp_source = section.settings.data_source
+  assign sp_rp_live_ready = false
+  assign sp_rp_show_events = false
+  if sp_rp_source == 'manual_confirmed_events'
+    assign sp_rp_show_events = true
+  endif
+
+  assign sp_rp_featured_id = blank
+  for sp_rp_block in section.blocks
+    if sp_rp_block.type == 'purchase_activity' and sp_rp_block.settings.featured_activity
+      assign sp_rp_block_is_eligible = false
+      if sp_rp_block.settings.product != blank or sp_rp_block.settings.custom_product_title != blank
+        if sp_rp_source == 'manual_confirmed_events'
+          if sp_rp_block.settings.display_mode == 'anonymized_purchase' and sp_rp_block.settings.merchant_confirms_genuine_event and sp_rp_block.settings.merchant_confirms_display_consent
+            assign sp_rp_block_is_eligible = true
+          endif
+          if request.design_mode
+            assign sp_rp_block_is_eligible = true
+          endif
+        else
+          assign sp_rp_block_is_eligible = true
+        endif
+      endif
+      if sp_rp_block_is_eligible
+        assign sp_rp_featured_id = sp_rp_block.id
+        break
+      endif
+    endif
+  endfor
+
+  if sp_rp_featured_id == blank
+    for sp_rp_block in section.blocks
+      if sp_rp_block.type == 'purchase_activity'
+        assign sp_rp_block_is_eligible = false
+        if sp_rp_block.settings.product != blank or sp_rp_block.settings.custom_product_title != blank or request.design_mode
+          if sp_rp_source == 'manual_confirmed_events'
+            if sp_rp_block.settings.display_mode == 'anonymized_purchase' and sp_rp_block.settings.merchant_confirms_genuine_event and sp_rp_block.settings.merchant_confirms_display_consent
+              assign sp_rp_block_is_eligible = true
+            endif
+            if request.design_mode
+              assign sp_rp_block_is_eligible = true
+            endif
+          else
+            assign sp_rp_block_is_eligible = true
+          endif
+        endif
+        if sp_rp_block_is_eligible
+          assign sp_rp_featured_id = sp_rp_block.id
+          break
+        endif
+      endif
+    endfor
+  endif
+
+  assign sp_rp_container = 'sp-container'
+  if section.settings.section_max_width == 'wide'
+    assign sp_rp_container = 'sp-container sp-container--wide'
+  endif
+  if section.settings.section_max_width == 'full'
+    assign sp_rp_container = 'sp-recent-purchased__full'
+  endif
+
+  assign sp_rp_valid_count = 0
+  for sp_rp_block in section.blocks
+    if sp_rp_block.type == 'purchase_activity'
+      assign sp_rp_block_is_eligible = false
+      if sp_rp_block.settings.product != blank or sp_rp_block.settings.custom_product_title != blank
+        if sp_rp_source == 'manual_confirmed_events'
+          if sp_rp_block.settings.display_mode == 'anonymized_purchase' and sp_rp_block.settings.merchant_confirms_genuine_event and sp_rp_block.settings.merchant_confirms_display_consent
+            assign sp_rp_block_is_eligible = true
+          endif
+          if request.design_mode
+            assign sp_rp_block_is_eligible = true
+          endif
+        else
+          assign sp_rp_block_is_eligible = true
+        endif
+      endif
+      if sp_rp_block_is_eligible
+        assign sp_rp_valid_count = sp_rp_valid_count | plus: 1
+      endif
+    endif
+  endfor
+
+  assign sp_rp_heading = section.settings.heading
+  if sp_rp_source == 'manual_product_showcase' and sp_rp_heading == 'Recently Purchased' and request.design_mode == false
+    assign sp_rp_heading = 'Customer Favorites'
+  endif
+-%}
+<style>
+  #shopify-section-{{ section.id }} .sp-recent-purchased {
+    --sp-rp-cols-d:{{ section.settings.desktop_columns }};--sp-rp-cols-t:{{ section.settings.tablet_columns }};--sp-rp-cols-m:{{ section.settings.mobile_columns }};
+    --sp-rp-slides-d:{{ section.settings.desktop_slides }};--sp-rp-slides-t:{{ section.settings.tablet_slides }};--sp-rp-slides-m:{{ section.settings.mobile_slides }};
+    --sp-rp-gap-d:{{ section.settings.grid_gap_desktop }}px;--sp-rp-gap-t:{{ section.settings.grid_gap_tablet }}px;--sp-rp-gap-m:{{ section.settings.grid_gap_mobile }}px;
+    --sp-rp-top-d:{{ section.settings.padding_top }}px;--sp-rp-bottom-d:{{ section.settings.padding_bottom }}px;
+    --sp-rp-top-t:{{ section.settings.padding_top_tablet }}px;--sp-rp-bottom-t:{{ section.settings.padding_bottom_tablet }}px;
+    --sp-rp-top-m:{{ section.settings.padding_top_mobile }}px;--sp-rp-bottom-m:{{ section.settings.padding_bottom_mobile }}px;
+    --sp-rp-radius:{{ section.settings.card_border_radius }}px;--sp-rp-border-width:{{ section.settings.card_border_width }}px;
+    --sp-rp-border:{{ section.settings.card_border_color }};--sp-rp-card-bg:{{ section.settings.card_background }};
+    --sp-rp-pad-d:{{ section.settings.card_padding_desktop }}px;--sp-rp-pad-m:{{ section.settings.card_padding_mobile }}px;
+    --sp-rp-img-ratio:{{ section.settings.image_aspect_ratio }};
+    --sp-rp-head-gap:{{ section.settings.header_bottom_spacing }}px;--sp-rp-cards-gap:{{ section.settings.status_to_cards_spacing }}px;
+    --sp-rp-ticker-time:{{ section.settings.ticker_speed }}s;--sp-rp-ticker-gap:{{ section.settings.ticker_gap }}px;
+  }
+</style>
+{% if sp_rp_valid_count > 0 or request.design_mode or sp_rp_source == 'app_integration' or sp_rp_source == 'approved_public_endpoint' %}
+<section class="sp-section sp-recent-purchased sp-recent-purchased--{{ section.settings.layout_style }}{% if section.settings.card_shadow %} sp-recent-purchased--shadow{% endif %}" 
+  data-sp-recent-purchased data-sp-rp-id="{{ section.id }}" data-sp-rp-mode="{{ section.settings.layout_style }}"
+  data-sp-rp-source="{{ section.settings.data_source }}" data-sp-rp-endpoint="{{ section.settings.activity_endpoint | escape }}"
+  data-sp-rp-trusted="{{ section.settings.trusted_endpoint_approved }}" data-sp-rp-refresh="{{ section.settings.refresh_interval }}"
+  data-sp-rp-timeout="{{ section.settings.request_timeout }}" data-sp-rp-age="{{ section.settings.minimum_event_age }}"
+  data-sp-rp-max="{{ section.settings.maximum_events }}" data-sp-rp-show-time="{{ section.settings.show_purchase_time }}"
+  data-sp-rp-swipe="{{ section.settings.enable_swipe }}" data-sp-rp-drag="{{ section.settings.enable_pointer_drag }}"
+  data-sp-rp-ticker-direction="{{ section.settings.ticker_direction }}" data-sp-rp-pause-ticker="{{ section.settings.pause_ticker_on_hover }}"
+  data-sp-rp-autoplay="{{ section.settings.enable_autoplay }}"
+  data-sp-rp-autoplay-delay="{{ section.settings.autoplay_speed | times: 1000 }}" data-sp-rp-infinite="{{ section.settings.infinite_loop }}"
+  data-sp-rp-toast-delay="{{ section.settings.toast_interval | times: 1000 }}" data-sp-rp-toast-max="{{ section.settings.maximum_toast_rotations }}"
+  data-sp-rp-remember-dismissal="{{ section.settings.remember_dismissal }}" data-sp-rp-manual-notice="{{ section.settings.manual_notice_text | escape }}" data-sp-rp-verified-label="{{ section.settings.verified_notice_text | escape }}"
+  data-sp-rp-live-label="{{ section.settings.live_status_label | escape }}" data-sp-rp-fallback-label="{{ section.settings.fallback_status_label | escape }}"
+  data-sp-rp-design-mode="{{ request.design_mode }}" dir="{{ section.settings.section_direction }}">
+  <div class="{{ sp_rp_container }} sp-recent-purchased__inner">
+    {% if section.settings.show_header %}
+      <div class="sp-recent-purchased__top sp-recent-purchased__top--{{ section.settings.heading_alignment }}">
+        {% if section.settings.eyebrow != blank %}<p class="sp-recent-purchased__eyebrow">{{ section.settings.eyebrow | escape }}</p>{% endif %}
+        {% render 'sp-section-heading', heading: sp_rp_heading, subheading: section.settings.description, heading_tag: 'h2', alignment: section.settings.heading_alignment, bottom_spacing: section.settings.header_bottom_spacing %}
+        {% if section.settings.show_activity_status %}
+          <p class="sp-recent-purchased__status" data-sp-rp-status data-state="neutral">
+            {% if section.settings.show_status_dot %}<span class="sp-recent-purchased__status-dot" aria-hidden="true"></span>{% endif %}
+            <span data-sp-rp-status-text>{{ section.settings.fallback_status_label | escape }}</span>
+          </p>
+        {% endif %}
+      </div>
+    {% endif %}
+    {%- if section.settings.layout_style == 'style_1' and section.settings.show_arrows -%}
+      <div class="sp-recent-purchased__nav" aria-label="Product carousel controls">
+        <button type="button" class="sp-recent-purchased__arrow" data-sp-rp-prev aria-label="Previous products" disabled><span aria-hidden="true">←</span></button>
+        <button type="button" class="sp-recent-purchased__arrow" data-sp-rp-next aria-label="Next products"><span aria-hidden="true">→</span></button>
+      </div>
+    {%- endif -%}
+    {% if sp_rp_source == 'app_integration' %}
+      <div class="sp-recent-purchased__app">
+        {% assign has_app_block = false %}
+        {% for block in section.blocks %}
+          {% if block.type == '@app' %}
+            {% assign has_app_block = true %}
+            <div {{ block.shopify_attributes }}>{% render block %}</div>
+          {% endif %}
+        {% endfor %}
+        {% unless has_app_block %}{% if request.design_mode %}<p class="sp-recent-purchased__editor-note">Add a supported sales-activity app block. This section cannot read app data automatically.</p>{% endif %}{% endunless %}
+      </div>
+    {% else %}
+      <div class="sp-recent-purchased__data" data-sp-rp-data>
+        <ul class="sp-recent-purchased__list" data-sp-rp-list aria-label="{{ sp_rp_heading | escape }}" role="list">
+          {% if section.settings.layout_style == 'style_5' and sp_rp_featured_id != blank %}
+            {% for block in section.blocks %}
+              {% if block.type == 'purchase_activity' and block.id == sp_rp_featured_id %}
+                {% render 'sp-recent-purchase-card', block: block, settings: section.settings, source_mode: sp_rp_source, featured: true %}
+                {% break %}
+              {% endif %}
+            {% endfor %}
+          {% endif %}
+          {% for block in section.blocks %}
+            {% if block.type == 'purchase_activity' %}
+              {% unless section.settings.layout_style == 'style_5' and sp_rp_featured_id == block.id %}
+                {% render 'sp-recent-purchase-card', block: block, settings: section.settings, source_mode: sp_rp_source %}
+              {% endunless %}
+            {% endif %}
+          {% endfor %}
+        </ul>
+        {% if request.design_mode == false %}
+          {%- comment -%}Empty product blocks are skipped, allowing the section to stay blank until configured.{%- endcomment -%}
+        {% endif %}
+        {% if section.settings.layout_style == 'style_4' and sp_rp_source == 'approved_public_endpoint' %}
+          <div class="sp-recent-purchased__toast-controls">
+            {% if section.settings.show_pause_button %}<button type="button" data-sp-rp-toast-pause>Pause updates</button>{% endif %}
+            {% if section.settings.show_dismiss_button %}<button type="button" data-sp-rp-toast-dismiss>Dismiss</button>{% endif %}
+          </div>
+        {% endif %}
+      </div>
+      {% if section.settings.layout_style == 'style_1' %}
+        {% if section.settings.show_progress_bar %}<div class="sp-recent-purchased__progress" aria-hidden="true"><span data-sp-rp-progress></span></div>{% endif %}
+        {% if section.settings.show_dots %}<div class="sp-recent-purchased__dots" data-sp-rp-dots aria-label="Carousel pages"></div>{% endif %}
+      {% endif %}
+    {% endif %}
+    {% if section.settings.show_footer_notice %}
+      <p class="sp-recent-purchased__footer" data-sp-rp-footer>
+        <span class="sp-recent-purchased__footer-icon" aria-hidden="true">
+          {% if sp_rp_source == 'manual_confirmed_events' %}
+            <svg viewBox="0 0 24 24" focusable="false"><path d="M12 2.5 20 5.7v5.5c0 5.1-3.4 8.7-8 10.3-4.6-1.6-8-5.2-8-10.3V5.7L12 2.5Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="m8.2 12.1 2.4 2.4 5.2-5.2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          {% else %}
+            <svg viewBox="0 0 24 24" focusable="false"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 10.7v5.1M12 7.6h.01" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          {% endif %}
+        </span>
+        <span>{% if sp_rp_source == 'app_integration' %}Activity display managed by the installed app{% elsif sp_rp_source == 'manual_confirmed_events' %}{{ section.settings.confirmed_events_notice_text | escape }}{% else %}{{ section.settings.manual_notice_text | escape }}{% endif %}</span>
+      </p>
+    {% endif %}
+  </div>
+</section>
+{% endif %}
+{% schema %}
+{
+  "name": "Recently Purchased",
+  "tag": "section",
+  "class": "sp-recently-purchased-section",
+ "disabled_on": {
+    "groups": [
+      "header",
+      "footer",
+      "custom.system"
+    ]
+  },
+  "settings": [
+    {
+      "type": "header",
+      "content": "Content"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_header",
+      "label": "Show heading",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Eyebrow",
+      "default": "SHOPPING NOW"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Recently Purchased"
+    },
+    {
+      "type": "richtext",
+      "id": "description",
+      "label": "Description",
+      "default": "<p>See what customers are loving right now.</p>"
+    },
+    {
+      "type": "select",
+      "id": "heading_alignment",
+      "label": "Header alignment",
+      "default": "center",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ]
+    },
+    {
+      "type": "range",
+      "id": "header_bottom_spacing",
+      "label": "Header bottom spacing",
+      "default": 28,
+      "min": 12,
+      "max": 88,
+      "step": 4,
+      "unit": "px"
+    },
+    {
+      "type": "header",
+      "content": "Layout and source"
+    },
+    {
+      "type": "select",
+      "id": "layout_style",
+      "label": "Layout style",
+      "default": "style_1",
+      "options": [
+        {
+          "value": "style_1",
+          "label": "Activity carousel"
+        },
+        {
+          "value": "style_2",
+          "label": "Product grid"
+        },
+        {
+          "value": "style_3",
+          "label": "Compact ticker"
+        },
+        {
+          "value": "style_4",
+          "label": "In-section toasts"
+        },
+        {
+          "value": "style_5",
+          "label": "Featured product"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "data_source",
+      "label": "Data source",
+      "default": "manual_product_showcase",
+      "options": [
+        {
+          "value": "manual_product_showcase",
+          "label": "Manual product showcase (safe)"
+        },
+        {
+          "value": "manual_confirmed_events",
+          "label": "Manually confirmed events"
+        },
+        {
+          "value": "approved_public_endpoint",
+          "label": "Approved storefront app proxy"
+        },
+        {
+          "value": "app_integration",
+          "label": "App block (app controls rendering)"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "section_max_width",
+      "label": "Section width",
+      "default": "wide",
+      "options": [
+        {
+          "value": "normal",
+          "label": "Theme default"
+        },
+        {
+          "value": "wide",
+          "label": "Wide"
+        },
+        {
+          "value": "full",
+          "label": "Full"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "section_direction",
+      "label": "Text direction",
+      "default": "auto",
+      "options": [
+        {
+          "value": "auto",
+          "label": "Auto"
+        },
+        {
+          "value": "ltr",
+          "label": "Left to right"
+        },
+        {
+          "value": "rtl",
+          "label": "Right to left"
+        }
+      ]
+    },
+    {
+      "type": "header",
+      "content": "Approved endpoint"
+    },
+    {
+      "type": "paragraph",
+      "content": "Only connect a trusted HTTPS same-origin Shopify app proxy returning pre-anonymized public activity. No Admin API tokens in storefront settings."
+    },
+    {
+      "type": "url",
+      "id": "activity_endpoint",
+      "label": "Public app-proxy URL"
+    },
+    {
+      "type": "checkbox",
+      "id": "trusted_endpoint_approved",
+      "label": "Merchant confirms endpoint is authorized and privacy reviewed",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "refresh_interval",
+      "label": "Polling interval",
+      "default": 120,
+      "min": 60,
+      "max": 600,
+      "step": 30,
+      "unit": "s"
+    },
+    {
+      "type": "range",
+      "id": "request_timeout",
+      "label": "Request timeout",
+      "default": 8000,
+      "min": 2000,
+      "max": 9000,
+      "step": 1000,
+      "unit": "ms"
+    },
+    {
+      "type": "range",
+      "id": "maximum_events",
+      "label": "Maximum public events",
+      "default": 8,
+      "min": 1,
+      "max": 16,
+      "step": 1
+    },
+    {
+      "type": "range",
+      "id": "minimum_event_age",
+      "label": "Minimum event age",
+      "default": 15,
+      "min": 5,
+      "max": 120,
+      "step": 5,
+      "unit": "min"
+    },
+    {
+      "type": "header",
+      "content": "Status and privacy"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_activity_status",
+      "label": "Show activity status",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "live_status_label",
+      "label": "Connected feed label",
+      "default": "Live updates"
+    },
+    {
+      "type": "text",
+      "id": "fallback_status_label",
+      "label": "Neutral status",
+      "default": "Popular with customers"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_status_dot",
+      "label": "Show status indicator",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_buyer",
+      "label": "Show anonymized buyer on consented manual events",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "buyer_display_style",
+      "label": "Buyer label format",
+      "default": "initials",
+      "options": [
+        {
+          "value": "generic_customer",
+          "label": "Generic label"
+        },
+        {
+          "value": "initials",
+          "label": "Initials only"
+        },
+        {
+          "value": "first_name_last_initial",
+          "label": "First name and last initial"
+        },
+        {
+          "value": "hidden",
+          "label": "Hidden"
+        }
+      ]
+    },
+    {
+      "type": "checkbox",
+      "id": "show_location",
+      "label": "Show broad city/region only on consented events",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_purchase_time",
+      "label": "Show merchant-entered approximate time on consented events",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_verified_icon",
+      "label": "Show merchant-confirmed event badge (consent required)",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Product information"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_product_image",
+      "label": "Show product image",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_product_title",
+      "label": "Show product title",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_price",
+      "label": "Show Shopify price",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_compare_at_price",
+      "label": "Show compare-at price",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "show_vendor",
+      "label": "Show vendor",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "show_product_link",
+      "label": "Show product link",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "product_link_label",
+      "label": "Link label",
+      "default": "View product"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_status_on_cards",
+      "label": "Show neutral card label",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "product_highlight_label",
+      "label": "Neutral card label",
+      "default": "Product highlight"
+    },
+    {
+      "type": "select",
+      "id": "image_fit",
+      "label": "Image fit",
+      "default": "cover",
+      "options": [
+        {
+          "value": "contain",
+          "label": "Contain"
+        },
+        {
+          "value": "cover",
+          "label": "Cover"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "image_aspect_ratio",
+      "label": "Product image aspect ratio",
+      "default": "4 / 3",
+      "options": [
+        {
+          "value": "1 / 1",
+          "label": "Square (1:1)"
+        },
+        {
+          "value": "4 / 3",
+          "label": "Landscape (4:3)"
+        },
+        {
+          "value": "5 / 4",
+          "label": "Landscape (5:4)"
+        },
+        {
+          "value": "3 / 2",
+          "label": "Wide (3:2)"
+        }
+      ]
+    },
+    {
+      "type": "header",
+      "content": "Grid and cards"
+    },
+    {
+      "type": "range",
+      "id": "desktop_columns",
+      "label": "Desktop grid columns",
+      "default": 4,
+      "min": 1,
+      "max": 6,
+      "step": 1
+    },
+    {
+      "type": "range",
+      "id": "tablet_columns",
+      "label": "Tablet grid columns",
+      "default": 2,
+      "min": 1,
+      "max": 4,
+      "step": 1
+    },
+    {
+      "type": "range",
+      "id": "mobile_columns",
+      "label": "Mobile grid columns",
+      "default": 1,
+      "min": 1,
+      "max": 3,
+      "step": 1
+    },
+    {
+      "type": "range",
+      "id": "grid_gap_desktop",
+      "label": "Desktop gap",
+      "default": 16,
+      "min": 8,
+      "max": 48,
+      "step": 2,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "grid_gap_tablet",
+      "label": "Tablet gap",
+      "default": 14,
+      "min": 8,
+      "max": 40,
+      "step": 2,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "grid_gap_mobile",
+      "label": "Mobile gap",
+      "default": 12,
+      "min": 8,
+      "max": 32,
+      "step": 2,
+      "unit": "px"
+    },
+    {
+      "type": "color",
+      "id": "card_background",
+      "label": "Card background",
+      "default": "#FFFFFF"
+    },
+    {
+      "type": "color",
+      "id": "card_border_color",
+      "label": "Card border",
+      "default": "#E4E4E7"
+    },
+    {
+      "type": "range",
+      "id": "card_border_width",
+      "label": "Border width",
+      "default": 1,
+      "min": 0,
+      "max": 4,
+      "step": 1,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "card_border_radius",
+      "label": "Card radius",
+      "default": 16,
+      "min": 0,
+      "max": 32,
+      "step": 2,
+      "unit": "px"
+    },
+    {
+      "type": "checkbox",
+      "id": "card_shadow",
+      "label": "Subtle card shadow",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "card_padding_desktop",
+      "label": "Desktop card padding",
+      "default": 12,
+      "min": 4,
+      "max": 32,
+      "step": 2,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "card_padding_mobile",
+      "label": "Mobile card padding",
+      "default": 10,
+      "min": 4,
+      "max": 24,
+      "step": 2,
+      "unit": "px"
+    },
+    {
+      "type": "header",
+      "content": "Carousel"
+    },
+    {
+      "type": "range",
+      "id": "desktop_slides",
+      "label": "Desktop slides",
+      "default": 4,
+      "min": 1,
+      "max": 6,
+      "step": 1
+    },
+    {
+      "type": "range",
+      "id": "tablet_slides",
+      "label": "Tablet slides",
+      "default": 2,
+      "min": 1,
+      "max": 4,
+      "step": 1
+    },
+    {
+      "type": "range",
+      "id": "mobile_slides",
+      "label": "Mobile slides",
+      "default": 1,
+      "min": 1,
+      "max": 3,
+      "step": 1
+    },
+    {
+      "type": "checkbox",
+      "id": "show_arrows",
+      "label": "Show previous/next arrows",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_dots",
+      "label": "Show navigation dots",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "show_progress_bar",
+      "label": "Show progress bar",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_swipe",
+      "label": "Allow touch swiping",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_pointer_drag",
+      "label": "Allow mouse dragging",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_autoplay",
+      "label": "Auto-advance existing products only",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "autoplay_speed",
+      "label": "Autoplay delay",
+      "default": 6,
+      "min": 3,
+      "max": 12,
+      "step": 1,
+      "unit": "s"
+    },
+    {
+      "type": "checkbox",
+      "id": "infinite_loop",
+      "label": "Return to first at end",
+      "default": false
+    },
+    {
+      "type": "header",
+      "content": "Ticker"
+    },
+    {
+      "type": "select",
+      "id": "ticker_direction",
+      "label": "Ticker direction",
+      "default": "left",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ]
+    },
+    {
+      "type": "range",
+      "id": "ticker_speed",
+      "label": "Ticker lap duration",
+      "default": 40,
+      "min": 15,
+      "max": 120,
+      "step": 5,
+      "unit": "s"
+    },
+    {
+      "type": "range",
+      "id": "ticker_gap",
+      "label": "Ticker gap",
+      "default": 16,
+      "min": 8,
+      "max": 40,
+      "step": 2,
+      "unit": "px"
+    },
+    {
+      "type": "checkbox",
+      "id": "pause_ticker_on_hover",
+      "label": "Pause ticker on hover",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Toasts (real events only)"
+    },
+    {
+      "type": "range",
+      "id": "toast_interval",
+      "label": "Toast rotation interval",
+      "default": 10,
+      "min": 6,
+      "max": 30,
+      "step": 2,
+      "unit": "s"
+    },
+    {
+      "type": "range",
+      "id": "maximum_toast_rotations",
+      "label": "Maximum toast rotations",
+      "default": 8,
+      "min": 1,
+      "max": 30,
+      "step": 1
+    },
+    {
+      "type": "checkbox",
+      "id": "show_pause_button",
+      "label": "Show pause button",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_dismiss_button",
+      "label": "Show dismiss button",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "remember_dismissal",
+      "label": "Remember dismissal in session",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Footer notice"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_footer_notice",
+      "label": "Show source notice",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "manual_notice_text",
+      "label": "Manual/source-neutral notice",
+      "default": "Selected products from our store"
+    },
+    {
+      "type": "text",
+      "id": "verified_notice_text",
+      "label": "Integration-provided notice",
+      "default": "Activity supplied by an authorized integration"
+    },
+    {
+      "type": "text",
+      "id": "confirmed_events_notice_text",
+      "label": "Confirmed purchase notice",
+      "default": "Purchase details are displayed with merchant confirmation and customer consent."
+    },
+    {
+      "type": "header",
+      "content": "Global Spider colors"
+    },
+    {
+      "type": "color_scheme",
+      "id": "sp_color_scheme",
+      "label": "Color scheme",
+      "default": "scheme-1"
+    },
+    {
+      "type": "header",
+      "content": "Desktop spacing"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "Top padding",
+      "default": 72,
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "Bottom padding",
+      "default": 72,
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "status_to_cards_spacing",
+      "label": "Header to cards",
+      "default": 24,
+      "min": 8,
+      "max": 64,
+      "step": 4,
+      "unit": "px"
+    },
+    {
+      "type": "header",
+      "content": "Tablet spacing"
+    },
+    {
+      "type": "range",
+      "id": "padding_top_tablet",
+      "label": "Tablet top padding",
+      "default": 52,
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom_tablet",
+      "label": "Tablet bottom padding",
+      "default": 52,
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px"
+    },
+    {
+      "type": "header",
+      "content": "Mobile spacing"
+    },
+    {
+      "type": "range",
+      "id": "padding_top_mobile",
+      "label": "Mobile top padding",
+      "default": 40,
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom_mobile",
+      "label": "Mobile bottom padding",
+      "default": 40,
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "@app"
+    },
+    {
+      "type": "purchase_activity",
+      "name": "Activity/product",
+      "limit": 16,
+      "settings": [
+        {
+          "type": "product",
+          "id": "product",
+          "label": "Shopify product"
+        },
+        {
+          "type": "image_picker",
+          "id": "custom_product_image",
+          "label": "Image fallback"
+        },
+        {
+          "type": "text",
+          "id": "custom_product_image_alt",
+          "label": "Image alt text"
+        },
+        {
+          "type": "text",
+          "id": "custom_product_title",
+          "label": "Fallback product title"
+        },
+        {
+          "type": "url",
+          "id": "custom_product_url",
+          "label": "Fallback product URL"
+        },
+        {
+          "type": "select",
+          "id": "display_mode",
+          "label": "Display as",
+          "default": "product_showcase",
+          "options": [
+            {
+              "value": "product_showcase",
+              "label": "Product highlight"
+            },
+            {
+              "value": "anonymized_purchase",
+              "label": "Consented purchase event"
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "id": "buyer_display_name",
+          "label": "Consented first name plus initial"
+        },
+        {
+          "type": "text",
+          "id": "buyer_initials",
+          "label": "Consented initials"
+        },
+        {
+          "type": "text",
+          "id": "broad_location",
+          "label": "Consented broad region"
+        },
+        {
+          "type": "text",
+          "id": "activity_time_text",
+          "label": "Approximate time (static text)"
+        },
+        {
+          "type": "text",
+          "id": "event_timestamp",
+          "label": "Internal event reference (not displayed)"
+        },
+        {
+          "type": "checkbox",
+          "id": "merchant_confirms_genuine_event",
+          "label": "Confirm event really occurred",
+          "default": false
+        },
+        {
+          "type": "checkbox",
+          "id": "merchant_confirms_display_consent",
+          "label": "Confirm customer display consent",
+          "default": false
+        },
+        {
+          "type": "checkbox",
+          "id": "featured_activity",
+          "label": "Feature in layout five",
+          "default": false
+        },
+        {
+          "type": "text",
+          "id": "custom_activity_text",
+          "label": "Optional internal description"
+        }
+      ]
+    }
+  ],
+  "max_blocks": 20,
+  "presets": [
+    {
+      "name": "Recently Purchased",
+      "settings": {
+        "layout_style": "style_1",
+        "data_source": "manual_product_showcase",
+        "eyebrow": "SHOPPING NOW",
+        "heading": "Recently Purchased",
+        "description": "<p>See what customers are loving right now.</p>"
+      },
+      "category": "02. Products",
+      "blocks": [
+        {
+          "type": "purchase_activity"
+        },
+        {
+          "type": "purchase_activity"
+        },
+        {
+          "type": "purchase_activity"
+        },
+        {
+          "type": "purchase_activity"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

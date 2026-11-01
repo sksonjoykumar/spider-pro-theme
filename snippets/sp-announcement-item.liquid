@@ -1,0 +1,87 @@
+{% comment %}
+  Spider Announcement item.
+  Parameters:
+  - block: announcement block
+  - is_active: whether this item is initially visible
+  - duplicate: decorative marquee duplicate
+  - countdown_label: accessible countdown label
+{% endcomment %}
+
+{% liquid
+  assign sp_duplicate = duplicate | default: false
+  assign sp_is_active = is_active | default: false
+  assign sp_enabled = block.settings.enabled
+  assign sp_text = block.settings.text
+  if block.settings.link != blank
+    assign sp_text = block.settings.text | strip_html
+  endif
+
+  capture sp_countdown_markup
+    render 'sp-announcement-countdown', block: block, countdown_label: countdown_label
+  endcapture
+
+  capture sp_highlight_markup
+    if block.settings.highlight_text != blank
+      echo '<span class="sp-announcement-bar__highlight">'
+      echo block.settings.highlight_text | escape
+      echo '</span>'
+    endif
+  endcapture
+
+  capture sp_arrow_markup
+    if block.settings.show_cta_arrow
+      echo '<span class="sp-announcement-bar__arrow-inline" aria-hidden="true">'
+      render 'icon', name: 'chevron-right', class: 'sp-announcement-bar__icon-svg'
+      echo '</span>'
+    endif
+  endcapture
+
+  assign sp_processed_text = sp_text
+  assign sp_processed_text = sp_processed_text | replace: '[countdown]', sp_countdown_markup
+  assign sp_processed_text = sp_processed_text | replace: '[highlight]', sp_highlight_markup
+  assign sp_processed_text = sp_processed_text | replace: '[arrow]', sp_arrow_markup
+
+  assign sp_item_classes = 'sp-announcement-bar__item'
+  if sp_is_active
+    assign sp_item_classes = sp_item_classes | append: ' is-active'
+  endif
+  unless sp_enabled
+    assign sp_item_classes = sp_item_classes | append: ' is-disabled'
+  endunless
+
+  assign sp_item_text_color = block.settings.custom_text_color
+  if sp_item_text_color == blank
+    assign sp_item_text_color = 'inherit'
+  endif
+  assign sp_item_highlight_color = block.settings.highlight_color
+  if sp_item_highlight_color == blank
+    assign sp_item_highlight_color = 'var(--sp-announcement-highlight, #ffd166)'
+  endif
+%}
+
+<div
+  class="{{ sp_item_classes | escape }}"
+  data-sp-announcement-item
+  data-block-id="{{ block.id | escape }}"
+  data-enabled="{{ sp_enabled }}"
+  data-duplicate="{{ sp_duplicate }}"
+  dir="auto"
+  style="--sp-announcement-item-color: {{ sp_item_text_color | escape }}; --sp-announcement-item-highlight: {{ sp_item_highlight_color | escape }}; --sp-announcement-highlight-size: {{ block.settings.highlight_size_desktop | default: 18 }}px; --sp-announcement-highlight-size-mobile: {{ block.settings.highlight_size_mobile | default: 15 }}px; --sp-announcement-highlight-weight: {{ block.settings.highlight_weight | default: 700 }};"
+  {% if sp_duplicate %}aria-hidden="true"{% elsif sp_is_active %}aria-hidden="false"{% else %}aria-hidden="true" hidden{% endif %}
+  {% unless sp_duplicate %}{{ block.shopify_attributes }}{% endunless %}
+>
+  <div class="sp-announcement-bar__content sp-announcement-bar__content--{{ block.settings.text_decoration | default: 'none' | escape }}">
+    {% if block.settings.link != blank %}
+      <a
+        class="sp-announcement-bar__link"
+        href="{{ block.settings.link | escape }}"
+        {% if block.settings.open_new_tab %}target="_blank" rel="noopener noreferrer"{% endif %}
+        {% if sp_duplicate %}tabindex="-1"{% endif %}
+      >
+        <span class="sp-announcement-bar__text">{{ sp_processed_text }}</span>
+      </a>
+    {% else %}
+      <span class="sp-announcement-bar__text">{{ sp_processed_text }}</span>
+    {% endif %}
+  </div>
+</div>

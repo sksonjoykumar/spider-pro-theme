@@ -1,0 +1,228 @@
+{%- if block.settings.text != blank -%}
+  <{{ block.settings.html_tag }}
+    id="SpiderSlideCustomText-{{ block.id }}"
+    class="sp-slide-custom-text{% if block.settings.text_role == 'eyebrow' %} sp-slide-custom-text--eyebrow{% endif %}{% if block.settings.italic %} is-italic{% endif %}{% if block.settings.text_shadow %} has-shadow{% endif %}{% if block.settings.hide_mobile %} sp-slide-block--hide-mobile{% endif %}"
+    data-sp-slide-anim
+    {{ block.shopify_attributes }}
+    data-font-family="{{ block.settings.font_family }}"
+    style="--sp-custom-text-size-d: {{ block.settings.desktop_size }}px; --sp-custom-text-size-m: {{ block.settings.mobile_size }}px; --sp-custom-text-weight: {{ block.settings.weight }}; --sp-custom-text-line-d: {{ block.settings.desktop_line_height }}; --sp-custom-text-line-m: {{ block.settings.mobile_line_height }}; --sp-custom-text-letter-d: {{ block.settings.desktop_letter_spacing }}px; --sp-custom-text-letter-m: {{ block.settings.mobile_letter_spacing }}px; --sp-custom-text-color: {% case block.settings.color_source %}{% when 'accent' %}var(--sp-slide-accent, var(--sp-color-accent, #415DFF)){% when 'heading' %}var(--sp-slide-heading, var(--sp-color-heading, #171717)){% when 'text' %}var(--sp-slide-text, var(--sp-color-text, #3F3F46)){% else %}{{ block.settings.color }}{% endcase %}; --sp-custom-text-mb-d: {{ block.settings.margin_bottom }}px; --sp-custom-text-mb-m: {{ block.settings.margin_bottom_mobile }}px;"
+  >{{ block.settings.text | newline_to_br }}</{{ block.settings.html_tag }}>
+{%- endif -%}
+{% schema %}
+{
+  "name": "Slide Custom Text",
+  "tag": null,
+  "settings": [
+    {
+      "type": "textarea",
+      "id": "text",
+      "label": "Text",
+      "default": "Custom text"
+    },
+    {
+      "type": "select",
+      "id": "font_family",
+      "label": "Font family",
+      "default": "inherit",
+      "options": [
+        {
+          "value": "inherit",
+          "label": "Inherit"
+        },
+        {
+          "value": "body",
+          "label": "Spider body font"
+        },
+        {
+          "value": "heading",
+          "label": "Spider heading font"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "html_tag",
+      "label": "HTML tag",
+      "default": "p",
+      "options": [
+        {
+          "value": "p",
+          "label": "Paragraph"
+        },
+        {
+          "value": "div",
+          "label": "Div"
+        },
+        {
+          "value": "span",
+          "label": "Span"
+        },
+        {
+          "value": "h2",
+          "label": "H2"
+        },
+        {
+          "value": "h3",
+          "label": "H3"
+        }
+      ]
+    },
+    {
+      "type": "range",
+      "id": "desktop_size",
+      "label": "Desktop size",
+      "min": 10,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "mobile_size",
+      "label": "Mobile size",
+      "min": 10,
+      "max": 64,
+      "step": 1,
+      "unit": "px",
+      "default": 14
+    },
+    {
+      "type": "range",
+      "id": "weight",
+      "label": "Weight",
+      "min": 100,
+      "max": 900,
+      "step": 100,
+      "default": 400
+    },
+    {
+      "type": "range",
+      "id": "desktop_line_height",
+      "label": "Desktop line height",
+      "min": 0.8,
+      "max": 2.2,
+      "step": 0.1,
+      "default": 1.4
+    },
+    {
+      "type": "range",
+      "id": "mobile_line_height",
+      "label": "Mobile line height",
+      "min": 0.8,
+      "max": 2.2,
+      "step": 0.1,
+      "default": 1.4
+    },
+    {
+      "type": "range",
+      "id": "desktop_letter_spacing",
+      "label": "Desktop letter spacing",
+      "min": -2,
+      "max": 10,
+      "step": 0.5,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "mobile_letter_spacing",
+      "label": "Mobile letter spacing",
+      "min": -2,
+      "max": 10,
+      "step": 0.5,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "select",
+      "id": "text_role",
+      "label": "Text role",
+      "default": "normal",
+      "options": [
+        {
+          "value": "normal",
+          "label": "Normal text"
+        },
+        {
+          "value": "eyebrow",
+          "label": "Eyebrow label"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "color_source",
+      "label": "Color source",
+      "default": "custom",
+      "options": [
+        {
+          "value": "custom",
+          "label": "Custom color (existing)"
+        },
+        {
+          "value": "accent",
+          "label": "Spider accent"
+        },
+        {
+          "value": "heading",
+          "label": "Spider heading"
+        },
+        {
+          "value": "text",
+          "label": "Spider text"
+        }
+      ]
+    },
+    {
+      "type": "color",
+      "id": "color",
+      "label": "Color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "checkbox",
+      "id": "italic",
+      "label": "Italic",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "text_shadow",
+      "label": "Text shadow",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "margin_bottom",
+      "label": "Desktop bottom margin",
+      "min": 0,
+      "max": 80,
+      "step": 2,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "margin_bottom_mobile",
+      "label": "Mobile bottom margin",
+      "min": 0,
+      "max": 60,
+      "step": 2,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "checkbox",
+      "id": "hide_mobile",
+      "label": "Hide on mobile",
+      "default": false
+    }
+  ],
+  "presets": [
+    {
+      "name": "Slide Custom Text"
+    }
+  ]
+}
+{% endschema %}

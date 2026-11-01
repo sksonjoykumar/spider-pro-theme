@@ -1,0 +1,1 @@
+{% if variant.unit_price_measurement %}<small class="sp-unit-price">{{ variant.unit_price | money }} / {% if variant.unit_price_measurement.reference_value != 1 %}{{ variant.unit_price_measurement.reference_value }}{% endif %}{{ variant.unit_price_measurement.reference_unit }}</small>{% endif %}

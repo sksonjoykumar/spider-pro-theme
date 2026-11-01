@@ -1,0 +1,1435 @@
+{% render 'sp-section-color-scheme', section: section %}
+{{ 'sp-newsletter-popup.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'sp-newsletter-popup.js' | asset_url }}" defer></script>
+
+{%- liquid
+  assign page_eligible = true
+  case request.page_type
+    when 'index'
+      assign page_eligible = section.settings.show_home
+    when 'product'
+      assign page_eligible = section.settings.show_product
+    when 'collection'
+      assign page_eligible = section.settings.show_collection
+    when 'blog'
+      assign page_eligible = section.settings.show_blog
+    when 'article'
+      assign page_eligible = section.settings.show_article
+    when 'page'
+      assign page_eligible = section.settings.show_page
+    when 'cart'
+      assign page_eligible = section.settings.show_cart
+    when 'search'
+      assign page_eligible = section.settings.show_search
+    when '404'
+      assign page_eligible = false
+  endcase
+
+  if request.page_type contains 'customers'
+    assign page_eligible = false
+  endif
+
+  if request.design_mode
+    assign page_eligible = true
+  endif
+
+  assign desktop_image = section.settings.desktop_image | default: section.settings.mobile_image
+  assign mobile_image = section.settings.mobile_image | default: desktop_image
+  assign has_image = false
+  if section.settings.layout_mode != 'content_only' and section.settings.enable_image
+    if desktop_image != blank or section.settings.use_reference_image
+      assign has_image = true
+    endif
+  endif
+
+  assign dialog_title = section.settings.heading | strip_html | default: 'Newsletter signup'
+  assign dialog_description = section.settings.description | strip_html
+-%}
+
+{%- liquid
+  assign render_popup = false
+  if page_eligible and section.settings.enable_popup
+    assign render_popup = true
+  endif
+  if request.design_mode
+    assign render_popup = true
+  endif
+-%}
+
+{%- if render_popup -%}
+  <sp-newsletter-popup
+    id="SpNewsletterPopupRoot-{{ section.id }}"
+    class="sp-newsletter-popup"
+    data-section-id="{{ section.id }}"
+    data-popup-open="false"
+    {% render 'sp-newsletter-popup-trigger', section: section %}
+    {% if request.design_mode %}data-design-mode="true"{% endif %}
+  >
+    <dialog
+      id="SpNewsletterPopup-{{ section.id }}"
+      class="sp-newsletter-popup__dialog sp-newsletter-popup__dialog--{{ section.settings.layout_mode }} sp-newsletter-popup__dialog--mobile-image-{{ section.settings.mobile_image_mode }} sp-newsletter-popup__dialog--shadow-{{ section.settings.shadow }}{% if section.settings.reference_global_accent %} sp-newsletter-popup--use-global-accent{% endif %} sp-newsletter-popup__dialog--animation-{% if section.settings.enable_animation %}fade_scale{% else %}none{% endif %}{% if has_image %} has-image{% else %} no-image{% endif %}"
+      aria-labelledby="SpNewsletterPopupHeading-{{ section.id }}"
+      {% if dialog_description != blank %}aria-describedby="SpNewsletterPopupDescription-{{ section.id }}"{% endif %}
+      data-sp-newsletter-popup-dialog
+      style="
+        --sp-newsletter-popup-width: {{ section.settings.modal_width }}px;
+        --sp-newsletter-popup-content-max: {{ section.settings.content_max_width }}px;
+        --sp-newsletter-popup-radius: {{ section.settings.border_radius }}px;
+        --sp-newsletter-popup-radius-mobile: {{ section.settings.border_radius_mobile }}px;
+        --sp-newsletter-popup-bg: {% if section.settings.reference_global_palette %}var(--sp-color-background, {{ section.settings.background_color }}){% else %}{{ section.settings.background_color }}{% endif %};
+        --sp-newsletter-popup-text: {% if section.settings.reference_global_palette %}var(--sp-color-text, {{ section.settings.text_color }}){% else %}{{ section.settings.text_color }}{% endif %};
+        --sp-newsletter-popup-muted: {% if section.settings.reference_global_palette %}var(--sp-color-muted, {{ section.settings.muted_text_color }}){% else %}{{ section.settings.muted_text_color }}{% endif %};
+        --sp-newsletter-popup-heading: {% if section.settings.reference_global_palette %}var(--sp-color-heading, {{ section.settings.heading_color }}){% else %}{{ section.settings.heading_color }}{% endif %};
+        --sp-newsletter-popup-border: {% if section.settings.reference_global_palette %}var(--sp-color-border, {{ section.settings.border_color }}){% else %}{{ section.settings.border_color }}{% endif %};
+        --sp-newsletter-popup-overlay: {{ section.settings.overlay_color }};
+        --sp-newsletter-popup-overlay-opacity: {{ section.settings.overlay_opacity }}%;
+        --sp-newsletter-popup-overlay-blur: {{ section.settings.overlay_blur }}px;
+        --sp-newsletter-popup-accent: {% if section.settings.reference_global_palette %}var(--sp-color-accent, {{ section.settings.accent_color }}){% else %}{{ section.settings.accent_color }}{% endif %};
+        --sp-newsletter-popup-button-bg: {% if section.settings.reference_global_palette %}var(--sp-color-accent, {{ section.settings.button_background }}){% else %}{{ section.settings.button_background }}{% endif %};
+        --sp-newsletter-popup-button-text: {{ section.settings.button_text_color }};
+        --sp-newsletter-popup-button-border: {% if section.settings.reference_global_palette %}var(--sp-color-accent, {{ section.settings.button_border_color }}){% else %}{{ section.settings.button_border_color }}{% endif %};
+        --sp-newsletter-popup-input-bg: {{ section.settings.input_background }};
+        --sp-newsletter-popup-input-text: {{ section.settings.input_text_color }};
+        --sp-newsletter-popup-input-border: {{ section.settings.input_border_color }};
+        --sp-newsletter-popup-placeholder: {{ section.settings.placeholder_color }};
+        --sp-newsletter-popup-input-height: {{ section.settings.input_height }}px;
+        --sp-newsletter-popup-input-radius: {{ section.settings.input_radius }}px;
+        --sp-newsletter-popup-button-radius: {{ section.settings.button_radius }}px;
+        --sp-newsletter-popup-padding-x: {{ section.settings.padding_x_desktop }}px;
+        --sp-newsletter-popup-padding-y: {{ section.settings.padding_y_desktop }}px;
+        --sp-newsletter-popup-padding-x-mobile: {{ section.settings.padding_x_mobile }}px;
+        --sp-newsletter-popup-padding-y-mobile: {{ section.settings.padding_y_mobile }}px;
+        --sp-newsletter-popup-align: {{ section.settings.alignment }};
+        --sp-newsletter-popup-heading-size: {{ section.settings.heading_size }}px;
+        --sp-newsletter-popup-heading-size-mobile: {{ section.settings.heading_size_mobile }}px;
+        --sp-newsletter-popup-text-size: {{ section.settings.text_size }}px;
+        --sp-newsletter-popup-text-size-mobile: {{ section.settings.text_size_mobile }}px;
+        --sp-newsletter-popup-animation-duration: {{ section.settings.animation_duration }}ms;
+        --sp-newsletter-popup-image-width: {{ section.settings.image_width }}%;
+        --sp-newsletter-popup-max-height: {{ section.settings.modal_max_height }}dvh;
+        --sp-newsletter-popup-mobile-image-height: {{ section.settings.mobile_image_height }}px;
+        --sp-newsletter-popup-offer-bg: {% if section.settings.reference_global_palette %}var(--sp-color-surface, {{ section.settings.offer_background }}){% else %}{{ section.settings.offer_background }}{% endif %};
+        --sp-newsletter-popup-eyebrow-size: {{ section.settings.eyebrow_size }}px;
+      "
+    >
+      <span class="sp-newsletter-popup__visually-hidden">{{ dialog_title | escape }}</span>
+      {% render 'sp-newsletter-popup-close', section: section %}
+
+      <div class="sp-newsletter-popup__panel" data-sp-newsletter-popup-panel>
+        <div class="sp-newsletter-popup__layout">
+          {%- if has_image -%}
+            {% render 'sp-newsletter-popup-image', section: section, desktop_image: desktop_image, mobile_image: mobile_image %}
+          {%- endif -%}
+
+          <div class="sp-newsletter-popup__content">
+            {% render 'sp-newsletter-popup-content', section: section %}
+          </div>
+        </div>
+      </div>
+    </dialog>
+    {%- if section.settings.show_collapsed_tab -%}
+      <div class="sp-newsletter-popup__tab" data-sp-newsletter-popup-tab style="--sp-newsletter-tab-bg: {{ section.settings.tab_background }}; --sp-newsletter-tab-text: {{ section.settings.tab_text_color }};">
+        <button type="button" class="sp-newsletter-popup__tab-open" data-sp-newsletter-popup-reopen data-sp-no-loader aria-controls="SpNewsletterPopup-{{ section.id }}" aria-label="Open newsletter offer: {{ section.settings.collapsed_tab_text | escape }}">
+          <span class="sp-newsletter-popup__tab-chevron" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg></span>
+          <span class="sp-newsletter-popup__tab-label">{{ section.settings.collapsed_tab_text | escape }}</span>
+        </button>
+        {% if section.settings.show_tab_close %}
+          <button type="button" class="sp-newsletter-popup__tab-close" data-sp-newsletter-popup-tab-dismiss data-sp-no-loader aria-label="Hide newsletter offer tab">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+          </button>
+        {% endif %}
+      </div>
+    {%- endif -%}
+  </sp-newsletter-popup>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Newsletter popup",
+  "class": "sp-system-newsletter-popup",
+  "limit": 1,
+  "enabled_on": {
+    "groups": [
+      "custom.system"
+    ]
+  },
+  "settings": [
+    {
+      "type": "header",
+      "content": "General"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_popup",
+      "label": "Enable popup",
+      "default": true
+    },
+    {
+      "type": "color_scheme",
+      "id": "sp_color_scheme",
+      "label": "Spider color scheme",
+      "default": "scheme-1",
+      "info": "Uses the Spider global color scheme when Follow Spider colors is enabled."
+    },
+    {
+      "type": "checkbox",
+      "id": "reference_global_palette",
+      "label": "Follow Spider global colors",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "preview_editor",
+      "label": "Preview in Theme Editor",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_desktop",
+      "label": "Show on desktop",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_tablet",
+      "label": "Show on tablet",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_mobile",
+      "label": "Show on mobile",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Collapsed side tab"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_collapsed_tab",
+      "label": "Show tab when popup is closed",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "collapsed_tab_text",
+      "label": "Collapsed tab text",
+      "default": "GET 10% OFF!"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_tab_close",
+      "label": "Allow visitor to hide tab",
+      "default": true
+    },
+    {
+      "type": "color",
+      "id": "tab_background",
+      "label": "Tab background",
+      "default": "#080808"
+    },
+    {
+      "type": "color",
+      "id": "tab_text_color",
+      "label": "Tab text",
+      "default": "#ffffff"
+    },
+    {
+      "type": "header",
+      "content": "Trigger"
+    },
+    {
+      "type": "select",
+      "id": "trigger",
+      "label": "Show popup after",
+      "options": [
+        {
+          "value": "time",
+          "label": "Time delay"
+        },
+        {
+          "value": "scroll",
+          "label": "Scroll"
+        },
+        {
+          "value": "exit_intent",
+          "label": "Exit intent (desktop)"
+        }
+      ],
+      "default": "time"
+    },
+    {
+      "type": "range",
+      "id": "delay_seconds",
+      "label": "Time delay",
+      "min": 1,
+      "max": 60,
+      "step": 1,
+      "unit": "s",
+      "default": 5,
+      "visible_if": "{{ section.settings.trigger == 'time' }}"
+    },
+    {
+      "type": "select",
+      "id": "scroll_mode",
+      "label": "Scroll trigger mode",
+      "options": [
+        {
+          "value": "percentage",
+          "label": "Percentage"
+        },
+        {
+          "value": "pixels",
+          "label": "Distance in pixels"
+        }
+      ],
+      "default": "percentage",
+      "visible_if": "{{ section.settings.trigger == 'scroll' }}"
+    },
+    {
+      "type": "range",
+      "id": "scroll_percentage",
+      "label": "Scroll percentage",
+      "min": 10,
+      "max": 90,
+      "step": 5,
+      "unit": "%",
+      "default": 50,
+      "visible_if": "{{ section.settings.trigger == 'scroll' and section.settings.scroll_mode == 'percentage' }}"
+    },
+    {
+      "type": "range",
+      "id": "scroll_pixels",
+      "label": "Scroll distance",
+      "min": 100,
+      "max": 5000,
+      "step": 100,
+      "unit": "px",
+      "default": 800,
+      "visible_if": "{{ section.settings.trigger == 'scroll' and section.settings.scroll_mode == 'pixels' }}"
+    },
+    {
+      "type": "range",
+      "id": "exit_threshold",
+      "label": "Exit intent top threshold",
+      "min": 0,
+      "max": 80,
+      "step": 5,
+      "unit": "px",
+      "default": 20,
+      "visible_if": "{{ section.settings.trigger == 'exit_intent' }}"
+    },
+    {
+      "type": "select",
+      "id": "mobile_exit_fallback",
+      "label": "Mobile fallback for exit intent",
+      "options": [
+        {
+          "value": "disabled",
+          "label": "Disabled"
+        },
+        {
+          "value": "time",
+          "label": "Time delay"
+        },
+        {
+          "value": "scroll",
+          "label": "Scroll percentage"
+        }
+      ],
+      "default": "time",
+      "visible_if": "{{ section.settings.trigger == 'exit_intent' }}"
+    },
+    {
+      "type": "range",
+      "id": "mobile_fallback_delay",
+      "label": "Mobile fallback delay",
+      "min": 3,
+      "max": 60,
+      "step": 1,
+      "unit": "s",
+      "default": 8,
+      "visible_if": "{{ section.settings.trigger == 'exit_intent' and section.settings.mobile_exit_fallback == 'time' }}"
+    },
+    {
+      "type": "range",
+      "id": "mobile_fallback_scroll",
+      "label": "Mobile fallback scroll",
+      "min": 20,
+      "max": 90,
+      "step": 5,
+      "unit": "%",
+      "default": 60,
+      "visible_if": "{{ section.settings.trigger == 'exit_intent' and section.settings.mobile_exit_fallback == 'scroll' }}"
+    },
+    {
+      "type": "header",
+      "content": "Frequency"
+    },
+    {
+      "type": "select",
+      "id": "repeat_mode",
+      "label": "Show again",
+      "options": [
+        {
+          "value": "days",
+          "label": "After a number of days"
+        },
+        {
+          "value": "session",
+          "label": "Next browser session"
+        },
+        {
+          "value": "never",
+          "label": "Never after normal close"
+        }
+      ],
+      "default": "days"
+    },
+    {
+      "type": "range",
+      "id": "days_before_reshow",
+      "label": "Days before re-show",
+      "min": 1,
+      "max": 30,
+      "step": 1,
+      "unit": "day",
+      "default": 7,
+      "visible_if": "{{ section.settings.repeat_mode == 'days' }}"
+    },
+    {
+      "type": "range",
+      "id": "campaign_version",
+      "label": "Campaign version",
+      "min": 1,
+      "max": 100,
+      "step": 1,
+      "default": 1,
+      "info": "Increase this number to reset previous dismissal storage for a new campaign."
+    },
+    {
+      "type": "checkbox",
+      "id": "show_do_not_show",
+      "label": "Show 'Do not show again'",
+      "default": false
+    },
+    {
+      "type": "text",
+      "id": "do_not_show_label",
+      "label": "Do not show again label",
+      "default": "Do not show this again",
+      "visible_if": "{{ section.settings.show_do_not_show }}"
+    },
+    {
+      "type": "header",
+      "content": "Page targeting"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_home",
+      "label": "Home page",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_product",
+      "label": "Product pages",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_collection",
+      "label": "Collection pages",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_blog",
+      "label": "Blog pages",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "show_article",
+      "label": "Article pages",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "show_page",
+      "label": "Other pages",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "show_search",
+      "label": "Search page",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "show_cart",
+      "label": "Cart page",
+      "default": false
+    },
+    {
+      "type": "header",
+      "content": "Content"
+    },
+    {
+      "type": "header",
+      "content": "Reference premium content"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_eyebrow",
+      "label": "Show brand eyebrow",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "eyebrow_text",
+      "label": "Eyebrow text",
+      "default": "SPIDER INSIDER"
+    },
+    {
+      "type": "range",
+      "id": "eyebrow_size",
+      "label": "Eyebrow size",
+      "min": 10,
+      "max": 20,
+      "step": 1,
+      "unit": "px",
+      "default": 12
+    },
+    {
+      "type": "checkbox",
+      "id": "show_offer_card",
+      "label": "Show promotional offer card",
+      "default": true,
+      "info": "Enable only when the displayed offer is available in your store."
+    },
+    {
+      "type": "text",
+      "id": "offer_title",
+      "label": "Offer title",
+      "default": "Get 10% off your first order"
+    },
+    {
+      "type": "text",
+      "id": "offer_description",
+      "label": "Offer description",
+      "default": "Plus early access to new products and special offers."
+    },
+    {
+      "type": "select",
+      "id": "offer_icon",
+      "label": "Offer icon",
+      "options": [
+        {
+          "value": "gift",
+          "label": "Gift"
+        },
+        {
+          "value": "star",
+          "label": "Star"
+        },
+        {
+          "value": "tag",
+          "label": "Tag"
+        }
+      ],
+      "default": "gift"
+    },
+    {
+      "type": "color",
+      "id": "offer_background",
+      "label": "Offer background",
+      "default": "#F4F5F8"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_no_thanks",
+      "label": "Show No thanks button",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "no_thanks_text",
+      "label": "Dismiss button text",
+      "default": "No thanks"
+    },
+    {
+      "type": "header",
+      "content": "Benefits"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_benefits",
+      "label": "Show benefit row",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_default_benefits",
+      "label": "Use fallback benefits if no blocks",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "benefit_1_title",
+      "label": "Benefit 1 title",
+      "default": "Early access"
+    },
+    {
+      "type": "text",
+      "id": "benefit_1_description",
+      "label": "Benefit 1 description",
+      "default": "Be first in line"
+    },
+    {
+      "type": "text",
+      "id": "benefit_2_title",
+      "label": "Benefit 2 title",
+      "default": "Special offers"
+    },
+    {
+      "type": "text",
+      "id": "benefit_2_description",
+      "label": "Benefit 2 description",
+      "default": "Exclusive deals"
+    },
+    {
+      "type": "text",
+      "id": "benefit_3_title",
+      "label": "Benefit 3 title",
+      "default": "New arrivals"
+    },
+    {
+      "type": "text",
+      "id": "benefit_3_description",
+      "label": "Benefit 3 description",
+      "default": "Latest products"
+    },
+    {
+      "type": "inline_richtext",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Join our newsletter"
+    },
+    {
+      "type": "richtext",
+      "id": "description",
+      "label": "Description",
+      "default": "<p>Be the first to know about new arrivals, exclusive offers, and the latest news.</p>"
+    },
+    {
+      "type": "range",
+      "id": "heading_size",
+      "label": "Desktop heading size",
+      "min": 24,
+      "max": 64,
+      "step": 1,
+      "unit": "px",
+      "default": 46
+    },
+    {
+      "type": "range",
+      "id": "heading_size_mobile",
+      "label": "Mobile heading size",
+      "min": 22,
+      "max": 36,
+      "step": 1,
+      "unit": "px",
+      "default": 30
+    },
+    {
+      "type": "range",
+      "id": "text_size",
+      "label": "Desktop text size",
+      "min": 13,
+      "max": 20,
+      "step": 1,
+      "unit": "px",
+      "default": 17
+    },
+    {
+      "type": "range",
+      "id": "text_size_mobile",
+      "label": "Mobile text size",
+      "min": 12,
+      "max": 18,
+      "step": 1,
+      "unit": "px",
+      "default": 15
+    },
+    {
+      "type": "text_alignment",
+      "id": "alignment",
+      "label": "Content alignment",
+      "default": "left"
+    },
+    {
+      "type": "range",
+      "id": "content_max_width",
+      "label": "Content max width",
+      "min": 300,
+      "max": 640,
+      "step": 10,
+      "unit": "px",
+      "default": 520
+    },
+    {
+      "type": "checkbox",
+      "id": "show_privacy_note",
+      "label": "Show privacy note",
+      "default": true
+    },
+    {
+      "type": "inline_richtext",
+      "id": "privacy_note",
+      "label": "Privacy note",
+      "default": "We respect your privacy. Unsubscribe at any time.",
+      "visible_if": "{{ section.settings.show_privacy_note }}"
+    },
+    {
+      "type": "header",
+      "content": "Newsletter form"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_email_icon",
+      "label": "Show email icon",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "placeholder_text",
+      "label": "Email placeholder",
+      "default": "Enter your email address"
+    },
+    {
+      "type": "text",
+      "id": "subscribe_text",
+      "label": "Subscribe button text",
+      "default": "Subscribe"
+    },
+    {
+      "type": "text",
+      "id": "success_message",
+      "label": "Success message",
+      "default": "You're in! Check your inbox for the next step."
+    },
+    {
+      "type": "text",
+      "id": "error_message",
+      "label": "Error message",
+      "default": "Please enter a valid email address and try again."
+    },
+    {
+      "type": "checkbox",
+      "id": "require_agreement",
+      "label": "Require agreement checkbox",
+      "default": false
+    },
+    {
+      "type": "inline_richtext",
+      "id": "agreement_text",
+      "label": "Agreement text",
+      "default": "I agree to receive marketing emails.",
+      "visible_if": "{{ section.settings.require_agreement }}"
+    },
+    {
+      "type": "select",
+      "id": "form_layout",
+      "label": "Form layout",
+      "options": [
+        {
+          "value": "inline",
+          "label": "Inline"
+        },
+        {
+          "value": "stacked",
+          "label": "Stacked"
+        }
+      ],
+      "default": "stacked"
+    },
+    {
+      "type": "range",
+      "id": "input_height",
+      "label": "Input and button height",
+      "min": 44,
+      "max": 64,
+      "step": 2,
+      "unit": "px",
+      "default": 54
+    },
+    {
+      "type": "range",
+      "id": "input_radius",
+      "label": "Input radius",
+      "min": 0,
+      "max": 30,
+      "step": 1,
+      "unit": "px",
+      "default": 8
+    },
+    {
+      "type": "range",
+      "id": "button_radius",
+      "label": "Button radius",
+      "min": 0,
+      "max": 30,
+      "step": 1,
+      "unit": "px",
+      "default": 8
+    },
+    {
+      "type": "select",
+      "id": "button_style",
+      "label": "Button style",
+      "options": [
+        {
+          "value": "solid",
+          "label": "Solid"
+        },
+        {
+          "value": "outline",
+          "label": "Outline"
+        },
+        {
+          "value": "accent",
+          "label": "Accent"
+        }
+      ],
+      "default": "solid"
+    },
+    {
+      "type": "checkbox",
+      "id": "close_after_success",
+      "label": "Close after successful signup",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "success_close_delay",
+      "label": "Success close delay",
+      "min": 0,
+      "max": 5,
+      "step": 1,
+      "unit": "s",
+      "default": 1,
+      "visible_if": "{{ section.settings.close_after_success }}"
+    },
+    {
+      "type": "header",
+      "content": "Image & layout"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_image",
+      "label": "Enable selected image",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "use_reference_image",
+      "label": "Use reference photo when no image selected",
+      "default": true,
+      "info": "Disable to show a content-only popup, or choose your own image below."
+    },
+    {
+      "type": "select",
+      "id": "mobile_image_mode",
+      "label": "Mobile image placement",
+      "options": [
+        {
+          "value": "top",
+          "label": "Above content"
+        },
+        {
+          "value": "bottom",
+          "label": "Below content"
+        },
+        {
+          "value": "hidden",
+          "label": "Hide image"
+        }
+      ],
+      "default": "top"
+    },
+    {
+      "type": "range",
+      "id": "mobile_image_height",
+      "label": "Mobile image height",
+      "min": 100,
+      "max": 320,
+      "step": 10,
+      "unit": "px",
+      "default": 170
+    },
+    {
+      "type": "select",
+      "id": "layout_mode",
+      "label": "Layout mode",
+      "options": [
+        {
+          "value": "reference_split",
+          "label": "Reference premium split"
+        },
+        {
+          "value": "content_only",
+          "label": "Content only"
+        },
+        {
+          "value": "image_left",
+          "label": "Image left / content right"
+        },
+        {
+          "value": "image_top",
+          "label": "Image top / content bottom"
+        }
+      ],
+      "default": "reference_split"
+    },
+    {
+      "type": "image_picker",
+      "id": "desktop_image",
+      "label": "Desktop image",
+      "visible_if": "{{ section.settings.layout_mode != 'content_only' }}"
+    },
+    {
+      "type": "image_picker",
+      "id": "mobile_image",
+      "label": "Mobile image",
+      "visible_if": "{{ section.settings.layout_mode != 'content_only' }}"
+    },
+    {
+      "type": "select",
+      "id": "image_purpose",
+      "label": "Image purpose",
+      "options": [
+        {
+          "value": "decorative",
+          "label": "Decorative"
+        },
+        {
+          "value": "informative",
+          "label": "Informative"
+        }
+      ],
+      "default": "decorative",
+      "visible_if": "{{ section.settings.layout_mode != 'content_only' }}"
+    },
+    {
+      "type": "text",
+      "id": "image_alt",
+      "label": "Image alt text",
+      "visible_if": "{{ section.settings.layout_mode != 'content_only' and section.settings.image_purpose == 'informative' }}"
+    },
+    {
+      "type": "select",
+      "id": "image_fit",
+      "label": "Image fit",
+      "options": [
+        {
+          "value": "cover",
+          "label": "Cover"
+        },
+        {
+          "value": "contain",
+          "label": "Contain"
+        }
+      ],
+      "default": "cover",
+      "visible_if": "{{ section.settings.layout_mode != 'content_only' }}"
+    },
+    {
+      "type": "range",
+      "id": "image_width",
+      "label": "Split image width",
+      "min": 32,
+      "max": 55,
+      "step": 1,
+      "unit": "%",
+      "default": 48,
+      "visible_if": "{{ section.settings.layout_mode == 'image_left' or section.settings.layout_mode == 'reference_split' }}"
+    },
+    {
+      "type": "select",
+      "id": "image_position_desktop",
+      "label": "Desktop image position",
+      "options": [
+        {
+          "value": "left top",
+          "label": "Top left"
+        },
+        {
+          "value": "center top",
+          "label": "Top center"
+        },
+        {
+          "value": "right top",
+          "label": "Top right"
+        },
+        {
+          "value": "left center",
+          "label": "Middle left"
+        },
+        {
+          "value": "center center",
+          "label": "Middle center"
+        },
+        {
+          "value": "right center",
+          "label": "Middle right"
+        },
+        {
+          "value": "left bottom",
+          "label": "Bottom left"
+        },
+        {
+          "value": "center bottom",
+          "label": "Bottom center"
+        },
+        {
+          "value": "right bottom",
+          "label": "Bottom right"
+        }
+      ],
+      "default": "center center",
+      "visible_if": "{{ section.settings.layout_mode != 'content_only' }}"
+    },
+    {
+      "type": "select",
+      "id": "image_position_mobile",
+      "label": "Mobile image position",
+      "options": [
+        {
+          "value": "left top",
+          "label": "Top left"
+        },
+        {
+          "value": "center top",
+          "label": "Top center"
+        },
+        {
+          "value": "right top",
+          "label": "Top right"
+        },
+        {
+          "value": "left center",
+          "label": "Middle left"
+        },
+        {
+          "value": "center center",
+          "label": "Middle center"
+        },
+        {
+          "value": "right center",
+          "label": "Middle right"
+        },
+        {
+          "value": "left bottom",
+          "label": "Bottom left"
+        },
+        {
+          "value": "center bottom",
+          "label": "Bottom center"
+        },
+        {
+          "value": "right bottom",
+          "label": "Bottom right"
+        }
+      ],
+      "default": "center center",
+      "visible_if": "{{ section.settings.layout_mode != 'content_only' }}"
+    },
+    {
+      "type": "header",
+      "content": "Premium style"
+    },
+    {
+      "type": "checkbox",
+      "id": "reference_global_accent",
+      "label": "Use global accent in reference layout",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "modal_max_height",
+      "label": "Modal max height",
+      "min": 70,
+      "max": 96,
+      "step": 1,
+      "unit": "%",
+      "default": 92
+    },
+    {
+      "type": "range",
+      "id": "modal_width",
+      "label": "Desktop modal width",
+      "min": 600,
+      "max": 1200,
+      "step": 10,
+      "unit": "px",
+      "default": 1020
+    },
+    {
+      "type": "range",
+      "id": "border_radius",
+      "label": "Desktop border radius",
+      "min": 0,
+      "max": 32,
+      "step": 1,
+      "unit": "px",
+      "default": 18
+    },
+    {
+      "type": "range",
+      "id": "border_radius_mobile",
+      "label": "Mobile border radius",
+      "min": 0,
+      "max": 28,
+      "step": 1,
+      "unit": "px",
+      "default": 18
+    },
+    {
+      "type": "select",
+      "id": "shadow",
+      "label": "Shadow",
+      "options": [
+        {
+          "value": "soft",
+          "label": "Soft"
+        },
+        {
+          "value": "medium",
+          "label": "Medium"
+        },
+        {
+          "value": "strong",
+          "label": "Strong"
+        }
+      ],
+      "default": "medium"
+    },
+    {
+      "type": "color",
+      "id": "overlay_color",
+      "label": "Overlay color",
+      "default": "#111111"
+    },
+    {
+      "type": "range",
+      "id": "overlay_opacity",
+      "label": "Overlay opacity",
+      "min": 0,
+      "max": 90,
+      "step": 5,
+      "unit": "%",
+      "default": 60
+    },
+    {
+      "type": "range",
+      "id": "overlay_blur",
+      "label": "Overlay blur",
+      "min": 0,
+      "max": 12,
+      "step": 1,
+      "unit": "px",
+      "default": 6
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Background",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "heading_color",
+      "label": "Heading",
+      "default": "#111111"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text",
+      "default": "#4b5563"
+    },
+    {
+      "type": "color",
+      "id": "muted_text_color",
+      "label": "Muted text",
+      "default": "#7a7f89"
+    },
+    {
+      "type": "color",
+      "id": "border_color",
+      "label": "Border",
+      "default": "#e5e7eb"
+    },
+    {
+      "type": "color",
+      "id": "accent_color",
+      "label": "Accent",
+      "default": "#415DFF"
+    },
+    {
+      "type": "color",
+      "id": "button_background",
+      "label": "Button background",
+      "default": "#415DFF"
+    },
+    {
+      "type": "color",
+      "id": "button_text_color",
+      "label": "Button text",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "button_border_color",
+      "label": "Button border",
+      "default": "#415DFF"
+    },
+    {
+      "type": "color",
+      "id": "input_background",
+      "label": "Input background",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "input_text_color",
+      "label": "Input text",
+      "default": "#111111"
+    },
+    {
+      "type": "color",
+      "id": "input_border_color",
+      "label": "Input border",
+      "default": "#d6d8dd"
+    },
+    {
+      "type": "color",
+      "id": "placeholder_color",
+      "label": "Placeholder",
+      "default": "#8b9099"
+    },
+    {
+      "type": "range",
+      "id": "padding_x_desktop",
+      "label": "Desktop horizontal padding",
+      "min": 24,
+      "max": 72,
+      "step": 2,
+      "unit": "px",
+      "default": 48
+    },
+    {
+      "type": "range",
+      "id": "padding_y_desktop",
+      "label": "Desktop vertical padding",
+      "min": 24,
+      "max": 72,
+      "step": 2,
+      "unit": "px",
+      "default": 48
+    },
+    {
+      "type": "range",
+      "id": "padding_x_mobile",
+      "label": "Mobile horizontal padding",
+      "min": 16,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "default": 22
+    },
+    {
+      "type": "range",
+      "id": "padding_y_mobile",
+      "label": "Mobile vertical padding",
+      "min": 20,
+      "max": 48,
+      "step": 2,
+      "unit": "px",
+      "default": 30
+    },
+    {
+      "type": "header",
+      "content": "Close button"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_close",
+      "label": "Show close button",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "close_style",
+      "label": "Close button style",
+      "options": [
+        {
+          "value": "minimal",
+          "label": "Minimal"
+        },
+        {
+          "value": "soft",
+          "label": "Soft circle"
+        },
+        {
+          "value": "dark",
+          "label": "Dark circle"
+        }
+      ],
+      "default": "minimal",
+      "visible_if": "{{ section.settings.show_close }}"
+    },
+    {
+      "type": "header",
+      "content": "Animation"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_animation",
+      "label": "Enable opening animation",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "animation_duration",
+      "label": "Animation duration",
+      "min": 150,
+      "max": 600,
+      "step": 50,
+      "unit": "ms",
+      "default": 250,
+      "visible_if": "{{ section.settings.enable_animation }}"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Newsletter popup",
+      "blocks": [
+        {
+          "type": "benefit",
+          "settings": {
+            "icon": "bolt",
+            "title": "Early access",
+            "description": "Be first in line"
+          }
+        },
+        {
+          "type": "benefit",
+          "settings": {
+            "icon": "tag",
+            "title": "Special offers",
+            "description": "Exclusive deals"
+          }
+        },
+        {
+          "type": "benefit",
+          "settings": {
+            "icon": "box",
+            "title": "New arrivals",
+            "description": "Latest products"
+          }
+        }
+      ]
+    }
+  ],
+  "blocks": [
+    {
+      "type": "benefit",
+      "name": "Premium benefit",
+      "limit": 3,
+      "settings": [
+        {
+          "type": "select",
+          "id": "icon",
+          "label": "Icon",
+          "options": [
+            {
+              "value": "bolt",
+              "label": "Lightning"
+            },
+            {
+              "value": "tag",
+              "label": "Tag"
+            },
+            {
+              "value": "box",
+              "label": "Box"
+            },
+            {
+              "value": "gift",
+              "label": "Gift"
+            },
+            {
+              "value": "truck",
+              "label": "Truck"
+            },
+            {
+              "value": "star",
+              "label": "Star"
+            },
+            {
+              "value": "shield",
+              "label": "Shield"
+            }
+          ],
+          "default": "bolt"
+        },
+        {
+          "type": "image_picker",
+          "id": "custom_icon",
+          "label": "Optional custom icon"
+        },
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Title",
+          "default": "Premium benefit"
+        },
+        {
+          "type": "text",
+          "id": "description",
+          "label": "Description",
+          "default": "For our subscribers"
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "Optional link"
+        },
+        {
+          "type": "color",
+          "id": "icon_color",
+          "label": "Icon color",
+          "default": "#415DFF"
+        },
+        {
+          "type": "color",
+          "id": "icon_background",
+          "label": "Icon background",
+          "default": "#EAF0FF"
+        },
+        {
+          "type": "checkbox",
+          "id": "show_mobile",
+          "label": "Show on mobile",
+          "default": true
+        }
+      ]
+    }
+  ],
+  "max_blocks": 3
+}
+{% endschema %}

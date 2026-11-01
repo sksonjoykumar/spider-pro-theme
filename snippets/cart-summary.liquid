@@ -1,0 +1,71 @@
+{% comment %}
+  Main Cart order summary. Parameters: cart, section, continue_url.
+{% endcomment %}
+{% assign cart_terms_id = 'CartTerms-' | append: section.id %}
+<aside class="sp-main-cart__summary" data-cart-summary aria-labelledby="CartSummaryTitle-{{ section.id }}">
+  <div class="sp-main-cart__summary-card">
+    <h2 id="CartSummaryTitle-{{ section.id }}" class="sp-main-cart__summary-title">{{ section.settings.summary_heading | escape }}</h2>
+
+
+    {% if section.settings.show_discount_summary and cart.total_discount > 0 %}
+      <div class="sp-main-cart__summary-row sp-main-cart__summary-row--saving"><span>Savings</span><span>−{{ cart.total_discount | money_with_currency }}</span></div>
+    {% endif %}
+
+    {% if section.settings.show_discount_summary and cart.cart_level_discount_applications.size > 0 %}
+      <div class="sp-main-cart__summary-discounts">{% render 'cart-discounts', discounts: cart.cart_level_discount_applications %}</div>
+    {% endif %}
+
+    <div class="sp-main-cart__summary-row sp-main-cart__summary-row--products">
+      <span>{{ 'cart.cart.cart_subtotal' | t }} ({{ cart.item_count }} {% if cart.item_count == 1 %}item{% else %}items{% endif %})</span>
+      <span>{{ cart.original_total_price | money }}</span>
+    </div>
+    {% if section.settings.show_discount_entry %}
+      <div class="sp-main-cart__summary-row sp-premium-cart__discount-row">
+        <span>Discount code</span>
+        <button type="button" class="sp-premium-cart__discount-toggle" data-premium-discount-toggle aria-expanded="false">Add code</button>
+      </div>
+      <div class="sp-premium-cart__discount-entry" data-premium-discount-entry hidden>
+        <label for="CartDiscount-{{ section.id }}">Discount code</label>
+        <div class="sp-premium-cart__discount-controls">
+          <input id="CartDiscount-{{ section.id }}" type="text" placeholder="Enter code" autocomplete="off" data-premium-discount-code>
+          <button type="button" class="sp-button sp-button--secondary" data-premium-discount-apply>Apply</button>
+        </div>
+        <small>Shopify checks discount eligibility at checkout.</small>
+      </div>
+    {% endif %}
+    {% if section.settings.show_shipping_estimate_note %}
+      <div class="sp-main-cart__summary-row sp-premium-cart__estimated"><span>Estimated shipping <span aria-label="Shipping calculated at checkout" title="Final shipping is calculated at checkout">ⓘ</span></span><span>Calculated at checkout</span></div>
+    {% endif %}
+    <div class="sp-main-cart__summary-row sp-main-cart__summary-row--subtotal">
+      <span>Total</span><strong>{{ cart.total_price | money_with_currency }}</strong>
+    </div>
+    {% if section.settings.show_tax_shipping_text %}<p class="sp-main-cart__policy">{{ 'cart.shipping.taxes_shipping_at_checkout' | t }}</p>{% endif %}
+
+    {% if settings.cart_terms %}
+      <div class="sp-cart-terms">
+        <input id="{{ cart_terms_id }}" type="checkbox" required data-cart-terms>
+        <label for="{{ cart_terms_id }}">
+          {% if settings.cart_terms_page != blank %}
+            {% capture cart_terms_link %}<a href="{{ settings.cart_terms_page.url }}">{{ settings.cart_terms_page.title | escape }}</a>{% endcapture %}
+            {{ 'cart.terms.agree_html' | t: terms: cart_terms_link }}
+          {% else %}
+            {{ 'cart.terms.agree' | t }}
+          {% endif %}
+        </label>
+      </div>
+    {% endif %}
+
+    <button class="sp-button sp-button--primary sp-main-cart__checkout" type="submit" name="checkout">{{ section.settings.checkout_label | escape }} <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M4 12h16m-7-7 7 7-7 7"/></svg></button>
+
+    {% if section.settings.show_payment_icons and shop.enabled_payment_types.size > 0 %}
+      <p class="sp-premium-cart__payment-label">Or pay with</p>
+      <div class="sp-main-cart__payments" aria-label="Accepted payment methods">
+        {% for type in shop.enabled_payment_types %}<span class="sp-main-cart__payment">{{ type | payment_type_svg_tag }}</span>{% endfor %}
+      </div>
+    {% endif %}
+
+    {% if section.settings.show_continue_shopping %}
+      <a class="sp-main-cart__continue" href="{{ continue_url }}">{{ section.settings.continue_label | default: 'Continue shopping' | escape }}</a>
+    {% endif %}
+  </div>
+</aside>

@@ -1,0 +1,296 @@
+/* Spider Product Grid
+   Uses a unique section namespace because .sp-product-grid already exists
+   globally in Spider's collection/commerce CSS. */
+
+.sp-curated-product-grid {
+  position: relative;
+  display: block;
+  width: 100%;
+  min-width: 0;
+  color: var(--sp-section-text, var(--sp-color-text, #3f3f46));
+}
+
+.sp-curated-product-grid,
+.sp-curated-product-grid *,
+.sp-curated-product-grid *::before,
+.sp-curated-product-grid *::after {
+  box-sizing: border-box;
+}
+
+.sp-curated-product-grid__container {
+  display: grid;
+  width: min(
+    calc(100% - (2 * var(--sp-page-gutter, 32px))),
+    var(--sp-page-width, 1280px)
+  );
+  max-width: 100%;
+  margin-inline: auto;
+  gap: var(--sp-curated-content-gap, 32px);
+  min-width: 0;
+}
+
+.sp-curated-product-grid__container.sp-container--wide {
+  width: min(
+    calc(100% - (2 * var(--sp-page-gutter, 32px))),
+    var(--sp-wide-width, 1600px)
+  );
+}
+
+.sp-curated-product-grid__header {
+  display: grid;
+  gap: 8px;
+  width: min(100%, 820px);
+  min-width: 0;
+}
+
+.sp-curated-product-grid__header--center {
+  justify-self: center;
+  text-align: center;
+}
+
+.sp-curated-product-grid__header--left {
+  justify-self: start;
+  text-align: start;
+}
+
+.sp-curated-product-grid__eyebrow,
+.sp-curated-product-grid__heading,
+.sp-curated-product-grid__description,
+.sp-curated-product-grid__description > :first-child,
+.sp-curated-product-grid__description > :last-child {
+  margin: 0;
+}
+
+.sp-curated-product-grid__eyebrow {
+  color: var(--sp-section-accent, var(--sp-color-accent, #415dff));
+  font-weight: 600;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+
+.sp-curated-product-grid__heading {
+  color: var(--sp-section-heading, var(--sp-color-heading, #171717));
+  overflow-wrap: normal;
+  word-break: normal;
+}
+
+.sp-curated-product-grid__description {
+  color: var(--sp-section-muted, var(--sp-color-muted, #71717a));
+}
+
+.sp-curated-product-grid__header--center .sp-curated-product-grid__description {
+  max-width: 720px;
+  margin-inline: auto;
+}
+
+.sp-curated-product-grid__items {
+  display: grid;
+  width: 100%;
+  min-width: 0;
+  grid-template-columns: repeat(var(--sp-curated-grid-cols-d, 4), minmax(0, 1fr));
+  gap: var(--sp-curated-grid-gap-d, var(--sp-product-grid-gap, 24px));
+  align-items: stretch;
+}
+
+.sp-curated-product-grid__item {
+  display: flex;
+  width: 100%;
+  min-width: 0;
+}
+
+.sp-curated-product-grid__item > .sp-product-card {
+  width: 100%;
+  max-width: none;
+  min-width: 0;
+  height: 100%;
+}
+
+/* Reference-inspired product cards: compact image inset, aligned content and global Spider tokens. */
+.sp-curated-product-grid .sp-product-card .sp-product-card__media-shell {
+  margin: 4px 4px 0;
+}
+
+.sp-curated-product-grid .sp-product-card .sp-product-card__media {
+  aspect-ratio: var(--sp-product-media-ratio, 16 / 10);
+}
+
+.sp-curated-product-grid .sp-product-card .sp-product-card__media--adapt {
+  aspect-ratio: auto;
+}
+
+.sp-curated-product-grid .sp-product-card .sp-product-card__content {
+  padding: 10px 12px 12px;
+  gap: 5px;
+}
+
+.sp-curated-product-grid .sp-product-card .sp-product-card__action {
+  margin-block-start: auto;
+  padding-block-start: 7px;
+}
+
+.sp-curated-product-grid .sp-product-card .sp-product-card__rating {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  line-height: 1.25;
+}
+
+.sp-curated-product-grid .sp-product-card .sp-product-card__rating > .sp-product-card__rating-stars {
+  color: var(--sp-section-accent, var(--sp-color-accent, #415dff));
+  font-size: 15px;
+  letter-spacing: 1px;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.sp-curated-product-grid .sp-product-card .sp-product-card__rating > .sp-product-card__rating-count {
+  color: var(--sp-section-muted, var(--sp-color-muted, #71717a));
+  font-size: 12px;
+}
+
+/* The reference uses one heart action and a full-width commerce CTA beneath the details. */
+.sp-curated-product-grid .sp-product-card:not(.sp-product-card--style-4) .sp-product-card__media-actions--media .sp-product-card__icon-action--cart,
+.sp-curated-product-grid .sp-product-card:not(.sp-product-card--style-4) .sp-product-card__media-actions--media .sp-product-card__icon-form {
+  display: none !important;
+}
+
+.sp-curated-product-grid[data-sp-show-quick-view="false"] .sp-product-card:not(.sp-product-card--style-4) .sp-product-card__media-actions--media .sp-product-card__icon-action--view {
+  display: none !important;
+}
+
+.sp-curated-product-grid__footer {
+  display: flex;
+  width: 100%;
+}
+
+.sp-curated-product-grid__footer--left {
+  justify-content: flex-start;
+}
+
+.sp-curated-product-grid__footer--center {
+  justify-content: center;
+}
+
+.sp-curated-product-grid__footer--right {
+  justify-content: flex-end;
+}
+
+.sp-curated-product-grid__empty {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  min-height: 140px;
+  padding: clamp(20px, 4vw, 32px);
+  border: 1px dashed var(--sp-section-border, var(--sp-color-border, #e4e4e7));
+  border-radius: var(--sp-radius-lg, var(--sp-radius-large, 16px));
+  background: var(--sp-section-surface, var(--sp-color-surface, #f5f5f5));
+}
+
+.sp-curated-product-grid__empty-icon {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  flex: 0 0 48px;
+  border-radius: 50%;
+  background: var(--sp-section-card, var(--sp-color-card, #fff));
+  color: var(--sp-section-heading, var(--sp-color-heading, #171717));
+}
+
+.sp-curated-product-grid__empty-icon svg {
+  width: 22px;
+  height: 22px;
+}
+
+.sp-curated-product-grid__empty-copy {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.sp-curated-product-grid__empty-title,
+.sp-curated-product-grid__empty-text {
+  margin: 0;
+}
+
+.sp-curated-product-grid__empty-title {
+  color: var(--sp-section-heading, var(--sp-color-heading, #171717));
+}
+
+.sp-curated-product-grid__empty-text {
+  color: var(--sp-section-muted, var(--sp-color-muted, #71717a));
+}
+
+@media (max-width: 989px) {
+  .sp-curated-product-grid__items {
+    grid-template-columns: repeat(var(--sp-curated-grid-cols-t, 3), minmax(0, 1fr));
+    gap: var(--sp-curated-grid-gap-t, var(--sp-product-grid-gap, 24px));
+  }
+}
+
+@media (max-width: 749px) {
+  .sp-curated-product-grid__container {
+    width: min(
+      calc(100% - (2 * var(--sp-page-gutter, 20px))),
+      var(--sp-page-width, 1280px)
+    );
+    gap: max(24px, var(--sp-curated-content-gap, 32px));
+  }
+
+  .sp-curated-product-grid__container.sp-container--wide {
+    width: calc(100% - (2 * var(--sp-page-gutter, 20px)));
+  }
+
+  .sp-curated-product-grid__items {
+    grid-template-columns: repeat(var(--sp-curated-grid-cols-m, 2), minmax(0, 1fr));
+    gap: var(--sp-curated-grid-gap-m, var(--sp-mobile-grid-gap, 12px));
+  }
+
+  .sp-curated-product-grid__footer .sp-button {
+    min-height: 44px;
+  }
+
+  .sp-curated-product-grid__empty {
+    align-items: flex-start;
+    padding: 20px;
+  }
+}
+
+@media (max-width: 349px) {
+  .sp-curated-product-grid__items {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 749px) {
+  .sp-curated-product-grid .sp-product-card .sp-product-card__media-shell {
+    margin: 4px 4px 0;
+  }
+
+  .sp-curated-product-grid .sp-product-card .sp-product-card__content {
+    padding: 9px 9px 10px;
+    gap: 4px;
+  }
+
+  .sp-curated-product-grid .sp-product-card .sp-product-card__rating > .sp-product-card__rating-stars {
+    font-size: 13px;
+    letter-spacing: .5px;
+  }
+
+  .sp-curated-product-grid .sp-product-card .sp-product-card__rating > .sp-product-card__rating-count {
+    font-size: 11px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sp-curated-product-grid *,
+  .sp-curated-product-grid *::before,
+  .sp-curated-product-grid *::after {
+    scroll-behavior: auto !important;
+    transition-duration: .01ms !important;
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}

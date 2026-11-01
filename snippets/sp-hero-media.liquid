@@ -1,0 +1,94 @@
+{%- liquid
+  assign desktop_image = block.settings.desktop_image
+  assign mobile_image = block.settings.mobile_image | default: desktop_image
+  assign poster_image = block.settings.video_poster | default: block.settings.fallback_image | default: desktop_image
+
+  if block.settings.image_purpose == 'informative'
+    assign media_alt = block.settings.image_alt | default: desktop_image.alt | default: ''
+  else
+    assign media_alt = ''
+  endif
+-%}
+
+<div class="sp-hero__media" data-sp-hero-media>
+  {%- if block.settings.media_type == 'video' and block.settings.desktop_video != blank -%}
+    <video
+      class="sp-hero__video sp-hero__video--desktop{% if block.settings.mobile_video_enable and block.settings.mobile_video != blank %} has-mobile-video{% endif %}"
+      data-sp-hero-video
+      aria-hidden="true"
+      data-video-autoplay="{{ block.settings.video_autoplay }}"
+      muted
+      playsinline
+      preload="{% if is_initial %}metadata{% else %}none{% endif %}"
+      {% if block.settings.video_loop %}loop{% endif %}
+      {% if poster_image != blank %}poster="{{ poster_image | image_url: width: 1600 }}"{% endif %}
+    >
+      {%- for source in block.settings.desktop_video.sources -%}
+        <source src="{{ source.url }}" type="{{ source.mime_type }}">
+      {%- endfor -%}
+    </video>
+
+    {%- if block.settings.mobile_video_enable and block.settings.mobile_video != blank -%}
+      <video
+        class="sp-hero__video sp-hero__video--mobile"
+        data-sp-hero-video
+        aria-hidden="true"
+        data-video-autoplay="{{ block.settings.video_autoplay }}"
+        muted
+        playsinline
+        preload="none"
+        {% if block.settings.video_loop %}loop{% endif %}
+        {% if poster_image != blank %}poster="{{ poster_image | image_url: width: 900 }}"{% endif %}
+      >
+        {%- for source in block.settings.mobile_video.sources -%}
+          <source src="{{ source.url }}" type="{{ source.mime_type }}">
+        {%- endfor -%}
+      </video>
+    {%- endif -%}
+  {%- elsif desktop_image != blank -%}
+    <picture class="sp-hero__picture">
+      {%- if mobile_image != blank and mobile_image != desktop_image -%}
+        <source
+          media="(max-width: 749px)"
+          srcset="
+            {{ mobile_image | image_url: width: 360 }} 360w,
+            {{ mobile_image | image_url: width: 540 }} 540w,
+            {{ mobile_image | image_url: width: 750 }} 750w,
+            {{ mobile_image | image_url: width: 900 }} 900w
+          "
+          sizes="{{ mobile_sizes }}"
+        >
+      {%- endif -%}
+      {{ desktop_image
+        | image_url: width: 2560
+        | image_tag:
+          class: 'sp-hero__image',
+          widths: '480, 640, 750, 900, 1100, 1280, 1440, 1680, 1920, 2240, 2560',
+          sizes: responsive_sizes,
+          loading: image_loading,
+          fetchpriority: image_priority,
+          alt: media_alt
+      }}
+    </picture>
+  {%- elsif block.settings.fallback_image != blank -%}
+    {{ block.settings.fallback_image
+      | image_url: width: 1920
+      | image_tag:
+        class: 'sp-hero__image',
+        widths: '480, 640, 750, 900, 1100, 1280, 1440, 1680, 1920',
+        sizes: responsive_sizes,
+        loading: image_loading,
+        fetchpriority: image_priority,
+        alt: media_alt
+    }}
+  {%- else -%}
+    <div class="sp-hero__placeholder" aria-hidden="true">
+      {{ 'lifestyle-1' | placeholder_svg_tag: 'sp-hero__placeholder-svg' }}
+    </div>
+  {%- endif -%}
+
+  <span class="sp-hero__overlay" aria-hidden="true"></span>
+  {%- if section.settings.enable_readability_gradient -%}
+    <span class="sp-hero__readability" aria-hidden="true"></span>
+  {%- endif -%}
+</div>

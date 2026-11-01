@@ -1,0 +1,898 @@
+{% render 'sp-section-color-scheme', section: section %}
+{% assign sp_cart_scheme = section.settings.sp_color_scheme %}
+{%- liquid
+  assign gift_product = section.settings.gift_wrap_product
+  assign gift_variant = blank
+  assign gift_in_cart = false
+  if gift_product != blank
+    assign gift_variant = gift_product.selected_or_first_available_variant
+    if gift_variant != blank
+      for cart_item in cart.items
+        if cart_item.variant_id == gift_variant.id
+          assign gift_in_cart = true
+          break
+        endif
+      endfor
+    endif
+  endif
+
+  assign threshold_cents = section.settings.free_shipping_threshold | times: 100
+  assign drawer_shadow = section.settings.drawer_shadow
+  assign effective_drawer_width = section.settings.drawer_width
+  assign effective_image_size = section.settings.item_image_size
+  assign effective_image_radius = section.settings.item_image_radius
+  assign effective_button_radius = section.settings.button_radius
+  assign show_optional_areas = true
+  assign show_inline_discount = false
+  if section.settings.show_discount and section.settings.premium_inline_discount
+    assign show_inline_discount = true
+  endif
+  assign show_tool_shortcuts = section.settings.show_cart_tool_shortcuts
+-%}
+
+{%- unless request.page_type == 'cart' -%}
+  {{ 'sp-cart-drawer.css' | asset_url | stylesheet_tag }}
+  <script src="{{ 'sp-cart-drawer.js' | asset_url }}" defer></script>
+
+  <div
+    class="sp-cart-drawer-section"
+    data-cart-drawer-section
+    data-section-id="{{ section.id }}"
+    data-sp-cart-drawer-root
+  >
+    <dialog
+      id="CartDrawer"
+      class="sp-cart-drawer sp-drawer sp-drawer--{{ section.settings.drawer_position }} sp-cart-drawer--{{ section.settings.drawer_position }} sp-cart-drawer--shadow-{{ drawer_shadow }} sp-cart-drawer--premium{% unless section.settings.use_theme_editor_summary_order %} sp-cart-drawer--fixed-summary-order{% endunless %}"
+      aria-labelledby="CartDrawerTitle-{{ section.id }}"
+      data-cart-section
+      data-cart-drawer
+      data-section-id="{{ section.id }}"
+      data-open-editor="{{ section.settings.open_in_editor }}"
+      style="
+        --sp-cart-drawer-width: {{ effective_drawer_width }}px;
+        --sp-cart-progress-height: {{ section.settings.progress_height | default: 6 }}px;
+        --sp-cart-header-size: {{ section.settings.header_font_size | default: 26 }}px;
+        --sp-cart-payment-height: {{ section.settings.payment_icon_height | default: 24 }}px;
+        --sp-cart-drawer-bg: {% if section.settings.sp_use_color_scheme %}{{ sp_cart_scheme.settings.card | default: sp_cart_scheme.settings.background }}{% else %}{{ section.settings.background }}{% endif %};
+        --sp-cart-drawer-text: {% if section.settings.sp_use_color_scheme %}{{ sp_cart_scheme.settings.text }}{% else %}{{ section.settings.text_color }}{% endif %};
+        --sp-cart-drawer-muted: {% if section.settings.sp_use_color_scheme %}{{ sp_cart_scheme.settings.muted }}{% else %}{{ section.settings.muted_text_color }}{% endif %};
+        --sp-cart-drawer-border: {% if section.settings.sp_use_color_scheme %}{{ sp_cart_scheme.settings.border }}{% else %}{{ section.settings.border_color }}{% endif %};
+        --sp-cart-drawer-divider: {{ section.settings.divider_color }};
+        --sp-cart-drawer-backdrop: {{ section.settings.backdrop_color }};
+        --sp-cart-drawer-backdrop-opacity: {{ section.settings.backdrop_opacity | divided_by: 100.0 }};
+        --sp-cart-drawer-radius: {{ section.settings.drawer_radius }}px;
+        --sp-cart-drawer-image-size: {{ effective_image_size }}px;
+        --sp-cart-drawer-image-radius: {{ effective_image_radius }}px;
+        --sp-cart-drawer-button-radius: {{ effective_button_radius }}px;
+        --sp-cart-drawer-accent: {% if section.settings.sp_use_color_scheme %}{{ sp_cart_scheme.settings.accent }}{% else %}{{ section.settings.accent_color }}{% endif %};
+        --sp-cart-drawer-button-bg: {% if section.settings.sp_use_color_scheme %}{{ sp_cart_scheme.settings.primary_button }}{% else %}{{ section.settings.button_background }}{% endif %};
+        --sp-cart-drawer-button-text: {% if section.settings.sp_use_color_scheme %}{{ sp_cart_scheme.settings.primary_button_label }}{% else %}{{ section.settings.button_text_color }}{% endif %};
+        --sp-cart-drawer-view-cart-bg: {% if section.settings.sp_use_color_scheme %}{{ sp_cart_scheme.settings.secondary_button }}{% else %}{{ section.settings.view_cart_background }}{% endif %};
+        --sp-cart-drawer-view-cart-text: {% if section.settings.sp_use_color_scheme %}{{ sp_cart_scheme.settings.secondary_button_label }}{% else %}{{ section.settings.view_cart_text_color }}{% endif %};
+      "
+    >
+      <div class="sp-cart-drawer__render" data-sp-cart-drawer-render>
+        <header class="sp-cart-drawer__header">
+          <h2 id="CartDrawerTitle-{{ section.id }}" class="sp-cart-drawer__title">
+            {{ section.settings.title | escape }}
+            {%- if section.settings.show_item_count -%}
+              <span class="sp-cart-drawer__count">(<span data-cart-count>{{ cart.item_count }}</span>)</span>
+            {%- endif -%}
+          </h2>
+          <button class="sp-cart-drawer__close" type="button" data-drawer-close aria-label="Close cart">
+            {% render 'icon', name: 'close' %}
+          </button>
+        </header>
+
+        <div class="sp-cart-drawer__body" aria-busy="false" data-sp-cart-drawer-body>
+          {%- if show_optional_areas and section.settings.show_free_shipping_bar and threshold_cents > 0 -%}
+            {% render 'sp-cart-drawer-shipping-bar', cart: cart, threshold_cents: threshold_cents, section: section %}
+          {%- endif -%}
+
+          <main class="sp-cart-drawer__main" data-sp-cart-drawer-main>
+            {%- if cart == empty -%}
+              {% render 'sp-cart-drawer-empty', section: section %}
+            {%- else -%}
+              {% render 'sp-cart-drawer-items', cart: cart, section: section %}
+
+              {%- if show_optional_areas and show_tool_shortcuts -%}
+                {% render 'sp-cart-drawer-tools', section: section, cart: cart, gift_product: gift_product, gift_variant: gift_variant, gift_in_cart: gift_in_cart %}
+
+                {%- if section.settings.show_complementary -%}
+                  {% render 'sp-cart-drawer-complementary', section: section, cart: cart %}
+                {%- endif -%}
+              {%- endif -%}
+            {%- endif -%}
+          </main>
+
+          {%- unless cart == empty -%}
+            {%- if show_inline_discount -%}
+              {% render 'sp-cart-drawer-discount', section: section, cart: cart, inline: true %}
+            {%- endif -%}
+            {% render 'sp-cart-drawer-summary', section: section, cart: cart %}
+          {%- endunless -%}
+
+          {%- if show_optional_areas -%}
+            {% render 'sp-cart-drawer-note', section: section, cart: cart %}
+            {%- unless show_inline_discount -%}{% render 'sp-cart-drawer-discount', section: section, cart: cart %}{%- endunless -%}
+            {% render 'sp-cart-drawer-gift-wrap', section: section, gift_product: gift_product, gift_variant: gift_variant, gift_in_cart: gift_in_cart %}
+            {% render 'sp-cart-drawer-shipping-estimator', section: section %}
+          {%- endif -%}
+        </div>
+      </div>
+    </dialog>
+
+    <noscript>
+      <div class="sp-cart-drawer__noscript">
+        <a href="{{ routes.cart_url }}">View cart</a>
+      </div>
+    </noscript>
+  </div>
+{%- endunless -%}
+
+{% schema %}
+{
+  "name": "Cart drawer",
+  "tag": "section",
+  "class": "sp-system-cart-drawer",
+  "limit": 1,
+  "enabled_on": {
+    "groups": [
+      "custom.system"
+    ]
+  },
+  "settings": [
+    {
+      "type": "header",
+      "content": "Global design system"
+    },
+    {
+      "type": "color_scheme",
+      "id": "sp_color_scheme",
+      "label": "Color scheme",
+      "default": "scheme-1",
+      "info": "Shared Spider color panel. Edit schemes once in Theme settings → Spider Color Schemes."
+    },
+    {
+      "type": "checkbox",
+      "id": "sp_use_color_scheme",
+      "label": "Use global color scheme",
+      "info": "When enabled, this section inherits the selected Spider color panel. Disable only for legacy/local color controls.",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Drawer"
+    },
+    {
+      "type": "checkbox",
+      "id": "use_theme_editor_summary_order",
+      "label": "Use Theme Editor summary block order",
+      "default": false,
+      "info": "Off uses premium purchase flow: Subtotal, shipping note, estimated total, checkout, payment methods."
+    },
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Cart title",
+      "default": "Your cart"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_item_count",
+      "label": "Show item count",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "drawer_position",
+      "label": "Drawer position",
+      "options": [
+        {
+          "value": "right",
+          "label": "Right"
+        },
+        {
+          "value": "left",
+          "label": "Left"
+        }
+      ],
+      "default": "right"
+    },
+    {
+      "type": "range",
+      "id": "drawer_width",
+      "label": "Desktop drawer width",
+      "min": 320,
+      "max": 600,
+      "step": 10,
+      "unit": "px",
+      "default": 520
+    },
+    {
+      "type": "range",
+      "id": "header_font_size",
+      "label": "Cart heading size",
+      "min": 18,
+      "max": 34,
+      "step": 1,
+      "unit": "px",
+      "default": 26
+    },
+    {
+      "type": "range",
+      "id": "drawer_radius",
+      "label": "Drawer outer radius",
+      "min": 0,
+      "max": 30,
+      "step": 1,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "select",
+      "id": "drawer_shadow",
+      "label": "Drawer shadow",
+      "options": [
+        {
+          "value": "none",
+          "label": "None"
+        },
+        {
+          "value": "soft",
+          "label": "Soft"
+        },
+        {
+          "value": "medium",
+          "label": "Medium"
+        },
+        {
+          "value": "strong",
+          "label": "Strong"
+        }
+      ],
+      "default": "soft"
+    },
+    {
+      "type": "range",
+      "id": "item_image_size",
+      "label": "Cart item image size",
+      "min": 60,
+      "max": 160,
+      "step": 10,
+      "unit": "px",
+      "default": 130
+    },
+    {
+      "type": "range",
+      "id": "item_image_radius",
+      "label": "Cart item image radius",
+      "min": 0,
+      "max": 24,
+      "step": 1,
+      "unit": "px",
+      "default": 8
+    },
+    {
+      "type": "range",
+      "id": "button_radius",
+      "label": "Button radius",
+      "min": 0,
+      "max": 50,
+      "step": 1,
+      "unit": "px",
+      "default": 8
+    },
+    {
+      "type": "header",
+      "content": "Cart tools"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_cart_note",
+      "label": "Show cart note",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "show_discount",
+      "label": "Show discount code",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "premium_inline_discount",
+      "label": "Show discount input above summary",
+      "default": true,
+      "info": "Keep the existing AJAX discount form in the reference-style checkout area."
+    },
+    {
+      "type": "checkbox",
+      "id": "show_cart_tool_shortcuts",
+      "label": "Show cart tool shortcuts",
+      "default": true,
+      "info": "Note, gift wrap, delivery estimator and discount panels remain available when enabled."
+    },
+    {
+      "type": "text",
+      "id": "discount_error_message",
+      "label": "Discount error message",
+      "default": "Enter a valid discount code"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_gift_wrap",
+      "label": "Show gift wrap",
+      "default": false
+    },
+    {
+      "type": "product",
+      "id": "gift_wrap_product",
+      "label": "Gift wrap product",
+      "info": "Used only when Show gift wrap is enabled."
+    },
+    {
+      "type": "checkbox",
+      "id": "show_shipping_estimator",
+      "label": "Show shipping estimator",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "show_shipping_summary",
+      "label": "Show shipping cost note in summary",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_total_estimate",
+      "label": "Show estimated total (excluding unknown charges)",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Free shipping"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_free_shipping_bar",
+      "label": "Show free shipping progress",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_amount_comparison",
+      "label": "Show progress amount comparison",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "progress_height",
+      "label": "Progress bar height",
+      "min": 3,
+      "max": 12,
+      "step": 1,
+      "unit": "px",
+      "default": 6
+    },
+    {
+      "type": "range",
+      "id": "free_shipping_threshold",
+      "label": "Free shipping threshold",
+      "min": 0,
+      "max": 1000,
+      "step": 10,
+      "default": 100,
+      "info": "Amount in your store's base currency."
+    },
+    {
+      "type": "text",
+      "id": "shipping_remaining_text",
+      "label": "Remaining message",
+      "default": "Add [amount] more for free shipping"
+    },
+    {
+      "type": "text",
+      "id": "shipping_success_text",
+      "label": "Success message",
+      "default": "Congratulations! You have free shipping."
+    },
+    {
+      "type": "header",
+      "content": "Complementary products"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_complementary",
+      "label": "Show complementary products",
+      "default": false
+    },
+    {
+      "type": "text",
+      "id": "complementary_heading",
+      "label": "Heading",
+      "default": "Customers also bought",
+      "visible_if": "{{ section.settings.show_complementary }}"
+    },
+    {
+      "type": "product_list",
+      "id": "complementary_products",
+      "label": "Manual products",
+      "limit": 10,
+      "info": "Used only when complementary products are enabled."
+    },
+    {
+      "type": "checkbox",
+      "id": "use_automatic_recommendations",
+      "label": "Use automatic complementary recommendations",
+      "default": false,
+      "visible_if": "{{ section.settings.show_complementary }}"
+    },
+    {
+      "type": "checkbox",
+      "id": "replace_manual_recommendations",
+      "label": "Replace manual products when automatic recommendations are available",
+      "default": true,
+      "visible_if": "{{ section.settings.show_complementary and section.settings.use_automatic_recommendations }}"
+    },
+    {
+      "type": "range",
+      "id": "complementary_limit",
+      "label": "Product limit",
+      "min": 1,
+      "max": 10,
+      "step": 1,
+      "default": 4,
+      "visible_if": "{{ section.settings.show_complementary }}"
+    },
+    {
+      "type": "header",
+      "content": "Empty cart"
+    },
+    {
+      "type": "image_picker",
+      "id": "empty_image",
+      "label": "Empty cart image"
+    },
+    {
+      "type": "text",
+      "id": "empty_heading",
+      "label": "Empty heading",
+      "default": "Your cart is empty"
+    },
+    {
+      "type": "richtext",
+      "id": "empty_text",
+      "label": "Empty text",
+      "default": "<p>Add something you love and it will appear here.</p>"
+    },
+    {
+      "type": "text",
+      "id": "continue_label",
+      "label": "Continue shopping label",
+      "default": "Continue shopping"
+    },
+    {
+      "type": "url",
+      "id": "continue_url",
+      "label": "Continue shopping URL"
+    },
+    {
+      "type": "header",
+      "content": "Colors"
+    },
+    {
+      "type": "color",
+      "id": "background",
+      "label": "Drawer background",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text",
+      "default": "#1f1f1f"
+    },
+    {
+      "type": "color",
+      "id": "muted_text_color",
+      "label": "Muted text",
+      "default": "#6b7280"
+    },
+    {
+      "type": "color",
+      "id": "border_color",
+      "label": "Border",
+      "default": "#e5e7eb"
+    },
+    {
+      "type": "color",
+      "id": "divider_color",
+      "label": "Divider",
+      "default": "#e5e7eb"
+    },
+    {
+      "type": "color",
+      "id": "accent_color",
+      "label": "Accent",
+      "default": "#415DFF"
+    },
+    {
+      "type": "color",
+      "id": "view_cart_background",
+      "label": "View cart background",
+      "default": "#53c7dc"
+    },
+    {
+      "type": "color",
+      "id": "view_cart_text_color",
+      "label": "View cart text",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "button_background",
+      "label": "Primary button background",
+      "default": "#1f1f1f"
+    },
+    {
+      "type": "color",
+      "id": "button_text_color",
+      "label": "Primary button text",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "backdrop_color",
+      "label": "Backdrop",
+      "default": "#000000"
+    },
+    {
+      "type": "range",
+      "id": "backdrop_opacity",
+      "label": "Backdrop opacity",
+      "min": 0,
+      "max": 90,
+      "step": 5,
+      "unit": "%",
+      "default": 55
+    },
+    {
+      "type": "header",
+      "content": "Theme editor"
+    },
+    {
+      "type": "checkbox",
+      "id": "open_in_editor",
+      "label": "Open drawer in Theme Editor",
+      "default": false
+    }
+  ],
+  "blocks": [
+    {
+      "type": "subtotal",
+      "name": "Subtotal",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "text",
+          "id": "label",
+          "label": "Label",
+          "default": "Subtotal"
+        },
+        {
+          "type": "checkbox",
+          "id": "show_discounts",
+          "label": "Show cart discounts",
+          "default": true
+        }
+      ]
+    },
+    {
+      "type": "tax",
+      "name": "Tax & shipping",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "url",
+          "id": "policy_url",
+          "label": "Custom shipping policy URL"
+        },
+        {
+          "type": "textarea",
+          "id": "fallback_text",
+          "label": "Fallback text",
+          "default": "Taxes and shipping calculated at checkout."
+        }
+      ]
+    },
+    {
+      "type": "terms",
+      "name": "Terms agreement",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "checkbox",
+          "id": "required",
+          "label": "Require agreement before checkout",
+          "default": true
+        },
+        {
+          "type": "textarea",
+          "id": "text",
+          "label": "Agreement text",
+          "default": "I agree with the terms and conditions."
+        },
+        {
+          "type": "url",
+          "id": "terms_url",
+          "label": "Terms page URL"
+        }
+      ]
+    },
+    {
+      "type": "view_cart",
+      "name": "View cart button",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "text",
+          "id": "label",
+          "label": "Label",
+          "default": "View cart"
+        },
+        {
+          "type": "select",
+          "id": "style",
+          "label": "Style",
+          "options": [
+            {
+              "value": "primary",
+              "label": "Primary"
+            },
+            {
+              "value": "secondary",
+              "label": "Secondary"
+            },
+            {
+              "value": "outline",
+              "label": "Outline"
+            },
+            {
+              "value": "link",
+              "label": "Link"
+            }
+          ],
+          "default": "primary"
+        },
+        {
+          "type": "select",
+          "id": "icon",
+          "label": "Icon",
+          "options": [
+            {
+              "value": "none",
+              "label": "None"
+            },
+            {
+              "value": "arrow",
+              "label": "Arrow"
+            },
+            {
+              "value": "cart",
+              "label": "Cart"
+            }
+          ],
+          "default": "none"
+        },
+        {
+          "type": "select",
+          "id": "icon_position",
+          "label": "Icon position",
+          "options": [
+            {
+              "value": "before",
+              "label": "Before"
+            },
+            {
+              "value": "after",
+              "label": "After"
+            }
+          ],
+          "default": "after"
+        },
+        {
+          "type": "range",
+          "id": "icon_size",
+          "label": "Icon size",
+          "min": 12,
+          "max": 24,
+          "step": 1,
+          "unit": "px",
+          "default": 16
+        },
+        {
+          "type": "range",
+          "id": "icon_gap",
+          "label": "Icon spacing",
+          "min": 0,
+          "max": 16,
+          "step": 1,
+          "unit": "px",
+          "default": 8
+        }
+      ]
+    },
+    {
+      "type": "checkout",
+      "name": "Checkout button",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "text",
+          "id": "label",
+          "label": "Label",
+          "default": "Checkout"
+        },
+        {
+          "type": "select",
+          "id": "style",
+          "label": "Style",
+          "options": [
+            {
+              "value": "primary",
+              "label": "Primary"
+            },
+            {
+              "value": "secondary",
+              "label": "Secondary"
+            },
+            {
+              "value": "accent",
+              "label": "Accent"
+            }
+          ],
+          "default": "primary"
+        },
+        {
+          "type": "select",
+          "id": "icon",
+          "label": "Icon",
+          "options": [
+            {
+              "value": "none",
+              "label": "None"
+            },
+            {
+              "value": "lock",
+              "label": "Lock"
+            },
+            {
+              "value": "arrow",
+              "label": "Arrow"
+            },
+            {
+              "value": "shield",
+              "label": "Shield"
+            }
+          ],
+          "default": "none"
+        },
+        {
+          "type": "select",
+          "id": "icon_position",
+          "label": "Icon position",
+          "options": [
+            {
+              "value": "before",
+              "label": "Before"
+            },
+            {
+              "value": "after",
+              "label": "After"
+            }
+          ],
+          "default": "before"
+        },
+        {
+          "type": "range",
+          "id": "icon_size",
+          "label": "Icon size",
+          "min": 12,
+          "max": 24,
+          "step": 1,
+          "unit": "px",
+          "default": 16
+        },
+        {
+          "type": "range",
+          "id": "icon_gap",
+          "label": "Icon spacing",
+          "min": 0,
+          "max": 16,
+          "step": 1,
+          "unit": "px",
+          "default": 8
+        }
+      ]
+    },
+    {
+      "type": "trust",
+      "name": "Trust / payments",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Trust image"
+        },
+        {
+          "type": "range",
+          "id": "image_width",
+          "label": "Trust image width",
+          "min": 100,
+          "max": 600,
+          "step": 10,
+          "unit": "px",
+          "default": 300
+        },
+        {
+          "type": "checkbox",
+          "id": "show_payment_icons",
+          "label": "Show enabled payment icons",
+          "default": true
+        },
+        {
+          "type": "range",
+          "id": "payment_icon_height",
+          "label": "Payment icon height",
+          "min": 18,
+          "max": 42,
+          "step": 2,
+          "unit": "px",
+          "default": 24
+        }
+      ]
+    },
+    {
+      "type": "payment_terms",
+      "name": "Payment terms",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "paragraph",
+          "content": "Displays Shopify payment terms when available for the cart."
+        }
+      ]
+    },
+    {
+      "type": "@app"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Cart drawer",
+      "blocks": [
+        {
+          "type": "subtotal"
+        },
+        {
+          "type": "tax"
+        },
+        {
+          "type": "terms"
+        },
+        {
+          "type": "view_cart"
+        },
+        {
+          "type": "checkout"
+        },
+        {
+          "type": "trust"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

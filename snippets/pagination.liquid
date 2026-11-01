@@ -1,0 +1,50 @@
+{% comment %}
+  Canonical Spider pagination.
+  Parameters: paginate required, mode optional, numbered optional.
+  numbered=false preserves the previous compact pagination behavior used by other templates.
+{% endcomment %}
+{% if paginate.pages > 1 %}
+  {% assign pagination_mode = mode | default: 'pages' %}
+  {% assign show_numbered = numbered | default: false %}
+  {% assign current_page_string = paginate.current_page | append: '' %}
+
+  {% if pagination_mode == 'pages' %}
+    <nav class="sp-pagination{% if show_numbered %} sp-pagination--numbered{% endif %}" aria-label="{{ 'general.pagination.label' | t }}" data-collection-pagination>
+      {% if paginate.previous %}
+        <a class="sp-pagination__previous" href="{{ paginate.previous.url }}" rel="prev" aria-label="{{ 'general.pagination.previous' | t }}">
+          <span aria-hidden="true">←</span>
+          <span>{{ 'general.pagination.previous' | t }}</span>
+        </a>
+      {% endif %}
+
+      {% if show_numbered %}
+        <div class="sp-pagination__pages" aria-label="{{ 'general.pagination.label' | t }}">
+          {% for part in paginate.parts %}
+            {% if part.is_link %}
+              <a class="sp-pagination__page" href="{{ part.url }}" aria-label="{{ 'general.pagination.page' | t: number: part.title }}">{{ part.title }}</a>
+            {% else %}
+              {% if part.title == current_page_string %}
+                <span class="sp-pagination__page is-current" aria-current="page">{{ part.title }}</span>
+              {% else %}
+                <span class="sp-pagination__ellipsis" aria-hidden="true">{{ part.title }}</span>
+              {% endif %}
+            {% endif %}
+          {% endfor %}
+        </div>
+      {% else %}
+        <span aria-current="page">{{ paginate.current_page }} / {{ paginate.pages }}</span>
+      {% endif %}
+
+      {% if paginate.next %}
+        <a class="sp-pagination__next" href="{{ paginate.next.url }}" rel="next" aria-label="{{ 'general.pagination.next' | t }}">
+          <span>{{ 'general.pagination.next' | t }}</span>
+          <span aria-hidden="true">→</span>
+        </a>
+      {% endif %}
+    </nav>
+  {% elsif paginate.next %}
+    <div class="sp-load-more" data-collection-pagination{% if pagination_mode == 'infinite' %} data-infinite-scroll{% endif %}>
+      <a class="sp-button sp-button--secondary" href="{{ paginate.next.url }}" rel="next" data-load-more>{{ 'general.pagination.next' | t }}</a>
+    </div>
+  {% endif %}
+{% endif %}

@@ -1,0 +1,28 @@
+{%- if section.settings.show_shipping_estimator -%}
+  <section id="SpCartToolShipping-{{ section.id }}" class="sp-cart-drawer__tool-panel" data-sp-cart-tool-panel="shipping" aria-labelledby="SpCartToolShippingTitle-{{ section.id }}" hidden>
+    <div class="sp-cart-drawer__tool-panel-head">
+      <h3 id="SpCartToolShippingTitle-{{ section.id }}">Estimate shipping</h3>
+      <button type="button" class="sp-cart-drawer__tool-close" data-sp-cart-tool-close aria-label="Close shipping estimator">{% render 'icon', name: 'close' %}</button>
+    </div>
+    <form class="sp-cart-drawer__tool-form" data-sp-cart-shipping-form data-default-province="{% if customer and customer.default_address %}{{ customer.default_address.province | escape }}{% endif %}">
+      <label for="SpShippingCountry-{{ section.id }}">Country / region</label>
+      <select id="SpShippingCountry-{{ section.id }}" name="address[country]" data-sp-shipping-country required>
+        {{ country_option_tags }}
+      </select>
+
+      <div class="sp-cart-drawer__province-field" data-sp-shipping-province-field hidden>
+        <label for="SpShippingProvince-{{ section.id }}">Province / state</label>
+        <select id="SpShippingProvince-{{ section.id }}" name="address[province]" data-sp-shipping-province></select>
+      </div>
+
+      <label for="SpShippingZip-{{ section.id }}">Postal / ZIP code</label>
+      <input id="SpShippingZip-{{ section.id }}" name="address[zip]" type="text" autocomplete="postal-code" value="{% if customer and customer.default_address %}{{ customer.default_address.zip | escape }}{% endif %}" required>
+
+      <div class="sp-cart-drawer__tool-actions">
+        <button type="submit" class="sp-cart-drawer__button sp-cart-drawer__button--primary">Estimate</button>
+        <button type="button" class="sp-cart-drawer__button sp-cart-drawer__button--outline" data-sp-cart-tool-close>Cancel</button>
+      </div>
+      <div class="sp-cart-drawer__rates" role="region" aria-live="polite" data-sp-shipping-results></div>
+    </form>
+  </section>
+{%- endif -%}

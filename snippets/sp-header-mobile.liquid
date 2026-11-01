@@ -1,0 +1,122 @@
+{% comment %}
+  Spider Premium Header — mobile header row.
+  The opened navigation UI is rendered once by sp-header-mobile-drawer.liquid.
+  Params: section (required), menu (required), contact_block (optional)
+{% endcomment %}
+<div class="sp-header__mobile-row">
+  <button
+    class="sp-header__mobile-toggle"
+    type="button"
+    data-drawer-open="SpMobileMenu-{{ section.id }}"
+    data-sp-mobile-drawer-trigger
+    aria-controls="SpMobileMenu-{{ section.id }}"
+    aria-expanded="false"
+    aria-label="Open menu">
+    {% render 'icon', name: 'menu' %}
+  </button>
+
+  <div class="sp-header__mobile-logo">
+    {% render 'sp-header-logo', section: section, mobile: true %}
+  </div>
+
+  <div class="sp-header__mobile-actions">
+    {% if section.settings.mobile_show_search and section.settings.show_search and section.settings.search_style != 'hidden' %}
+      {% if section.settings.search_style == 'drawer' %}
+        <button
+          class="sp-header__action"
+          type="button"
+          data-sp-search-drawer-toggle
+          aria-expanded="false"
+          aria-controls="SpGlobalSearchModal"
+          aria-label="Search">
+          {% render 'icon', name: 'search' %}
+          <span class="sp-header__mobile-action-label">Search</span>
+        </button>
+      {% else %}
+        <button
+          class="sp-header__action"
+          type="button"
+          data-sp-search-toggle
+          aria-expanded="false"
+          aria-controls="SpHeaderMobileSearchPanel-{{ section.id }}"
+          aria-label="Search">
+          {% render 'icon', name: 'search' %}
+          <span class="sp-header__mobile-action-label">Search</span>
+        </button>
+      {% endif %}
+      <noscript>
+        <a class="sp-header__action" href="{{ routes.search_url }}" aria-label="Search">
+          {% render 'icon', name: 'search' %}
+        </a>
+      </noscript>
+    {% endif %}
+
+    {% if section.settings.mobile_show_account and section.settings.show_account and shop.customer_accounts_enabled %}
+      <a
+        class="sp-header__action"
+        href="{% if customer %}{{ routes.account_url }}{% else %}{{ routes.account_login_url }}{% endif %}"
+        aria-label="Account">
+        {% render 'icon', name: 'account' %}
+        <span class="sp-header__mobile-action-label">Account</span>
+      </a>
+    {% endif %}
+
+    {% if section.settings.show_cart %}
+      <a
+        class="sp-header__action sp-header__cart"
+        href="{{ routes.cart_url }}"
+        {% if settings.header_cart_drawer and settings.cart_type == 'drawer' %}
+          data-drawer-open="CartDrawer"
+          aria-controls="CartDrawer"
+          aria-expanded="false"
+        {% endif %}
+        aria-label="Cart, {{ cart.item_count }} items">
+        {% render 'icon', name: 'cart' %}
+        <span class="sp-header__mobile-action-label">Cart</span>
+        <span class="sp-header__cart-count" data-cart-count aria-live="polite">
+          {% if section.settings.cart_count_cap and cart.item_count > 99 %}99+{% else %}{{ cart.item_count }}{% endif %}
+        </span>
+      </a>
+    {% endif %}
+  </div>
+</div>
+
+{% if section.settings.mobile_show_search and section.settings.show_search and section.settings.search_style != 'hidden' and section.settings.search_style != 'drawer' %}
+  <div
+    id="SpHeaderMobileSearchPanel-{{ section.id }}"
+    class="sp-header__search-panel sp-header__search-panel--mobile"
+    data-sp-search-panel
+    hidden>
+    <form
+      class="sp-header__search-panel-form"
+      action="{{ routes.search_url }}"
+      method="get"
+      role="search"
+      data-predictive-search>
+      <label class="visually-hidden" for="SpHeaderMobileSearch-{{ section.id }}">Search</label>
+      <div class="sp-header__search-field">
+        <input
+          id="SpHeaderMobileSearch-{{ section.id }}"
+          type="search"
+          name="q"
+          placeholder="Search"
+          autocomplete="off"
+          aria-controls="SpHeaderMobileSearchResults-{{ section.id }}">
+        <input type="hidden" name="options[prefix]" value="last">
+        <button class="sp-header__action" type="submit" aria-label="Submit search">
+          {% render 'icon', name: 'search' %}
+        </button>
+        <button class="sp-header__action" type="button" data-sp-search-close aria-label="Close search">
+          {% render 'icon', name: 'close' %}
+        </button>
+      </div>
+      <div
+        id="SpHeaderMobileSearchResults-{{ section.id }}"
+        class="sp-header__predictive"
+        data-predictive-results
+        aria-live="polite"></div>
+    </form>
+  </div>
+{% endif %}
+
+{% render 'sp-header-mobile-drawer', section: section, menu: menu, contact_block: contact_block %}

@@ -1,0 +1,24 @@
+{%- capture sp_footer_custom_markup -%}{{ block.settings.custom_liquid }}{%- endcapture -%}
+{%- if sp_footer_custom_markup != blank -%}
+  <div class="sp-footer-custom-liquid" data-sp-footer-safe-html {{ block.shopify_attributes }}>
+    <div class="sp-footer-custom-liquid__fallback" data-sp-footer-safe-fallback>
+      {{ sp_footer_custom_markup | strip_html | escape | newline_to_br }}
+    </div>
+    <div hidden data-sp-footer-safe-source>{{ sp_footer_custom_markup | escape }}</div>
+  </div>
+{%- endif -%}
+{% schema %}
+{
+  "name": "Footer custom Liquid",
+  "tag": null,
+  "settings": [
+    {
+      "type": "liquid",
+      "id": "custom_liquid",
+      "label": "Custom Liquid",
+      "info": "Liquid and safe HTML are supported. Spider removes scripts, event handlers, embedded frames/forms, inline styles and unsafe URLs before rendering. With JavaScript disabled, a plain-text fallback remains visible."
+    }
+  ],
+  "presets": [{ "name": "Footer custom Liquid" }]
+}
+{% endschema %}

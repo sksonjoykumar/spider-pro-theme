@@ -1,0 +1,17 @@
+{%- if section.settings.show_cart_note -%}
+  <section id="SpCartToolNote-{{ section.id }}" class="sp-cart-drawer__tool-panel" data-sp-cart-tool-panel="note" aria-labelledby="SpCartToolNoteTitle-{{ section.id }}" hidden>
+    <div class="sp-cart-drawer__tool-panel-head">
+      <h3 id="SpCartToolNoteTitle-{{ section.id }}">{% if cart.note != blank %}Edit cart note{% else %}Add cart note{% endif %}</h3>
+      <button type="button" class="sp-cart-drawer__tool-close" data-sp-cart-tool-close aria-label="Close cart note">{% render 'icon', name: 'close' %}</button>
+    </div>
+    <form class="sp-cart-drawer__tool-form" action="{{ routes.cart_update_url }}" method="post" data-sp-cart-note-form>
+      <label for="SpCartNote-{{ section.id }}">Order note</label>
+      <textarea id="SpCartNote-{{ section.id }}" name="note" rows="5">{{ cart.note | escape }}</textarea>
+      <div class="sp-cart-drawer__tool-actions">
+        <button type="submit" class="sp-cart-drawer__button sp-cart-drawer__button--primary">Save note</button>
+        <button type="button" class="sp-cart-drawer__button sp-cart-drawer__button--outline" data-sp-cart-tool-close>Cancel</button>
+      </div>
+      <p class="sp-cart-drawer__tool-status" role="status" aria-live="polite" data-sp-cart-tool-status></p>
+    </form>
+  </section>
+{%- endif -%}

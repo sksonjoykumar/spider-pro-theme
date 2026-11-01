@@ -1,0 +1,80 @@
+{% comment %}
+  Spider Premium Header — one mobile navigation dialog per Header section.
+  Reuses Spider's native .sp-drawer / sp-drawer.js focus trap, modal collision,
+  Escape handling, focus restoration and shared scroll lock.
+  Params: section, menu, contact_block
+{% endcomment %}
+{%- liquid
+  assign drawer_position = section.settings.mobile_drawer_position | default: 'left'
+  assign close_style = section.settings.mobile_drawer_close_style | default: 'both'
+  assign drawer_title = section.settings.mobile_drawer_title | default: 'MENU'
+-%}
+<dialog
+  id="SpMobileMenu-{{ section.id }}"
+  class="sp-drawer sp-drawer--{{ drawer_position }} sp-header-mobile-drawer"
+  aria-labelledby="SpMobileMenuTitle-{{ section.id }}"
+  data-sp-mobile-menu
+  data-position="{{ drawer_position }}"
+  data-width-mode="{{ section.settings.mobile_drawer_width_mode | default: 'custom' }}"
+  data-close-style="{{ close_style }}"
+  data-sticky-header="{{ section.settings.mobile_drawer_sticky_header }}"
+  data-title-align="{{ section.settings.mobile_drawer_title_alignment | default: 'center' }}"
+  data-editor-preview="{{ section.settings.mobile_drawer_editor_preview }}"
+  data-design-mode="{{ request.design_mode }}"
+  data-search-url="{{ routes.search_url }}">
+  <div class="sp-header-mobile-drawer__shell">
+    <div class="sp-header-mobile-drawer__header{% if section.settings.mobile_drawer_accent_line %} has-accent{% endif %}">
+      <span class="sp-header-mobile-drawer__header-side" aria-hidden="true"></span>
+      {% if section.settings.mobile_drawer_show_title %}
+        <h2 id="SpMobileMenuTitle-{{ section.id }}" class="sp-header-mobile-drawer__title">{{ drawer_title | escape }}</h2>
+      {% else %}
+        <h2 id="SpMobileMenuTitle-{{ section.id }}" class="visually-hidden">{{ drawer_title | escape }}</h2>
+      {% endif %}
+      <span class="sp-header-mobile-drawer__header-side sp-header-mobile-drawer__header-side--end">
+        {% unless close_style == 'overlay' %}
+          <button
+            class="sp-header-mobile-drawer__close"
+            type="button"
+            data-drawer-close
+            aria-label="Close menu">
+            {% render 'icon'
+              , name: 'close' %}
+          </button>
+        {% endunless %}
+      </span>
+    </div>
+
+    <div class="sp-header-mobile-drawer__body" data-sp-mobile-drawer-body>
+      {% if section.settings.sp_show_mobile_account_card and shop.customer_accounts_enabled %}
+        <div class="sp-header-mobile-drawer__account-card">
+          <span class="sp-header-mobile-drawer__avatar" aria-hidden="true">{% if customer %}{{ customer.first_name | default: customer.email | slice: 0, 1 | upcase }}{% else %}{% render 'icon', name: 'account' %}{% endif %}</span>
+          <div class="sp-header-mobile-drawer__account-copy">
+            {% if customer %}
+              <strong>{{ customer.name | default: 'My Account' | escape }}</strong>
+              <span>{{ customer.email | escape }}</span>
+            {% else %}
+              <a href="{{ routes.account_login_url }}"><strong>Sign in to your account</strong></a>
+              <span>View your orders and profile</span>
+            {% endif %}
+          </div>
+        </div>
+      {% endif %}
+      {% render 'sp-header-mobile-nav'
+        , section: section
+        , menu: menu %}
+      {% render 'sp-header-mobile-utilities'
+        , section: section %}
+      {% render 'sp-header-mobile-help'
+        , section: section
+        , contact_block: contact_block %}
+      {% render 'sp-header-localization'
+        , section: section %}
+
+      {% if section.settings.mobile_drawer_show_socials %}
+        <div class="sp-header-mobile-socials" aria-label="Social links">
+          {% render 'social-links' %}
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</dialog>

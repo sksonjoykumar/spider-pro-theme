@@ -1,0 +1,894 @@
+{% render 'sp-section-color-scheme', section: section %}
+{{ 'sp-cookies.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'sp-cookies.js' | asset_url }}" defer></script>
+{% if section.settings.enable_banner %}
+<sp-cookies-banner id="SpCookies-{{ section.id }}" class="sp-cookies-host"
+  data-section-id="{{ section.id }}" data-display-mode="{{ section.settings.display_mode }}"
+  data-show-until-decision="{{ section.settings.show_until_decision }}"
+  data-notice-days="{{ section.settings.notice_days | default: 60 }}"
+  data-enable-preferences="{{ section.settings.enable_preferences }}"
+  data-show-close-button="{{ section.settings.show_close_button }}"
+  data-preview-in-editor="{{ section.settings.preview_in_editor }}"
+  data-avoid-mobile-toolbar="{{ section.settings.avoid_mobile_toolbar }}"
+  data-safe-area="{{ section.settings.use_safe_area }}"
+  data-animation-duration="{{ section.settings.animation_duration }}"
+  data-state="hidden"
+  style="--sp-cookie-backdrop-opacity: {{ section.settings.overlay_opacity | divided_by: 100.0 }}; --sp-cookie-backdrop-blur: {{ section.settings.overlay_blur }}px;"
+>
+{% if section.settings.enable_overlay %}<div class="sp-cookies__overlay" data-sp-cookies-overlay aria-hidden="true"></div>{% endif %}
+<aside class="sp-cookies sp-cookies--{{ section.settings.banner_style }} sp-cookies--position-{{ section.settings.banner_position }}{% unless section.settings.show_mobile_icon %} sp-cookies--no-mobile-icon{% endunless %} sp-cookies--shadow-{{ section.settings.shadow }} sp-cookies--mobile-{{ section.settings.mobile_button_layout }} sp-cookies--text-{{ section.settings.desktop_text_alignment }} sp-cookies--mobile-text-{{ section.settings.mobile_text_alignment }}{% if section.settings.enable_blur %} sp-cookies--blur{% endif %}"
+  data-sp-cookies-panel data-state="hidden" data-mode="{{ section.settings.display_mode }}"
+  aria-label="{{ section.settings.accessible_label | escape }}"
+  style="
+    --sp-cookie-bg: {% if section.settings.sp_use_color_scheme %}var(--sp-color-card, #fff){% else %}{{ section.settings.background_color }}{% endif %};
+    --sp-cookie-heading: var(--sp-color-heading, #171717);
+    --sp-cookie-bg-opacity: {{ section.settings.background_opacity | divided_by: 100.0 }};
+    --sp-cookie-text: {% if section.settings.sp_use_color_scheme %}var(--sp-color-text, #3F3F46){% else %}{{ section.settings.text_color }}{% endif %};
+    --sp-cookie-muted: {% if section.settings.sp_use_color_scheme %}var(--sp-color-muted, #71717A){% else %}{{ section.settings.muted_text_color }}{% endif %};
+    --sp-cookie-border: {% if section.settings.sp_use_color_scheme %}var(--sp-color-border, #E4E4E7){% else %}{{ section.settings.border_color }}{% endif %};
+    --sp-cookie-link: {% if section.settings.sp_use_color_scheme %}var(--sp-color-accent, #415DFF){% else %}{{ section.settings.link_color }}{% endif %};
+    --sp-cookie-accept-bg: {% if section.settings.sp_use_color_scheme %}var(--sp-btn-primary-bg, var(--sp-color-accent, #415DFF)){% else %}{{ section.settings.accept_bg }}{% endif %};
+    --sp-cookie-accept-text: {% if section.settings.sp_use_color_scheme %}var(--sp-btn-primary-text, #FFFFFF){% else %}{{ section.settings.accept_text }}{% endif %};
+    --sp-cookie-accept-hover-bg: {% if section.settings.sp_use_color_scheme %}var(--sp-btn-primary-hover-bg, var(--sp-color-primary, #171717)){% else %}{{ section.settings.accept_hover_bg }}{% endif %};
+    --sp-cookie-decline-bg: {% if section.settings.sp_use_color_scheme %}var(--sp-color-card, #FFFFFF){% else %}{{ section.settings.decline_bg }}{% endif %};
+    --sp-cookie-decline-text: {% if section.settings.sp_use_color_scheme %}var(--sp-color-heading, #171717){% else %}{{ section.settings.decline_text }}{% endif %};
+    --sp-cookie-decline-border: {% if section.settings.sp_use_color_scheme %}var(--sp-color-border, #E4E4E7){% else %}{{ section.settings.decline_border }}{% endif %};
+    --sp-cookie-manage-bg: {% if section.settings.sp_use_color_scheme %}var(--sp-color-surface, #F5F5F5){% else %}{{ section.settings.manage_bg }}{% endif %};
+    --sp-cookie-manage-text: {% if section.settings.sp_use_color_scheme %}var(--sp-color-heading, #171717){% else %}{{ section.settings.manage_text }}{% endif %};
+    --sp-cookie-card-bg: {% if section.settings.sp_use_color_scheme %}var(--sp-color-surface, #FAFBFD){% else %}{{ section.settings.card_background }}{% endif %};
+    --sp-cookie-toggle-on: {% if section.settings.sp_use_color_scheme %}var(--sp-color-accent, #415DFF){% else %}{{ section.settings.toggle_active }}{% endif %};
+    --sp-cookie-toggle-off: {{ section.settings.toggle_inactive }};
+    --sp-cookie-radius: {{ section.settings.banner_radius }}px;
+    --sp-cookie-button-radius: {{ section.settings.button_radius }}px;
+    --sp-cookie-pad-x: {{ section.settings.padding_x_desktop }}px;
+    --sp-cookie-pad-y: {{ section.settings.padding_y_desktop }}px;
+    --sp-cookie-pad-x-mobile: {{ section.settings.padding_x_mobile }}px;
+    --sp-cookie-pad-y-mobile: {{ section.settings.padding_y_mobile }}px;
+    --sp-cookie-action-gap: {{ section.settings.button_gap }}px;
+    --sp-cookie-card-gap: {{ section.settings.card_gap }}px;
+    --sp-cookie-floating-gap: {{ section.settings.floating_gap }}px;
+    --sp-cookie-bottom-gap: {{ section.settings.floating_bottom_gap }}px;
+    --sp-cookie-max-width: {{ section.settings.inner_max_width }}px;
+    --sp-cookie-copy-max-width: {{ section.settings.text_max_width }}px;
+    --sp-cookie-icon-size: {{ section.settings.cookie_icon_size }}px;
+    --sp-cookie-animation-duration: {{ section.settings.animation_duration }}ms;
+    --sp-cookie-border-width: {% if section.settings.show_border %}{{ section.settings.border_width }}px{% else %}0px{% endif %};
+  ">
+  <span class="sp-cookies__surface" aria-hidden="true"></span>
+  <div class="sp-cookies__inner">
+    {% render 'sp-cookies-content', section: section %}
+    {% render 'sp-cookies-actions', section: section %}
+  </div>
+  {% if section.settings.show_close_button or section.settings.show_notice_close %}
+  <button type="button" class="sp-cookies__notice-close" data-sp-cookies-notice-close
+    aria-label="{{ section.settings.close_label | escape }}" hidden>
+    <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false"><path d="M6 6L18 18M18 6L6 18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+  </button>
+  {% endif %}
+  <p class="sp-cookies__status" data-sp-cookies-status data-error-message="{{ section.settings.error_message | escape }}" role="status" aria-live="polite" aria-atomic="true"></p>
+</aside>
+{% render 'sp-cookies-preferences', section: section %}
+</sp-cookies-banner>
+{% endif %}
+
+{% schema %}
+{
+  "name": "🍪 Cookies Banner",
+  "class": "sp-system-cookies",
+  "limit": 1,
+  "enabled_on": {
+    "groups": [
+      "custom.system"
+    ]
+  },
+  "presets": [
+    {
+      "name": "🍪 Cookies Banner"
+    }
+  ],
+  "settings": [
+    {
+      "type": "header",
+      "content": "Global design system"
+    },
+    {
+      "type": "color_scheme",
+      "id": "sp_color_scheme",
+      "label": "Color scheme",
+      "default": "scheme-1",
+      "info": "Shared Spider color panel. Edit schemes once in Theme settings → Spider Color Schemes."
+    },
+    {
+      "type": "checkbox",
+      "id": "sp_use_color_scheme",
+      "label": "Use global color scheme",
+      "info": "When enabled, this section inherits the selected Spider color panel. Disable only for legacy/local color controls.",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "General"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_banner",
+      "label": "Enable Cookies Banner",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "display_mode",
+      "label": "Banner display mode",
+      "options": [
+        {
+          "value": "shopify_region",
+          "label": "Shopify region-aware"
+        },
+        {
+          "value": "undecided",
+          "label": "Always show when consent is undecided"
+        },
+        {
+          "value": "notice_only",
+          "label": "Notice only"
+        }
+      ],
+      "default": "shopify_region",
+      "info": "Shopify modes use Customer Privacy API consent as source of truth. Notice only does not record Shopify tracking consent."
+    },
+    {
+      "type": "checkbox",
+      "id": "show_until_decision",
+      "label": "Show until visitor makes a choice",
+      "default": false,
+      "info": "When enabled, show to undecided visitors outside Shopify configured banner regions. Leave off for strict region-aware display."
+    },
+    {
+      "type": "select",
+      "id": "banner_style",
+      "label": "Banner style",
+      "options": [
+        {
+          "value": "full",
+          "label": "Full width"
+        },
+        {
+          "value": "floating",
+          "label": "Floating card"
+        }
+      ],
+      "default": "floating"
+    },
+    {
+      "type": "text",
+      "id": "accessible_label",
+      "label": "Accessible label",
+      "default": "Cookie preferences"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_close_button",
+      "label": "Show close icon where dismissal is permitted",
+      "default": true,
+      "info": "In regions where Shopify requires consent, the X is automatically hidden until a choice is made."
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_overlay",
+      "label": "Dim storefront behind banner",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "overlay_opacity",
+      "label": "Background overlay opacity",
+      "min": 0,
+      "max": 70,
+      "step": 5,
+      "unit": "%",
+      "default": 35
+    },
+    {
+      "type": "range",
+      "id": "overlay_blur",
+      "label": "Background overlay blur",
+      "min": 0,
+      "max": 12,
+      "step": 1,
+      "unit": "px",
+      "default": 3
+    },
+    {
+      "type": "header",
+      "content": "Privacy"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_preferences",
+      "label": "Enable Manage Preferences",
+      "default": true,
+      "info": "Required for the Customize / Cookie Settings dialog. Enable for the reference design."
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_preference_category",
+      "label": "Enable Preferences category",
+      "default": true,
+      "info": "Used inside Manage Preferences."
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_analytics_category",
+      "label": "Enable Analytics category",
+      "default": true,
+      "info": "Used inside Manage Preferences."
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_marketing_category",
+      "label": "Enable Marketing category",
+      "default": true,
+      "info": "Used inside Manage Preferences."
+    },
+    {
+      "type": "checkbox",
+      "id": "show_data_sale",
+      "label": "Show data sale / sharing option when applicable",
+      "default": true,
+      "info": "Only shown when Shopify reports the visitor is in a data-sale opt-out region."
+    },
+    {
+      "type": "range",
+      "id": "notice_days",
+      "label": "Notice-only dismissal duration",
+      "min": 5,
+      "max": 180,
+      "step": 5,
+      "unit": "d",
+      "default": 60,
+      "info": "Only used in notice-only mode; never used to store tracking consent."
+    },
+    {
+      "type": "checkbox",
+      "id": "show_notice_close",
+      "label": "Legacy notice-only X (when enabled)",
+      "default": true,
+      "info": "The main close icon is also controlled by the new close-button option."
+    },
+    {
+      "type": "header",
+      "content": "Content"
+    },
+    {
+      "type": "text",
+      "id": "heading_text",
+      "label": "Banner heading",
+      "default": "We use cookies"
+    },
+    {
+      "type": "image_picker",
+      "id": "cookie_image",
+      "label": "Custom cookie image (optional)"
+    },
+    {
+      "type": "text",
+      "id": "necessary_title",
+      "label": "Necessary title",
+      "default": "Necessary"
+    },
+    {
+      "type": "text",
+      "id": "necessary_description",
+      "label": "Necessary subtitle",
+      "default": "Always active"
+    },
+    {
+      "type": "text",
+      "id": "analytics_title",
+      "label": "Analytics title",
+      "default": "Analytics"
+    },
+    {
+      "type": "text",
+      "id": "analytics_description",
+      "label": "Analytics subtitle",
+      "default": "Helps us improve"
+    },
+    {
+      "type": "text",
+      "id": "marketing_title",
+      "label": "Marketing title",
+      "default": "Marketing"
+    },
+    {
+      "type": "text",
+      "id": "marketing_description",
+      "label": "Marketing subtitle",
+      "default": "Personalized ads"
+    },
+    {
+      "type": "text",
+      "id": "preferences_title",
+      "label": "Preferences title",
+      "default": "Preferences"
+    },
+    {
+      "type": "text",
+      "id": "preferences_description",
+      "label": "Preferences subtitle",
+      "default": "Your settings"
+    },
+    {
+      "type": "text",
+      "id": "cookie_settings_label",
+      "label": "Cookie settings link text",
+      "default": "Cookie Settings"
+    },
+    {
+      "type": "text",
+      "id": "card_pending_label",
+      "label": "Unsaved choices hint",
+      "default": "Open Customize to review and save your selections."
+    },
+    {
+      "type": "textarea",
+      "id": "necessary_dialog_description",
+      "label": "Necessary dialog description",
+      "default": "Essential for checkout, cart and core store functionality. Always on."
+    },
+    {
+      "type": "textarea",
+      "id": "analytics_dialog_description",
+      "label": "Analytics dialog description",
+      "default": "Helps us understand how visitors use the store."
+    },
+    {
+      "type": "textarea",
+      "id": "marketing_dialog_description",
+      "label": "Marketing dialog description",
+      "default": "Used for marketing attribution and personalized ads."
+    },
+    {
+      "type": "textarea",
+      "id": "preferences_dialog_description",
+      "label": "Preferences dialog description",
+      "default": "Remembers language, currency and other shopping preferences."
+    },
+    {
+      "type": "richtext",
+      "id": "message",
+      "label": "Cookie message",
+      "default": "<p>We use cookies to improve your browsing experience, personalize content, analyze traffic, and remember your preferences. By clicking “Accept all”, you agree to our use of cookies.</p>"
+    },
+    {
+      "type": "text",
+      "id": "accept_label",
+      "label": "Accept label",
+      "default": "Accept all"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_decline_button",
+      "label": "Show Decline button",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "decline_label",
+      "label": "Decline label",
+      "default": "Reject all"
+    },
+    {
+      "type": "text",
+      "id": "manage_label",
+      "label": "Manage preferences label",
+      "default": "Customize"
+    },
+    {
+      "type": "text",
+      "id": "more_info_label",
+      "label": "More info label",
+      "default": "Privacy Policy"
+    },
+    {
+      "type": "url",
+      "id": "more_info_url",
+      "label": "More info URL"
+    },
+    {
+      "type": "select",
+      "id": "more_info_position",
+      "label": "More info position",
+      "options": [
+        {
+          "value": "after_message",
+          "label": "After message"
+        },
+        {
+          "value": "before_buttons",
+          "label": "Before buttons"
+        },
+        {
+          "value": "below_buttons",
+          "label": "Below buttons"
+        }
+      ],
+      "default": "after_message"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_icon",
+      "label": "Show privacy icon",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "close_label",
+      "label": "Notice close accessible label",
+      "default": "Dismiss cookie notice"
+    },
+    {
+      "type": "text",
+      "id": "save_preferences_label",
+      "label": "Save preferences label",
+      "default": "Save preferences"
+    },
+    {
+      "type": "text",
+      "id": "preferences_heading",
+      "label": "Preferences dialog heading",
+      "default": "Cookie Preferences"
+    },
+    {
+      "type": "textarea",
+      "id": "preferences_intro",
+      "label": "Preferences dialog introduction",
+      "default": "Choose how we use optional cookies. Necessary cookies are always active."
+    },
+    {
+      "type": "text",
+      "id": "error_message",
+      "label": "Privacy API error message",
+      "default": "We couldn't save your privacy preference. Please try again."
+    },
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    {
+      "type": "select",
+      "id": "desktop_text_alignment",
+      "label": "Desktop text alignment",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        }
+      ],
+      "default": "left"
+    },
+    {
+      "type": "select",
+      "id": "mobile_text_alignment",
+      "label": "Mobile text alignment",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        }
+      ],
+      "default": "left"
+    },
+    {
+      "type": "select",
+      "id": "desktop_button_alignment",
+      "label": "Desktop button alignment",
+      "options": [
+        {
+          "value": "right",
+          "label": "Right"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        }
+      ],
+      "default": "right"
+    },
+    {
+      "type": "select",
+      "id": "action_order",
+      "label": "Action order",
+      "options": [
+        {
+          "value": "decline_accept",
+          "label": "Decline | Accept"
+        },
+        {
+          "value": "accept_decline",
+          "label": "Accept | Decline"
+        }
+      ],
+      "default": "decline_accept"
+    },
+    {
+      "type": "select",
+      "id": "mobile_button_layout",
+      "label": "Mobile button layout",
+      "options": [
+        {
+          "value": "two",
+          "label": "Two columns"
+        },
+        {
+          "value": "stacked",
+          "label": "Stacked"
+        }
+      ],
+      "default": "two"
+    },
+    {
+      "type": "range",
+      "id": "inner_max_width",
+      "label": "Inner max width",
+      "min": 960,
+      "max": 1600,
+      "step": 40,
+      "unit": "px",
+      "default": 1520
+    },
+    {
+      "type": "range",
+      "id": "text_max_width",
+      "label": "Message max width",
+      "min": 400,
+      "max": 1100,
+      "step": 20,
+      "unit": "px",
+      "default": 940
+    },
+    {
+      "type": "range",
+      "id": "padding_x_desktop",
+      "label": "Desktop horizontal padding",
+      "min": 12,
+      "max": 48,
+      "step": 2,
+      "unit": "px",
+      "default": 26
+    },
+    {
+      "type": "range",
+      "id": "padding_y_desktop",
+      "label": "Desktop vertical padding",
+      "min": 10,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "default": 28
+    },
+    {
+      "type": "range",
+      "id": "padding_x_mobile",
+      "label": "Mobile horizontal padding",
+      "min": 12,
+      "max": 28,
+      "step": 2,
+      "unit": "px",
+      "default": 18
+    },
+    {
+      "type": "range",
+      "id": "padding_y_mobile",
+      "label": "Mobile vertical padding",
+      "min": 12,
+      "max": 30,
+      "step": 2,
+      "unit": "px",
+      "default": 18
+    },
+    {
+      "type": "range",
+      "id": "button_gap",
+      "label": "Button gap",
+      "min": 6,
+      "max": 24,
+      "step": 2,
+      "unit": "px",
+      "default": 12
+    },
+    {
+      "type": "range",
+      "id": "cookie_icon_size",
+      "label": "Cookie icon size",
+      "min": 54,
+      "max": 116,
+      "step": 2,
+      "unit": "px",
+      "default": 100
+    },
+    {
+      "type": "range",
+      "id": "card_gap",
+      "label": "Consent card gap",
+      "min": 4,
+      "max": 20,
+      "step": 2,
+      "unit": "px",
+      "default": 12
+    },
+    {
+      "type": "color",
+      "id": "card_background",
+      "label": "Consent card background",
+      "default": "#FAFBFD"
+    },
+    {
+      "type": "color",
+      "id": "toggle_active",
+      "label": "Enabled toggle accent",
+      "default": "#155EFF"
+    },
+    {
+      "type": "color",
+      "id": "toggle_inactive",
+      "label": "Disabled toggle color",
+      "default": "#D9DBDF"
+    },
+    {
+      "type": "range",
+      "id": "floating_gap",
+      "label": "Floating card edge gap",
+      "min": 8,
+      "max": 32,
+      "step": 2,
+      "unit": "px",
+      "default": 22
+    },
+    {
+      "type": "range",
+      "id": "floating_bottom_gap",
+      "label": "Desktop bottom offset",
+      "min": 0,
+      "max": 100,
+      "step": 2,
+      "unit": "px",
+      "default": 56
+    },
+    {
+      "type": "select",
+      "id": "banner_position",
+      "label": "Floating banner alignment",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_mobile_icon",
+      "label": "Show cookie icon on mobile",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Buttons"
+    },
+    {
+      "type": "range",
+      "id": "button_radius",
+      "label": "Button radius",
+      "min": 0,
+      "max": 50,
+      "step": 1,
+      "unit": "px",
+      "default": 9
+    },
+    {
+      "type": "color",
+      "id": "accept_bg",
+      "label": "Accept background",
+      "default": "#52C7D9"
+    },
+    {
+      "type": "color",
+      "id": "accept_text",
+      "label": "Accept text",
+      "default": "#FFFFFF"
+    },
+    {
+      "type": "color",
+      "id": "accept_hover_bg",
+      "label": "Accept hover background",
+      "default": "#35B5CA"
+    },
+    {
+      "type": "color",
+      "id": "decline_bg",
+      "label": "Decline background",
+      "default": "#FFFFFF"
+    },
+    {
+      "type": "color",
+      "id": "decline_text",
+      "label": "Decline text",
+      "default": "#26282B"
+    },
+    {
+      "type": "color",
+      "id": "decline_border",
+      "label": "Decline border",
+      "default": "#AEB1B6"
+    },
+    {
+      "type": "color",
+      "id": "manage_bg",
+      "label": "Manage background",
+      "default": "#F4F5F7"
+    },
+    {
+      "type": "color",
+      "id": "manage_text",
+      "label": "Manage text",
+      "default": "#303238"
+    },
+    {
+      "type": "header",
+      "content": "Style"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Background",
+      "default": "#FFFFFF"
+    },
+    {
+      "type": "range",
+      "id": "background_opacity",
+      "label": "Background opacity",
+      "min": 80,
+      "max": 100,
+      "step": 1,
+      "unit": "%",
+      "default": 100
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text",
+      "default": "#5F6268"
+    },
+    {
+      "type": "color",
+      "id": "muted_text_color",
+      "label": "Muted text",
+      "default": "#777B82"
+    },
+    {
+      "type": "color",
+      "id": "border_color",
+      "label": "Border",
+      "default": "#E7E9ED"
+    },
+    {
+      "type": "color",
+      "id": "link_color",
+      "label": "Link",
+      "default": "#155EFF"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_border",
+      "label": "Show border",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "border_width",
+      "label": "Border width",
+      "min": 0,
+      "max": 3,
+      "step": 1,
+      "unit": "px",
+      "default": 1
+    },
+    {
+      "type": "range",
+      "id": "banner_radius",
+      "label": "Floating banner radius",
+      "min": 0,
+      "max": 32,
+      "step": 1,
+      "unit": "px",
+      "default": 16,
+      "info": "Full Width mode remains square at the viewport edges."
+    },
+    {
+      "type": "select",
+      "id": "shadow",
+      "label": "Shadow",
+      "options": [
+        {
+          "value": "none",
+          "label": "None"
+        },
+        {
+          "value": "soft",
+          "label": "Soft"
+        },
+        {
+          "value": "medium",
+          "label": "Medium"
+        },
+        {
+          "value": "strong",
+          "label": "Strong"
+        }
+      ],
+      "default": "medium"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_blur",
+      "label": "Enable backdrop blur on translucent floating card",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "animation_duration",
+      "label": "Animation duration",
+      "min": 180,
+      "max": 400,
+      "step": 20,
+      "unit": "ms",
+      "default": 260
+    },
+    {
+      "type": "header",
+      "content": "Responsive"
+    },
+    {
+      "type": "checkbox",
+      "id": "avoid_mobile_toolbar",
+      "label": "Position above Spider Mobile Toolbar",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "use_safe_area",
+      "label": "Use iOS safe-area spacing",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Theme Editor"
+    },
+    {
+      "type": "checkbox",
+      "id": "preview_in_editor",
+      "label": "Preview Cookies Banner in Theme Editor",
+      "default": true,
+      "info": "Preview interactions never write visitor consent."
+    }
+  ]
+}
+{% endschema %}

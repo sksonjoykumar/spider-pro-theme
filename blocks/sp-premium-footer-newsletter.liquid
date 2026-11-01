@@ -1,0 +1,190 @@
+{%- liquid
+  assign newsletter_img = block.settings.bg_image
+  assign form_id = 'SpPFNewsletter-' | append: block.id
+-%}
+<div class="sp-pf__newsletter" style="--pf-news-pad:{{ block.settings.padding }}px;--pf-news-radius:{{ block.settings.radius }}px;--pf-news-overlay:{{ block.settings.overlay_opacity | divided_by: 100.0 }}" {{ block.shopify_attributes }}>
+  {% if block.settings.show_image %}
+    {% if newsletter_img != blank %}
+      <div class="sp-pf__newsletter-art sp-pf__newsletter-art--custom{% unless block.settings.show_mobile_image %} sp-pf__newsletter-art--hide-mobile{% endunless %}" style="--pf-img-pos:{{ block.settings.image_position }}">
+        {{ newsletter_img | image_url: width: 1000 | image_tag: loading: 'lazy', widths: '400, 600, 800, 1000', sizes: '(max-width: 767px) 100vw, 32vw', alt: '', class: 'sp-pf__newsletter-photo' }}
+      </div>
+    {% else %}
+      <div class="sp-pf__newsletter-art{% unless block.settings.show_mobile_image %} sp-pf__newsletter-art--hide-mobile{% endunless %}" style="background-image:url('{{ 'sp-footer-headphones.webp' | asset_url }}')"></div>
+    {% endif %}
+  {% endif %}
+  <div class="sp-pf__newsletter-copy">
+    {% if block.settings.eyebrow != blank %}<p class="sp-pf__eyebrow">{{ block.settings.eyebrow | escape }}</p>{% endif %}
+    {% if block.settings.heading != blank %}<h2 class="sp-pf__newsletter-heading">{{ block.settings.heading | escape }}{% if block.settings.heading_highlight != blank %} <span>{{ block.settings.heading_highlight | escape }}</span>{% endif %}</h2>{% endif %}
+    {% if block.settings.description != blank %}<div class="sp-pf__newsletter-description">{{ block.settings.description }}</div>{% endif %}
+  </div>
+  <div class="sp-pf__newsletter-actions">
+    {% render 'sp-footer-newsletter-form', block: block, variant: 'premium' %}
+    <ul class="sp-pf__newsletter-perks" role="list">
+      {% for i in (1..3) %}
+        {% assign key = 'perk_' | append: i %}
+        {% assign perk = block.settings[key] %}
+        {% if perk != blank %}<li><span aria-hidden="true">✓</span>{{ perk | escape }}</li>{% endif %}
+      {% endfor %}
+    </ul>
+    {% if block.settings.privacy_text != blank %}<p class="sp-pf__privacy">{{ block.settings.privacy_text | escape }}</p>{% endif %}
+  </div>
+</div>
+{% schema %}
+{
+  "name": "Premium newsletter",
+  "tag": null,
+  "settings": [
+    {
+      "type": "header",
+      "content": "Text"
+    },
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Eyebrow",
+      "default": "JOIN OUR COMMUNITY"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Stay in the"
+    },
+    {
+      "type": "text",
+      "id": "heading_highlight",
+      "label": "Highlighted words",
+      "default": "loop"
+    },
+    {
+      "type": "richtext",
+      "id": "description",
+      "label": "Description",
+      "default": "<p>Be the first to know about new arrivals, exclusive offers and audio insights from the world of high-fidelity sound.</p>"
+    },
+    {
+      "type": "header",
+      "content": "Signup"
+    },
+    {
+      "type": "text",
+      "id": "placeholder",
+      "label": "Email placeholder",
+      "default": "Enter your email address"
+    },
+    {
+      "type": "text",
+      "id": "button_label",
+      "label": "Button label",
+      "default": "Subscribe"
+    },
+    {
+      "type": "text",
+      "id": "success_message",
+      "label": "Success message",
+      "default": "Thanks for subscribing!"
+    },
+    {
+      "type": "text",
+      "id": "perk_1",
+      "label": "First benefit",
+      "default": "New product drops"
+    },
+    {
+      "type": "text",
+      "id": "perk_2",
+      "label": "Second benefit",
+      "default": "Exclusive offers"
+    },
+    {
+      "type": "text",
+      "id": "perk_3",
+      "label": "Third benefit",
+      "default": "Audio tips & guides"
+    },
+    {
+      "type": "text",
+      "id": "privacy_text",
+      "label": "Privacy note",
+      "default": "No spam. Unsubscribe anytime."
+    },
+    {
+      "type": "header",
+      "content": "Appearance"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_image",
+      "label": "Show right-side art",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_mobile_image",
+      "label": "Show art on mobile",
+      "default": false
+    },
+    {
+      "type": "image_picker",
+      "id": "bg_image",
+      "label": "Custom newsletter image",
+      "info": "Defaults to reference headphone crop when empty."
+    },
+    {
+      "type": "select",
+      "id": "image_position",
+      "label": "Image focal point",
+      "options": [
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        },
+        {
+          "value": "left",
+          "label": "Left"
+        }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "range",
+      "id": "overlay_opacity",
+      "label": "Image fade strength",
+      "min": 0,
+      "max": 100,
+      "step": 5,
+      "unit": "%",
+      "default": 65
+    },
+    {
+      "type": "range",
+      "id": "padding",
+      "label": "Panel padding",
+      "min": 20,
+      "max": 60,
+      "step": 2,
+      "unit": "px",
+      "default": 36
+    },
+    {
+      "type": "range",
+      "id": "radius",
+      "label": "Panel radius",
+      "min": 0,
+      "max": 28,
+      "step": 1,
+      "unit": "px",
+      "default": 15
+    }
+  ],
+  "presets": [
+    {
+      "name": "Premium newsletter"
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,941 @@
+{{ 'sp-main-404.css' | asset_url | stylesheet_tag }}
+{% render 'sp-section-color-scheme', section: section %}
+
+{%- liquid
+  assign primary_link = section.settings.primary_link | default: routes.all_products_collection_url
+  assign secondary_link = section.settings.secondary_link | default: routes.collections_url
+  assign heading_style = section.settings.heading_style | default: 'custom'
+  assign primary_label = section.settings.primary_label | default: 'Continue shopping' | escape
+  assign secondary_label = section.settings.secondary_label | default: 'Browse collections' | escape
+
+  assign container_class = 'sp-container'
+  case section.settings.container_width
+    when 'narrow'
+      assign container_class = 'sp-container sp-container--narrow'
+    when 'wide'
+      assign container_class = 'sp-container sp-container--wide'
+  endcase
+
+  assign desktop_image = section.settings.image | default: section.settings.mobile_image
+  assign custom_image = false
+  if desktop_image != blank
+    assign custom_image = true
+  endif
+
+  assign has_collections = false
+  for block in section.blocks
+    if block.type == 'collection' and block.settings.collection != blank
+      assign has_collections = true
+      break
+    endif
+  endfor
+
+  assign has_auto_collections = false
+  if section.settings.auto_collections and has_collections == false
+    for collection_option in collections
+      if collection_option.handle != 'all' and collection_option.all_products_count > 0
+        assign has_auto_collections = true
+        break
+      endif
+    endfor
+  endif
+
+  assign has_discovery_preview = false
+  if request.design_mode and section.settings.show_collection_discovery
+    assign has_discovery_preview = true
+  endif
+-%}
+
+<section
+  class="sp-main-404 sp-main-404--align-{{ section.settings.content_alignment | default: 'center' }}{% unless section.settings.show_illustration %} sp-main-404--no-visual{% endunless %}"
+  data-section-id="{{ section.id }}"
+  style="
+    --sp-404-code-size: {{ section.settings.code_size | default: 152 }}px;
+    --sp-404-code-size-mobile: {{ section.settings.code_size_mobile | default: 94 }}px;
+    --sp-404-heading-size: {{ section.settings.custom_heading_size | default: 56 }}px;
+    --sp-404-heading-size-mobile: {{ section.settings.heading_size_mobile | default: 34 }}px;
+    --sp-404-description-size: {{ section.settings.description_size | default: 19 }}px;
+    --sp-404-description-size-mobile: {{ section.settings.description_size_mobile | default: 16 }}px;
+    --sp-404-art-size: {{ section.settings.illustration_width_desktop | default: 324 }}px;
+    --sp-404-art-size-mobile: {{ section.settings.illustration_width_mobile | default: 224 }}px;
+    --sp-404-content-max: {{ section.settings.content_max_width | default: 800 }}px;
+    --sp-404-card-radius: var(--sp-radius-card, var(--sp-radius-md, 8px));
+    --sp-404-media-ratio: {{ section.settings.collection_image_ratio | default: '4 / 3' }};
+    --sp-404-collection-gap: {{ section.settings.collection_gap | default: 20 }}px;
+    --sp-404-collections-max: {{ section.settings.collection_max_width | default: 1120 }}px;
+    {% if section.settings.spacing_source == 'custom' %}
+      --sp-404-pad-top: {{ section.settings.padding_top }}px;
+      --sp-404-pad-bottom: {{ section.settings.padding_bottom }}px;
+      --sp-404-pad-top-mobile: {{ section.settings.padding_top_mobile }}px;
+      --sp-404-pad-bottom-mobile: {{ section.settings.padding_bottom_mobile }}px;
+    {% endif %}
+  "
+>
+  <div class="{{ container_class }} sp-main-404__container">
+    <div class="sp-main-404__hero">
+      {% if section.settings.show_illustration %}
+        <div class="sp-main-404__visual" {% if section.settings.image_alt == blank %}aria-hidden="true"{% endif %}>
+          {% if custom_image %}
+            <picture>
+              {% if section.settings.mobile_image != blank %}
+                <source
+                  media="(max-width: 749px)"
+                  srcset="{{ section.settings.mobile_image | image_url: width: 320 }} 320w, {{ section.settings.mobile_image | image_url: width: 480 }} 480w, {{ section.settings.mobile_image | image_url: width: 640 }} 640w"
+                  sizes="(max-width: 749px) {{ section.settings.illustration_width_mobile | default: 224 }}px"
+                >
+              {% endif %}
+              {{ desktop_image | image_url: width: 900 | image_tag: widths: '320, 480, 640, 900', sizes: '(max-width: 749px) 224px, 324px', class: 'sp-main-404__image', loading: 'eager', alt: section.settings.image_alt }}
+            </picture>
+          {% else %}
+            <img
+              class="sp-main-404__image sp-main-404__image--default"
+              src="{{ 'sp-404-box-artwork.webp' | asset_url }}"
+              width="325"
+              height="282"
+              loading="eager"
+              fetchpriority="high"
+              alt=""
+            >
+          {% endif %}
+        </div>
+      {% endif %}
+
+      <div class="sp-main-404__content">
+        {% if section.settings.show_error_code %}
+          {%- assign code_text = section.settings.error_code | default: '404' | strip -%}
+          <p class="sp-main-404__code" aria-hidden="true">
+            {%- if code_text == '404' -%}
+              <span>4</span><span class="sp-main-404__code-accent">0</span><span>4</span>
+            {%- else -%}
+              {{ code_text | escape }}
+            {%- endif -%}
+          </p>
+        {% endif %}
+
+        <h1 class="sp-main-404__heading{% if heading_style == 'custom' %} sp-main-404__heading--custom{% else %} sp-heading--{{ heading_style }}{% endif %}">
+          {{ section.settings.heading | default: 'Page not found' | escape }}
+        </h1>
+
+        {% if section.settings.description != blank %}
+          <div class="sp-main-404__description rte">{{ section.settings.description }}</div>
+        {% endif %}
+
+        {% if section.settings.show_search %}
+          <form class="sp-main-404__search{% unless section.settings.show_search_button %} sp-main-404__search--solo{% endunless %}" action="{{ routes.search_url }}" method="get" role="search">
+            <div class="sp-field sp-main-404__search-field">
+              <label class="visually-hidden" for="Search404-{{ section.id }}">{{ 'search.search' | t }}</label>
+              <span class="sp-main-404__search-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="23" height="23" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+                  <circle cx="10.75" cy="10.75" r="7.4"></circle>
+                  <path d="m16.3 16.3 5 5"></path>
+                </svg>
+              </span>
+              <input
+                id="Search404-{{ section.id }}"
+                type="search"
+                name="q"
+                placeholder="{{ section.settings.search_placeholder | default: 'Search products, articles and pages' | escape }}"
+                autocomplete="off"
+                enterkeyhint="search"
+                required
+              >
+            </div>
+            <input type="hidden" name="type" value="product,article,page">
+            {% if section.settings.show_search_button %}
+              <button class="sp-button sp-button--primary sp-main-404__search-button" type="submit">{{ section.settings.search_button_label | default: 'Search' | escape }}</button>
+            {% endif %}
+          </form>
+        {% endif %}
+
+        {% if section.settings.show_primary_cta or section.settings.show_secondary_cta %}
+          <div class="sp-main-404__actions">
+            {% if section.settings.show_primary_cta and primary_label != blank %}
+              {% render 'button', label: primary_label, href: primary_link, style: 'primary', class: 'sp-main-404__primary' %}
+            {% endif %}
+            {% if section.settings.show_secondary_cta and secondary_label != blank %}
+              {% render 'button', label: secondary_label, href: secondary_link, style: 'secondary', class: 'sp-main-404__secondary' %}
+            {% endif %}
+          </div>
+        {% endif %}
+
+        {% if section.settings.show_helpful_links %}
+          {% assign has_link_blocks = false %}
+          {% for block in section.blocks %}
+            {% if block.type == 'helpful_link' %}{% assign has_link_blocks = true %}{% break %}{% endif %}
+          {% endfor %}
+          {% if has_link_blocks or section.settings.helpful_menu != blank %}
+            <nav class="sp-main-404__helpful" aria-label="{{ section.settings.helpful_links_label | default: 'Helpful links' | escape }}">
+              <p class="sp-main-404__helpful-label">{{ section.settings.helpful_links_label | default: 'Helpful links' | escape }}</p>
+              <ul class="sp-main-404__helpful-list" role="list">
+                {% if has_link_blocks %}
+                  {% for block in section.blocks %}
+                    {% if block.type == 'helpful_link' and block.settings.label != blank %}
+                      {%- liquid
+                        assign link_url = block.settings.link
+                        if link_url == blank
+                          case block.settings.fallback_target
+                            when 'home'
+                              assign link_url = routes.root_url
+                            when 'catalog'
+                              assign link_url = routes.all_products_collection_url
+                            when 'collections'
+                              assign link_url = routes.collections_url
+                            when 'new_arrivals'
+                              assign arrivals_col = collections['new-arrivals']
+                              if arrivals_col != blank
+                                assign link_url = arrivals_col.url
+                              else
+                                assign link_url = routes.collections_url
+                              endif
+                            when 'best_sellers'
+                              assign best_col = collections['best-sellers']
+                              if best_col != blank
+                                assign link_url = best_col.url
+                              else
+                                assign link_url = routes.collections_url
+                              endif
+                            when 'contact'
+                              assign contact_page = pages['contact']
+                              if contact_page != blank
+                                assign link_url = contact_page.url
+                              else
+                                assign link_url = routes.root_url
+                              endif
+                            else
+                              assign link_url = routes.root_url
+                          endcase
+                        endif
+                      -%}
+                      <li {{ block.shopify_attributes }}><a href="{{ link_url }}">{{ block.settings.label | escape }}</a></li>
+                    {% endif %}
+                  {% endfor %}
+                {% elsif section.settings.helpful_menu != blank %}
+                  {% for link in section.settings.helpful_menu.links %}
+                    <li><a href="{{ link.url }}">{{ link.title | escape }}</a></li>
+                  {% endfor %}
+                {% endif %}
+              </ul>
+            </nav>
+          {% endif %}
+        {% endif %}
+      </div>
+    </div>
+
+    {% if section.settings.show_collection_discovery and has_collections or section.settings.show_collection_discovery and has_auto_collections or has_discovery_preview %}
+      <div class="sp-main-404__discovery sp-main-404__collections">
+        <div class="sp-main-404__collections-heading">
+          {% if section.settings.collections_heading != blank %}
+            <h2>{{ section.settings.collections_heading | escape }}</h2>
+          {% endif %}
+          {% if section.settings.collections_description != blank %}
+            <div class="sp-main-404__collections-description rte">{{ section.settings.collections_description }}</div>
+          {% endif %}
+        </div>
+        <div class="sp-main-404__collection-grid" style="--sp-404-cols: {{ section.settings.collection_columns | default: 3 }};">
+          {% for block in section.blocks %}
+            {% if block.type == 'collection' %}
+              {%- liquid
+                assign collection_item = block.settings.collection
+                assign collection_url = collection_item.url
+                assign collection_image = block.settings.custom_image | default: collection_item.image
+                if collection_image == blank and collection_item != blank
+                  assign collection_image = collection_item.products.first.featured_image
+                endif
+                assign collection_title = block.settings.custom_title | default: collection_item.title
+                assign show_count = section.settings.show_collection_count
+                if block.settings.hide_count
+                  assign show_count = false
+                endif
+              -%}
+              {% if collection_item != blank %}
+                <a class="sp-main-404__collection-card" href="{{ collection_url }}" {{ block.shopify_attributes }}>
+                  <div class="sp-main-404__collection-media">
+                    {% if collection_image != blank %}
+                      {{ collection_image | image_url: width: 900 | image_tag: widths: '320, 480, 640, 900', sizes: '(min-width: 990px) 360px, (min-width: 750px) 50vw, 100vw', loading: 'lazy', class: 'sp-main-404__collection-image', alt: collection_title }}
+                    {% else %}
+                      <span class="sp-main-404__placeholder-icon" aria-hidden="true">
+                        <svg viewBox="0 0 64 64" width="72" height="72" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="9" y="11" width="46" height="42" rx="6"/><circle cx="23" cy="25" r="5"/><path d="M13 45l13-13 9 8 9-12 8 13"/></svg>
+                      </span>
+                    {% endif %}
+                  </div>
+                  <div class="sp-main-404__collection-info">
+                    <div class="sp-main-404__collection-text">
+                      <span class="sp-main-404__collection-name">{{ collection_title | escape }}</span>
+                      {% if show_count %}
+                        <span class="sp-main-404__collection-count">{{ collection_item.all_products_count }} products</span>
+                      {% endif %}
+                    </div>
+                    {% if section.settings.show_collection_arrow %}
+                      <span class="sp-main-404__collection-arrow" aria-hidden="true"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14m-7-7 7 7-7 7"/></svg></span>
+                    {% endif %}
+                  </div>
+                </a>
+              {% elsif request.design_mode and has_auto_collections == false %}
+                <div class="sp-main-404__collection-card sp-main-404__collection-card--placeholder" {{ block.shopify_attributes }}>
+                  <div class="sp-main-404__collection-media"><span class="sp-main-404__placeholder-icon" aria-hidden="true">+</span></div>
+                  <div class="sp-main-404__collection-info"><span class="sp-main-404__collection-name">Choose a collection</span></div>
+                </div>
+              {% endif %}
+            {% endif %}
+          {% endfor %}
+          {% if has_collections == false and has_auto_collections %}
+            {%- assign auto_rendered = 0 -%}
+            {% for collection_item in collections %}
+              {% if collection_item.handle != 'all' and collection_item.all_products_count > 0 %}
+                {%- assign auto_image = collection_item.image | default: collection_item.products.first.featured_image -%}
+                <a class="sp-main-404__collection-card" href="{{ collection_item.url }}">
+                  <div class="sp-main-404__collection-media">
+                    {% if auto_image != blank %}
+                      {{ auto_image | image_url: width: 900 | image_tag: widths: '320, 480, 640, 900', sizes: '(min-width: 990px) 360px, (min-width: 750px) 50vw, 100vw', loading: 'lazy', class: 'sp-main-404__collection-image', alt: collection_item.title }}
+                    {% else %}
+                      <span class="sp-main-404__placeholder-icon" aria-hidden="true"><svg viewBox="0 0 64 64" width="72" height="72" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="9" y="11" width="46" height="42" rx="6"/><circle cx="23" cy="25" r="5"/><path d="M13 45l13-13 9 8 9-12 8 13"/></svg></span>
+                    {% endif %}
+                  </div>
+                  <div class="sp-main-404__collection-info">
+                    <div class="sp-main-404__collection-text">
+                      <span class="sp-main-404__collection-name">{{ collection_item.title | escape }}</span>
+                      {% if section.settings.show_collection_count %}<span class="sp-main-404__collection-count">{{ collection_item.all_products_count }} products</span>{% endif %}
+                    </div>
+                    {% if section.settings.show_collection_arrow %}<span class="sp-main-404__collection-arrow" aria-hidden="true"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14m-7-7 7 7-7 7"/></svg></span>{% endif %}
+                  </div>
+                </a>
+                {% assign auto_rendered = auto_rendered | plus: 1 %}
+                {% if auto_rendered >= section.settings.auto_collection_limit %}{% break %}{% endif %}
+              {% endif %}
+            {% endfor %}
+          {% endif %}
+        </div>
+      </div>
+    {% endif %}
+
+    {% if section.settings.show_product_discovery and section.settings.featured_collection != blank %}
+      <div class="sp-main-404__discovery sp-main-404__products">
+        {% if section.settings.products_heading != blank %}<h2>{{ section.settings.products_heading | escape }}</h2>{% endif %}
+        <div class="sp-product-grid sp-main-404__product-grid" style="--sp-cols: {{ section.settings.product_columns | default: 4 }}; --sp-cols-tablet: 3; --sp-cols-mobile: 2;">
+          {% for product in section.settings.featured_collection.products limit: section.settings.product_limit %}
+            {% render 'product-card', card_product: product, context: '404-product-discovery', instance_id: forloop.index %}
+          {% endfor %}
+        </div>
+      </div>
+    {% endif %}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Premium 404 Page",
+  "tag": "section",
+  "class": "section-main-404",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Content"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_error_code",
+      "label": "Show error code",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "error_code",
+      "label": "Error code",
+      "default": "404"
+    },
+    {
+      "type": "range",
+      "id": "code_size",
+      "label": "404 number desktop size",
+      "min": 104,
+      "max": 192,
+      "step": 4,
+      "unit": "px",
+      "default": 152
+    },
+    {
+      "type": "range",
+      "id": "code_size_mobile",
+      "label": "404 number mobile size",
+      "min": 64,
+      "max": 128,
+      "step": 4,
+      "unit": "px",
+      "default": 96
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Page not found"
+    },
+    {
+      "type": "select",
+      "id": "heading_style",
+      "label": "Heading style",
+      "default": "custom",
+      "options": [
+        {
+          "value": "h1",
+          "label": "Global H1"
+        },
+        {
+          "value": "h2",
+          "label": "Global H2"
+        },
+        {
+          "value": "h3",
+          "label": "Global H3"
+        },
+        {
+          "value": "custom",
+          "label": "Custom"
+        }
+      ]
+    },
+    {
+      "type": "range",
+      "id": "custom_heading_size",
+      "label": "Custom heading size",
+      "min": 28,
+      "max": 80,
+      "step": 2,
+      "unit": "px",
+      "default": 56
+    },
+    {
+      "type": "range",
+      "id": "heading_size_mobile",
+      "label": "Custom heading size mobile",
+      "min": 24,
+      "max": 60,
+      "step": 2,
+      "unit": "px",
+      "default": 34
+    },
+    {
+      "type": "richtext",
+      "id": "description",
+      "label": "Description",
+      "default": "<p>The page may have moved or no longer exists. Try searching or continue shopping.</p>"
+    },
+    {
+      "type": "range",
+      "id": "description_size",
+      "label": "Description size desktop",
+      "min": 14,
+      "max": 24,
+      "step": 1,
+      "unit": "px",
+      "default": 19
+    },
+    {
+      "type": "range",
+      "id": "description_size_mobile",
+      "label": "Description size mobile",
+      "min": 14,
+      "max": 20,
+      "step": 1,
+      "unit": "px",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "content_max_width",
+      "label": "Hero content maximum width",
+      "min": 560,
+      "max": 960,
+      "step": 20,
+      "unit": "px",
+      "default": 800
+    },
+    {
+      "type": "select",
+      "id": "content_alignment",
+      "label": "Content alignment",
+      "default": "center",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ]
+    },
+    {
+      "type": "header",
+      "content": "Search"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_search",
+      "label": "Show search",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_search_button",
+      "label": "Show search submit button",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "search_placeholder",
+      "label": "Search placeholder",
+      "default": "Search products, articles and pages"
+    },
+    {
+      "type": "text",
+      "id": "search_button_label",
+      "label": "Search button label",
+      "default": "Search"
+    },
+    {
+      "type": "header",
+      "content": "Recovery actions"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_primary_cta",
+      "label": "Show primary CTA",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "primary_label",
+      "label": "Primary label",
+      "default": "Continue shopping"
+    },
+    {
+      "type": "url",
+      "id": "primary_link",
+      "label": "Primary link",
+      "info": "Defaults to Shopify's all-products collection when left blank."
+    },
+    {
+      "type": "checkbox",
+      "id": "show_secondary_cta",
+      "label": "Show secondary CTA",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "secondary_label",
+      "label": "Secondary label",
+      "default": "Browse collections"
+    },
+    {
+      "type": "url",
+      "id": "secondary_link",
+      "label": "Secondary link",
+      "info": "Defaults to Shopify's collection list route when left blank."
+    },
+    {
+      "type": "checkbox",
+      "id": "show_helpful_links",
+      "label": "Show helpful links",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "helpful_links_label",
+      "label": "Helpful links label",
+      "default": "Helpful links"
+    },
+    {
+      "type": "link_list",
+      "id": "helpful_menu",
+      "label": "Helpful links menu"
+    },
+    {
+      "type": "header",
+      "content": "Illustration"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_illustration",
+      "label": "Show illustration",
+      "default": true
+    },
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "Desktop image"
+    },
+    {
+      "type": "image_picker",
+      "id": "mobile_image",
+      "label": "Mobile image"
+    },
+    {
+      "type": "text",
+      "id": "image_alt",
+      "label": "Image alt text",
+      "info": "Leave blank for decorative artwork."
+    },
+    {
+      "type": "range",
+      "id": "image_width",
+      "label": "Side layout illustration width (legacy)",
+      "min": 32,
+      "max": 58,
+      "step": 1,
+      "unit": "%",
+      "default": 46,
+      "info": "Reference layout uses centered artwork width controls below."
+    },
+    {
+      "type": "range",
+      "id": "illustration_width_desktop",
+      "label": "Illustration width desktop",
+      "min": 160,
+      "max": 440,
+      "step": 4,
+      "unit": "px",
+      "default": 324
+    },
+    {
+      "type": "range",
+      "id": "illustration_width_mobile",
+      "label": "Illustration width mobile",
+      "min": 120,
+      "max": 320,
+      "step": 4,
+      "unit": "px",
+      "default": 224
+    },
+    {
+      "type": "select",
+      "id": "layout",
+      "label": "Layout",
+      "default": "centered",
+      "options": [
+        {
+          "value": "centered",
+          "label": "Centered"
+        },
+        {
+          "value": "image_left",
+          "label": "Image left"
+        },
+        {
+          "value": "image_right",
+          "label": "Image right"
+        }
+      ],
+      "info": "The premium reference uses centered layout; retain this legacy preference for configuration compatibility."
+    },
+    {
+      "type": "header",
+      "content": "Optional discovery"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_collection_discovery",
+      "label": "Show selected collections",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "collections_heading",
+      "label": "Collections heading",
+      "default": "Popular collections"
+    },
+    {
+      "type": "richtext",
+      "id": "collections_description",
+      "label": "Collections description",
+      "default": "<p>Explore our most popular categories while you’re here.</p>"
+    },
+    {
+      "type": "checkbox",
+      "id": "auto_collections",
+      "label": "Auto-fill popular collections if none selected",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "auto_collection_limit",
+      "label": "Auto collections limit",
+      "min": 2,
+      "max": 6,
+      "step": 1,
+      "default": 3
+    },
+    {
+      "type": "checkbox",
+      "id": "show_collection_count",
+      "label": "Show collection product count",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_collection_arrow",
+      "label": "Show collection arrow icon",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "collection_image_ratio",
+      "label": "Collection image ratio",
+      "options": [
+        {
+          "value": "1 / 1",
+          "label": "Square (1:1)"
+        },
+        {
+          "value": "4 / 3",
+          "label": "Classic (4:3)"
+        },
+        {
+          "value": "5 / 4",
+          "label": "Portrait wide (5:4)"
+        },
+        {
+          "value": "3 / 2",
+          "label": "Landscape (3:2)"
+        }
+      ],
+      "default": "4 / 3"
+    },
+    {
+      "type": "range",
+      "id": "collection_gap",
+      "label": "Collection card gap",
+      "min": 8,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "default": 20
+    },
+    {
+      "type": "range",
+      "id": "collection_max_width",
+      "label": "Collection grid maximum width",
+      "min": 800,
+      "max": 1600,
+      "step": 20,
+      "unit": "px",
+      "default": 1120
+    },
+    {
+      "type": "range",
+      "id": "collection_columns",
+      "label": "Collection columns",
+      "min": 2,
+      "max": 4,
+      "step": 1,
+      "default": 3
+    },
+    {
+      "type": "checkbox",
+      "id": "show_product_discovery",
+      "label": "Show featured products",
+      "default": false
+    },
+    {
+      "type": "collection",
+      "id": "featured_collection",
+      "label": "Featured products collection"
+    },
+    {
+      "type": "text",
+      "id": "products_heading",
+      "label": "Products heading",
+      "default": "You may also like"
+    },
+    {
+      "type": "range",
+      "id": "product_limit",
+      "label": "Products to show",
+      "min": 2,
+      "max": 8,
+      "step": 1,
+      "default": 4
+    },
+    {
+      "type": "range",
+      "id": "product_columns",
+      "label": "Desktop product columns",
+      "min": 2,
+      "max": 4,
+      "step": 1,
+      "default": 4
+    },
+    {
+      "type": "header",
+      "content": "Global design system"
+    },
+    {
+      "type": "color_scheme",
+      "id": "sp_color_scheme",
+      "label": "Color scheme",
+      "default": "scheme-1",
+      "info": "Uses Spider global semantic color tokens."
+    },
+    {
+      "type": "select",
+      "id": "container_width",
+      "label": "Container width",
+      "default": "wide",
+      "options": [
+        {
+          "value": "theme",
+          "label": "Theme default"
+        },
+        {
+          "value": "narrow",
+          "label": "Narrow"
+        },
+        {
+          "value": "wide",
+          "label": "Wide"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "spacing_source",
+      "label": "Spacing source",
+      "default": "theme",
+      "options": [
+        {
+          "value": "theme",
+          "label": "Use theme default"
+        },
+        {
+          "value": "custom",
+          "label": "Custom"
+        }
+      ]
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "Desktop padding top",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "px",
+      "default": 48
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "Desktop padding bottom",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "px",
+      "default": 72
+    },
+    {
+      "type": "range",
+      "id": "padding_top_mobile",
+      "label": "Mobile padding top",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "default": 32
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom_mobile",
+      "label": "Mobile padding bottom",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "default": 48
+    }
+  ],
+  "blocks": [
+    {
+      "type": "collection",
+      "name": "Collection",
+      "limit": 12,
+      "settings": [
+        {
+          "type": "collection",
+          "id": "collection",
+          "label": "Collection"
+        },
+        {
+          "type": "image_picker",
+          "id": "custom_image",
+          "label": "Optional card image"
+        },
+        {
+          "type": "text",
+          "id": "custom_title",
+          "label": "Optional card title"
+        },
+        {
+          "type": "checkbox",
+          "id": "hide_count",
+          "label": "Hide product count for this card",
+          "default": false
+        }
+      ]
+    },
+    {
+      "type": "helpful_link",
+      "name": "Helpful link",
+      "limit": 8,
+      "settings": [
+        {
+          "type": "text",
+          "id": "label",
+          "label": "Link text",
+          "default": "Helpful link"
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "Link URL"
+        },
+        {
+          "type": "select",
+          "id": "fallback_target",
+          "label": "Fallback destination",
+          "default": "home",
+          "options": [
+            {
+              "value": "home",
+              "label": "Home"
+            },
+            {
+              "value": "catalog",
+              "label": "Catalog / All products"
+            },
+            {
+              "value": "collections",
+              "label": "All collections"
+            },
+            {
+              "value": "new_arrivals",
+              "label": "New arrivals collection (if exists)"
+            },
+            {
+              "value": "best_sellers",
+              "label": "Best sellers collection (if exists)"
+            },
+            {
+              "value": "contact",
+              "label": "Contact page (if exists)"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

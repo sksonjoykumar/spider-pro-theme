@@ -1,0 +1,82 @@
+{% comment %}
+  Optional Main Product block, rendered from the existing main-product block loop.
+  Data-driven only: no artificial stock, sales numbers or testimonial claims.
+  Parameters: block, product, current_variant, section.
+{% endcomment %}
+{% case block.type %}
+  {% when 'countdown_timer' %}
+    {% assign countdown_target = block.settings.target_datetime | default: product.metafields.custom.sale_ends_at.value %}
+    {% if countdown_target != blank %}
+      <div class="sp-product-advanced sp-product-countdown sp-product-countdown--{{ block.settings.layout | default: 'compact' }}" data-sp-countdown data-countdown-target="{{ countdown_target | escape }}" data-countdown-days="{{ block.settings.show_days }}" data-countdown-seconds="{{ block.settings.show_seconds }}" data-countdown-hide-expired="{{ block.settings.hide_expired }}" data-countdown-expired="{{ block.settings.expired_message | escape }}" hidden>
+        {% if block.settings.heading != blank %}<p class="sp-product-advanced__heading">{{ block.settings.heading | escape }}</p>{% endif %}
+        <div class="sp-product-countdown__units" role="timer" aria-live="off">
+          {% if block.settings.show_days %}<span><strong data-timer-days>00</strong><small>Days</small></span>{% endif %}
+          <span><strong data-timer-hours>00</strong><small>Hours</small></span>
+          <span><strong data-timer-minutes>00</strong><small>Minutes</small></span>
+          {% if block.settings.show_seconds %}<span><strong data-timer-seconds>00</strong><small>Seconds</small></span>{% endif %}
+        </div>
+      </div>
+    {% endif %}
+
+  {% when 'delivery_time' %}
+    {% if block.settings.max_days > 0 %}
+      <div class="sp-product-advanced sp-product-delivery" data-sp-delivery data-delivery-min="{{ block.settings.min_days | default: 0 }}" data-delivery-max="{{ block.settings.max_days }}" data-delivery-business="{{ block.settings.business_days }}" data-delivery-zone="{{ block.settings.timezone | escape }}" data-delivery-cutoff="{{ block.settings.cutoff | escape }}" hidden>
+        <div class="sp-product-delivery__icon" aria-hidden="true">{% render 'icon', name: 'truck' %}</div>
+        <div>
+          <strong>{{ block.settings.heading | default: 'Estimated delivery' | escape }}</strong>
+          <span data-sp-delivery-range></span>
+          {% if block.settings.note != blank %}<small>{{ block.settings.note | escape }}</small>{% endif %}
+        </div>
+      </div>
+    {% endif %}
+
+  {% when 'extra_link' %}
+    {% if block.settings.link != blank and block.settings.label != blank %}
+      <a class="sp-product-advanced sp-product-extra-link{% if block.settings.style == 'outline' %} sp-product-extra-link--outline{% endif %}" href="{{ block.settings.link }}"{% if block.settings.new_tab %} target="_blank" rel="noopener noreferrer"{% endif %}>
+        {{ block.settings.label | escape }} <span aria-hidden="true">↗</span>
+      </a>
+    {% endif %}
+
+  {% when 'live_review' %}
+    {% assign product_rating = product.metafields.reviews.rating.value %}
+    {% assign featured_quote = product.metafields.custom.featured_review.value %}
+    {% if product_rating != blank or featured_quote != blank %}
+      <div class="sp-product-advanced sp-product-live-review sp-product-live-review--{{ block.settings.layout | default: 'inline' }}">
+        {% if block.settings.heading != blank %}<p class="sp-product-advanced__heading">{{ block.settings.heading | escape }}</p>{% endif %}
+        {% if product_rating != blank %}
+          {% assign rating_pct = product_rating.rating | times: 100.0 | divided_by: product_rating.scale_max %}
+          <div class="sp-product-live-review__rating" aria-label="Rated {{ product_rating.rating }} out of {{ product_rating.scale_max }}">
+            <span class="sp-product-live-review__stars" aria-hidden="true" style="--sp-review-percent: {{ rating_pct }}%">★★★★★</span>
+            <span>{{ product_rating.rating }} / {{ product_rating.scale_max }}</span>
+            {% if block.settings.show_count and product.metafields.reviews.rating_count != blank %}<span>({{ product.metafields.reviews.rating_count.value | default: product.metafields.reviews.rating_count }} reviews)</span>{% endif %}
+          </div>
+        {% endif %}
+        {% if block.settings.show_quote and featured_quote != blank %}<blockquote class="sp-product-live-review__quote">{{ featured_quote | escape }}</blockquote>{% endif %}
+      </div>
+    {% endif %}
+
+  {% when 'total_sold_flash' %}
+    {% assign verified_total = block.settings.verified_count | default: 0 | plus: 0 %}
+    {% if verified_total <= 0 %}{% assign verified_total = product.metafields.custom.total_sold.value | default: 0 | plus: 0 %}{% endif %}
+    {% if verified_total > 0 %}
+      <div class="sp-product-advanced sp-product-total-sold" aria-label="{{ block.settings.heading | default: 'Sold' | escape }} {{ verified_total }} {{ block.settings.suffix | default: 'units' | escape }}">
+        <span class="sp-product-total-sold__dot" aria-hidden="true"></span>
+        <span>{{ block.settings.heading | default: 'Sold' | escape }}</span>
+        <strong data-sp-sold-count="{{ verified_total }}" data-sp-sold-animate="{{ block.settings.animate }}">{{ verified_total }}</strong>
+        <span>{{ block.settings.suffix | default: 'units' | escape }}</span>
+      </div>
+    {% endif %}
+
+  {% when 'trust_badge' %}
+    {% if block.settings.badge_image != blank or block.settings.heading != blank or block.settings.description != blank %}
+      <div class="sp-product-advanced sp-product-trust sp-product-trust--{{ block.settings.layout | default: 'row' }}" style="--sp-trust-width: {{ block.settings.image_width | default: 100 }}px;">
+        {% if block.settings.badge_image != blank %}
+          {{ block.settings.badge_image | image_url: width: 480 | image_tag: class: 'sp-product-trust__image', loading: 'lazy', widths: '80, 160, 240, 360, 480', sizes: '(max-width: 749px) 80px, 100px' }}
+        {% endif %}
+        <div class="sp-product-trust__content">
+          {% if block.settings.heading != blank %}<strong>{{ block.settings.heading | escape }}</strong>{% endif %}
+          {% if block.settings.description != blank %}<p>{{ block.settings.description | escape }}</p>{% endif %}
+        </div>
+      </div>
+    {% endif %}
+{% endcase %}

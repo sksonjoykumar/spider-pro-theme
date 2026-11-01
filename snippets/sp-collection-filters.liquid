@@ -1,0 +1,94 @@
+{%- liquid
+  assign form_id = 'SpCollectionFiltersForm-' | append: mode | append: '-' | append: section.id
+  assign auto_apply = false
+  if mode != 'mobile' and section.settings.desktop_auto_apply
+    assign auto_apply = true
+  endif
+-%}
+<form
+  id="{{ form_id }}"
+  class="sp-collection-filters sp-collection-filters--{{ mode }}"
+  action="{{ collection.url }}"
+  method="get"
+  data-sp-collection-filter-form
+  data-auto-apply="{{ auto_apply }}"
+>
+  {% if section.settings.enable_sorting and sort_by != blank %}<input type="hidden" name="sort_by" value="{{ sort_by | escape }}">{% endif %}
+
+  <div class="sp-collection-filters__groups">
+    {% for filter in collection.filters %}
+      {%- liquid
+        assign group_open = true
+        if section.settings.collapse_filters
+          assign group_open = false
+          if filter.active_values.size > 0 or filter.min_value.value != blank or filter.max_value.value != blank or forloop.index <= 2
+            assign group_open = true
+          endif
+        endif
+        assign group_id = 'SpFacet-' | append: mode | append: '-' | append: section.id | append: '-' | append: forloop.index
+      -%}
+      {%- assign sp_filter_index = forloop.index -%}
+      <details class="sp-collection-filter" data-sp-filter-group="{{ filter.param_name | escape }}"{% if group_open %} open{% endif %}>
+        <summary class="sp-collection-filter__summary">
+          <span>{{ filter.label | escape }}</span>
+          {% if filter.active_values.size > 0 %}<span class="sp-collection-filter__active-count">{{ filter.active_values.size }}</span>{% endif %}
+          <svg viewBox="0 0 16 16" aria-hidden="true"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </summary>
+        <div class="sp-collection-filter__content" id="{{ group_id }}">
+          {% case filter.type %}
+            {% when 'list', 'boolean' %}
+              <ul class="sp-collection-filter__values" role="list">
+                {% for value in filter.values %}
+                  {%- liquid
+                    assign value_id = 'SpFilter-' | append: mode | append: '-' | append: section.id | append: '-' | append: sp_filter_index | append: '-' | append: forloop.index
+                    assign value_disabled = false
+                    if value.count == 0 and value.active == false
+                      assign value_disabled = true
+                    endif
+                    assign swatch_image = blank
+                    if value.swatch.image != blank
+                      assign swatch_image = value.swatch.image | image_url: width: 72
+                    endif
+                    assign use_visual = false
+                    if filter.presentation == 'swatch' or filter.presentation == 'image' or value.swatch.color != blank or swatch_image != blank or value.image != blank
+                      assign use_visual = true
+                    endif
+                  -%}
+                  <li class="sp-collection-filter__value{% if use_visual %} sp-collection-filter__value--visual{% endif %}">
+                    <label class="sp-collection-filter__check" for="{{ value_id }}">
+                      <input id="{{ value_id }}" type="checkbox" name="{{ value.param_name }}" value="{{ value.value | escape }}"{% if value.active %} checked{% endif %}{% if value_disabled %} disabled{% endif %}>
+                      {% if use_visual %}
+                        <span class="sp-collection-filter__swatch" aria-hidden="true"{% if swatch_image != blank %} style="--sp-filter-swatch-image:url('{{ swatch_image }}')"{% elsif value.swatch.color != blank %} style="--sp-filter-swatch-color:{{ value.swatch.color }}"{% endif %}>
+                          {% if value.image != blank %}{{ value.image | image_url: width: 72 | image_tag: loading: 'lazy', alt: '' }}{% endif %}
+                        </span>
+                      {% else %}
+                        <span class="sp-collection-filter__box" aria-hidden="true"></span>
+                      {% endif %}
+                      <span class="sp-collection-filter__label">{{ value.label | escape }}</span>
+                      <span class="sp-collection-filter__count" aria-hidden="true">{{ value.count }}</span>
+                    </label>
+                  </li>
+                {% endfor %}
+              </ul>
+            {% when 'price_range' %}
+              <div class="sp-collection-filter__price">
+                <label for="SpPriceMin-{{ mode }}-{{ section.id }}">
+                  <span>From</span>
+                  <span class="sp-collection-filter__price-field"><span aria-hidden="true">{{ cart.currency.symbol }}</span><input id="SpPriceMin-{{ mode }}-{{ section.id }}" type="number" inputmode="decimal" name="{{ filter.min_value.param_name }}"{% if filter.min_value.value %} value="{{ filter.min_value.value | money_without_currency | replace: ',', '' }}"{% endif %} min="0" max="{{ filter.range_max | money_without_currency | replace: ',', '' }}" placeholder="0"></span>
+                </label>
+                <label for="SpPriceMax-{{ mode }}-{{ section.id }}">
+                  <span>To</span>
+                  <span class="sp-collection-filter__price-field"><span aria-hidden="true">{{ cart.currency.symbol }}</span><input id="SpPriceMax-{{ mode }}-{{ section.id }}" type="number" inputmode="decimal" name="{{ filter.max_value.param_name }}"{% if filter.max_value.value %} value="{{ filter.max_value.value | money_without_currency | replace: ',', '' }}"{% endif %} min="0" max="{{ filter.range_max | money_without_currency | replace: ',', '' }}" placeholder="{{ filter.range_max | money_without_currency | replace: ',', '' }}"></span>
+                </label>
+              </div>
+          {% endcase %}
+        </div>
+      </details>
+    {% endfor %}
+  </div>
+
+  <div class="sp-collection-filters__footer">
+    {% if section.settings.show_clear_all %}<a class="sp-button sp-button--secondary" href="{{ collection.url }}{% if sort_by != blank %}?sort_by={{ sort_by | url_encode }}{% endif %}" data-sp-collection-link>Clear all</a>{% endif %}
+    <button class="sp-button sp-button--primary" type="submit">{% if mode == 'mobile' %}View results{% else %}Apply filters{% endif %}</button>
+  </div>
+</form>

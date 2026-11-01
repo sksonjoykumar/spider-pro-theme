@@ -1,0 +1,86 @@
+{% comment %}
+  Spider Premium Header — optional top bar block.
+  Params: block (required), section (required)
+{% endcomment %}
+<div
+  class="sp-header-topbar{% unless block.settings.show_desktop %} sp-header-topbar--hide-desktop{% endunless %}{% unless block.settings.show_mobile %} sp-header-topbar--hide-mobile{% endunless %}"
+  data-align="{{ block.settings.alignment | default: 'between' }}"
+  {{ block.shopify_attributes }}>
+  <div class="sp-header-topbar__inner{% if section.settings.width == 'wide' %} sp-header__container--wide{% elsif section.settings.width == 'full' %} sp-header__container--full{% elsif section.settings.width == 'boxed' %} sp-header__container--boxed{% else %} sp-header__container--default{% endif %}">
+    <div class="sp-header-topbar__start">
+      {% if block.settings.secondary_menu != blank %}
+        <nav class="sp-header-topbar__menu" aria-label="Secondary navigation">
+          <ul role="list">
+            {% for link in block.settings.secondary_menu.links %}
+              <li>
+                <a href="{{ link.url }}">{{ link.title | escape }}</a>
+              </li>
+            {% endfor %}
+          </ul>
+        </nav>
+      {% endif %}
+    </div>
+
+    <div class="sp-header-topbar__end">
+      {% if block.settings.show_socials %}
+        <div class="sp-header-topbar__socials" style="--sp-topbar-social: {{ block.settings.social_color | default: '#111111' }}; --sp-topbar-social-hover: {{ block.settings.social_hover | default: '#666666' }};">
+          {% render 'social-links' %}
+        </div>
+      {% endif %}
+
+      {% if block.settings.enable_country and localization.available_countries.size > 1 %}
+        {% form 'localization'
+          , class: 'sp-header-localization' %}
+          <label>
+            <span class="visually-hidden">Country/region</span>
+            <select
+              name="country_code"
+              data-sp-localization-select
+              data-sp-country-select
+              data-show-flag="{{ block.settings.show_country_flag }}">
+              {% for country in localization.available_countries %}
+                <option
+                  value="{{ country.iso_code }}"
+                  {% if country.iso_code == localization.country.iso_code %}
+                  selected{% endif %}>
+                  {% if block.settings.show_country_flag %}
+                    {{ country.iso_code }} ·
+                  {% endif %}
+                  {{ country.name }} ({{ country.currency.iso_code }})
+                </option>
+              {% endfor %}
+            </select>
+          </label>
+          <noscript>
+            <button type="submit">Update</button>
+          </noscript>
+        {% endform %}
+      {% endif %}
+
+      {% if block.settings.enable_language and localization.available_languages.size > 1 %}
+        {% form 'localization'
+          , class: 'sp-header-localization' %}
+          <label>
+            <span class="visually-hidden">Language</span>
+            <select name="locale_code" data-sp-localization-select>
+              {% for language in localization.available_languages %}
+                <option
+                  value="{{ language.iso_code }}"
+                  {% if language.iso_code == localization.language.iso_code %}
+                  selected{% endif %}>
+                  {% if block.settings.language_display == 'iso' %}
+                    {{ language.iso_code | upcase }}
+                  {% else %}
+                    {{ language.endonym_name }}{% endif %}
+                </option>
+              {% endfor %}
+            </select>
+          </label>
+          <noscript>
+            <button type="submit">Update</button>
+          </noscript>
+        {% endform %}
+      {% endif %}
+    </div>
+  </div>
+</div>

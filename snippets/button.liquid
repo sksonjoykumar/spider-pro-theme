@@ -1,0 +1,9 @@
+{% comment %}LiquidDoc: Renders a link or button. Parameters: label (required), href, type, style, class, attributes.{% endcomment %}
+{% assign button_style = style | default: 'primary' %}
+{% assign button_class = 'sp-button sp-button--' | append: button_style %}
+{% if class != blank %}{% assign button_class = button_class | append: ' ' | append: class %}{% endif %}
+{% if href != blank %}
+  <a class="{{ button_class }}" href="{{ href }}" {{ attributes }}>{{ label }}</a>
+{% else %}
+  <button class="{{ button_class }}" type="{{ type | default: 'button' }}" {{ attributes }}>{{ label }}</button>
+{% endif %}

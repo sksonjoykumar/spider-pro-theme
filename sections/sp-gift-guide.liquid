@@ -1,0 +1,1269 @@
+{%- comment -%}
+  Spider Gift Guide: standalone section. Preserves native Spider theme tokens and image handling.
+  Gift-card links are merchant-managed; price/bestseller filters are curated labels, not inferred.
+{%- endcomment -%}
+{{ 'sp-section-heading.css' | asset_url | stylesheet_tag }}
+{{ 'sp-gift-guide.css' | asset_url | stylesheet_tag }}
+{% render 'sp-section-color-scheme', section: section %}
+{%- liquid
+  assign sp_s = section.settings
+  assign sp_card_count = 0
+  assign sp_first_id = ''
+  for sp_b in section.blocks
+    if sp_b.type == 'gift_card'
+      assign sp_card_count = sp_card_count | plus: 1
+      if sp_first_id == blank
+        assign sp_first_id = sp_b.id
+      endif
+    endif
+  endfor
+  assign sp_container = 'sp-container'
+  if sp_s.section_width == 'wide'
+    assign sp_container = 'sp-container sp-container--wide'
+  elsif sp_s.section_width == 'full'
+    assign sp_container = 'sp-gift-guide__full-container'
+  endif
+-%}
+{%- style -%}
+  #shopify-section-{{ section.id }} .sp-gift-guide {
+    --sp-gift-width: {{ sp_s.max_width }}px;
+    --sp-gift-gap: {{ sp_s.gap_desktop }}px;
+    --sp-gift-gap-mobile: {{ sp_s.gap_mobile }}px;
+    --sp-gift-mosaic-row: {{ sp_s.mosaic_row_height }}px;
+    --sp-gift-card-padding: {{ sp_s.card_content_padding }}px;
+    --sp-gift-featured-padding: {{ sp_s.featured_content_padding }}px;
+    --sp-gift-filter-bottom: {{ sp_s.filter_top_gap }}px;
+    --sp-gift-feature-width: {{ sp_s.featured_width }}%;
+    --sp-gift-media-height: {{ sp_s.media_height }}px;
+    --sp-gift-radius: {{ sp_s.card_radius }}px;
+    --sp-gift-overlay-opacity: {{ sp_s.overlay_opacity | divided_by: 100.0 }};
+    --sp-gift-section-top: {{ sp_s.padding_top }}px;
+    --sp-gift-section-bottom: {{ sp_s.padding_bottom }}px;
+    --sp-gift-section-top-mobile: {{ sp_s.padding_top_mobile }}px;
+    --sp-gift-section-bottom-mobile: {{ sp_s.padding_bottom_mobile }}px;
+    --sp-gift-desktop-cols: {{ sp_s.desktop_columns }};
+    --sp-gift-tablet-cols: {{ sp_s.tablet_columns }};
+    --sp-gift-mobile-cols: {{ sp_s.mobile_columns }};
+    --sp-gift-carousel-cols: {{ sp_s.carousel_columns }};
+    --sp-gift-image-ratio: {{ sp_s.image_ratio }};
+    --sp-gift-shadow: {% if sp_s.card_shadow == 'soft' %}0 10px 28px #00000014{% elsif sp_s.card_shadow == 'strong' %}0 16px 38px #00000026{% else %}none{% endif %};
+    --sp-gift-card-border: {% if sp_s.card_border %}1px solid var(--sp-section-border, #e5e5e5){% else %}0 solid transparent{% endif %};
+  }
+{%- endstyle -%}
+{% if sp_card_count > 0 or request.design_mode %}
+<section id="sp-gift-guide-{{ section.id }}"
+  class="sp-gift-guide sp-gift-guide--{{ sp_s.layout_style }} sp-gift-guide--featured-{{ sp_s.featured_position }} sp-gift-guide--mobile-{{ sp_s.mobile_columns }}{% if sp_s.enable_hover %} sp-gift-guide--hover{% endif %}{% if sp_s.animate_cards %} sp-gift-guide--animate{% endif %}"
+  data-sp-gift-guide
+  data-sp-section-id="{{ section.id }}"
+  data-sp-enable-filters="{{ sp_s.enable_filters }}"
+  data-sp-default-filter="{{ sp_s.default_filter | escape }}"
+  data-sp-carousel-autoplay="{{ sp_s.carousel_autoplay }}"
+  data-sp-carousel-speed="{{ sp_s.carousel_speed }}"
+  data-sp-carousel-hover-pause="{{ sp_s.carousel_pause_hover }}"
+  data-sp-carousel-key-label="{{ sp_s.carousel_item_label | escape }}"
+  data-sp-selected-count-text="{{ sp_s.result_count_label | escape }}"
+  data-sp-design-mode="{{ request.design_mode }}"
+  aria-label="{{ sp_s.accessibility_label | default: 'Gift guide' | escape }}">
+  <div class="{{ sp_container }} sp-gift-guide__container">
+    {% if sp_s.show_header %}
+      <div class="sp-gift-guide__intro sp-gift-guide__intro--{{ sp_s.header_alignment }}" style="--sp-gift-header-max:{{ sp_s.header_max_width }}px;--sp-gift-header-gap:{{ sp_s.header_bottom_gap }}px;">
+        {% if sp_s.eyebrow != blank %}<p class="sp-gift-guide__eyebrow">{{ sp_s.eyebrow | escape }}</p>{% endif %}
+        {% render 'sp-section-heading', heading_settings: sp_s, heading: sp_s.heading, subheading: sp_s.description, heading_tag: 'h2', alignment: sp_s.header_alignment, mobile_alignment: sp_s.header_alignment_mobile, typography_source: sp_s.typography_source, heading_size_desktop: sp_s.heading_size_desktop, heading_size_mobile: sp_s.heading_size_mobile, bottom_spacing: 0 %}
+        {% if sp_s.header_button_label != blank %}
+          {% if sp_s.header_button_link != blank %}
+            <div class="sp-gift-guide__header-action">
+              <a class="sp-gift-guide__header-button sp-gift-guide__header-button--{{ sp_s.header_button_style }}" href="{{ sp_s.header_button_link }}">{{ sp_s.header_button_label | escape }}</a>
+            </div>
+          {% elsif request.design_mode %}
+            <div class="sp-gift-guide__header-action">
+              <span class="sp-gift-guide__header-button sp-gift-guide__header-button--{{ sp_s.header_button_style }} sp-gift-guide__header-button--disabled" aria-label="Add a link to activate this button">{{ sp_s.header_button_label | escape }}</span>
+            </div>
+          {% endif %}
+        {% endif %}
+      </div>
+    {% endif %}
+
+    {% if sp_s.enable_filters %}
+      <div class="sp-gift-guide__filters" data-sp-gift-guide-filter-controls role="group" aria-label="{{ sp_s.filter_group_label | escape }}">
+        {% if sp_s.show_all_filter %}
+          <button class="sp-gift-guide__filter" type="button" data-sp-gift-filter="all" aria-pressed="true">{{ sp_s.all_filter_label | escape }}</button>
+        {% endif %}
+        {% for block in section.blocks %}
+          {% if block.type == 'filter' %}
+            {% assign sp_filter_key = block.settings.filter_key | downcase | strip %}
+            {% if sp_filter_key != blank and block.settings.label != blank %}
+              <button class="sp-gift-guide__filter" type="button" data-sp-gift-filter="{{ sp_filter_key | escape }}" data-sp-gift-default="{{ block.settings.default_active }}" aria-pressed="false" aria-label="{{ block.settings.accessibility_label | default: block.settings.label | escape }}" {{ block.shopify_attributes }}>
+                {% if block.settings.custom_icon != blank %}
+                  <span class="sp-gift-guide__filter-icon" aria-hidden="true">{{ block.settings.custom_icon | image_url: width: 64 | image_tag: widths: '32,64', sizes: '20px', loading: 'lazy', alt: '' }}</span>
+                {% elsif block.settings.icon != 'none' %}
+                  {% assign sp_icon_name = 'bag' %}
+                  {% if block.settings.icon == 'heart' %}{% assign sp_icon_name = 'heart' %}{% elsif block.settings.icon == 'tag' %}{% assign sp_icon_name = 'card' %}{% endif %}
+                  <span class="sp-gift-guide__filter-icon">{% render 'sp-content-icon', name: sp_icon_name %}</span>
+                {% endif %}
+                {{ block.settings.label | escape }}</button>
+            {% endif %}
+          {% endif %}
+        {% endfor %}
+        {% if sp_s.show_clear_filter %}<button class="sp-gift-guide__clear-filter" type="button" data-sp-gift-clear hidden>{{ sp_s.clear_filter_label | escape }}</button>{% endif %}
+      </div>
+    {% endif %}
+    <p class="sp-gift-guide__sr-only" data-sp-gift-live aria-live="polite" aria-atomic="true"></p>
+    <div class="sp-gift-guide__empty" data-sp-gift-empty hidden>{{ sp_s.empty_filter_message | escape }}</div>
+
+    {% if sp_card_count > 0 %}
+      <div class="sp-gift-guide__layout" data-sp-gift-layout>
+        {% if sp_s.layout_style == 'style_3' %}
+          <div class="sp-gift-guide__featured-slot" data-sp-gift-featured-slot></div>
+          <div class="sp-gift-guide__carousel-area">
+            {% if sp_s.show_carousel_arrows %}
+              <div class="sp-gift-guide__carousel-controls" data-sp-gift-carousel-controls>
+                <button type="button" class="sp-gift-guide__nav" data-sp-gift-prev aria-label="{{ sp_s.carousel_previous_label | escape }}" disabled><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg></button>
+                <button type="button" class="sp-gift-guide__nav" data-sp-gift-next aria-label="{{ sp_s.carousel_next_label | escape }}"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></button>
+              </div>
+            {% endif %}
+            <div class="sp-gift-guide__cards" data-sp-gift-cards data-sp-gift-carousel-viewport role="list" aria-label="{{ sp_s.cards_accessibility_label | escape }}">
+              {% for block in section.blocks %}{% if block.type == 'gift_card' %}{% render 'sp-gift-guide-card', block: block, section: section, is_first: false %}{% endif %}{% endfor %}
+            </div>
+            {% if sp_s.show_carousel_pagination %}<div class="sp-gift-guide__carousel-progress" aria-hidden="true"><span data-sp-gift-progress></span></div>{% endif %}
+          </div>
+        {% else %}
+          <div class="sp-gift-guide__cards" data-sp-gift-cards role="list" aria-label="{{ sp_s.cards_accessibility_label | escape }}">
+            {% assign sp_rendered = 0 %}
+            {% for block in section.blocks %}
+              {% if block.type == 'gift_card' %}
+                {% assign sp_rendered = sp_rendered | plus: 1 %}
+                {% assign sp_is_first = false %}
+                {% if sp_rendered == 1 %}{% assign sp_is_first = true %}{% endif %}
+                {% render 'sp-gift-guide-card', block: block, section: section, is_first: sp_is_first %}
+              {% endif %}
+            {% endfor %}
+          </div>
+        {% endif %}
+      </div>
+    {% elsif request.design_mode %}
+      <p class="sp-gift-guide__admin-note">Add gift card blocks to display your Gift Guide.</p>
+    {% endif %}
+    {% if section.blocks.size > 0 %}
+      <div class="sp-gift-guide__promos">
+        {% for block in section.blocks %}
+          {% if block.type == 'promo' %}
+            <div class="sp-gift-guide__promo" {{ block.shopify_attributes }}>
+              {% if block.settings.heading != blank %}<strong>{{ block.settings.heading | escape }}</strong>{% endif %}
+              {% if block.settings.description != blank %}<p>{{ block.settings.description | escape }}</p>{% endif %}
+              {% if block.settings.link != blank and block.settings.link_label != blank %}<a href="{{ block.settings.link }}">{{ block.settings.link_label | escape }} <span aria-hidden="true">→</span></a>{% endif %}
+            </div>
+          {% endif %}
+        {% endfor %}
+      </div>
+    {% endif %}
+  </div>
+</section>
+<script src="{{ 'sp-gift-guide.js' | asset_url }}" defer></script>
+{% endif %}
+{% schema %}
+{
+  "name": "Gift Guide",
+  "tag": "section",
+  "class": "sp-gift-guide-section",
+  "max_blocks": 35,
+  "disabled_on": {
+    "groups": [
+      "header",
+      "footer",
+      "custom.system"
+    ]
+  },
+  "settings": [
+    {
+      "type": "header",
+      "content": "Header"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_header",
+      "label": "Show heading",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Eyebrow",
+      "default": "THE GIFT GUIDE"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Thoughtful Gifts, Made Easy"
+    },
+    {
+      "type": "richtext",
+      "id": "description",
+      "label": "Description",
+      "default": "<p>Find something special for every person, moment, and budget.</p>"
+    },
+    {
+      "type": "select",
+      "id": "typography_source",
+      "label": "Heading typography",
+      "default": "global",
+      "options": [
+        {
+          "value": "global",
+          "label": "Theme defaults"
+        },
+        {
+          "value": "custom",
+          "label": "Custom sizes"
+        }
+      ]
+    },
+    {
+      "type": "range",
+      "id": "heading_size_desktop",
+      "label": "Custom desktop heading",
+      "default": 52,
+      "min": 28,
+      "max": 76,
+      "step": 2,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "heading_size_mobile",
+      "label": "Custom mobile heading",
+      "default": 30,
+      "min": 20,
+      "max": 44,
+      "step": 2,
+      "unit": "px"
+    },
+    {
+      "type": "select",
+      "id": "header_alignment",
+      "label": "Heading alignment",
+      "default": "center",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "header_alignment_mobile",
+      "label": "Mobile heading alignment",
+      "default": "center",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ]
+    },
+    {
+      "type": "range",
+      "id": "header_max_width",
+      "label": "Heading maximum width",
+      "default": 920,
+      "min": 400,
+      "max": 1200,
+      "step": 20,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "header_bottom_gap",
+      "label": "Heading bottom spacing",
+      "default": 26,
+      "min": 8,
+      "max": 72,
+      "step": 2,
+      "unit": "px"
+    },
+    {
+      "type": "text",
+      "id": "header_button_label",
+      "label": "Header button label"
+    },
+    {
+      "type": "url",
+      "id": "header_button_link",
+      "label": "Header button link"
+    },
+    {
+      "type": "select",
+      "id": "header_button_style",
+      "label": "Header button appearance",
+      "default": "outline",
+      "options": [
+        {
+          "value": "outline",
+          "label": "Outline (reference)"
+        },
+        {
+          "value": "primary",
+          "label": "Primary fill"
+        },
+        {
+          "value": "text",
+          "label": "Text link"
+        }
+      ]
+    },
+    {
+      "type": "header",
+      "content": "Layout styles"
+    },
+    {
+      "type": "select",
+      "id": "layout_style",
+      "label": "Layout style",
+      "default": "style_1",
+      "options": [
+        {
+          "value": "style_1",
+          "label": "Editorial mosaic"
+        },
+        {
+          "value": "style_2",
+          "label": "Equal card grid"
+        },
+        {
+          "value": "style_3",
+          "label": "Featured carousel"
+        },
+        {
+          "value": "style_4",
+          "label": "Shoppable gift finder"
+        },
+        {
+          "value": "style_5",
+          "label": "Minimal directory"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "section_width",
+      "label": "Section width",
+      "default": "wide",
+      "options": [
+        {
+          "value": "default",
+          "label": "Normal"
+        },
+        {
+          "value": "wide",
+          "label": "Wide"
+        },
+        {
+          "value": "full",
+          "label": "Full width"
+        }
+      ]
+    },
+    {
+      "type": "range",
+      "id": "max_width",
+      "label": "Maximum inner width",
+      "default": 1600,
+      "min": 800,
+      "max": 1800,
+      "step": 20,
+      "unit": "px"
+    },
+    {
+      "type": "select",
+      "id": "featured_position",
+      "label": "Featured card on desktop",
+      "default": "left",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ]
+    },
+    {
+      "type": "range",
+      "id": "featured_width",
+      "label": "Featured carousel width",
+      "default": 48,
+      "min": 35,
+      "max": 65,
+      "step": 1,
+      "unit": "%"
+    },
+    {
+      "type": "select",
+      "id": "desktop_columns",
+      "label": "Desktop grid columns",
+      "default": "3",
+      "options": [
+        {
+          "value": "2",
+          "label": "Two"
+        },
+        {
+          "value": "3",
+          "label": "Three"
+        },
+        {
+          "value": "4",
+          "label": "Four"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "tablet_columns",
+      "label": "Tablet grid columns",
+      "default": "2",
+      "options": [
+        {
+          "value": "1",
+          "label": "One"
+        },
+        {
+          "value": "2",
+          "label": "Two"
+        },
+        {
+          "value": "3",
+          "label": "Three"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "mobile_columns",
+      "label": "Mobile grid columns",
+      "default": "1",
+      "options": [
+        {
+          "value": "1",
+          "label": "One"
+        },
+        {
+          "value": "2",
+          "label": "Two"
+        }
+      ]
+    },
+    {
+      "type": "range",
+      "id": "gap_desktop",
+      "label": "Desktop card gap",
+      "default": 16,
+      "min": 4,
+      "max": 40,
+      "step": 2,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "gap_mobile",
+      "label": "Mobile card gap",
+      "default": 12,
+      "min": 4,
+      "max": 30,
+      "step": 2,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "mosaic_row_height",
+      "label": "Editorial card row height",
+      "min": 190,
+      "max": 370,
+      "step": 10,
+      "unit": "px",
+      "default": 300,
+      "info": "Applies to editorial mosaic on desktop."
+    },
+    {
+      "type": "range",
+      "id": "card_content_padding",
+      "label": "Card text padding",
+      "min": 12,
+      "max": 44,
+      "step": 2,
+      "unit": "px",
+      "default": 24
+    },
+    {
+      "type": "range",
+      "id": "featured_content_padding",
+      "label": "Featured card text padding",
+      "min": 16,
+      "max": 52,
+      "step": 2,
+      "unit": "px",
+      "default": 30
+    },
+    {
+      "type": "range",
+      "id": "media_height",
+      "label": "Gift finder card height",
+      "default": 360,
+      "min": 230,
+      "max": 550,
+      "step": 10,
+      "unit": "px"
+    },
+    {
+      "type": "select",
+      "id": "image_ratio",
+      "label": "Equal grid image ratio",
+      "default": "4 / 3",
+      "options": [
+        {
+          "value": "1 / 1",
+          "label": "Square"
+        },
+        {
+          "value": "4 / 3",
+          "label": "4:3"
+        },
+        {
+          "value": "3 / 2",
+          "label": "3:2"
+        },
+        {
+          "value": "16 / 9",
+          "label": "Wide"
+        }
+      ]
+    },
+    {
+      "type": "header",
+      "content": "Filters"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_filters",
+      "label": "Enable category filters",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_all_filter",
+      "label": "Show generated All gifts filter",
+      "default": false
+    },
+    {
+      "type": "text",
+      "id": "all_filter_label",
+      "label": "All gifts filter label",
+      "default": "For everyone"
+    },
+    {
+      "type": "text",
+      "id": "default_filter",
+      "label": "Initial filter key",
+      "default": "all",
+      "info": "Use all or an existing filter key. For everyone normally uses the key all."
+    },
+    {
+      "type": "text",
+      "id": "filter_group_label",
+      "label": "Filter accessibility label",
+      "default": "Choose a gift category"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_clear_filter",
+      "label": "Show clear filter (Gift Finder)",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "clear_filter_label",
+      "label": "Clear filter label",
+      "default": "Clear filters"
+    },
+    {
+      "type": "text",
+      "id": "result_count_label",
+      "label": "Results announcement text",
+      "default": "gift guides available"
+    },
+    {
+      "type": "text",
+      "id": "empty_filter_message",
+      "label": "No matches message",
+      "default": "No gift guides match this filter."
+    },
+    {
+      "type": "header",
+      "content": "Cards and appearance"
+    },
+    {
+      "type": "color_scheme",
+      "id": "sp_color_scheme",
+      "label": "Spider color scheme",
+      "default": "scheme-2"
+    },
+    {
+      "type": "checkbox",
+      "id": "card_border",
+      "label": "Show card border",
+      "default": false
+    },
+    {
+      "type": "select",
+      "id": "card_shadow",
+      "label": "Card shadow",
+      "default": "soft",
+      "options": [
+        {
+          "value": "none",
+          "label": "None"
+        },
+        {
+          "value": "soft",
+          "label": "Soft"
+        },
+        {
+          "value": "strong",
+          "label": "Strong"
+        }
+      ]
+    },
+    {
+      "type": "range",
+      "id": "card_radius",
+      "label": "Card corner radius",
+      "default": 16,
+      "min": 0,
+      "max": 36,
+      "step": 2,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "overlay_opacity",
+      "label": "Bottom image overlay strength",
+      "default": 75,
+      "min": 30,
+      "max": 95,
+      "step": 5,
+      "unit": "%"
+    },
+    {
+      "type": "range",
+      "id": "filter_top_gap",
+      "label": "Space below filters",
+      "min": 10,
+      "max": 48,
+      "step": 2,
+      "unit": "px",
+      "default": 32
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_hover",
+      "label": "Subtle image zoom on hover",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "animate_cards",
+      "label": "Allow subtle entry animations",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "eager_featured_image",
+      "label": "Load first image eagerly",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "show_gift_count",
+      "label": "Show gift count badges",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "gift_count_suffix",
+      "label": "Gift count suffix",
+      "default": "gifts"
+    },
+    {
+      "type": "checkbox",
+      "id": "hide_missing_images",
+      "label": "Hide cards with no images on live store",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "full_card_links",
+      "label": "Allow stretched card links",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "new_tab",
+      "label": "Open card links in new tab",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "show_product_price",
+      "label": "Show product price in gift finder",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Carousel"
+    },
+    {
+      "type": "select",
+      "id": "carousel_columns",
+      "label": "Slides visible (desktop)",
+      "default": "2",
+      "options": [
+        {
+          "value": "1",
+          "label": "One"
+        },
+        {
+          "value": "2",
+          "label": "Two"
+        }
+      ]
+    },
+    {
+      "type": "checkbox",
+      "id": "show_carousel_arrows",
+      "label": "Show arrow navigation",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_carousel_pagination",
+      "label": "Show progress indicator",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "carousel_autoplay",
+      "label": "Autoplay carousel",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "carousel_speed",
+      "label": "Autoplay interval",
+      "default": 5000,
+      "min": 3000,
+      "max": 9000,
+      "step": 500,
+      "unit": "ms"
+    },
+    {
+      "type": "checkbox",
+      "id": "carousel_pause_hover",
+      "label": "Pause autoplay on hover",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "carousel_previous_label",
+      "label": "Previous button accessible label",
+      "default": "Previous gift cards"
+    },
+    {
+      "type": "text",
+      "id": "carousel_next_label",
+      "label": "Next button accessible label",
+      "default": "Next gift cards"
+    },
+    {
+      "type": "text",
+      "id": "carousel_item_label",
+      "label": "Carousel accessible name",
+      "default": "Other gift categories"
+    },
+    {
+      "type": "header",
+      "content": "Section spacing"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "Desktop top padding",
+      "default": 68,
+      "min": 0,
+      "max": 140,
+      "step": 4,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "Desktop bottom padding",
+      "default": 68,
+      "min": 0,
+      "max": 140,
+      "step": 4,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "padding_top_mobile",
+      "label": "Mobile top padding",
+      "default": 40,
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom_mobile",
+      "label": "Mobile bottom padding",
+      "default": 40,
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px"
+    },
+    {
+      "type": "header",
+      "content": "Accessibility"
+    },
+    {
+      "type": "text",
+      "id": "accessibility_label",
+      "label": "Section accessibility label",
+      "default": "Gift guide"
+    },
+    {
+      "type": "text",
+      "id": "cards_accessibility_label",
+      "label": "Gift cards accessibility label",
+      "default": "Gift categories"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "filter",
+      "name": "Category filter",
+      "limit": 10,
+      "settings": [
+        {
+          "type": "text",
+          "id": "label",
+          "label": "Visible filter label",
+          "default": "For everyone"
+        },
+        {
+          "type": "text",
+          "id": "filter_key",
+          "label": "Unique filter key",
+          "default": "all",
+          "info": "Enter a distinct lowercase key such as under-50. all always shows every card."
+        },
+        {
+          "type": "text",
+          "id": "accessibility_label",
+          "label": "Accessibility label"
+        },
+        {
+          "type": "select",
+          "id": "icon",
+          "label": "Optional decorative icon",
+          "default": "none",
+          "options": [
+            {
+              "value": "none",
+              "label": "None"
+            },
+            {
+              "value": "gift",
+              "label": "Gift"
+            },
+            {
+              "value": "heart",
+              "label": "Heart"
+            },
+            {
+              "value": "tag",
+              "label": "Tag"
+            }
+          ]
+        },
+        {
+          "type": "image_picker",
+          "id": "custom_icon",
+          "label": "Optional filter icon image"
+        },
+        {
+          "type": "checkbox",
+          "id": "default_active",
+          "label": "Mark initial filter (informational only)",
+          "default": false
+        }
+      ]
+    },
+    {
+      "type": "gift_card",
+      "name": "Gift card",
+      "limit": 20,
+      "settings": [
+        {
+          "type": "header",
+          "content": "Gift card content"
+        },
+        {
+          "type": "select",
+          "id": "card_type",
+          "label": "Card type",
+          "default": "standard",
+          "options": [
+            {
+              "value": "featured",
+              "label": "Featured"
+            },
+            {
+              "value": "standard",
+              "label": "Standard"
+            },
+            {
+              "value": "compact",
+              "label": "Compact"
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "id": "filter_keys",
+          "label": "Filter keys (comma separated)",
+          "default": "under-50",
+          "info": "Example: under-50, for-her. Match category filter keys exactly. All cards display under key all."
+        },
+        {
+          "type": "text",
+          "id": "eyebrow",
+          "label": "Category label",
+          "default": "GIFT GUIDE"
+        },
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "Card heading",
+          "default": "Gift ideas"
+        },
+        {
+          "type": "text",
+          "id": "description",
+          "label": "Card description"
+        },
+        {
+          "type": "text",
+          "id": "cta_label",
+          "label": "Action label",
+          "default": "Shop gifts"
+        },
+        {
+          "type": "text",
+          "id": "cta_accessibility_label",
+          "label": "Custom action accessibility label"
+        },
+        {
+          "type": "text",
+          "id": "badge",
+          "label": "Optional corner badge"
+        },
+        {
+          "type": "header",
+          "content": "Media"
+        },
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Desktop image"
+        },
+        {
+          "type": "image_picker",
+          "id": "mobile_image",
+          "label": "Mobile image override"
+        },
+        {
+          "type": "text",
+          "id": "image_alt",
+          "label": "Image alternate text"
+        },
+        {
+          "type": "select",
+          "id": "focal_position",
+          "label": "Image position",
+          "default": "inherit",
+          "options": [
+            {
+              "value": "inherit",
+              "label": "Image default"
+            },
+            {
+              "value": "center",
+              "label": "Center"
+            },
+            {
+              "value": "center-top",
+              "label": "Top center"
+            },
+            {
+              "value": "center-bottom",
+              "label": "Bottom center"
+            },
+            {
+              "value": "left-center",
+              "label": "Left center"
+            },
+            {
+              "value": "right-center",
+              "label": "Right center"
+            }
+          ]
+        },
+        {
+          "type": "checkbox",
+          "id": "override_overlay",
+          "label": "Override section overlay",
+          "default": false
+        },
+        {
+          "type": "range",
+          "id": "overlay_opacity",
+          "label": "Card overlay strength",
+          "default": 75,
+          "min": 30,
+          "max": 95,
+          "step": 5,
+          "unit": "%"
+        },
+        {
+          "type": "select",
+          "id": "content_position",
+          "label": "Vertical text position",
+          "default": "bottom",
+          "options": [
+            {
+              "value": "bottom",
+              "label": "Bottom"
+            },
+            {
+              "value": "center",
+              "label": "Center"
+            },
+            {
+              "value": "top",
+              "label": "Top"
+            }
+          ]
+        },
+        {
+          "type": "color",
+          "id": "text_color",
+          "label": "Overlay text color",
+          "default": "#FFFFFF"
+        },
+        {
+          "type": "header",
+          "content": "Shopify destinations"
+        },
+        {
+          "type": "collection",
+          "id": "collection",
+          "label": "Shopify collection"
+        },
+        {
+          "type": "product",
+          "id": "product",
+          "label": "Shopify product"
+        },
+        {
+          "type": "url",
+          "id": "custom_link",
+          "label": "Custom link (priority 1)"
+        },
+        {
+          "type": "checkbox",
+          "id": "full_card_link",
+          "label": "Make entire card clickable",
+          "default": false
+        },
+        {
+          "type": "select",
+          "id": "gift_count_source",
+          "label": "Gift count source",
+          "default": "hidden",
+          "options": [
+            {
+              "value": "hidden",
+              "label": "Hide"
+            },
+            {
+              "value": "collection",
+              "label": "Shopify collection count"
+            },
+            {
+              "value": "custom",
+              "label": "Custom count"
+            }
+          ]
+        },
+        {
+          "type": "number",
+          "id": "custom_gift_count",
+          "label": "Custom number of gifts",
+          "default": 48
+        }
+      ]
+    },
+    {
+      "type": "promo",
+      "name": "Promotional text",
+      "limit": 5,
+      "settings": [
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "Heading",
+          "default": "Gift wrapping available"
+        },
+        {
+          "type": "text",
+          "id": "description",
+          "label": "Description"
+        },
+        {
+          "type": "text",
+          "id": "link_label",
+          "label": "Link label"
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "Link"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Gift Guide",
+      "settings": {
+        "layout_style": "style_1"
+      },
+      "category": "06. Promotions",
+      "blocks": [
+        {
+          "type": "filter",
+          "settings": {
+            "label": "For everyone",
+            "filter_key": "all"
+          }
+        },
+        {
+          "type": "filter",
+          "settings": {
+            "label": "Under $50",
+            "filter_key": "under-50"
+          }
+        },
+        {
+          "type": "filter",
+          "settings": {
+            "label": "Best sellers",
+            "filter_key": "best-sellers"
+          }
+        },
+        {
+          "type": "filter",
+          "settings": {
+            "label": "Gift cards",
+            "filter_key": "gift-cards"
+          }
+        },
+        {
+          "type": "gift_card",
+          "settings": {
+            "card_type": "featured",
+            "filter_keys": "under-50,best-sellers",
+            "eyebrow": "GIFTS UNDER $50",
+            "heading": "Small Gifts, Big Joy",
+            "description": "Meaningful finds for every budget.",
+            "cta_label": "Shop the collection",
+            "gift_count_source": "collection"
+          }
+        },
+        {
+          "type": "gift_card",
+          "settings": {
+            "card_type": "standard",
+            "filter_keys": "best-sellers",
+            "eyebrow": "FOR HER",
+            "heading": "Gifts She’ll Love",
+            "cta_label": "Shop gifts"
+          }
+        },
+        {
+          "type": "gift_card",
+          "settings": {
+            "card_type": "standard",
+            "filter_keys": "best-sellers",
+            "eyebrow": "FOR HIM",
+            "heading": "Everyday Favorites",
+            "cta_label": "Shop gifts"
+          }
+        },
+        {
+          "type": "gift_card",
+          "settings": {
+            "card_type": "standard",
+            "filter_keys": "under-50",
+            "eyebrow": "FOR THE HOME",
+            "heading": "Comfort, Beautifully Given",
+            "cta_label": "Shop gifts"
+          }
+        },
+        {
+          "type": "gift_card",
+          "settings": {
+            "card_type": "standard",
+            "filter_keys": "gift-cards",
+            "eyebrow": "LAST-MINUTE",
+            "heading": "Always the Right Choice",
+            "cta_label": "Shop gift cards"
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

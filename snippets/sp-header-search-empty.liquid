@@ -1,0 +1,95 @@
+{% comment %}
+  Spider Premium Header — Search Drawer empty/inspiration state.
+  Params: section (required)
+{% endcomment %}
+<div class="sp-search-drawer__empty" data-sp-search-empty>
+  {% if section.settings.search_empty_heading != blank %}
+    <h2 class="sp-search-drawer__empty-title">{{ section.settings.search_empty_heading | escape }}</h2>
+  {% endif %}
+
+  {% if section.settings.search_show_recent %}
+    <section
+      class="sp-search-drawer__empty-section"
+      data-sp-search-recent-section
+      hidden>
+      <div class="sp-search-drawer__empty-head">
+        <h3 class="sp-search-drawer__section-title">Recent searches</h3>
+        <button
+          class="sp-search-drawer__text-button"
+          type="button"
+          data-sp-search-recent-clear>Clear</button>
+      </div>
+      <div class="sp-search-drawer__chips" data-sp-search-recent-list></div>
+    </section>
+  {% endif %}
+
+  {% if section.settings.search_show_popular %}
+    {%- assign sp_search_suggestion_count = 0 -%}
+    {% capture sp_search_suggestions %}
+      {% for block in section.blocks %}
+        {% if block.type == 'search_suggestion' and block.settings.label != blank %}
+          {%- assign sp_search_suggestion_count = sp_search_suggestion_count | plus: 1 -%}
+          {% if sp_search_suggestion_count <= 8 %}
+            {%- liquid
+              assign sp_suggestion_url = block.settings.url
+              if sp_suggestion_url == blank and block.settings.query != blank
+                assign sp_encoded_query = block.settings.query | url_encode
+                assign sp_suggestion_url = routes.search_url | append: '?q=' | append: sp_encoded_query
+              endif
+            -%}
+            {% if sp_suggestion_url != blank %}
+              <a
+                class="sp-search-drawer__chip"
+                href="{{ sp_suggestion_url }}"
+                data-sp-search-term="{{ block.settings.query | default: block.settings.label | escape }}"
+                data-sp-search-suggestion-block="{{ block.id }}"
+                {{ block.shopify_attributes }}
+              >{{ block.settings.label | escape }}</a>
+            {% endif %}
+          {% endif %}
+        {% endif %}
+      {% endfor %}
+    {% endcapture %}
+    {% if sp_search_suggestion_count > 0 %}
+      <section class="sp-search-drawer__empty-section">
+        <h3 class="sp-search-drawer__section-title">{{ section.settings.search_popular_heading | default: 'Popular searches' | escape }}</h3>
+        <div class="sp-search-drawer__chips">{{ sp_search_suggestions }}</div>
+      </section>
+    {% endif %}
+  {% endif %}
+
+  {% if section.settings.search_show_featured_collections and section.settings.search_featured_collections != blank %}
+    <section class="sp-search-drawer__empty-section">
+      <h3 class="sp-search-drawer__section-title">Featured collections</h3>
+      <div class="sp-search-drawer__featured-grid">
+        {% for collection in section.settings.search_featured_collections limit: 4 %}
+          <a class="sp-search-drawer__featured-card" href="{{ collection.url }}">
+            {% if collection.featured_image != blank %}
+              {{ collection.featured_image | image_url: width: 240 | image_tag: loading: 'lazy', widths: '120, 180, 240', sizes: '96px', alt: collection.title }}
+            {% endif %}
+            <span>{{ collection.title | escape }}</span>
+          </a>
+        {% endfor %}
+      </div>
+    </section>
+  {% endif %}
+
+  {% if section.settings.search_show_featured_products and section.settings.search_featured_products != blank %}
+    <section class="sp-search-drawer__empty-section">
+      <h3 class="sp-search-drawer__section-title">Featured products</h3>
+      <div class="sp-search-drawer__featured-products">
+        {% for product in section.settings.search_featured_products limit: 4 %}
+          <a class="sp-search-drawer__featured-product" href="{{ product.url }}">
+            {% if product.featured_image != blank %}
+              {{ product.featured_image | image_url: width: 240 | image_tag: loading: 'lazy', widths: '120, 180, 240', sizes: '72px', alt: product.featured_image.alt | default: product.title }}
+            {% endif %}
+            <span class="sp-search-drawer__featured-product-copy">
+              <strong>{{ product.title | escape }}</strong>
+              <span>{{ product.price | money }}</span>
+            </span>
+          </a>
+        {% endfor %}
+      </div>
+    </section>
+  {% endif %}
+</div>

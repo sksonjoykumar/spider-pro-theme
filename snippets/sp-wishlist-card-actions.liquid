@@ -1,0 +1,27 @@
+{%- comment -%}
+Wishlist action placement adapter (one instance of each control per card).
+Mode media: remove action only, positioned inside the image shell.
+Mode content: Quick View and Compare actions once, in the content flow.
+The existing data attributes remain connected to Spider Product Commerce.
+{%- endcomment -%}
+{%- if mode == 'media' -%}
+  <div class="sp-wishlist-card__actions sp-wishlist-card__actions--media sp-product-card__media-actions" aria-label="Wishlist actions">
+  <button type="button" class="sp-wishlist-card__icon-action sp-wishlist-card__remove sp-product-card__icon-action sp-product-card__icon-action--wishlist is-active" data-sp-wishlist-remove data-sp-product-wishlist aria-label="Remove from wishlist" aria-pressed="true">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.2 4.2 12.8A5.2 5.2 0 0 1 11.5 5.4L12 6l.5-.6a5.2 5.2 0 0 1 7.3 7.4L12 20.2Z" fill="currentColor" stroke="currentColor" stroke-width="1.4"/></svg>
+    <span class="sp-product-card__tooltip">Remove</span>
+  </button>
+
+  </div>
+{%- elsif mode == 'content' -%}
+  <div class="sp-wishlist-card__actions sp-wishlist-card__actions--content sp-product-card__media-actions" aria-label="Product actions">
+  <button type="button" class="sp-wishlist-card__icon-action sp-wishlist-card__view sp-product-card__icon-action sp-product-card__icon-action--view" data-sp-wishlist-quick-view data-sp-product-quick-view aria-label="Quick view">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 12s3.4-6 9.5-6 9.5 6 9.5 6-3.4 6-9.5 6-9.5-6-9.5-6Z" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="12" cy="12" r="2.6" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>
+    <span class="sp-product-card__tooltip">Quick view</span>
+  </button>
+
+  <button type="button" class="sp-wishlist-card__icon-action sp-wishlist-card__compare sp-product-card__icon-action sp-product-card__icon-action--compare" data-sp-wishlist-compare data-sp-product-compare aria-label="Add to compare" aria-pressed="false">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5v14M17 5v14M4.5 7.5 7 5l2.5 2.5M14.5 16.5 17 19l2.5-2.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <span class="sp-product-card__tooltip">Compare</span>
+  </button>
+  </div>
+{%- endif -%}

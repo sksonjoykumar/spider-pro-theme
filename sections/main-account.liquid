@@ -1,0 +1,75 @@
+{{ 'sp-customer-account.css' | asset_url | stylesheet_tag }}
+{% render 'sp-section-color-scheme', section: section %}
+<section class="sp-section sp-account-page" style="--sp-account-pad-top:{{ section.settings.padding_top }}px;--sp-account-pad-bottom:{{ section.settings.padding_bottom }}px">
+  <div class="sp-container{% if section.settings.container_width == 'wide' %} sp-container--wide{% elsif section.settings.container_width == 'narrow' %} sp-container--narrow{% endif %}">
+    {% assign sp_customer_display_name = customer.first_name | default: customer.name %}
+    <header class="sp-account-page-header">
+      <div><span class="sp-account-kicker">{{ 'customer.spider.account_center' | t }}</span><h1>{{ 'customer.account.title' | t }}</h1><p>{{ 'customer.spider.welcome_name' | t: name: sp_customer_display_name }}</p></div>
+      <div class="sp-account-page-header__identity"><strong>{{ customer.name | escape }}</strong><span>{{ customer.email | escape }}</span></div>
+    </header>
+    <div class="sp-account-shell">
+      <aside>{% render 'sp-account-nav', active: 'overview' %}</aside>
+      <div class="sp-account-shell__main">
+        <section class="sp-account-overview" aria-labelledby="overview-heading">
+          <div class="sp-account-section-heading"><div><span class="sp-account-kicker">{{ 'customer.spider.overview' | t }}</span><h2 class="sp-heading sp-heading--h3" id="overview-heading">{{ 'customer.spider.account_overview' | t }}</h2></div></div>
+          <div class="sp-account-stats">
+            <article class="sp-account-stat"><span>{% render 'sp-account-icon', name: 'orders' %}</span><div><strong>{{ customer.orders_count }}</strong><small>{{ 'customer.spider.total_orders' | t }}</small></div></article>
+            <article class="sp-account-stat"><span>{% render 'sp-account-icon', name: 'addresses' %}</span><div><strong>{{ customer.addresses_count }}</strong><small>{{ 'customer.spider.saved_addresses' | t }}</small></div></article>
+            <article class="sp-account-stat"><span>{% render 'sp-account-icon', name: 'user' %}</span><div><strong>{{ customer.total_spent | money }}</strong><small>{{ 'customer.spider.total_spent' | t }}</small></div></article>
+          </div>
+          <div class="sp-account-overview-grid">
+            <article class="sp-account-card">
+              <div class="sp-account-card__heading"><h3>{{ 'customer.spider.recent_orders' | t }}</h3><a class="sp-account-text-link" href="#orders">{{ 'customer.spider.view_all_orders' | t }}</a></div>
+              {% if customer.orders_count > 0 %}<div class="sp-account-order-list">{% for recent_order in customer.orders limit: 3 %}{% render 'sp-account-order-card', order: recent_order, compact: true %}{% endfor %}</div>{% else %}{% render 'sp-account-empty-state', icon: 'package', heading: 'customer.spider.no_orders_heading', text: 'customer.spider.no_orders_text', button_label: 'customer.spider.start_shopping', button_href: routes.all_products_collection_url %}{% endif %}
+            </article>
+            <article class="sp-account-card">
+              <div class="sp-account-card__heading"><h3>{{ 'customer.spider.default_address' | t }}</h3><a class="sp-account-text-link" href="{{ routes.account_addresses_url }}">{{ 'customer.spider.manage_addresses' | t }}</a></div>
+              {% if customer.default_address %}<div class="sp-account-address-preview">{{ customer.default_address | format_address }}</div>{% else %}{% render 'sp-account-empty-state', icon: 'addresses', heading: 'customer.spider.no_addresses_heading', text: 'customer.spider.no_addresses_text', button_label: 'customer.spider.add_address', button_href: routes.account_addresses_url %}{% endif %}
+            </article>
+          </div>
+        </section>
+        <section class="sp-account-orders" id="orders" aria-labelledby="orders-heading">
+          <div class="sp-account-section-heading"><div><span class="sp-account-kicker">{{ 'customer.spider.orders' | t }}</span><h2 class="sp-heading sp-heading--h3" id="orders-heading">{{ 'customer.orders.title' | t }}</h2></div><span class="sp-account-count">{{ customer.orders_count }} {{ 'customer.spider.orders' | t }}</span></div>
+          {% paginate customer.orders by section.settings.orders_per_page %}
+            {% if customer.orders.size > 0 %}
+              <div class="sp-account-orders-table-wrap"><table class="sp-account-orders-table"><thead><tr><th scope="col">{{ 'customer.orders.order_number' | t }}</th><th scope="col">{{ 'customer.orders.date' | t }}</th><th scope="col">{{ 'customer.orders.payment_status' | t }}</th><th scope="col">{{ 'customer.orders.fulfillment_status' | t }}</th><th scope="col">{{ 'customer.orders.total' | t }}</th><th scope="col"><span class="visually-hidden">{{ 'customer.orders.view_order' | t }}</span></th></tr></thead><tbody>{% for order in customer.orders %}<tr><td><a href="{{ order.customer_url }}"><strong>{{ order.name }}</strong></a></td><td>{{ order.created_at | time_tag: format: 'date' }}</td><td>{% render 'sp-account-status-badge', status: order.financial_status, label: order.financial_status_label, kind: 'financial' %}</td><td>{% render 'sp-account-status-badge', status: order.fulfillment_status, label: order.fulfillment_status_label, kind: 'fulfillment' %}</td><td>{{ order.total_price | money }}</td><td><a class="sp-account-table-action" href="{{ order.customer_url }}" aria-label="{{ 'customer.orders.view_order' | t }} {{ order.name }}">{% render 'sp-account-icon', name: 'arrow-right' %}</a></td></tr>{% endfor %}</tbody></table></div>
+              <div class="sp-account-orders-mobile">{% for order in customer.orders %}{% render 'sp-account-order-card', order: order %}{% endfor %}</div>
+              {% render 'pagination', paginate: paginate %}
+            {% else %}{% render 'sp-account-empty-state', icon: 'package', heading: 'customer.spider.no_orders_heading', text: 'customer.spider.no_orders_text', button_label: 'customer.spider.start_shopping', button_href: routes.all_products_collection_url %}{% endif %}
+          {% endpaginate %}
+        </section>
+      </div>
+    </div>
+  </div>
+</section>
+{% schema %}
+{"name":"Main account","settings":[{"type":"color_scheme","id":"sp_color_scheme","label":"Color scheme","default":"scheme-1"},{"type":"select","id":"container_width","label":"Container width","default":"default","options":[{"value":"narrow","label":"Narrow"},{"value":"default","label":"Theme default"},{"value":"wide","label":"Wide"}]},{"type":"range","id":"orders_per_page","label":"Orders per page","min":5,"max":20,"step":1,"default":10},{"type":"range","id":"padding_top","label":"Padding top","min":24,"max":160,"step":8,"unit":"px","default":64},{"type":"range","id":"padding_bottom","label":"Padding bottom","min":24,"max":160,"step":8,"unit":"px","default":80}]}
+{% endschema %}
+{% comment %}
+
+This file has been rewritten to preserve the original behavior.
+
+---
+Changes:
+- from: "{% render 'sp-account-empty-state', icon: 'package', heading: 'customer.spider.no_orders_heading'
+    | t, text: 'customer.spider.no_orders_text' | t, button_label: 'customer.spider.start_shopping'
+    | t, button_href: routes.all_products_collection_url %}"
+  to: "{% render 'sp-account-empty-state', icon: 'package', heading: 'customer.spider.no_orders_heading',
+    text: 'customer.spider.no_orders_text', button_label: 'customer.spider.start_shopping',
+    button_href: routes.all_products_collection_url %}"
+  position: 2753..2990
+- from: "{% render 'sp-account-empty-state', icon: 'addresses', heading: 'customer.spider.no_addresses_heading'
+    | t, text: 'customer.spider.no_addresses_text' | t, button_label: 'customer.spider.add_address'
+    | t, button_href: routes.account_addresses_url %}"
+  to: "{% render 'sp-account-empty-state', icon: 'addresses', heading: 'customer.spider.no_addresses_heading',
+    text: 'customer.spider.no_addresses_text', button_label: 'customer.spider.add_address',
+    button_href: routes.account_addresses_url %}"
+  position: 3454..3690
+- from: "{% render 'sp-account-empty-state', icon: 'package', heading: 'customer.spider.no_orders_heading'
+    | t, text: 'customer.spider.no_orders_text' | t, button_label: 'customer.spider.start_shopping'
+    | t, button_href: routes.all_products_collection_url %}"
+  to: "{% render 'sp-account-empty-state', icon: 'package', heading: 'customer.spider.no_orders_heading',
+    text: 'customer.spider.no_orders_text', button_label: 'customer.spider.start_shopping',
+    button_href: routes.all_products_collection_url %}"
+  position: 5800..6037
+{% endcomment %}

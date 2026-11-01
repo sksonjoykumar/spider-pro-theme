@@ -1,0 +1,56 @@
+<div
+  class="sp-age-verification__content sp-age-verification__content--d-{{ section.settings.desktop_alignment }} sp-age-verification__content--m-{{ section.settings.mobile_alignment }} sp-age-verification__content--v-{{ section.settings.vertical_alignment }}"
+>
+  <div class="sp-age-verification__content-inner">
+    {% if section.settings.show_brand_eyebrow and section.settings.brand_eyebrow != blank %}
+      <p class="sp-age-verification__eyebrow">{{ section.settings.brand_eyebrow | escape }}</p>
+    {% endif %}
+
+    {% if section.settings.heading != blank %}
+      <h2 id="SpAgeVerificationTitle-{{ section.id }}" class="sp-age-verification__heading">{{ section.settings.heading | escape }}</h2>
+    {% else %}
+      <h2 id="SpAgeVerificationTitle-{{ section.id }}" class="visually-hidden">Age verification</h2>
+    {% endif %}
+
+    <div id="SpAgeVerificationDescription-{{ section.id }}" class="sp-age-verification__description rte">{{ section.settings.description }}</div>
+
+    {% if section.settings.verification_method == 'dob' %}
+      {% render 'sp-age-verification-dob', section: section %}
+    {% endif %}
+
+    <div id="SpAgeVerificationError-{{ section.id }}" class="sp-age-verification__error" role="alert" aria-live="polite" hidden data-sp-age-error></div>
+
+    <div class="sp-age-verification__actions sp-age-verification__actions--{{ section.settings.button_layout }}">
+      <button type="button" class="sp-age-verification__button sp-age-verification__button--verify" data-sp-age-verify>
+        <span>{{ section.settings.verify_button_text | escape }}</span>
+        {% if section.settings.show_primary_arrow %}{% render 'sp-age-verification-icon', name: 'arrow' %}{% endif %}
+      </button>
+      <button type="button" class="sp-age-verification__button sp-age-verification__button--exit" data-sp-age-exit>
+        {{ section.settings.exit_button_text | escape }}
+      </button>
+    </div>
+
+    {% if section.settings.show_remember_checkbox %}
+      {% liquid
+        assign remember_days = section.settings.remember_mode
+        if remember_days == 'custom'
+          assign remember_days = section.settings.custom_remember_days
+        endif
+      %}
+      <label class="sp-age-verification__remember">
+        <input type="checkbox" class="sp-age-verification__remember-input" data-sp-age-remember {% if section.settings.remember_default_checked %}checked{% endif %}>
+        <span class="sp-age-verification__remember-text">
+          {{ section.settings.remember_label | escape }}
+          {% if remember_days == 'session' %}for this session{% else %}for {{ remember_days }} {% if remember_days == '1' or remember_days == 1 %}day{% else %}days{% endif %}{% endif %}
+        </span>
+      </label>
+    {% endif %}
+
+    {% if section.settings.legal_text != blank %}
+      <div class="sp-age-verification__legal{% if section.settings.show_legal_divider %} sp-age-verification__legal--divider{% endif %}">
+        {% if section.settings.show_legal_icon %}{% render 'sp-age-verification-icon', name: 'shield' %}{% endif %}
+        <div class="sp-age-verification__legal-text rte">{{ section.settings.legal_text }}</div>
+      </div>
+    {% endif %}
+  </div>
+</div>

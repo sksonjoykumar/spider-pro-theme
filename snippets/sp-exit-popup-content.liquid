@@ -1,0 +1,74 @@
+<div class="sp-exit-popup__content-inner" data-sp-exit-popup-content>
+  {%- if section.settings.popup_layout == 'reference_split' and section.settings.show_promo_eyebrow and section.settings.promo_eyebrow != blank -%}
+    <p class="sp-exit-popup__eyebrow"><span aria-hidden="true"></span>{{ section.settings.promo_eyebrow | escape }}</p>
+  {%- endif -%}
+  {%- for block in section.blocks -%}
+    {%- case block.type -%}
+      {%- when 'heading' -%}
+        {%- if block.settings.text != blank -%}
+          {%- liquid
+            assign block_heading_color = block.settings.color
+            if section.settings.style_preset != 'custom' and block_heading_color == '#111111'
+              assign block_heading_color = 'var(--sp-exit-heading)'
+            endif
+          -%}
+          <{{ block.settings.tag }}
+            class="sp-exit-popup__heading{% if block.settings.hide_mobile %} sp-exit-popup__mobile-hidden{% endif %}"
+            style="--sp-exit-heading-size-d: {{ block.settings.size_d }}px; --sp-exit-heading-size-m: {{ block.settings.size_m }}px; --sp-exit-heading-weight: {{ block.settings.weight }}; --sp-exit-heading-line: {{ block.settings.line_height }}; --sp-exit-heading-letter: {{ block.settings.letter_spacing }}px; --sp-exit-heading-block-color: {{ block_heading_color }};"
+            {{ block.shopify_attributes }}
+          >{{ block.settings.text }}</{{ block.settings.tag }}>
+        {%- endif -%}
+
+      {%- when 'text' -%}
+        {%- if block.settings.text != blank -%}
+          {%- liquid
+            assign block_text_color = block.settings.color
+            if section.settings.style_preset != 'custom' and block_text_color == '#333333'
+              assign block_text_color = 'var(--sp-exit-text)'
+            endif
+          -%}
+          <div
+            class="sp-exit-popup__text rte{% if block.settings.hide_mobile %} sp-exit-popup__mobile-hidden{% endif %}"
+            style="--sp-exit-text-size-d: {{ block.settings.size_d }}px; --sp-exit-text-size-m: {{ block.settings.size_m }}px; --sp-exit-text-line: {{ block.settings.line_height }}; --sp-exit-text-max: {{ block.settings.max_width }}px; --sp-exit-text-block-color: {{ block_text_color }};"
+            {{ block.shopify_attributes }}
+          >{{ block.settings.text }}</div>
+        {%- endif -%}
+
+      {%- when 'spacer' -%}
+        <div
+          class="sp-exit-popup__spacer"
+          aria-hidden="true"
+          style="--sp-exit-space-d: {{ block.settings.space_d }}px; --sp-exit-space-t: {{ block.settings.space_t }}px; --sp-exit-space-m: {{ block.settings.space_m }}px;"
+          {{ block.shopify_attributes }}
+        ></div>
+
+      {%- when 'button' -%}
+        {%- if block.settings.label != blank and block.settings.url != blank -%}
+          <div class="sp-exit-popup__button-wrap" {{ block.shopify_attributes }}>
+            <a
+              class="sp-exit-popup__button sp-exit-popup__button--{{ block.settings.style }} sp-exit-popup__button--{{ block.settings.size }}"
+              href="{{ block.settings.url }}"
+              style="--sp-exit-button-radius: {{ block.settings.radius }}px;"
+              data-sp-exit-popup-cta
+              {% if block.settings.new_tab %}target="_blank" rel="noopener noreferrer"{% endif %}
+            >
+              {%- if block.settings.icon == 'arrow' and block.settings.icon_position == 'left' -%}<span aria-hidden="true">←</span>{%- endif -%}
+              <span>{{ block.settings.label | escape }}</span>
+              {%- if block.settings.icon == 'arrow' and block.settings.icon_position == 'right' -%}<span aria-hidden="true">→</span>{%- endif -%}
+            </a>
+          </div>
+        {%- endif -%}
+
+      {%- when 'discount' -%}
+        {% render 'sp-exit-popup-discount', block: block, section: section %}
+
+      {%- when 'newsletter' -%}
+        {% render 'sp-exit-popup-newsletter', block: block, section: section %}
+      {%- when 'benefit' -%}
+        {%- comment -%}Premium benefits are rendered together in the dedicated footer row below.{%- endcomment -%}
+    {%- endcase -%}
+  {%- endfor -%}
+  {%- if section.settings.popup_layout == 'reference_split' and section.settings.show_reference_benefits -%}
+    {% render 'sp-exit-popup-benefits', section: section %}
+  {%- endif -%}
+</div>

@@ -1,0 +1,307 @@
+
+
+{% render 'sp-section-color-scheme', section: section %}
+{{ 'sp-main-cart.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'sp-premium-cart.js' | asset_url }}" defer></script>
+{% if section.settings.show_shipping_calculator and cart.requires_shipping %}
+  <script src="{{ 'sp-cart-shipping-calculator.js' | asset_url }}" defer></script>
+{% endif %}
+
+{%- liquid
+  assign title_text = section.settings.title
+  if title_text == blank
+    assign title_text = 'cart.cart.your_cart' | t
+  endif
+
+  assign title_class = 'sp-heading--h1'
+  case section.settings.title_style
+    when 'h2'
+      assign title_class = 'sp-heading--h2'
+    when 'custom'
+      assign title_class = 'sp-main-cart__title--custom'
+  endcase
+
+  assign container_class = 'sp-container'
+  if section.settings.container_width == 'wide'
+    assign container_class = 'sp-container sp-container--wide'
+  elsif section.settings.container_width == 'full'
+    assign container_class = 'sp-main-cart__container--full'
+  endif
+
+  assign continue_url = section.settings.continue_link
+  if continue_url == blank
+    assign continue_url = routes.all_products_collection_url
+  endif
+
+  assign empty_continue_url = section.settings.empty_continue_link
+  if empty_continue_url == blank
+    assign empty_continue_url = continue_url
+  endif
+-%}
+
+<section
+  class="sp-section sp-main-cart sp-premium-cart{% if settings.cart_ajax_updates %} sp-main-cart--ajax{% endif %}{% if section.settings.sticky_summary %} sp-main-cart--sticky-summary{% endif %}{% unless section.settings.show_line_total %} sp-main-cart--no-line-total{% endunless %}"
+  data-section-id="{{ section.id }}"
+  data-cart-section
+  data-main-cart
+  style="
+    --sp-cart-summary-width: {{ section.settings.summary_width }}%;
+    --sp-cart-image-size: {{ section.settings.image_size }}px;
+    --sp-premium-radius: {{ section.settings.card_radius }}px;
+    --sp-premium-gap: {{ section.settings.cart_row_gap }}px;
+    --sp-premium-heading-mobile: {{ section.settings.mobile_title_size }}px;
+    --sp-premium-image-radius: {{ section.settings.image_radius }}px;
+    --sp-premium-note-height: {{ section.settings.note_height }}px;
+    --sp-premium-progress-color: {% if section.settings.override_progress_color %}{{ section.settings.progress_color }}{% else %}var(--sp-color-accent){% endif %};
+    --sp-cart-custom-title-size: {{ section.settings.custom_title_size }}px;
+    {% if section.settings.spacing_source == 'custom' %}
+      --sp-cart-pad-top: {{ section.settings.padding_top }}px;
+      --sp-cart-pad-bottom: {{ section.settings.padding_bottom }}px;
+      --sp-cart-pad-top-mobile: {{ section.settings.padding_top_mobile }}px;
+      --sp-cart-pad-bottom-mobile: {{ section.settings.padding_bottom_mobile }}px;
+    {% endif %}
+  "
+>
+  <div class="{{ container_class }}">
+    <header class="sp-main-cart__header">
+      <div class="sp-main-cart__heading-row">
+        <h1 class="sp-main-cart__title {{ title_class }}">{{ title_text | escape }}</h1>
+        {% if section.settings.show_item_count %}
+          <span class="sp-main-cart__count" data-main-cart-item-count>
+            {{ cart.item_count }} {% if cart.item_count == 1 %}item{% else %}items{% endif %}
+          </span>
+        {% endif %}
+      </div>
+
+      {% if section.settings.show_shipping_progress %}
+        {% render 'sp-premium-cart-progress', cart: cart, section: section %}
+      {% endif %}
+    </header>
+
+    <p class="visually-hidden" role="status" aria-live="polite" aria-atomic="true" data-main-cart-status></p>
+
+    {% if cart.item_count > 0 %}
+      <form
+        id="MainCartForm-{{ section.id }}"
+        class="sp-main-cart__form"
+        action="{{ routes.cart_url }}"
+        method="post"
+        data-cart-form
+        data-cart-note-autosave="{{ section.settings.note_autosave }}"
+      >
+        <div class="sp-main-cart__table" role="table" aria-label="{{ title_text | escape }}">
+          <div class="sp-main-cart__table-head" role="row">
+            <span role="columnheader">{{ section.settings.product_column_label | default: 'Product' | escape }}</span>
+            <span role="columnheader">{{ section.settings.price_column_label | default: 'Price' | escape }}</span>
+            <span role="columnheader">{{ section.settings.quantity_column_label | default: 'Quantity' | escape }}</span>
+            {% if section.settings.show_line_total %}<span role="columnheader">{{ section.settings.total_column_label | default: 'Total' | escape }}</span>{% endif %}
+          </div>
+
+          <div class="sp-main-cart__items" role="rowgroup">
+            {% for item in cart.items %}
+              {% render 'cart-item', item: item, index: forloop.index, section: section %}
+            {% endfor %}
+          </div>
+        </div>
+
+        <div class="sp-main-cart__lower">
+          <div class="sp-main-cart__utilities">
+            {% if settings.cart_notes and section.settings.show_cart_note %}
+              <div class="sp-main-cart__note-wrap">
+                {% if section.settings.note_style == 'collapsible' %}
+                  <details class="sp-main-cart__note"{% if cart.note != blank %} open{% endif %}>
+                    <summary>{{ 'cart.notes.order_note' | t }}</summary>
+                    <div class="sp-main-cart__note-content">
+                      <label class="visually-hidden" for="CartNote-{{ section.id }}">{{ 'cart.notes.order_note' | t }}</label>
+                      <textarea id="CartNote-{{ section.id }}" name="note" rows="4" placeholder="{{ section.settings.note_placeholder | default: 'Special instructions, gift message, etc. (optional)' | escape }}" maxlength="{{ section.settings.note_limit }}" data-cart-note>{{ cart.note | escape }}</textarea>
+                    </div>
+                  </details>
+                {% else %}
+                  <div class="sp-main-cart__note sp-main-cart__note--expanded">
+                    <label for="CartNote-{{ section.id }}">{{ section.settings.note_heading | escape }}</label>
+                    <textarea id="CartNote-{{ section.id }}" name="note" rows="4" placeholder="{{ section.settings.note_placeholder | default: 'Special instructions, gift message, etc. (optional)' | escape }}" maxlength="{{ section.settings.note_limit }}" data-cart-note>{{ cart.note | escape }}</textarea>
+                  </div>
+                {% endif %}
+              </div>
+              <div class="sp-premium-cart__note-actions">
+                <span data-premium-note-count aria-live="off">{{ cart.note.size }}/{{ section.settings.note_limit }}</span>
+                <button type="button" class="sp-premium-cart__note-save" data-premium-note-save>{{ section.settings.note_save_label | escape }}</button>
+              </div>
+              <span class="sp-premium-cart__note-message" role="status" data-premium-note-message></span>
+            {% endif %}
+
+            {% if section.settings.show_update_button %}
+              <div class="sp-main-cart__fallback-actions">
+                <button class="sp-button sp-button--secondary sp-main-cart__update" type="submit" name="update">{{ 'cart.actions.update_cart' | t }}</button>
+              </div>
+            {% endif %}
+          </div>
+
+          {% render 'cart-summary', cart: cart, section: section, continue_url: continue_url %}
+        </div>
+      </form>
+
+      {% if section.settings.show_shipping_calculator and cart.requires_shipping %}
+        {% render 'sp-cart-shipping-calculator', cart: cart, section: section %}
+      {% endif %}
+
+      {% if section.settings.show_upsells %}
+        {% render 'cart-upsells' %}
+      {% endif %}
+    {% else %}
+      <div class="sp-main-cart__empty" data-cart-empty-state>
+        <div class="sp-main-cart__empty-icon" aria-hidden="true">{% render 'icon', name: 'cart' %}</div>
+        <h2 class="sp-heading--h3" data-cart-empty-focus tabindex="-1">{{ section.settings.empty_heading | default: 'Your cart is empty' | escape }}</h2>
+        {% if section.settings.empty_text != blank %}<div class="sp-main-cart__empty-text">{{ section.settings.empty_text }}</div>{% endif %}
+        <a class="sp-button sp-button--primary" href="{{ empty_continue_url }}">{{ section.settings.empty_continue_label | default: 'Continue shopping' | escape }}</a>
+      </div>
+
+      {% if section.settings.show_upsells %}
+        {% render 'cart-upsells' %}
+      {% endif %}
+    {% endif %}
+
+    {% if section.settings.enable_save_later %}
+      <section class="sp-premium-cart__saved" data-premium-saved-list hidden aria-labelledby="SavedHeading-{{ section.id }}">
+        <div class="sp-premium-cart__saved-header">
+          <h2 id="SavedHeading-{{ section.id }}">{{ section.settings.saved_heading | escape }}</h2>
+          <p>{{ section.settings.saved_description | escape }}</p>
+        </div>
+        <div class="sp-premium-cart__saved-items" data-premium-saved-items></div>
+        <p class="sp-premium-cart__saved-error" role="alert" data-premium-saved-error></p>
+      </section>
+    {% endif %}
+
+    {% if section.settings.show_trust_strip %}
+      <div class="sp-premium-cart__trust" aria-label="{{ section.settings.trust_label | escape }}">
+        {% for block in section.blocks %}
+          {% if block.type == 'trust' %}
+            <div class="sp-premium-cart__trust-item" {{ block.shopify_attributes }}>
+              {% if block.settings.icon != 'none' %}
+                <div class="sp-premium-cart__trust-icon" aria-hidden="true">
+                  {% case block.settings.icon %}
+                    {% when 'truck' %}<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3 8h17v15H3zM20 14h5l4 5v4h-9z"/><circle cx="9" cy="24" r="3"/><circle cx="24" cy="24" r="3"/></svg>
+                    {% when 'box' %}<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 9 16 3l12 6v14l-12 6-12-6zM4 9l12 7 12-7M16 16v13M10 6l12 7"/></svg>
+                    {% when 'shield' %}<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M16 3 28 7v9c0 8-7 12-12 14C11 28 4 24 4 16V7zM10.5 16.5l4 4 7.5-8"/></svg>
+                    {% when 'leaf' %}<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M27 4C8 4 4 14 7 22c3 8 18 8 20-18ZM4 29C7 20 14 15 25 9"/></svg>
+                    {% when 'heart' %}<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M16 28 4 16C-1 8 8 0 16 9c8-9 17-1 12 7z"/></svg>
+                    {% when 'star' %}<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.7"><path d="m16 3 4 9 10 1-8 7 3 10-9-5-9 5 3-10-8-7 10-1z"/></svg>
+                  {% endcase %}
+                </div>
+              {% endif %}
+              <strong>{{ block.settings.title | escape }}</strong>
+              <span>{{ block.settings.description | escape }}</span>
+            </div>
+          {% endif %}
+        {% endfor %}
+      </div>
+    {% endif %}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Main cart",
+  "settings": [
+    {"type":"header","content":"Global design system"},
+    {"type":"color_scheme","id":"sp_color_scheme","label":"Color scheme","default":"scheme-1","info":"Uses the shared Spider color scheme system."},
+    {"type":"select","id":"container_width","label":"Container width","default":"wide","options":[{"value":"default","label":"Theme default"},{"value":"wide","label":"Wide"},{"value":"full","label":"Full width"}]},
+
+    {"type":"header","content":"Reference styling"},
+    {"type":"range","id":"card_radius","label":"Card border radius","min":0,"max":24,"step":1,"unit":"px","default":8},
+    {"type":"range","id":"cart_row_gap","label":"Desktop cart column gap","min":8,"max":40,"step":2,"unit":"px","default":18},
+    {"type":"range","id":"image_radius","label":"Product image radius","min":0,"max":24,"step":1,"unit":"px","default":6},
+    {"type":"range","id":"mobile_title_size","label":"Mobile cart title size","min":24,"max":48,"step":1,"unit":"px","default":32},
+
+    {"type":"header","content":"Cart header"},
+    {"type":"text","id":"title","label":"Cart title","info":"Leave blank to use the translated theme cart title."},
+    {"type":"select","id":"title_style","label":"Title style","default":"h1","options":[{"value":"h1","label":"Global H1"},{"value":"h2","label":"Global H2"},{"value":"custom","label":"Custom"}]},
+    {"type":"range","id":"custom_title_size","label":"Custom title size","min":24,"max":72,"step":1,"unit":"px","default":48},
+    {"type":"checkbox","id":"show_item_count","label":"Show item count","default":true},
+    {"type":"checkbox","id":"show_shipping_progress","label":"Show free shipping progress","default":true,"info":"Uses Theme settings → Cart Settings as the source of truth."},
+
+    {"type":"header","content":"Shipping progress design"},
+    {"type":"checkbox","id":"override_progress_color","label":"Override global accent for progress","default":false},
+    {"type":"color","id":"progress_color","label":"Custom progress color","default":"#415dff"},
+    {"type":"text","id":"shipping_reminder","label":"Shipping bar supporting text","default":"Add [amount] more to unlock free standard shipping."},
+    {"type":"text","id":"shipping_success_description","label":"Shipping unlocked subtitle","default":"Your cart has reached the configured free-shipping goal."},
+
+    {"type":"header","content":"Cart table"},
+    {"type":"text","id":"product_column_label","label":"Product column label","default":"Product"},
+    {"type":"text","id":"price_column_label","label":"Price column label","default":"Price"},
+    {"type":"text","id":"quantity_column_label","label":"Quantity column label","default":"Quantity"},
+    {"type":"text","id":"total_column_label","label":"Total column label","default":"Total"},
+    {"type":"range","id":"image_size","label":"Desktop product image size","min":80,"max":140,"step":4,"unit":"px","default":100},
+    {"type":"checkbox","id":"show_vendor","label":"Show vendor","default":false},
+    {"type":"checkbox","id":"show_variant_options","label":"Show variant options","default":true},
+    {"type":"checkbox","id":"show_properties","label":"Show line item properties","default":true},
+    {"type":"checkbox","id":"show_selling_plan","label":"Show selling plan","default":true},
+    {"type":"checkbox","id":"show_line_discounts","label":"Show line discounts","default":true},
+    {"type":"checkbox","id":"show_line_total","label":"Show line total","default":true},
+
+    {"type":"header","content":"Save for later"},
+    {"type":"checkbox","id":"enable_save_later","label":"Enable Save for later","default":true,"info":"Stored in this browser only. No account synchronization."},
+    {"type":"text","id":"saved_heading","label":"Saved items heading","default":"Saved for later"},
+    {"type":"text","id":"saved_description","label":"Saved items description","default":"These items are saved on this browser."},
+
+    {"type":"header","content":"Cart note"},
+    {"type":"checkbox","id":"show_cart_note","label":"Show cart note","default":true},
+    {"type":"select","id":"note_style","label":"Cart note style","default":"expanded","options":[{"value":"collapsible","label":"Collapsible"},{"value":"expanded","label":"Expanded"}]},
+    {"type":"checkbox","id":"note_autosave","label":"Auto-save cart note","default":true,"info":"Uses the canonical Spider cart service with a short debounce."},
+    {"type":"checkbox","id":"show_update_button","label":"Show Update cart fallback","default":true},
+    {"type":"text","id":"note_heading","label":"Cart note heading","default":"Add a note to your order"},
+    {"type":"text","id":"note_placeholder","label":"Cart note placeholder","default":"Special instructions, gift message, etc. (optional)"},
+    {"type":"text","id":"note_save_label","label":"Save note label","default":"Save note"},
+    {"type":"range","id":"note_limit","label":"Note character limit","min":100,"max":1000,"step":50,"default":500},
+    {"type":"range","id":"note_height","label":"Note box height","min":80,"max":240,"step":10,"unit":"px","default":110},
+
+    {"type":"header","content":"Order summary"},
+    {"type":"range","id":"summary_width","label":"Desktop summary width","min":32,"max":46,"step":1,"unit":"%","default":38},
+    {"type":"checkbox","id":"sticky_summary","label":"Sticky order summary on desktop","default":false},
+    {"type":"text","id":"summary_heading","label":"Summary heading","default":"Order summary"},
+    {"type":"text","id":"checkout_label","label":"Checkout button label","default":"Checkout securely"},
+    {"type":"checkbox","id":"show_discount_entry","label":"Show discount entry","default":true,"info":"Uses Shopify's discount-link route; discount confirmed at checkout."},
+    {"type":"checkbox","id":"show_shipping_estimate_note","label":"Show calculated at checkout row","default":true},
+    {"type":"checkbox","id":"show_discount_summary","label":"Show discount summary","default":true},
+    {"type":"checkbox","id":"show_tax_shipping_text","label":"Show tax / shipping message","default":true},
+    {"type":"checkbox","id":"show_payment_icons","label":"Show enabled payment icons","default":true},
+    {"type":"checkbox","id":"show_continue_shopping","label":"Show Continue shopping","default":true},
+    {"type":"text","id":"continue_label","label":"Continue shopping label","default":"Continue shopping"},
+    {"type":"url","id":"continue_link","label":"Continue shopping link"},
+
+    {"type":"header","content":"Estimate shipping"},
+    {"type":"checkbox","id":"show_shipping_calculator","label":"Show shipping calculator","default":true,"info":"Uses Shopify Ajax Cart shipping-rates endpoints."},
+    {"type":"text","id":"shipping_calculator_heading","label":"Heading","default":"Estimate shipping"},
+    {"type":"text","id":"shipping_button_label","label":"Button label","default":"Calculate"},
+    {"type":"text","id":"shipping_calculator_description","label":"Description","default":"Enter your location to see shipping options and delivery times."},
+    {"type":"text","id":"shipping_country_label","label":"Country label","default":"Country / region"},
+    {"type":"text","id":"shipping_zip_label","label":"Postal code label","default":"ZIP / postal code"},
+
+    {"type":"header","content":"Empty cart"},
+    {"type":"text","id":"empty_heading","label":"Empty cart heading","default":"Your cart is empty"},
+    {"type":"richtext","id":"empty_text","label":"Empty cart text","default":"<p>Looks like you haven't added anything yet.</p>"},
+    {"type":"text","id":"empty_continue_label","label":"Empty cart button label","default":"Continue shopping"},
+    {"type":"url","id":"empty_continue_link","label":"Empty cart button link"},
+    {"type":"checkbox","id":"show_upsells","label":"Show global cart upsells","default":false,"info":"Uses Theme settings → Cart Settings product list and the canonical Product Card."},
+
+    {"type":"header","content":"Trust & benefits strip"},
+    {"type":"checkbox","id":"show_trust_strip","label":"Show bottom benefits","default":true},
+    {"type":"text","id":"trust_label","label":"Benefits accessibility label","default":"Shopping benefits"},
+    {"type":"header","content":"Spacing"},
+    {"type":"select","id":"spacing_source","label":"Spacing source","default":"theme","options":[{"value":"theme","label":"Theme default"},{"value":"custom","label":"Custom"}]},
+    {"type":"range","id":"padding_top","label":"Desktop top padding","min":0,"max":160,"step":4,"unit":"px","default":56},
+    {"type":"range","id":"padding_bottom","label":"Desktop bottom padding","min":0,"max":160,"step":4,"unit":"px","default":72},
+    {"type":"range","id":"padding_top_mobile","label":"Mobile top padding","min":0,"max":96,"step":4,"unit":"px","default":32},
+    {"type":"range","id":"padding_bottom_mobile","label":"Mobile bottom padding","min":0,"max":120,"step":4,"unit":"px","default":48}
+  ],
+  "blocks": [
+    {"type":"trust","name":"Trust benefit","limit":6,"settings":[
+      {"type":"select","id":"icon","label":"Icon","default":"truck","options":[{"value":"truck","label":"Truck"},{"value":"box","label":"Box"},{"value":"shield","label":"Shield"},{"value":"leaf","label":"Leaf"},{"value":"heart","label":"Heart"},{"value":"star","label":"Star"},{"value":"none","label":"None"}]},
+      {"type":"text","id":"title","label":"Heading","default":"Free shipping"},
+      {"type":"text","id":"description","label":"Description","default":"On qualifying orders"}
+    ]}
+  ],
+  "max_blocks": 6
+}
+{% endschema %}
+

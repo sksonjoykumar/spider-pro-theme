@@ -1,0 +1,688 @@
+{%- liquid
+  assign hosted_video = section.settings.shopify_video
+  assign external_video = section.settings.external_video
+  assign poster_image = section.settings.poster_image
+
+  assign has_video = false
+  if section.settings.video_source == 'shopify' and hosted_video != blank
+    assign has_video = true
+  elsif section.settings.video_source == 'external' and external_video != blank
+    assign has_video = true
+  endif
+
+  assign hotspot_count = 0
+  for block in section.blocks
+    if block.type == 'product_hotspot' and block.settings.product != blank
+      assign hotspot_count = hotspot_count | plus: 1
+    endif
+  endfor
+
+  assign container_class = 'sp-container'
+  if section.settings.section_width == 'wide'
+    assign container_class = 'sp-container sp-container--wide'
+  endif
+
+  assign media_ratio = '16 / 9'
+  case section.settings.aspect_ratio
+    when '4_3'
+      assign media_ratio = '4 / 3'
+    when '1_1'
+      assign media_ratio = '1 / 1'
+    when '9_16'
+      assign media_ratio = '9 / 16'
+    when 'adapt'
+      if poster_image != blank
+        assign media_ratio = poster_image.aspect_ratio
+      elsif hosted_video != blank and hosted_video.preview_image != blank
+        assign media_ratio = hosted_video.preview_image.aspect_ratio
+      endif
+  endcase
+
+  assign effective_poster = poster_image
+  if effective_poster == blank and hosted_video != blank
+    assign effective_poster = hosted_video.preview_image
+  endif
+
+  assign autoplay_enabled = section.settings.autoplay
+  assign video_muted = section.settings.muted
+  if autoplay_enabled
+    assign video_muted = true
+  endif
+-%}
+
+{%- if has_video or request.design_mode -%}
+  {% render 'sp-section-color-scheme', section: section %}
+  {{ 'sp-shoppable-video.css' | asset_url | stylesheet_tag }}
+  <script src="{{ 'sp-shoppable-video.js' | asset_url }}" defer="defer"></script>
+
+  <sp-shoppable-video
+    id="SpiderShoppableVideo-{{ section.id }}"
+    class="sp-section sp-shoppable-video"
+    data-section-id="{{ section.id }}"
+    data-autoplay="{{ autoplay_enabled }}"
+    data-loop="{{ section.settings.loop }}"
+    data-show-controls="{{ section.settings.show_controls }}"
+    data-muted="{{ video_muted }}"
+    data-play-label="{{ section.settings.play_label | escape }}"
+    data-pause-label="{{ section.settings.pause_label | escape }}"
+    data-video-source="{{ section.settings.video_source }}"
+    {% if external_video != blank %}
+      data-external-provider="{{ external_video.type }}"
+      data-external-id="{{ external_video.id }}"
+    {% endif %}
+  >
+    <div class="{{ container_class }} sp-shoppable-video__container">
+      {%- if section.settings.show_header -%}
+        <header class="sp-shoppable-video__header sp-shoppable-video__header--{{ section.settings.header_alignment }}">
+          {%- if section.settings.show_eyebrow and section.settings.eyebrow != blank -%}
+            <p class="sp-shoppable-video__eyebrow sp-text-small">
+              {{ section.settings.eyebrow | escape }}
+            </p>
+          {%- endif -%}
+
+          {%- if section.settings.heading != blank -%}
+            <h2 class="sp-shoppable-video__heading sp-heading--h2">
+              {{ section.settings.heading | escape }}
+            </h2>
+          {%- endif -%}
+
+          {%- if section.settings.description != blank -%}
+            <div class="sp-shoppable-video__description rte">
+              {{ section.settings.description }}
+            </div>
+          {%- endif -%}
+        </header>
+      {%- endif -%}
+
+      <div class="sp-shoppable-video__layout{% if hotspot_count == 0 or section.settings.show_product_list == false %} sp-shoppable-video__layout--media-only{% endif %}">
+        <div class="sp-shoppable-video__media-column">
+          <div
+            class="sp-shoppable-video__media"
+            data-video-fit="{{ section.settings.video_fit }}"
+            style="--sp-shoppable-video-ratio: {{ media_ratio }};"
+          >
+            {%- if has_video -%}
+              {%- if section.settings.video_source == 'shopify' and hosted_video != blank -%}
+                <video
+                  class="sp-shoppable-video__video"
+                  data-hosted-video
+                  playsinline
+                  preload="{% if autoplay_enabled %}metadata{% else %}none{% endif %}"
+                  {% if effective_poster != blank %}poster="{{ effective_poster | image_url: width: 1600 }}"{% endif %}
+                  {% if section.settings.loop %}loop{% endif %}
+                  {% if video_muted %}muted{% endif %}
+                  {% if section.settings.show_controls %}controls{% endif %}
+                >
+                  {%- for source in hosted_video.sources -%}
+                    <source src="{{ source.url }}" type="{{ source.mime_type }}">
+                  {%- endfor -%}
+                </video>
+
+              {%- elsif section.settings.video_source == 'external' and external_video != blank -%}
+                <div class="sp-shoppable-video__external" data-external-video>
+                  {%- if effective_poster != blank -%}
+                    {{
+                      effective_poster
+                      | image_url: width: 1600
+                      | image_tag:
+                        widths: '480, 640, 800, 1000, 1200, 1400, 1600',
+                        sizes: '(min-width: 990px) 62vw, 100vw',
+                        loading: 'lazy',
+                        alt: effective_poster.alt | default: section.settings.heading,
+                        class: 'sp-shoppable-video__poster'
+                    }}
+                  {%- elsif external_video.type == 'youtube' -%}
+                    <img
+                      class="sp-shoppable-video__poster"
+                      src="https://i.ytimg.com/vi/{{ external_video.id }}/hqdefault.jpg"
+                      alt="{{ section.settings.heading | escape }}"
+                      loading="lazy"
+                      width="1280"
+                      height="720"
+                    >
+                  {%- else -%}
+                    <div class="sp-shoppable-video__poster-placeholder" aria-hidden="true">
+                      {% render 'sp-shoppable-video-icon', name: 'video' %}
+                    </div>
+                  {%- endif -%}
+
+                  <button
+                    class="sp-shoppable-video__play"
+                    type="button"
+                    data-video-play
+                    aria-label="{{ section.settings.play_label | escape }}"
+                  ></button>
+
+                  <div class="sp-shoppable-video__embed" data-video-embed hidden></div>
+                </div>
+              {%- endif -%}
+
+              {%- assign hotspot_index = 0 -%}
+              {%- for block in section.blocks -%}
+                {%- if block.type == 'product_hotspot' and block.settings.product != blank -%}
+                  {%- assign hotspot_index = hotspot_index | plus: 1 -%}
+                  {%- assign mobile_x = block.settings.desktop_x -%}
+                  {%- assign mobile_y = block.settings.desktop_y -%}
+                  {%- if block.settings.use_mobile_position -%}
+                    {%- assign mobile_x = block.settings.mobile_x -%}
+                    {%- assign mobile_y = block.settings.mobile_y -%}
+                  {%- endif -%}
+
+                  <button
+                    class="sp-shoppable-video__hotspot{% if hotspot_index == 1 %} is-active{% endif %}"
+                    type="button"
+                    data-hotspot-button
+                    data-hotspot-index="{{ hotspot_index }}"
+                    data-block-id="{{ block.id }}"
+                    aria-label="{{ section.settings.hotspot_label | escape }} {{ block.settings.product.title | escape }}"
+                    aria-pressed="{% if hotspot_index == 1 %}true{% else %}false{% endif %}"
+                    style="
+                      --sp-hotspot-x-d: {{ block.settings.desktop_x }}%;
+                      --sp-hotspot-y-d: {{ block.settings.desktop_y }}%;
+                      --sp-hotspot-x-m: {{ mobile_x }}%;
+                      --sp-hotspot-y-m: {{ mobile_y }}%;
+                    "
+                    {{ block.shopify_attributes }}
+                  >
+                    <span class="sp-shoppable-video__hotspot-plus" aria-hidden="true">+</span>
+                    <span class="sp-shoppable-video__hotspot-number">{{ hotspot_index }}</span>
+                  </button>
+                {%- endif -%}
+              {%- endfor -%}
+            {%- elsif request.design_mode -%}
+              <div class="sp-shoppable-video__video-placeholder" role="status">
+                <span class="sp-shoppable-video__video-placeholder-icon" aria-hidden="true">
+                  {% render 'sp-shoppable-video-icon', name: 'video' %}
+                </span>
+                <div>
+                  <h3 class="sp-shoppable-video__placeholder-title">Select a video</h3>
+                  <p class="sp-shoppable-video__placeholder-text">
+                    Choose a Shopify-hosted video or a YouTube/Vimeo URL in the section settings.
+                  </p>
+                </div>
+              </div>
+            {%- endif -%}
+          </div>
+
+          {%- if section.settings.show_product_strip and hotspot_count > 0 -%}
+            <div class="sp-shoppable-video__strip" role="list" aria-label="{{ section.settings.strip_label | escape }}">
+              {%- assign strip_index = 0 -%}
+              {%- for block in section.blocks -%}
+                {%- if block.type == 'product_hotspot' and block.settings.product != blank -%}
+                  {%- assign strip_index = strip_index | plus: 1 -%}
+                  {%- assign product = block.settings.product -%}
+                  {%- assign current_variant = product.selected_or_first_available_variant -%}
+
+                  <button
+                    class="sp-shoppable-video__strip-item{% if strip_index == 1 %} is-active{% endif %}"
+                    type="button"
+                    data-hotspot-trigger
+                    data-hotspot-index="{{ strip_index }}"
+                    data-block-id="{{ block.id }}"
+                    aria-label="{{ section.settings.strip_item_label | escape }} {{ product.title | escape }}"
+                    role="listitem"
+                  >
+                    <span class="sp-shoppable-video__strip-thumb">
+                      {%- if product.featured_image -%}
+                        {{
+                          product.featured_image
+                          | image_url: width: 160
+                          | image_tag:
+                            widths: '80, 120, 160',
+                            sizes: '64px',
+                            loading: 'lazy',
+                            alt: product.featured_image.alt | default: product.title,
+                            class: 'sp-shoppable-video__strip-image'
+                        }}
+                      {%- else -%}
+                        {{ 'product-1' | placeholder_svg_tag: 'sp-shoppable-video__strip-placeholder placeholder-svg' }}
+                      {%- endif -%}
+                    </span>
+
+                    <span class="sp-shoppable-video__strip-copy">
+                      <span class="sp-shoppable-video__strip-title">
+                        <span class="sp-shoppable-video__strip-number">{{ strip_index }}</span>
+                        {{ product.title | escape }}
+                      </span>
+                      <span class="sp-shoppable-video__strip-price">
+                        {{ current_variant.price | money }}
+                      </span>
+                    </span>
+                  </button>
+                {%- endif -%}
+              {%- endfor -%}
+            </div>
+          {%- endif -%}
+        </div>
+
+        {%- if section.settings.show_product_list and hotspot_count > 0 -%}
+          <aside class="sp-shoppable-video__products" aria-label="{{ section.settings.product_list_label | escape }}">
+            <div class="sp-shoppable-video__product-list" role="list">
+              {%- assign list_index = 0 -%}
+              {%- for block in section.blocks -%}
+                {%- if block.type == 'product_hotspot' and block.settings.product != blank -%}
+                  {%- assign list_index = list_index | plus: 1 -%}
+                  {% render 'sp-shoppable-video-product', product: block.settings.product, index: list_index, block_id: block.id, section_id: section.id, active: list_index, show_vendor: section.settings.show_vendor, show_rating: section.settings.show_ratings, add_to_cart_label: section.settings.add_to_cart_label, choose_options_label: section.settings.choose_options_label, sold_out_label: section.settings.sold_out_label %}
+                {%- endif -%}
+              {%- endfor -%}
+            </div>
+
+            {%- if section.settings.show_view_all and section.settings.view_all_label != blank and section.settings.view_all_link != blank -%}
+              <div class="sp-shoppable-video__footer">
+                <a class="sp-shoppable-video__view-all" href="{{ section.settings.view_all_link }}">
+                  <span>{{ section.settings.view_all_label | escape }}</span>
+                  <span aria-hidden="true">→</span>
+                </a>
+              </div>
+            {%- endif -%}
+          </aside>
+        {%- elsif request.design_mode and hotspot_count == 0 -%}
+          <aside class="sp-shoppable-video__products">
+            <div class="sp-shoppable-video__empty-products" role="status">
+              <strong>Add product hotspots</strong>
+              <span>Select products in Hotspot blocks to connect them to the video.</span>
+            </div>
+          </aside>
+        {%- endif -%}
+      </div>
+
+      {%- if section.settings.show_view_all and section.settings.view_all_label != blank and section.settings.view_all_link != blank and section.settings.show_product_list == false -%}
+        <div class="sp-shoppable-video__standalone-footer">
+          <a class="sp-button sp-button--secondary" href="{{ section.settings.view_all_link }}">
+            {{ section.settings.view_all_label | escape }}
+          </a>
+        </div>
+      {%- endif -%}
+    </div>
+  </sp-shoppable-video>
+{%- else -%}
+  <style>#shopify-section-{{ section.id }}{display:none!important}</style>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Shoppable Video",
+  "tag": "section",
+  "class": "sp-shoppable-video-section",
+  "max_blocks": 6,
+  "disabled_on": {
+    "groups": ["header", "footer", "custom.system"]
+  },
+  "settings": [
+    {
+      "type": "header",
+      "content": "General"
+    },
+    {
+      "type": "color_scheme",
+      "id": "sp_color_scheme",
+      "label": "Color scheme",
+      "default": "scheme-1"
+    },
+    {
+      "type": "select",
+      "id": "section_width",
+      "label": "Section width",
+      "default": "container",
+      "options": [
+        { "value": "container", "label": "Contained" },
+        { "value": "wide", "label": "Wide" }
+      ]
+    },
+    {
+      "type": "header",
+      "content": "Header"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_header",
+      "label": "Show section header",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_eyebrow",
+      "label": "Show eyebrow",
+      "default": true,
+      "visible_if": "{{ section.settings.show_header }}"
+    },
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Eyebrow",
+      "default": "Watch & Shop",
+      "visible_if": "{{ section.settings.show_header and section.settings.show_eyebrow }}"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Shoppable Video",
+      "visible_if": "{{ section.settings.show_header }}"
+    },
+    {
+      "type": "richtext",
+      "id": "description",
+      "label": "Description",
+      "default": "<p>Discover products featured in the video and shop them as you watch.</p>",
+      "visible_if": "{{ section.settings.show_header }}"
+    },
+    {
+      "type": "select",
+      "id": "header_alignment",
+      "label": "Alignment",
+      "default": "center",
+      "options": [
+        { "value": "left", "label": "Left" },
+        { "value": "center", "label": "Center" }
+      ],
+      "visible_if": "{{ section.settings.show_header }}"
+    },
+    {
+      "type": "header",
+      "content": "Video"
+    },
+    {
+      "type": "select",
+      "id": "video_source",
+      "label": "Video source",
+      "default": "shopify",
+      "options": [
+        { "value": "shopify", "label": "Shopify video" },
+        { "value": "external", "label": "YouTube / Vimeo" }
+      ]
+    },
+    {
+      "type": "video",
+      "id": "shopify_video",
+      "label": "Shopify video",
+      "visible_if": "{{ section.settings.video_source == 'shopify' }}"
+    },
+    {
+      "type": "video_url",
+      "id": "external_video",
+      "label": "External video URL",
+      "accept": ["youtube", "vimeo"],
+      "visible_if": "{{ section.settings.video_source == 'external' }}"
+    },
+    {
+      "type": "image_picker",
+      "id": "poster_image",
+      "label": "Poster image"
+    },
+    {
+      "type": "select",
+      "id": "aspect_ratio",
+      "label": "Video aspect ratio",
+      "default": "16_9",
+      "options": [
+        { "value": "16_9", "label": "16:9" },
+        { "value": "4_3", "label": "4:3" },
+        { "value": "1_1", "label": "1:1" },
+        { "value": "9_16", "label": "9:16" },
+        { "value": "adapt", "label": "Adapt" }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "video_fit",
+      "label": "Video fit",
+      "default": "contain",
+      "info": "Contain is recommended for accurate hotspot positioning. Cover can crop the video at some screen sizes.",
+      "options": [
+        { "value": "contain", "label": "Contain" },
+        { "value": "cover", "label": "Cover" }
+      ]
+    },
+    {
+      "type": "checkbox",
+      "id": "autoplay",
+      "label": "Autoplay",
+      "default": false,
+      "info": "Autoplay is disabled automatically for visitors who prefer reduced motion."
+    },
+    {
+      "type": "checkbox",
+      "id": "loop",
+      "label": "Loop",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "muted",
+      "label": "Muted",
+      "default": false,
+      "info": "Autoplay always uses muted playback to follow browser rules."
+    },
+    {
+      "type": "checkbox",
+      "id": "show_controls",
+      "label": "Show controls for Shopify video",
+      "default": true,
+      "info": "External YouTube and Vimeo videos use a clean click-to-play/pause surface without visible playback controls."
+    },
+    {
+      "type": "text",
+      "id": "play_label",
+      "label": "Play video accessible label",
+      "default": "Play video"
+    },
+    {
+      "type": "text",
+      "id": "pause_label",
+      "label": "Pause video accessible label",
+      "default": "Pause video"
+    },
+    {
+      "type": "header",
+      "content": "Product display"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_product_list",
+      "label": "Show product list",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_product_strip",
+      "label": "Show product strip",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_vendor",
+      "label": "Show vendor",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_ratings",
+      "label": "Show ratings",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "add_to_cart_label",
+      "label": "Add to cart label",
+      "default": "Add to cart"
+    },
+    {
+      "type": "text",
+      "id": "choose_options_label",
+      "label": "Choose options label",
+      "default": "Choose options"
+    },
+    {
+      "type": "text",
+      "id": "sold_out_label",
+      "label": "Sold out label",
+      "default": "Sold out"
+    },
+    {
+      "type": "text",
+      "id": "hotspot_label",
+      "label": "Hotspot accessible label",
+      "default": "View"
+    },
+    {
+      "type": "text",
+      "id": "product_list_label",
+      "label": "Product list accessible label",
+      "default": "Products featured in the video"
+    },
+    {
+      "type": "text",
+      "id": "strip_label",
+      "label": "Product strip accessible label",
+      "default": "Featured products"
+    },
+    {
+      "type": "text",
+      "id": "strip_item_label",
+      "label": "Product strip item accessible label",
+      "default": "Show"
+    },
+    {
+      "type": "header",
+      "content": "View all"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_view_all",
+      "label": "Show View All",
+      "default": false
+    },
+    {
+      "type": "text",
+      "id": "view_all_label",
+      "label": "Label",
+      "default": "View all products",
+      "visible_if": "{{ section.settings.show_view_all }}"
+    },
+    {
+      "type": "url",
+      "id": "view_all_link",
+      "label": "Link",
+      "visible_if": "{{ section.settings.show_view_all }}"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "product_hotspot",
+      "name": "Product hotspot",
+      "settings": [
+        {
+          "type": "product",
+          "id": "product",
+          "label": "Product"
+        },
+        {
+          "type": "range",
+          "id": "desktop_x",
+          "label": "Desktop horizontal position",
+          "min": 4,
+          "max": 96,
+          "step": 1,
+          "unit": "%",
+          "default": 50
+        },
+        {
+          "type": "range",
+          "id": "desktop_y",
+          "label": "Desktop vertical position",
+          "min": 6,
+          "max": 94,
+          "step": 1,
+          "unit": "%",
+          "default": 50
+        },
+        {
+          "type": "checkbox",
+          "id": "use_mobile_position",
+          "label": "Use custom mobile position",
+          "default": false
+        },
+        {
+          "type": "range",
+          "id": "mobile_x",
+          "label": "Mobile horizontal position",
+          "min": 5,
+          "max": 95,
+          "step": 1,
+          "unit": "%",
+          "default": 50,
+          "visible_if": "{{ block.settings.use_mobile_position }}"
+        },
+        {
+          "type": "range",
+          "id": "mobile_y",
+          "label": "Mobile vertical position",
+          "min": 7,
+          "max": 93,
+          "step": 1,
+          "unit": "%",
+          "default": 50,
+          "visible_if": "{{ block.settings.use_mobile_position }}"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Shoppable Video",
+      "category": "02. Products",
+      "blocks": [
+        {
+          "type": "product_hotspot",
+          "settings": {
+            "desktop_x": 26,
+            "desktop_y": 40
+          }
+        },
+        {
+          "type": "product_hotspot",
+          "settings": {
+            "desktop_x": 68,
+            "desktop_y": 52
+          }
+        },
+        {
+          "type": "product_hotspot",
+          "settings": {
+            "desktop_x": 22,
+            "desktop_y": 76
+          }
+        },
+        {
+          "type": "product_hotspot",
+          "settings": {
+            "desktop_x": 88,
+            "desktop_y": 66
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}
+{% comment %}
+
+This file has been rewritten to preserve the original behavior.
+
+---
+Changes:
+- from: "{% render 'sp-shoppable-video-product',\r\n                    product: block.settings.product,\r\n
+    \                   index: list_index,\r\n                    block_id: block.id,\r\n
+    \                   section_id: section.id,\r\n                    active: list_index
+    == 1,\r\n                    show_vendor: section.settings.show_vendor,\r\n                    show_rating:
+    section.settings.show_ratings,\r\n                    add_to_cart_label: section.settings.add_to_cart_label,\r\n
+    \                   choose_options_label: section.settings.choose_options_label,\r\n
+    \                   sold_out_label: section.settings.sold_out_label\r\n                  %}"
+  to: "{% render 'sp-shoppable-video-product', product: block.settings.product, index:
+    list_index, block_id: block.id, section_id: section.id, active: list_index, show_vendor:
+    section.settings.show_vendor, show_rating: section.settings.show_ratings, add_to_cart_label:
+    section.settings.add_to_cart_label, choose_options_label: section.settings.choose_options_label,
+    sold_out_label: section.settings.sold_out_label %}"
+  position: 12556..12965
+{% endcomment %}

@@ -1,0 +1,171 @@
+<div
+  id="SpiderSlideInlineMedia-{{ block.id }}"
+  class="sp-slide-inline-media{% if block.settings.hide_mobile %} sp-slide-block--hide-mobile{% endif %}"
+  data-sp-slide-anim
+  {{ block.shopify_attributes }}
+  style="--sp-inline-media-width-d: {{ block.settings.desktop_width }}px; --sp-inline-media-width-m: {{ block.settings.mobile_width }}px; --sp-inline-media-radius: {{ block.settings.radius }}px;"
+>
+  {%- case block.settings.source -%}
+    {%- when 'image' -%}
+      {%- assign sp_inline_mobile = block.settings.mobile_image | default: block.settings.image -%}
+      {%- if block.settings.image != blank -%}
+        <picture>
+          {%- if sp_inline_mobile != blank and sp_inline_mobile != block.settings.image -%}
+            <source media="(max-width: 749px)" srcset="{{ sp_inline_mobile | image_url: width: 480 }} 480w, {{ sp_inline_mobile | image_url: width: 800 }} 800w" sizes="min({{ block.settings.mobile_width }}px, 100vw)">
+          {%- endif -%}
+          {{ block.settings.image | image_url: width: 1200 | image_tag: loading: 'lazy', widths: '240,360,480,640,800,1000,1200', sizes: 'min(100vw, 800px)', alt: block.settings.alt_text }}
+        </picture>
+      {%- else -%}
+        {{ 'image' | placeholder_svg_tag: 'sp-slide-inline-media__placeholder' }}
+      {%- endif -%}
+    {%- when 'shopify_video' -%}
+      {%- if block.settings.video != blank -%}
+        {%- assign sp_video_class = 'sp-slide-inline-media__video' -%}
+        {%- if block.settings.autoplay -%}{%- assign sp_video_class = sp_video_class | append: ' is-autoplay' -%}{%- endif -%}
+        {{ block.settings.video | video_tag: controls: block.settings.show_controls, autoplay: false, loop: block.settings.loop, muted: block.settings.autoplay, playsinline: true, preload: 'none', class: sp_video_class }}
+      {%- endif -%}
+    {%- when 'external_video' -%}
+      {%- if block.settings.external_video != blank -%}
+        <div class="sp-slide-inline-media__external" data-sp-external-video>
+          <template data-sp-external-video-template>
+            {%- if block.settings.external_video.type == 'youtube' -%}
+              <iframe loading="lazy" src="https://www.youtube.com/embed/{{ block.settings.external_video.id }}?playsinline=1&autoplay={% if block.settings.autoplay %}1{% else %}0{% endif %}&controls={% if block.settings.show_controls %}1{% else %}0{% endif %}&mute={% if block.settings.autoplay %}1{% else %}0{% endif %}&loop={% if block.settings.loop %}1{% else %}0{% endif %}&playlist={{ block.settings.external_video.id }}&rel=0" title="{{ block.settings.video_title | escape }}" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>
+            {%- else -%}
+              <iframe loading="lazy" src="https://player.vimeo.com/video/{{ block.settings.external_video.id }}?autoplay={% if block.settings.autoplay %}1{% else %}0{% endif %}&muted={% if block.settings.autoplay %}1{% else %}0{% endif %}&loop={% if block.settings.loop %}1{% else %}0{% endif %}&controls={% if block.settings.show_controls %}1{% else %}0{% endif %}" title="{{ block.settings.video_title | escape }}" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>
+            {%- endif -%}
+          </template>
+        </div>
+      {%- endif -%}
+  {%- endcase -%}
+</div>
+{% schema %}
+{
+  "name": "Slide Media",
+  "tag": null,
+  "settings": [
+    {
+      "type": "select",
+      "id": "source",
+      "label": "Source",
+      "default": "image",
+      "options": [
+        {
+          "value": "image",
+          "label": "Image"
+        },
+        {
+          "value": "shopify_video",
+          "label": "Shopify video"
+        },
+        {
+          "value": "external_video",
+          "label": "YouTube / Vimeo"
+        }
+      ]
+    },
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "Image",
+      "visible_if": "{{ block.settings.source == 'image' }}"
+    },
+    {
+      "type": "image_picker",
+      "id": "mobile_image",
+      "label": "Mobile image",
+      "visible_if": "{{ block.settings.source == 'image' }}"
+    },
+    {
+      "type": "text",
+      "id": "alt_text",
+      "label": "Image alt text",
+      "visible_if": "{{ block.settings.source == 'image' }}"
+    },
+    {
+      "type": "video",
+      "id": "video",
+      "label": "Shopify video",
+      "visible_if": "{{ block.settings.source == 'shopify_video' }}"
+    },
+    {
+      "type": "video_url",
+      "id": "external_video",
+      "label": "YouTube or Vimeo",
+      "accept": [
+        "youtube",
+        "vimeo"
+      ],
+      "visible_if": "{{ block.settings.source == 'external_video' }}"
+    },
+    {
+      "type": "text",
+      "id": "video_title",
+      "label": "Video title",
+      "default": "Slide video",
+      "visible_if": "{{ block.settings.source == 'external_video' }}"
+    },
+    {
+      "type": "checkbox",
+      "id": "autoplay",
+      "label": "Autoplay when slide is active",
+      "default": false,
+      "visible_if": "{{ block.settings.source != 'image' }}"
+    },
+    {
+      "type": "checkbox",
+      "id": "loop",
+      "label": "Loop video",
+      "default": true,
+      "visible_if": "{{ block.settings.source != 'image' }}"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_controls",
+      "label": "Show controls",
+      "default": true,
+      "visible_if": "{{ block.settings.source != 'image' }}"
+    },
+    {
+      "type": "range",
+      "id": "desktop_width",
+      "label": "Desktop max width",
+      "min": 80,
+      "max": 1000,
+      "step": 20,
+      "unit": "px",
+      "default": 480
+    },
+    {
+      "type": "range",
+      "id": "mobile_width",
+      "label": "Mobile max width",
+      "min": 80,
+      "max": 600,
+      "step": 20,
+      "unit": "px",
+      "default": 320
+    },
+    {
+      "type": "range",
+      "id": "radius",
+      "label": "Border radius",
+      "min": 0,
+      "max": 50,
+      "step": 1,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "checkbox",
+      "id": "hide_mobile",
+      "label": "Hide on mobile",
+      "default": false
+    }
+  ],
+  "presets": [
+    {
+      "name": "Slide Media"
+    }
+  ]
+}
+{% endschema %}

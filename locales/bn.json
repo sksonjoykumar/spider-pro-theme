@@ -1,0 +1,835 @@
+{
+  "general": {
+    "localization": {
+      "language_code": "bn",
+      "language_name": "বাংলা",
+      "text_direction": "ltr",
+      "country_region": "দেশ/অঞ্চল",
+      "language": "ভাষা",
+      "currency": "মুদ্রা",
+      "update_preferences": "পছন্দ আপডেট করুন"
+    },
+    "actions": {
+      "home": "হোম",
+      "shop": "শপ",
+      "search": "অনুসন্ধান",
+      "account": "অ্যাকাউন্ট",
+      "cart": "কার্ট",
+      "wishlist": "ইচ্ছেতালিকা",
+      "compare": "তুলনা করুন"
+    },
+    "buttons": {
+      "add_to_cart": "কার্টে যোগ করুন",
+      "buy_now": "এখনই কিনুন",
+      "view_more": "আরও দেখুন",
+      "learn_more": "আরও জানুন",
+      "read_more": "আরও পড়ুন",
+      "continue_shopping": "কেনাকাটা চালিয়ে যান",
+      "continue_checkout": "চেকআউটে এগিয়ে যান",
+      "submit": "জমা দিন",
+      "cancel": "বাতিল",
+      "confirm": "নিশ্চিত করুন"
+    },
+    "status": {
+      "loading": "লোড হচ্ছে",
+      "processing": "প্রক্রিয়াকরণ চলছে",
+      "success": "সফল",
+      "error": "ত্রুটি"
+    },
+    "breadcrumbs": {
+      "home": "হোম"
+    },
+    "continue_shopping": "কেনাকাটা চালিয়ে যান",
+    "countdown": {
+      "days": "দিন",
+      "hours": "ঘণ্টা",
+      "minutes": "মিনিট",
+      "seconds": "সেকেন্ড",
+      "expired": "অফারের সময় শেষ"
+    },
+    "pagination": {
+      "label": "পৃষ্ঠা নেভিগেশন",
+      "next": "পরবর্তী পৃষ্ঠা",
+      "page": "পৃষ্ঠা {{ number }}",
+      "previous": "আগের পৃষ্ঠা"
+    },
+    "password_page": {
+      "login_form_heading": "পাসওয়ার্ড দিয়ে স্টোরে প্রবেশ করুন",
+      "login_form_submit": "প্রবেশ করুন"
+    },
+    "search": {
+      "articles": "আর্টিকেল",
+      "collections": "কালেকশন",
+      "no_results": "“{{ terms }}” এর জন্য কোনো ফলাফল পাওয়া যায়নি।",
+      "pages": "পৃষ্ঠা",
+      "placeholder": "পণ্য, কালেকশন, আর্টিকেল ও পৃষ্ঠা খুঁজুন",
+      "products": "পণ্য",
+      "results_with_count": "{{ count }}টি ফলাফল",
+      "search": "খুঁজুন"
+    },
+    "share": {
+      "share": "শেয়ার করুন",
+      "copy_link": "লিংক কপি করুন"
+    }
+  },
+  "header": {
+    "navigation": {
+      "menu": "মেনু",
+      "open_menu": "মেনু খুলুন",
+      "close_menu": "মেনু বন্ধ করুন",
+      "main_navigation": "প্রধান নেভিগেশন"
+    },
+    "search": {
+      "search": "অনুসন্ধান",
+      "search_products": "পণ্য অনুসন্ধান করুন",
+      "search_suggestions": "অনুসন্ধান পরামর্শ",
+      "no_results_found": "কোনো ফলাফল পাওয়া যায়নি"
+    },
+    "account": {
+      "login": "লগ ইন",
+      "register": "নিবন্ধন করুন",
+      "logout": "লগ আউট",
+      "my_account": "আমার অ্যাকাউন্ট"
+    },
+    "cart": {
+      "cart": "কার্ট",
+      "view_cart": "কার্ট দেখুন",
+      "checkout": "চেকআউট",
+      "empty_cart": "আপনার কার্ট খালি"
+    }
+  },
+  "footer": {
+    "newsletter": {
+      "subscribe": "সাবস্ক্রাইব করুন",
+      "email_placeholder": "আপনার ইমেইল লিখুন",
+      "success_message": "সাবস্ক্রাইব করার জন্য ধন্যবাদ।",
+      "privacy_message": "সাবস্ক্রাইব করে আপনি আমাদের গোপনীয়তা নীতিতে সম্মত হচ্ছেন।"
+    },
+    "links": {
+      "privacy_policy": "গোপনীয়তা নীতি",
+      "terms_of_service": "সেবার শর্তাবলি",
+      "shipping_policy": "শিপিং নীতি",
+      "refund_policy": "রিফান্ড নীতি"
+    },
+    "social": {
+      "follow_us": "আমাদের অনুসরণ করুন",
+      "share": "শেয়ার করুন"
+    },
+    "payment": "পেমেন্ট পদ্ধতি"
+  },
+  "navigation": {
+    "breadcrumbs": "ব্রেডক্রাম্ব",
+    "back": "পেছনে",
+    "previous": "আগের",
+    "next": "পরবর্তী",
+    "open_submenu": "সাবমেনু খুলুন",
+    "close_submenu": "সাবমেনু বন্ধ করুন",
+    "current_page": "বর্তমান পৃষ্ঠা",
+    "view_all": "সব দেখুন"
+  },
+  "products": {
+    "product": {
+      "product": "পণ্য",
+      "price": {
+        "regular_price": "নিয়মিত মূল্য"
+      },
+      "compare_price": "তুলনামূলক মূল্য",
+      "sale_price": "বিক্রয় মূল্য",
+      "regular_price": "নিয়মিত মূল্য",
+      "sold_out": "স্টক শেষ",
+      "available": "উপলভ্য",
+      "unavailable": "অনুপলভ্য",
+      "add_to_cart": "কার্টে যোগ করুন",
+      "add_to_wishlist": "পছন্দের তালিকায় যোগ করুন",
+      "choose_options": "অপশন বেছে নিন",
+      "inventory_in_stock": "স্টকে আছে",
+      "inventory_incoming": "স্টক আসছে",
+      "inventory_low_stock": "স্টক কম",
+      "inventory_low_stock_show_count": "মাত্র {{ quantity }}টি বাকি",
+      "media": {
+        "gallery_viewer": "পণ্যের গ্যালারি",
+        "load_image": "ছবি {{ index }} লোড করুন",
+        "open_media": "মিডিয়া {{ index }} মোডালে খুলুন",
+        "previous": "আগের মিডিয়া",
+        "next": "পরের মিডিয়া",
+        "zoom": "মিডিয়া {{ index }} জুম করুন"
+      },
+      "new": "নতুন",
+      "on_sale": "ছাড়",
+      "one_time_purchase": "একবারের ক্রয়",
+      "quantity": {
+        "decrease": "পরিমাণ কমান",
+        "increase": "পরিমাণ বাড়ান",
+        "label": "পরিমাণ"
+      },
+      "quick_view": "দ্রুত দেখুন",
+      "selling_plan": "ক্রয়ের ধরন",
+      "shipping_policy_html": "চেকআউটে শিপিং খরচ হিসাব করা হবে।",
+      "value_unavailable": "{{ option_value }} পাওয়া যাচ্ছে না",
+      "added_to_cart": "কার্টে যোগ করা হয়েছে",
+      "digital_delivery": "কোনো ফিজিক্যাল শিপিং প্রয়োজন নেই",
+      "pickup_available": "পিকআপ পাওয়া যাচ্ছে",
+      "pickup_unavailable": "পিকআপ বর্তমানে পাওয়া যাচ্ছে না",
+      "select_product": "থিম এডিটরে একটি পণ্য নির্বাচন করুন।",
+      "you_may_also_like": "আপনার আরও পছন্দ হতে পারে",
+      "compare_instructions": "তুলনা বোতাম দিয়ে পণ্য বেছে নিন। আপনার নির্বাচন শুধু এই ব্রাউজারে সংরক্ষিত থাকবে।",
+      "product_variants": "পণ্যের অপশন",
+      "recently_viewed_requires_js": "জাভাস্ক্রিপ্ট চালু থাকলে সম্প্রতি দেখা পণ্য দেখানো হবে।",
+      "recommendations_preview": "পণ্য পৃষ্ঠায় সুপারিশ লোড হয়। এডিটর প্রিভিউয়ের জন্য একটি বিকল্প কালেকশন বেছে নিন।",
+      "reviews_app_required": "যাচাইকৃত রিভিউ দেখাতে একটি পণ্য-রিভিউ অ্যাপ ব্লক যোগ করুন।",
+      "include_taxes": "কর অন্তর্ভুক্ত।",
+      "video_disabled": "থিম সেটিংসে পণ্যের ভিডিও বন্ধ আছে।"
+    },
+    "actions": {
+      "add_to_cart": "কার্টে যোগ করুন",
+      "buy_now": "এখনই কিনুন",
+      "quick_view": "দ্রুত দেখুন",
+      "add_wishlist": "ইচ্ছেতালিকায় যোগ করুন",
+      "remove_wishlist": "ইচ্ছেতালিকা থেকে সরান",
+      "compare": "তুলনা করুন",
+      "clear_compare": "তুলনা মুছুন"
+    },
+    "variants": {
+      "select_option": "একটি অপশন নির্বাচন করুন",
+      "choose_color": "রং নির্বাচন করুন",
+      "choose_size": "সাইজ নির্বাচন করুন",
+      "select_quantity": "পরিমাণ নির্বাচন করুন"
+    },
+    "inventory": {
+      "in_stock": "স্টকে আছে",
+      "out_of_stock": "স্টকে নেই",
+      "only_items_remaining": "মাত্র {{ count }}টি পণ্য বাকি"
+    },
+    "media": {
+      "open_media": "পণ্য মিডিয়া {{ index }} খুলুন",
+      "play_model": "3D মডেল চালান",
+      "play_video": "ভিডিও চালান",
+      "zoom_image": "ছবি বড় করুন"
+    },
+    "details": {
+      "description": "বিবরণ",
+      "shipping_returns": "শিপিং ও রিটার্ন",
+      "size_guide": "সাইজ গাইড",
+      "sku": "এসকেইউ",
+      "vendor": "বিক্রেতা"
+    },
+    "facets": {
+      "apply": "প্রয়োগ করুন",
+      "clear_filter": "ফিল্টার সরান",
+      "from": "থেকে",
+      "sort_by_label": "সাজান:",
+      "to": "To"
+    }
+  },
+  "collections": {
+    "collection": {
+      "collection": "কালেকশন",
+      "products": "পণ্যসমূহ",
+      "view_collection": "কালেকশন দেখুন",
+      "product_count": "{{ count }}টি পণ্য"
+    },
+    "filtering": {
+      "filter": "ফিল্টার",
+      "filters": "ফিল্টারসমূহ",
+      "clear_all": "সব মুছুন",
+      "apply_filters": "ফিল্টার প্রয়োগ করুন",
+      "active_filters": "সক্রিয় ফিল্টার",
+      "remove_filter": "{{ filter }} ফিল্টার সরান"
+    },
+    "sorting": {
+      "sort_by": "সাজান",
+      "featured": "ফিচারড",
+      "best_selling": "সর্বাধিক বিক্রিত",
+      "newest": "নতুনতম",
+      "price_low_to_high": "মূল্য: কম থেকে বেশি",
+      "price_high_to_low": "মূল্য: বেশি থেকে কম",
+      "products_low": "সবচেয়ে কম পণ্য"
+    },
+    "empty": {
+      "heading": "কোনো পণ্য পাওয়া যায়নি",
+      "description": "ফিল্টার বা অনুসন্ধান শব্দ পরিবর্তন করে দেখুন।"
+    },
+    "general": {
+      "items_with_count": "{{ count }}টি পণ্য",
+      "no_matches": "আপনার ফিল্টারের সঙ্গে কোনো পণ্য মেলেনি।"
+    }
+  },
+  "cart": {
+    "cart": {
+      "your_cart": "আপনার কার্ট",
+      "empty_cart": "আপনার কার্ট খালি",
+      "cart_subtotal": "সাবটোটাল",
+      "cart_total": "মোট",
+      "item_count": "{{ count }}টি আইটেম"
+    },
+    "actions": {
+      "update_cart": "কার্ট আপডেট করুন",
+      "remove_item": "আইটেম সরান",
+      "checkout": "চেকআউট",
+      "continue_shopping": "কেনাকাটা চালিয়ে যান"
+    },
+    "discount": {
+      "discount_code": "ডিসকাউন্ট কোড",
+      "apply_discount": "ডিসকাউন্ট প্রয়োগ করুন",
+      "discount_applied": "ডিসকাউন্ট প্রয়োগ হয়েছে"
+    },
+    "shipping": {
+      "shipping_calculator": "শিপিং ক্যালকুলেটর",
+      "free_shipping_message": "আপনি বিনামূল্যে শিপিং পাচ্ছেন!",
+      "free_shipping_remaining": "বিনামূল্যে শিপিং পেতে আরও {{ amount }} খরচ করুন।",
+      "taxes_shipping_at_checkout": "ট্যাক্স ও শিপিং চেকআউটে হিসাব করা হবে"
+    },
+    "upsell": {
+      "you_may_also_like": "আপনার আরও পছন্দ হতে পারে",
+      "recommended_products": "প্রস্তাবিত পণ্য"
+    },
+    "notes": {
+      "order_note": "অর্ডার নোট",
+      "order_note_placeholder": "বিশেষ নির্দেশনা যোগ করুন"
+    },
+    "terms": {
+      "agree": "আমি স্টোরের শর্তাবলিতে সম্মত",
+      "agree_html": "আমি {{ terms }}-এ সম্মত"
+    }
+  },
+  "search": {
+    "search": "অনুসন্ধান",
+    "search_results": "অনুসন্ধান ফলাফল",
+    "results_found": "{{ count }}টি ফলাফল পাওয়া গেছে",
+    "no_results": "“{{ terms }}”-এর জন্য কোনো ফলাফল নেই",
+    "popular_searches": "জনপ্রিয় অনুসন্ধান",
+    "recent_searches": "সাম্প্রতিক অনুসন্ধান",
+    "clear_recent_searches": "সাম্প্রতিক অনুসন্ধান মুছুন",
+    "placeholder": "পণ্য, নিবন্ধ ও পৃষ্ঠা অনুসন্ধান করুন"
+  },
+  "customer": {
+    "login": {
+      "title": "লগ ইন",
+      "email": "ইমেইল",
+      "password": "পাসওয়ার্ড",
+      "forgot_password": "পাসওয়ার্ড ভুলে গেছেন?",
+      "submit": "সাইন ইন"
+    },
+    "register": {
+      "title": "অ্যাকাউন্ট তৈরি করুন",
+      "first_name": "নামের প্রথম অংশ",
+      "last_name": "নামের শেষ অংশ",
+      "email": "ইমেইল",
+      "password": "পাসওয়ার্ড",
+      "submit": "অ্যাকাউন্ট তৈরি করুন"
+    },
+    "account": {
+      "dashboard": "ড্যাশবোর্ড",
+      "orders": "অর্ডারসমূহ",
+      "addresses": "ঠিকানাসমূহ",
+      "account_details": "অ্যাকাউন্টের বিবরণ",
+      "logout": "লগ আউট",
+      "details": "অ্যাকাউন্টের বিস্তারিত",
+      "return": "অ্যাকাউন্টে ফিরুন",
+      "title": "অ্যাকাউন্ট",
+      "view_addresses": "ঠিকানাগুলো দেখুন"
+    },
+    "orders": {
+      "order_number": "অর্ডার নম্বর",
+      "order_date": "অর্ডারের তারিখ",
+      "order_status": "অর্ডারের অবস্থা",
+      "fulfillment_status": "ফুলফিলমেন্ট অবস্থা",
+      "payment_status": "পেমেন্ট অবস্থা",
+      "view_order": "অর্ডার দেখুন",
+      "no_orders": "আপনি এখনো কোনো অর্ডার করেননি।",
+      "date": "তারিখ",
+      "none": "আপনি এখনো কোনো অর্ডার করেননি।",
+      "title": "অর্ডারের ইতিহাস",
+      "total": "মোট"
+    },
+    "addresses": {
+      "title": "আপনার ঠিকানাসমূহ",
+      "add_new": "নতুন ঠিকানা যোগ করুন",
+      "edit": "ঠিকানা সম্পাদনা করুন",
+      "delete": "ঠিকানা মুছুন",
+      "set_default": "ডিফল্ট হিসেবে সেট করুন",
+      "add": "নতুন ঠিকানা যোগ করুন",
+      "address1": "ঠিকানা",
+      "city": "শহর",
+      "company": "প্রতিষ্ঠান",
+      "country": "দেশ/অঞ্চল",
+      "default": "ডিফল্ট ঠিকানা হিসেবে সেট করুন",
+      "first_name": "নামের প্রথম অংশ",
+      "last_name": "নামের শেষ অংশ",
+      "phone": "ফোন",
+      "zip": "পোস্টাল/জিপ কোড"
+    },
+    "password": {
+      "reset_title": "পাসওয়ার্ড রিসেট করুন",
+      "reset_submit": "পাসওয়ার্ড রিসেট",
+      "activate_title": "আপনার অ্যাকাউন্ট সক্রিয় করুন",
+      "activate_submit": "অ্যাকাউন্ট সক্রিয় করুন"
+    },
+    "log_out": "লগ আউট",
+    "login_page": {
+      "create_account": "অ্যাকাউন্ট তৈরি করুন",
+      "email": "ইমেইল",
+      "password": "পাসওয়ার্ড",
+      "sign_in": "সাইন ইন",
+      "title": "লগইন"
+    },
+    "order": {
+      "price": "মূল্য",
+      "product": "পণ্য",
+      "quantity": "পরিমাণ",
+      "sku": "এসকেইউ",
+      "subtotal": "উপমোট",
+      "title": "অর্ডার {{ name }}",
+      "total": "মোট"
+    },
+    "recover_password": {
+      "submit": "জমা দিন",
+      "title": "পাসওয়ার্ড পুনরায় সেট করুন"
+    },
+    "spider": {
+      "account_navigation": "Account navigation",
+      "overview": "ওভারভিউ",
+      "account_access": "Account access",
+      "welcome_back": "স্বাগতম",
+      "recover_intro": "Enter your email and we’ll send you a password reset link.",
+      "recover_success": "We sent you an email with a link to reset your password.",
+      "send_reset_link": "রিসেট লিংক পাঠান",
+      "back_to_login": "লগইনে ফিরুন",
+      "login_intro": "Welcome back. Sign in to view your orders and manage your details.",
+      "new_customer": "New customer?",
+      "return_to_store": "স্টোরে ফিরুন",
+      "join_us": "আমাদের সাথে যোগ দিন",
+      "register_intro": "Create an account for faster checkout, order history and saved addresses.",
+      "password_guidance": "Use a strong password you do not reuse elsewhere.",
+      "already_have_account": "Already have an account?",
+      "account_center": "অ্যাকাউন্ট সেন্টার",
+      "welcome_name": "Welcome back, {{ name }}",
+      "account_overview": "অ্যাকাউন্ট ওভারভিউ",
+      "total_orders": "মোট অর্ডার",
+      "saved_addresses": "সংরক্ষিত ঠিকানা",
+      "total_spent": "মোট খরচ",
+      "recent_orders": "সাম্প্রতিক অর্ডার",
+      "view_all_orders": "সব অর্ডার দেখুন",
+      "default_address": "ডিফল্ট",
+      "manage_addresses": "ঠিকানা পরিচালনা",
+      "no_orders_heading": "You haven’t placed any orders yet.",
+      "no_orders_text": "Explore our products and place your first order.",
+      "start_shopping": "শপিং শুরু করুন",
+      "orders": "অর্ডার",
+      "no_addresses_heading": "No addresses saved yet.",
+      "no_addresses_text": "Add an address for a faster checkout experience.",
+      "add_address": "ঠিকানা যোগ করুন",
+      "addresses_intro": "Manage your saved delivery addresses.",
+      "address2": "Apartment, suite, etc.",
+      "province": "Province / State",
+      "cancel": "বাতিল",
+      "save_address": "ঠিকানা সংরক্ষণ",
+      "delete_address_confirm": "Are you sure you want to delete this address? This action cannot be undone.",
+      "delete_address": "ঠিকানা মুছুন",
+      "order_items": "অর্ডারের আইটেম",
+      "items": "items",
+      "order_summary": "অর্ডার সারাংশ",
+      "discount": "Discount",
+      "shipping": "শিপিং",
+      "tax": "কর",
+      "refund": "রিফান্ড",
+      "shipping_address": "শিপিং ঠিকানা",
+      "billing_address": "বিলিং ঠিকানা",
+      "not_available": "Not available",
+      "fulfillment": "ফুলফিলমেন্ট",
+      "shipment": "Shipment",
+      "tracking_number": "ট্র্যাকিং নম্বর",
+      "track_package": "প্যাকেজ ট্র্যাক করুন",
+      "account_security": "Account security",
+      "reset_intro": "Choose a new password for your account.",
+      "confirm_password": "পাসওয়ার্ড নিশ্চিত করুন",
+      "activate_intro": "Create a password to activate your account.",
+      "decline_invitation": "Decline invitation",
+      "show_password": "পাসওয়ার্ড দেখান",
+      "hide_password": "পাসওয়ার্ড লুকান"
+    }
+  },
+  "checkout": {
+    "contact_information": "যোগাযোগের তথ্য",
+    "shipping_address": "শিপিং ঠিকানা",
+    "billing_address": "বিলিং ঠিকানা",
+    "payment_method": "পেমেন্ট পদ্ধতি",
+    "order_confirmation": "অর্ডার নিশ্চিতকরণ",
+    "express_checkout": "দ্রুত চেকআউট",
+    "secure_checkout": "নিরাপদ চেকআউট"
+  },
+  "sections": {
+    "hero": {
+      "heading": "শিরোনাম",
+      "description": "বিবরণ",
+      "button_label": "বাটনের লেখা"
+    },
+    "newsletter": {
+      "heading": "আমাদের নিউজলেটারে যোগ দিন",
+      "description": "পণ্যের আপডেট ও বিশেষ অফার পান।",
+      "subscribe_button": "সাবস্ক্রাইব করুন"
+    },
+    "testimonials": {
+      "customer_review": "গ্রাহক পর্যালোচনা",
+      "author": "লেখক",
+      "role": "ভূমিকা",
+      "add_items": "প্রশংসাপত্রের ব্লক যোগ করুন।"
+    },
+    "faq": {
+      "question": "প্রশ্ন",
+      "answer": "উত্তর",
+      "add_items": "থিম এডিটরে প্রশ্নের ব্লক যোগ করুন।"
+    },
+    "contact": {
+      "name": "নাম",
+      "email": "ইমেইল",
+      "message": "বার্তা",
+      "submit": "বার্তা পাঠান"
+    },
+    "featured_collection": {
+      "heading": "ফিচারড কালেকশন",
+      "view_all": "সব পণ্য দেখুন"
+    },
+    "featured_product": {
+      "heading": "ফিচারড পণ্য"
+    },
+    "image_with_text": {
+      "heading": "টেক্সটসহ ছবি",
+      "button_label": "এখনই দেখুন"
+    },
+    "recommendations": {
+      "heading": "আপনার আরও পছন্দ হতে পারে"
+    },
+    "recently_viewed": {
+      "heading": "সম্প্রতি দেখা"
+    },
+    "announcement": {
+      "close": "ঘোষণা বন্ধ করুন"
+    },
+    "cart": {
+      "checkout": "চেকআউট",
+      "empty": "আপনার কার্ট খালি",
+      "error": "কার্ট আপডেট করা যায়নি",
+      "note": "অর্ডার নোট",
+      "remove_title": "{{ title }} সরান",
+      "subtotal": "উপমোট",
+      "taxes_and_shipping_at_checkout": "চেকআউটে কর ও শিপিং খরচ হিসাব করা হবে",
+      "taxes_included_but_shipping_at_checkout": "কর অন্তর্ভুক্ত। চেকআউটে শিপিং খরচ হিসাব করা হবে।",
+      "title": "আপনার কার্ট",
+      "updated": "কার্ট আপডেট হয়েছে",
+      "view_cart": "কার্ট দেখুন",
+      "gift_wrap": "এই অর্ডারটি উপহার",
+      "terms": "আমি শর্তাবলিতে সম্মত",
+      "empty_preview": "কার্ট খালি থাকলে এই কনটেন্ট দেখানো হবে।",
+      "original_subtotal": "মূল উপমোট",
+      "save_note": "নোট সংরক্ষণ করুন",
+      "select_recommendations": "কার্টের সুপারিশের জন্য একটি কালেকশন বেছে নিন।",
+      "select_upsells": "আপসেল পণ্য বা একটি কালেকশন বেছে নিন।",
+      "shipping_threshold_missing": "অগ্রগতি দেখাতে শূন্যের বেশি ফ্রি-শিপিং লক্ষ্য নির্ধারণ করুন।",
+      "update": "কার্ট আপডেট করুন",
+      "recommendations_disabled": "থিম সেটিংসে কার্টের সুপারিশ বন্ধ আছে।"
+    },
+    "header": {
+      "cart_count": "কার্টে {{ count }}টি পণ্য",
+      "menu": "মেনু",
+      "drawer_preview": "স্টোরফ্রন্ট সার্চ ড্রয়ারটি গ্লোবাল ওভারলেতে একবার রেন্ডার হয়।",
+      "select_menu": "থিম এডিটরে একটি মেনু বেছে নিন।"
+    },
+    "blog": {
+      "select_blog": "থিম এডিটরে একটি ব্লগ নির্বাচন করুন।",
+      "no_articles": "কোনো আর্টিকেল নেই।",
+      "no_tags": "কোনো ব্লগ ট্যাগ নেই।"
+    },
+    "apps": {
+      "add_block": "থিম এডিটরে একটি অ্যাপ ব্লক যোগ করুন।",
+      "disabled": "থিম সেটিংসে অ্যাপ ব্লকের স্টাইল বন্ধ আছে।"
+    },
+    "collections": {
+      "select_menu": "কালেকশনে লিংক করা একটি মেনু বেছে নিন।",
+      "select_source": "থিম এডিটরে একটি কালেকশন বা মেনু বেছে নিন।"
+    },
+    "comparison": {
+      "add_rows": "তুলনার সারি যোগ করুন।"
+    },
+    "content": {
+      "add_blocks": "কনটেন্ট ব্লক যোগ করুন।"
+    },
+    "countdown": {
+      "set_date": "কাউন্টডাউন দেখাতে শেষ তারিখ নির্ধারণ করুন।"
+    },
+    "footer": {
+      "navigation": "ফুটার নেভিগেশন",
+      "select_menu": "থিম এডিটরে একটি ফুটার মেনু বেছে নিন।"
+    },
+    "media": {
+      "select_media": "থিম এডিটরে মিডিয়া বেছে নিন।"
+    },
+    "navigation": {
+      "select_menu": "একটি অ্যাঙ্কর মেনু বেছে নিন।"
+    },
+    "products": {
+      "select_source": "থিম এডিটরে একটি পণ্য বা কালেকশন বেছে নিন।"
+    },
+    "social": {
+      "configured_content_only": "ব্যবসায়ীর নিয়ন্ত্রিত মিডিয়া বা অ্যাপ ব্লক যোগ করুন; এই থিম ভুয়া সামাজিক পোস্ট দেখায় না।"
+    }
+  },
+  "blocks": {
+    "product": {
+      "product_title": "পণ্যের শিরোনাম",
+      "product_price": "পণ্যের মূল্য",
+      "product_rating": "পণ্যের রেটিং",
+      "buy_button": "কেনার বাটন"
+    },
+    "content": {
+      "heading": "শিরোনাম",
+      "text": "টেক্সট",
+      "image": "ছবি",
+      "button": "বাটন"
+    },
+    "commerce": {
+      "price": "মূল্য",
+      "quantity": "পরিমাণ",
+      "variant_picker": "ভ্যারিয়েন্ট নির্বাচনকারী",
+      "inventory": "ইনভেন্টরি"
+    },
+    "apps": {
+      "app_block": "অ্যাপ ব্লক",
+      "app_embed": "অ্যাপ এমবেড"
+    }
+  },
+  "forms": {
+    "contact": {
+      "name": "নাম",
+      "email": "ইমেইল",
+      "phone": "ফোন",
+      "message": "বার্তা",
+      "subject": "বিষয়"
+    },
+    "validation": {
+      "required_field": "এই ঘরটি পূরণ করা আবশ্যক।",
+      "invalid_email": "সঠিক ইমেইল ঠিকানা লিখুন।",
+      "submission_successful": "আপনার বার্তা সফলভাবে পাঠানো হয়েছে।",
+      "submission_failed": "আপনার বার্তা পাঠানো যায়নি। আবার চেষ্টা করুন।",
+      "invalid_phone": "সঠিক ফোন নম্বর লিখুন।"
+    }
+  },
+  "accessibility": {
+    "navigation": {
+      "skip_to_content": "মূল কনটেন্টে যান",
+      "open_menu": "মেনু খুলুন",
+      "close_menu": "মেনু বন্ধ করুন"
+    },
+    "slider": {
+      "previous_slide": "আগের স্লাইড",
+      "next_slide": "পরবর্তী স্লাইড",
+      "slide_status": "{{ total }}টির মধ্যে স্লাইড {{ index }}"
+    },
+    "modal": {
+      "close_popup": "পপআপ বন্ধ করুন",
+      "dialog_opened": "ডায়ালগ খোলা হয়েছে"
+    },
+    "loading": {
+      "loading_content": "কনটেন্ট লোড হচ্ছে"
+    },
+    "aria_labels": {
+      "cart_button": "কার্ট বাটন",
+      "search_button": "অনুসন্ধান বাটন",
+      "menu_button": "মেনু বাটন",
+      "quantity_decrease": "পরিমাণ কমান",
+      "quantity_increase": "পরিমাণ বাড়ান",
+      "remove_item": "{{ item }} সরান"
+    },
+    "media": {
+      "image_alt_fallback": "পণ্যের ছবি",
+      "pause_video": "ভিডিও বিরতি দিন",
+      "play_video": "ভিডিও চালান"
+    },
+    "close": "বন্ধ করুন",
+    "required": "আবশ্যক",
+    "skip_to_text": "মূল কনটেন্টে যান"
+  },
+  "seo": {
+    "default": {
+      "page_title": "{{ page_title }} – {{ shop_name }}",
+      "meta_description": "মানসম্মত পণ্য ও সহজ অনলাইন কেনাকাটার জন্য {{ shop_name }} থেকে কিনুন।"
+    },
+    "templates": {
+      "product_title": "{{ product_title }} – {{ shop_name }}",
+      "collection_title": "{{ collection_title }} – {{ shop_name }}",
+      "search_title": "অনুসন্ধান: {{ search_terms }} – {{ shop_name }}"
+    },
+    "social": {
+      "open_graph_title": "{{ title }}",
+      "open_graph_description": "{{ description }}"
+    }
+  },
+  "errors": {
+    "404": {
+      "title": "পৃষ্ঠা পাওয়া যায়নি",
+      "description": "আপনার চাওয়া পৃষ্ঠাটি নেই অথবা সরানো হয়েছে।",
+      "return_homepage": "হোমপেজে ফিরুন"
+    },
+    "cart": {
+      "update_failed": "কার্ট আপডেট ব্যর্থ হয়েছে। আবার চেষ্টা করুন।",
+      "quantity_error": "চাওয়া পরিমাণটি উপলভ্য নয়।"
+    },
+    "forms": {
+      "generic": "কিছু সমস্যা হয়েছে। আবার চেষ্টা করুন।"
+    },
+    "network": {
+      "offline": "মনে হচ্ছে আপনি অফলাইনে আছেন।",
+      "retry": "আবার চেষ্টা করুন"
+    }
+  },
+  "pagination": {
+    "previous": "আগের",
+    "next": "পরবর্তী",
+    "page": "পৃষ্ঠা {{ current }}/{{ total }}",
+    "load_more": "আরও লোড করুন"
+  },
+  "date": {
+    "months": {
+      "january": "জানুয়ারি",
+      "february": "ফেব্রুয়ারি",
+      "march": "মার্চ",
+      "april": "এপ্রিল",
+      "may": "মে",
+      "june": "জুন",
+      "july": "জুলাই",
+      "august": "আগস্ট",
+      "september": "সেপ্টেম্বর",
+      "october": "অক্টোবর",
+      "november": "নভেম্বর",
+      "december": "ডিসেম্বর"
+    },
+    "days": {
+      "sunday": "রবিবার",
+      "monday": "সোমবার",
+      "tuesday": "মঙ্গলবার",
+      "wednesday": "বুধবার",
+      "thursday": "বৃহস্পতিবার",
+      "friday": "শুক্রবার",
+      "saturday": "শনিবার"
+    },
+    "formats": {
+      "short": "%d %b, %Y",
+      "long": "%d %B, %Y",
+      "time": "%I:%M %p"
+    }
+  },
+  "apps": {
+    "reviews": {
+      "title": "গ্রাহক পর্যালোচনা",
+      "write_review": "রিভিউ লিখুন",
+      "verified_buyer": "যাচাইকৃত ক্রেতা",
+      "no_reviews": "এখনো কোনো রিভিউ নেই"
+    },
+    "wishlist": {
+      "title": "ইচ্ছেতালিকা",
+      "added": "ইচ্ছেতালিকায় যোগ হয়েছে",
+      "removed": "ইচ্ছেতালিকা থেকে সরানো হয়েছে"
+    },
+    "compare": {
+      "title": "পণ্য তুলনা করুন",
+      "added": "তুলনায় যোগ হয়েছে",
+      "removed": "তুলনা থেকে সরানো হয়েছে"
+    },
+    "subscriptions": {
+      "subscribe_and_save": "সাবস্ক্রাইব করে সাশ্রয় করুন",
+      "one_time_purchase": "এককালীন ক্রয়",
+      "delivery_frequency": "ডেলিভারির সময়সূচি"
+    },
+    "marketing": {
+      "consent": "আমি মার্কেটিং বার্তা পেতে সম্মত।",
+      "success": "পছন্দ সংরক্ষিত হয়েছে"
+    },
+    "back_in_stock": {
+      "notify_me": "উপলভ্য হলে জানান",
+      "success": "পণ্যটি উপলভ্য হলে আমরা আপনাকে জানাব।"
+    }
+  },
+  "blogs": {
+    "comments": {
+      "comments_with_count": "মন্তব্য ({{ count }})",
+      "email": "ইমেইল",
+      "message": "মন্তব্য",
+      "name": "নাম",
+      "post": "মন্তব্য প্রকাশ করুন"
+    }
+  },
+  "gift_cards": {
+    "issued": {
+      "print": "গিফট কার্ড প্রিন্ট করুন",
+      "title": "{{ shop }}-এর জন্য {{ value }} গিফট কার্ড",
+      "subtext": "আপনার গিফট কার্ড",
+      "expired": "এই গিফট কার্ডের মেয়াদ শেষ",
+      "qr_image_alt": "গিফট কার্ডের কিউআর কোড",
+      "gift_card_code": "গিফট কার্ড কোড",
+      "copy_code": "কোড কপি করুন",
+      "copy_success": "গিফট কার্ড কোড কপি হয়েছে",
+      "redeem": "চেকআউটে এই কোড ব্যবহার করুন।",
+      "shop_link": "কেনাকাটা চালিয়ে যান",
+      "add_to_apple_wallet": "Apple Wallet-এ যোগ করুন",
+      "last_four": "কোডের শেষ অংশ {{ last_four }}"
+    }
+  },
+  "newsletter": {
+    "button_label": "সাবস্ক্রাইব করুন",
+    "label": "ইমেইল ঠিকানা",
+    "success": "সাবস্ক্রাইব করার জন্য ধন্যবাদ।",
+    "title": "নিউজলেটার"
+  },
+  "templates": {
+    "cart": {
+      "cart": "কার্ট"
+    },
+    "contact": {
+      "form": {
+        "comment": "বার্তা",
+        "email": "ইমেইল",
+        "name": "নাম",
+        "phone": "ফোন নম্বর",
+        "post_success": "যোগাযোগ করার জন্য ধন্যবাদ। আমরা শিগগিরই আপনার সঙ্গে যোগাযোগ করব।",
+        "send": "পাঠান",
+        "company": "প্রতিষ্ঠান",
+        "date": "পছন্দের তারিখ",
+        "time": "পছন্দের সময়"
+      }
+    }
+  },
+  "localization": {
+    "country_label": "দেশ/অঞ্চল",
+    "language_label": "ভাষা"
+  },
+  "recipient": {
+    "form": {
+      "email": "প্রাপকের ইমেইল",
+      "gift_card_recipient": "এই গিফট কার্ড একজন প্রাপককে পাঠান",
+      "message": "বার্তা",
+      "name": "প্রাপকের নাম",
+      "send_on": "পাঠানোর তারিখ (ঐচ্ছিক)",
+      "send_to_recipient": "এই গিফট কার্ডটি কাউকে ইমেইল করুন"
+    }
+  },
+  "contact": {
+    "support_information": "সহায়তা তথ্য",
+    "open_location": "ম্যাপে অবস্থান খুলুন",
+    "form": {
+      "error_heading": "ফর্মটি যাচাই করে আবার চেষ্টা করুন।",
+      "name": "পূর্ণ নাম",
+      "email": "ইমেইল ঠিকানা",
+      "required": "(আবশ্যক)",
+      "name_placeholder": "আপনার পূর্ণ নাম লিখুন",
+      "email_placeholder": "আপনার ইমেইল ঠিকানা লিখুন",
+      "phone": "ফোন নম্বর (ঐচ্ছিক)",
+      "phone_placeholder": "আপনার ফোন নম্বর লিখুন",
+      "subject": "বিষয়",
+      "subject_placeholder": "আমরা কীভাবে সাহায্য করতে পারি?",
+      "order_number": "অর্ডার নম্বর (ঐচ্ছিক)",
+      "order_number_placeholder": "আপনার অর্ডার নম্বর লিখুন",
+      "message": "বার্তা",
+      "message_placeholder": "এখানে আপনার বার্তা লিখুন…"
+    }
+  }
+}

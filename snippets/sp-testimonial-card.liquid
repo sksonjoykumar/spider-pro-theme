@@ -1,0 +1,99 @@
+{%- liquid
+  assign sp_rating = block.settings.rating | default: 5
+  assign sp_customer_alt = block.settings.customer_image_alt | default: block.settings.customer_name
+  assign sp_product = block.settings.product
+  assign sp_product_image = block.settings.custom_product_image
+  assign sp_product_title = block.settings.custom_product_title
+  assign sp_product_url = block.settings.custom_product_url
+  if sp_product != blank
+    assign sp_product_image = sp_product.featured_image
+    assign sp_product_title = sp_product.title
+    assign sp_product_url = sp_product.url
+  endif
+-%}
+
+<article
+  class="sp-testimonial-card{% if block.settings.featured_review %} sp-testimonial-card--featured{% endif %}"
+  data-sp-testimonial-slide
+  data-sp-testimonial-featured="{{ block.settings.featured_review }}"
+  {{ block.shopify_attributes }}
+>
+  <div class="sp-testimonial-card__main">
+    {% if section.settings.show_quote_icon %}
+      <svg class="sp-testimonial-card__quote" viewBox="0 0 32 24" aria-hidden="true">
+        <path d="M0 24V13.7C0 4.9 4.1 1 11.5 0l1.2 3.8C8.9 4.8 7 6.7 6.7 9.8h5.4V24H0Zm19.3 0V13.7C19.3 4.9 23.4 1 30.8 0L32 3.8c-3.8 1-5.7 2.9-6 6h5.4V24H19.3Z" fill="currentColor"/>
+      </svg>
+    {% endif %}
+
+    {% if section.settings.show_rating %}
+      <div class="sp-testimonial-card__rating" aria-label="{{ sp_rating }} out of 5 stars">
+        {% for sp_star in (1..5) %}
+          <svg class="sp-testimonial-card__star{% if sp_star > sp_rating %} is-empty{% endif %}" viewBox="0 0 20 20" aria-hidden="true">
+            <path d="m10 1.4 2.67 5.4 5.96.87-4.31 4.2 1.02 5.93L10 15l-5.34 2.8 1.02-5.93-4.31-4.2 5.96-.87L10 1.4Z" fill="currentColor"/>
+          </svg>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    {% if block.settings.review_heading != blank %}
+      <h3 class="sp-testimonial-card__heading">{{ block.settings.review_heading | escape }}</h3>
+    {% endif %}
+    {% if block.settings.review_text != blank %}
+      <div class="sp-testimonial-card__text rte">{{ block.settings.review_text }}</div>
+    {% endif %}
+  </div>
+
+  <div class="sp-testimonial-card__footer">
+    <div class="sp-testimonial-card__customer">
+      {% if section.settings.show_customer_image %}
+        <div class="sp-testimonial-card__avatar sp-testimonial-card__avatar--{{ section.settings.customer_image_shape }}">
+          {% if block.settings.customer_image != blank %}
+            {{ block.settings.customer_image | image_url: width: 240 | image_tag: widths: '64,96,128,160,240', sizes: section.settings.customer_image_size | append: 'px', loading: 'lazy', alt: sp_customer_alt }}
+          {% else %}
+            <span aria-hidden="true">{{ block.settings.customer_name | slice: 0 | upcase }}</span>
+          {% endif %}
+        </div>
+      {% endif %}
+
+      <div class="sp-testimonial-card__identity">
+        <div class="sp-testimonial-card__name-row">
+          <strong class="sp-testimonial-card__name">{{ block.settings.customer_name | escape }}</strong>
+        </div>
+        {% if section.settings.show_verified_badge and block.settings.verified_buyer %}
+          <span class="sp-testimonial-card__verified" title="Verified buyer">
+            <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="10" fill="currentColor"/><path d="m5.8 10.1 2.5 2.5 5.9-6" fill="none" stroke="var(--sp-testimonial-card-bg)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span>Verified buyer</span>
+          </span>
+        {% endif %}
+        {% if block.settings.customer_location != blank %}
+          <span class="sp-testimonial-card__location">{{ block.settings.customer_location | escape }}</span>
+        {% endif %}
+        {% if section.settings.show_review_date and block.settings.review_date != blank %}
+          <time class="sp-testimonial-card__date">{{ block.settings.review_date | escape }}</time>
+        {% endif %}
+        {% if section.settings.show_product and section.settings.layout_style == 'style_1' and sp_product_title != blank %}
+          {% if sp_product_url != blank %}
+            <a class="sp-testimonial-card__product-inline" href="{{ sp_product_url }}">{{ sp_product_title | escape }}</a>
+          {% else %}
+            <span class="sp-testimonial-card__product-inline">{{ sp_product_title | escape }}</span>
+          {% endif %}
+        {% endif %}
+      </div>
+    </div>
+
+    {% if section.settings.show_product and section.settings.layout_style != 'style_1' and sp_product_title != blank %}
+      <a class="sp-testimonial-card__product" href="{{ sp_product_url | default: '#' }}"{% if sp_product_url == blank %} aria-disabled="true" tabindex="-1"{% endif %}>
+        {% if sp_product_image != blank %}
+          <span class="sp-testimonial-card__product-image">
+            {{ sp_product_image | image_url: width: 180 | image_tag: widths: '60,90,120,180', sizes: '48px', loading: 'lazy', alt: sp_product_title }}
+          </span>
+        {% endif %}
+        <span class="sp-testimonial-card__product-copy">
+          <span class="sp-testimonial-card__product-label">Purchased</span>
+          <span class="sp-testimonial-card__product-title">{{ sp_product_title | escape }}</span>
+        </span>
+        {% if sp_product_url != blank %}<span class="sp-testimonial-card__product-arrow" aria-hidden="true">→</span>{% endif %}
+      </a>
+    {% endif %}
+  </div>
+</article>

@@ -1,0 +1,806 @@
+{%- liquid
+  assign product_1 = section.settings.product_1
+  assign product_2 = section.settings.product_2
+  assign product_3 = section.settings.product_3
+  assign product_4 = section.settings.product_4
+
+  assign product_1_active = false
+  assign product_2_active = false
+  assign product_3_active = false
+  assign product_4_active = false
+
+  if product_1 != blank
+    assign product_1_active = true
+  endif
+
+  if product_2 != blank
+    assign product_2_active = true
+    if product_1_active and product_2.id == product_1.id
+      assign product_2_active = false
+    endif
+  endif
+
+  if product_3 != blank
+    assign product_3_active = true
+    if product_1_active and product_3.id == product_1.id
+      assign product_3_active = false
+    endif
+    if product_2_active and product_3.id == product_2.id
+      assign product_3_active = false
+    endif
+  endif
+
+  if product_4 != blank
+    assign product_4_active = true
+    if product_1_active and product_4.id == product_1.id
+      assign product_4_active = false
+    endif
+    if product_2_active and product_4.id == product_2.id
+      assign product_4_active = false
+    endif
+    if product_3_active and product_4.id == product_3.id
+      assign product_4_active = false
+    endif
+  endif
+
+  assign product_count = 0
+  if product_1_active
+    assign product_count = product_count | plus: 1
+  endif
+  if product_2_active
+    assign product_count = product_count | plus: 1
+  endif
+  if product_3_active
+    assign product_count = product_count | plus: 1
+  endif
+  if product_4_active
+    assign product_count = product_count | plus: 1
+  endif
+
+  assign can_render_bundle = false
+  if product_count >= 2
+    assign can_render_bundle = true
+  endif
+
+  assign featured_product = blank
+  case section.settings.featured_product
+    when '1'
+      if product_1_active
+        assign featured_product = product_1
+      endif
+    when '2'
+      if product_2_active
+        assign featured_product = product_2
+      endif
+    when '3'
+      if product_3_active
+        assign featured_product = product_3
+      endif
+    when '4'
+      if product_4_active
+        assign featured_product = product_4
+      endif
+  endcase
+
+  if featured_product == blank
+    if product_1_active
+      assign featured_product = product_1
+    elsif product_2_active
+      assign featured_product = product_2
+    elsif product_3_active
+      assign featured_product = product_3
+    elsif product_4_active
+      assign featured_product = product_4
+    endif
+  endif
+
+  assign bundle_image = section.settings.bundle_image
+  if bundle_image == blank and featured_product != blank
+    assign bundle_image = featured_product.featured_image
+  endif
+
+  assign container_class = 'sp-container'
+  if section.settings.section_width == 'wide'
+    assign container_class = 'sp-container sp-container--wide'
+  endif
+
+  assign individual_total = 0
+  assign all_initial_variants_available = true
+
+  if product_1_active
+    assign v1 = product_1.selected_or_first_available_variant
+    assign individual_total = individual_total | plus: v1.price
+    unless v1.available
+      assign all_initial_variants_available = false
+    endunless
+  endif
+  if product_2_active
+    assign v2 = product_2.selected_or_first_available_variant
+    assign individual_total = individual_total | plus: v2.price
+    unless v2.available
+      assign all_initial_variants_available = false
+    endunless
+  endif
+  if product_3_active
+    assign v3 = product_3.selected_or_first_available_variant
+    assign individual_total = individual_total | plus: v3.price
+    unless v3.available
+      assign all_initial_variants_available = false
+    endunless
+  endif
+  if product_4_active
+    assign v4 = product_4.selected_or_first_available_variant
+    assign individual_total = individual_total | plus: v4.price
+    unless v4.available
+      assign all_initial_variants_available = false
+    endunless
+  endif
+
+  assign benefit_count = 0
+  assign feature_count = 0
+  for block in section.blocks
+    if block.type == 'bundle_benefit' and block.settings.text != blank
+      assign benefit_count = benefit_count | plus: 1
+    elsif block.type == 'bundle_feature' and block.settings.heading != blank
+      assign feature_count = feature_count | plus: 1
+    endif
+  endfor
+-%}
+
+{%- if can_render_bundle or request.design_mode -%}
+  {% render 'sp-section-color-scheme', section: section %}
+  {{ 'sp-product-bundle.css' | asset_url | stylesheet_tag }}
+  <script src="{{ 'sp-product-bundle.js' | asset_url }}" defer="defer"></script>
+
+  <section
+    id="SpiderProductBundle-{{ section.id }}"
+    class="sp-section sp-product-bundle sp-product-display"
+    data-sp-product-bundle
+    data-section-id="{{ section.id }}"
+    data-product-count="{{ product_count }}"
+    data-cart-add-url="{{ routes.cart_add_url }}"
+    data-cart-url="{{ routes.cart_url }}"
+    data-cart-open-after-add="{{ settings.cart_open_after_add }}"
+    data-cart-type="{{ settings.cart_type | default: 'drawer' | escape }}"
+    data-money-format="{{ shop.money_format | escape }}"
+    data-currency="{{ cart.currency.iso_code | default: shop.currency | escape }}"
+    data-add-label="{{ section.settings.add_bundle_label | escape }}"
+    data-loading-label="{{ section.settings.loading_label | escape }}"
+    data-success-label="{{ section.settings.success_label | escape }}"
+    data-unavailable-label="{{ section.settings.unavailable_label | escape }}"
+    data-choose-options-label="{{ section.settings.choose_options_label | escape }}"
+  >
+    <div class="{{ container_class }} sp-product-bundle__container">
+      {%- if section.settings.show_header -%}
+        <header class="sp-product-bundle__header sp-product-bundle__header--{{ section.settings.header_alignment }}">
+          {%- if section.settings.show_eyebrow and section.settings.eyebrow != blank -%}
+            <p class="sp-product-bundle__eyebrow sp-text-small">
+              {{ section.settings.eyebrow | escape }}
+            </p>
+          {%- endif -%}
+
+          {%- if section.settings.heading != blank -%}
+            <h2 class="sp-product-bundle__heading sp-heading--h2">
+              {{ section.settings.heading | escape }}
+            </h2>
+          {%- endif -%}
+
+          {%- if section.settings.description != blank -%}
+            <div class="sp-product-bundle__description rte">
+              {{ section.settings.description }}
+            </div>
+          {%- endif -%}
+        </header>
+      {%- endif -%}
+
+      {%- if can_render_bundle -%}
+        <div class="sp-product-bundle__main sp-product-bundle__main--image-{{ section.settings.image_position | default: 'left' }}">
+          <div class="sp-product-bundle__media-panel">
+            <div class="sp-product-bundle__media-frame" data-image-ratio="{{ section.settings.image_ratio }}">
+              {%- if section.settings.featured_label != blank -%}
+                <span class="sp-product-bundle__featured-label">
+                  {% render 'sp-product-bundle-icon', name: 'star' %}
+                  <span>{{ section.settings.featured_label | escape }}</span>
+                </span>
+              {%- endif -%}
+
+              {%- if section.settings.show_savings and section.settings.savings_label != blank and section.settings.promotional_price != blank -%}
+                <span class="sp-product-bundle__savings-badge">
+                  {{ section.settings.savings_label | escape }}
+                </span>
+              {%- endif -%}
+
+              {%- if bundle_image != blank -%}
+                {{
+                  bundle_image
+                  | image_url: width: 1400
+                  | image_tag:
+                    widths: '480, 640, 800, 1000, 1200, 1400',
+                    sizes: '(min-width: 990px) 50vw, 100vw',
+                    loading: 'lazy',
+                    alt: bundle_image.alt | default: section.settings.heading,
+                    class: 'sp-product-bundle__hero-image'
+                }}
+              {%- else -%}
+                {{ 'product-1' | placeholder_svg_tag: 'sp-product-bundle__hero-placeholder placeholder-svg' }}
+              {%- endif -%}
+            </div>
+          </div>
+
+          <div class="sp-product-bundle__content-panel">
+            <div class="sp-product-bundle__items" role="list" aria-label="{{ section.settings.bundle_items_label | escape }}">
+              {%- if product_1_active -%}
+                {% render 'sp-product-bundle-item',
+                  product: product_1,
+                  slot: 1,
+                  show_thumbnails: section.settings.show_thumbnails,
+                  show_individual_prices: section.settings.show_individual_prices,
+                  show_compare_prices: section.settings.show_compare_prices,
+                  show_variants: section.settings.show_variants
+                %}
+                {%- if product_count > 1 -%}
+                  <div class="sp-product-bundle__plus" aria-hidden="true">+</div>
+                {%- endif -%}
+              {%- endif -%}
+
+              {%- if product_2_active -%}
+                {% render 'sp-product-bundle-item',
+                  product: product_2,
+                  slot: 2,
+                  show_thumbnails: section.settings.show_thumbnails,
+                  show_individual_prices: section.settings.show_individual_prices,
+                  show_compare_prices: section.settings.show_compare_prices,
+                  show_variants: section.settings.show_variants
+                %}
+                {%- if product_3_active or product_4_active -%}
+                  <div class="sp-product-bundle__plus" aria-hidden="true">+</div>
+                {%- endif -%}
+              {%- endif -%}
+
+              {%- if product_3_active -%}
+                {% render 'sp-product-bundle-item',
+                  product: product_3,
+                  slot: 3,
+                  show_thumbnails: section.settings.show_thumbnails,
+                  show_individual_prices: section.settings.show_individual_prices,
+                  show_compare_prices: section.settings.show_compare_prices,
+                  show_variants: section.settings.show_variants
+                %}
+                {%- if product_4_active -%}
+                  <div class="sp-product-bundle__plus" aria-hidden="true">+</div>
+                {%- endif -%}
+              {%- endif -%}
+
+              {%- if product_4_active -%}
+                {% render 'sp-product-bundle-item',
+                  product: product_4,
+                  slot: 4,
+                  show_thumbnails: section.settings.show_thumbnails,
+                  show_individual_prices: section.settings.show_individual_prices,
+                  show_compare_prices: section.settings.show_compare_prices,
+                  show_variants: section.settings.show_variants
+                %}
+              {%- endif -%}
+            </div>
+
+            <div class="sp-product-bundle__summary">
+              {%- if section.settings.show_savings and section.settings.promotional_price != blank -%}
+                <div class="sp-product-bundle__bundle-price-row">
+                  <span class="sp-product-bundle__bundle-price-label">{{ section.settings.promotional_price_label | escape }}</span>
+                  <div class="sp-product-bundle__bundle-price-values">
+                    <strong class="sp-product-bundle__bundle-price">{{ section.settings.promotional_price | escape }}</strong>
+                    {%- if section.settings.savings_label != blank -%}
+                      <span class="sp-product-bundle__inline-savings">{{ section.settings.savings_label | escape }}</span>
+                    {%- endif -%}
+                  </div>
+                </div>
+                <div class="sp-product-bundle__total-row sp-product-bundle__total-row--individual">
+                  <span class="sp-product-bundle__total-label">{{ section.settings.individual_total_label | escape }}</span>
+                  <s class="sp-product-bundle__total-value sp-product-bundle__total-value--compare" data-bundle-total>{{ individual_total | money }}</s>
+                </div>
+                {%- if section.settings.discount_note != blank -%}
+                  <p class="sp-product-bundle__promo-note">{{ section.settings.discount_note | escape }}</p>
+                {%- endif -%}
+              {%- else -%}
+                <div class="sp-product-bundle__total-row">
+                  <span class="sp-product-bundle__total-label">{{ section.settings.individual_total_label | escape }}</span>
+                  <strong class="sp-product-bundle__total-value" data-bundle-total>{{ individual_total | money }}</strong>
+                </div>
+              {%- endif -%}
+
+              {%- if benefit_count > 0 -%}
+                <ul class="sp-product-bundle__benefits" role="list">
+                  {%- for block in section.blocks -%}
+                    {%- if block.type == 'bundle_benefit' and block.settings.text != blank -%}
+                      <li class="sp-product-bundle__benefit" {{ block.shopify_attributes }}>
+                        <span class="sp-product-bundle__benefit-icon">
+                          {% render 'sp-product-bundle-icon', name: block.settings.icon %}
+                        </span>
+                        <span>{{ block.settings.text | escape }}</span>
+                      </li>
+                    {%- endif -%}
+                  {%- endfor -%}
+                </ul>
+              {%- endif -%}
+
+              <div class="sp-product-bundle__actions">
+                <button
+                  class="sp-button sp-button--primary sp-product-bundle__add"
+                  type="button"
+                  data-bundle-add
+                  {% unless all_initial_variants_available %}disabled aria-disabled="true"{% endunless %}
+                >
+                  <span class="sp-product-bundle__button-icon" aria-hidden="true">
+                    {% render 'sp-product-bundle-icon', name: 'bag' %}
+                  </span>
+                  <span data-bundle-add-label>
+                    {%- if all_initial_variants_available -%}
+                      {{ section.settings.add_bundle_label | escape }}
+                    {%- else -%}
+                      {{ section.settings.unavailable_label | escape }}
+                    {%- endif -%}
+                  </span>
+                </button>
+
+                {%- if section.settings.show_secondary_cta and section.settings.secondary_cta_label != blank and section.settings.secondary_cta_link != blank -%}
+                  <a class="sp-button sp-button--secondary sp-product-bundle__details" href="{{ section.settings.secondary_cta_link }}">
+                    {{ section.settings.secondary_cta_label | escape }}
+                  </a>
+                {%- endif -%}
+              </div>
+
+              <p class="sp-product-bundle__status" data-bundle-status role="status" aria-live="polite"></p>
+              <p class="sp-product-bundle__error" data-bundle-error role="alert" hidden></p>
+            </div>
+          </div>
+        </div>
+
+        {%- if section.settings.show_supporting_cards and feature_count > 0 -%}
+          <div class="sp-product-bundle__features" role="list">
+            {%- for block in section.blocks -%}
+              {%- if block.type == 'bundle_feature' and block.settings.heading != blank -%}
+                <article class="sp-product-bundle__feature-card" role="listitem" {{ block.shopify_attributes }}>
+                  <span class="sp-product-bundle__feature-icon">
+                    {% render 'sp-product-bundle-icon', name: block.settings.icon %}
+                  </span>
+                  <div>
+                    <h3 class="sp-product-bundle__feature-heading">{{ block.settings.heading | escape }}</h3>
+                    {%- if block.settings.description != blank -%}
+                      <p class="sp-product-bundle__feature-description">{{ block.settings.description | escape }}</p>
+                    {%- endif -%}
+                  </div>
+                </article>
+              {%- endif -%}
+            {%- endfor -%}
+          </div>
+        {%- endif -%}
+      {%- elsif request.design_mode -%}
+        <div class="sp-product-bundle__empty" role="status">
+          <span class="sp-product-bundle__empty-icon" aria-hidden="true">
+            {% render 'sp-product-bundle-icon', name: 'bundle' %}
+          </span>
+          <div>
+            <h3 class="sp-product-bundle__empty-title">Select at least two products</h3>
+            <p class="sp-product-bundle__empty-text">Choose two to four unique Shopify products to create this bundle.</p>
+          </div>
+        </div>
+      {%- endif -%}
+    </div>
+  </section>
+{%- else -%}
+  <style>#shopify-section-{{ section.id }}{display:none!important}</style>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Product Bundle",
+  "tag": "section",
+  "class": "sp-product-bundle-section",
+  "max_blocks": 8,
+  "disabled_on": {
+    "groups": ["header", "footer", "custom.system"]
+  },
+  "settings": [
+    {
+      "type": "header",
+      "content": "General"
+    },
+    {
+      "type": "color_scheme",
+      "id": "sp_color_scheme",
+      "label": "Color scheme",
+      "default": "scheme-1"
+    },
+    {
+      "type": "select",
+      "id": "section_width",
+      "label": "Section width",
+      "default": "container",
+      "options": [
+        { "value": "container", "label": "Contained" },
+        { "value": "wide", "label": "Wide" }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "image_position",
+      "label": "Featured image position",
+      "default": "left",
+      "options": [
+        { "value": "left", "label": "Left" },
+        { "value": "right", "label": "Right" }
+      ]
+    },
+    {
+      "type": "header",
+      "content": "Header"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_header",
+      "label": "Show header",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_eyebrow",
+      "label": "Show eyebrow",
+      "default": true,
+      "visible_if": "{{ section.settings.show_header }}"
+    },
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Eyebrow",
+      "default": "Bundle & Save",
+      "visible_if": "{{ section.settings.show_header and section.settings.show_eyebrow }}"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Complete Your Everyday Setup",
+      "visible_if": "{{ section.settings.show_header }}"
+    },
+    {
+      "type": "richtext",
+      "id": "description",
+      "label": "Description",
+      "default": "<p>Pair thoughtfully selected products together in one convenient bundle.</p>",
+      "visible_if": "{{ section.settings.show_header }}"
+    },
+    {
+      "type": "select",
+      "id": "header_alignment",
+      "label": "Alignment",
+      "default": "center",
+      "options": [
+        { "value": "left", "label": "Left" },
+        { "value": "center", "label": "Center" }
+      ],
+      "visible_if": "{{ section.settings.show_header }}"
+    },
+    {
+      "type": "header",
+      "content": "Bundle products"
+    },
+    {
+      "type": "product",
+      "id": "product_1",
+      "label": "Product 1"
+    },
+    {
+      "type": "product",
+      "id": "product_2",
+      "label": "Product 2"
+    },
+    {
+      "type": "product",
+      "id": "product_3",
+      "label": "Product 3"
+    },
+    {
+      "type": "product",
+      "id": "product_4",
+      "label": "Product 4"
+    },
+    {
+      "type": "select",
+      "id": "featured_product",
+      "label": "Featured product",
+      "default": "1",
+      "options": [
+        { "value": "1", "label": "Product 1" },
+        { "value": "2", "label": "Product 2" },
+        { "value": "3", "label": "Product 3" },
+        { "value": "4", "label": "Product 4" }
+      ]
+    },
+    {
+      "type": "image_picker",
+      "id": "bundle_image",
+      "label": "Custom bundle image"
+    },
+    {
+      "type": "select",
+      "id": "image_ratio",
+      "label": "Bundle image ratio",
+      "default": "landscape",
+      "options": [
+        { "value": "adapt", "label": "Adapt" },
+        { "value": "square", "label": "Square" },
+        { "value": "portrait", "label": "Portrait" },
+        { "value": "landscape", "label": "Landscape" }
+      ]
+    },
+    {
+      "type": "header",
+      "content": "Display"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_thumbnails",
+      "label": "Show product thumbnails",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_individual_prices",
+      "label": "Show individual prices",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_compare_prices",
+      "label": "Show compare-at prices",
+      "default": true,
+      "visible_if": "{{ section.settings.show_individual_prices }}"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_variants",
+      "label": "Show compact variant selectors",
+      "default": true,
+      "info": "Products with multiple variants use a compact native selector. Selected variants update price, availability, and bundle total."
+    },
+    {
+      "type": "text",
+      "id": "featured_label",
+      "label": "Featured bundle label",
+      "default": "Featured Bundle"
+    },
+    {
+      "type": "text",
+      "id": "bundle_items_label",
+      "label": "Accessible product list label",
+      "default": "Bundle products"
+    },
+    {
+      "type": "text",
+      "id": "individual_total_label",
+      "label": "Individual total label",
+      "default": "Individual total"
+    },
+    {
+      "type": "header",
+      "content": "Savings"
+    },
+    {
+      "type": "paragraph",
+      "content": "Only enable savings messaging when your Shopify discount, bundle app, Shopify Bundles, or Shopify Functions setup applies the same discount at checkout."
+    },
+    {
+      "type": "checkbox",
+      "id": "show_savings",
+      "label": "Show savings messaging",
+      "default": false
+    },
+    {
+      "type": "text",
+      "id": "savings_label",
+      "label": "Savings badge",
+      "default": "Save 18%",
+      "visible_if": "{{ section.settings.show_savings }}"
+    },
+    {
+      "type": "text",
+      "id": "promotional_price_label",
+      "label": "Promotional price label",
+      "default": "Promotional bundle price",
+      "visible_if": "{{ section.settings.show_savings }}"
+    },
+    {
+      "type": "text",
+      "id": "promotional_price",
+      "label": "Promotional bundle price",
+      "info": "Display only. Enter the exact promotional price your real checkout discount produces.",
+      "visible_if": "{{ section.settings.show_savings }}"
+    },
+    {
+      "type": "text",
+      "id": "discount_note",
+      "label": "Discount note",
+      "info": "Keep this aligned with the real discount mechanism used at checkout.",
+      "visible_if": "{{ section.settings.show_savings }}"
+    },
+    {
+      "type": "header",
+      "content": "Actions"
+    },
+    {
+      "type": "text",
+      "id": "add_bundle_label",
+      "label": "Add bundle button",
+      "default": "Add bundle to cart"
+    },
+    {
+      "type": "text",
+      "id": "loading_label",
+      "label": "Loading label",
+      "default": "Adding bundle..."
+    },
+    {
+      "type": "text",
+      "id": "success_label",
+      "label": "Success label",
+      "default": "Bundle added"
+    },
+    {
+      "type": "text",
+      "id": "unavailable_label",
+      "label": "Unavailable label",
+      "default": "Bundle unavailable"
+    },
+    {
+      "type": "text",
+      "id": "choose_options_label",
+      "label": "Choose options status",
+      "default": "Choose available options"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_secondary_cta",
+      "label": "Show secondary CTA",
+      "default": false
+    },
+    {
+      "type": "text",
+      "id": "secondary_cta_label",
+      "label": "Secondary CTA label",
+      "default": "View bundle details",
+      "visible_if": "{{ section.settings.show_secondary_cta }}"
+    },
+    {
+      "type": "url",
+      "id": "secondary_cta_link",
+      "label": "Secondary CTA link",
+      "visible_if": "{{ section.settings.show_secondary_cta }}"
+    },
+    {
+      "type": "header",
+      "content": "Supporting cards"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_supporting_cards",
+      "label": "Show supporting cards",
+      "default": true
+    }
+  ],
+  "blocks": [
+    {
+      "type": "bundle_benefit",
+      "name": "Bundle benefit",
+      "limit": 5,
+      "settings": [
+        {
+          "type": "select",
+          "id": "icon",
+          "label": "Icon",
+          "default": "check",
+          "options": [
+            { "value": "check", "label": "Check" },
+            { "value": "bundle", "label": "Bundle" },
+            { "value": "bag", "label": "Bag" },
+            { "value": "gift", "label": "Gift" },
+            { "value": "tag", "label": "Tag" },
+            { "value": "star", "label": "Star" }
+          ]
+        },
+        {
+          "type": "text",
+          "id": "text",
+          "label": "Text",
+          "default": "Curated product pairing"
+        }
+      ]
+    },
+    {
+      "type": "bundle_feature",
+      "name": "Bundle feature",
+      "limit": 3,
+      "settings": [
+        {
+          "type": "select",
+          "id": "icon",
+          "label": "Icon",
+          "default": "bundle",
+          "options": [
+            { "value": "bundle", "label": "Bundle" },
+            { "value": "bag", "label": "Bag" },
+            { "value": "gift", "label": "Gift" },
+            { "value": "tag", "label": "Tag" },
+            { "value": "star", "label": "Star" },
+            { "value": "check", "label": "Check" }
+          ]
+        },
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "Heading",
+          "default": "Easy Pairing"
+        },
+        {
+          "type": "text",
+          "id": "description",
+          "label": "Description",
+          "default": "A simple way to shop selected products together."
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Product Bundle",
+      "category": "02. Products",
+      "blocks": [
+        {
+          "type": "bundle_benefit",
+          "settings": {
+            "icon": "check",
+            "text": "Curated everyday essentials"
+          }
+        },
+        {
+          "type": "bundle_benefit",
+          "settings": {
+            "icon": "check",
+            "text": "Thoughtfully paired products"
+          }
+        },
+        {
+          "type": "bundle_benefit",
+          "settings": {
+            "icon": "check",
+            "text": "Fast and simple one-click purchase"
+          }
+        },
+        {
+          "type": "bundle_feature",
+          "settings": {
+            "icon": "tag",
+            "heading": "Smart Savings",
+            "description": "Show your configured bundle price and savings clearly."
+          }
+        },
+        {
+          "type": "bundle_feature",
+          "settings": {
+            "icon": "bundle",
+            "heading": "Ready-Made Pairing",
+            "description": "Handpicked essentials that work better together."
+          }
+        },
+        {
+          "type": "bundle_feature",
+          "settings": {
+            "icon": "gift",
+            "heading": "Gift-Friendly",
+            "description": "Thoughtful bundles for birthdays, holidays, and more."
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

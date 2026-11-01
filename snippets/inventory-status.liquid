@@ -1,0 +1,17 @@
+{% comment %}Selected-variant inventory status. Parameters: product, variant, threshold, show_exact.{% endcomment %}
+{% assign current_variant = variant | default: product.selected_or_first_available_variant %}
+{% assign low_threshold = threshold | default: 5 %}
+<p class="sp-product-inventory" data-inventory-status data-low-threshold="{{ low_threshold }}" data-show-exact="{{ show_exact | default: false }}">
+  <span class="sp-product-inventory__dot" aria-hidden="true"></span>
+  <span data-inventory-text>
+    {% if current_variant.available %}
+      {% if current_variant.inventory_management and current_variant.inventory_quantity > 0 and current_variant.inventory_quantity <= low_threshold %}
+        {% if show_exact %}{{ 'products.product.inventory_low_stock_show_count' | t: quantity: current_variant.inventory_quantity }}{% else %}{{ 'products.product.inventory_low_stock' | t }}{% endif %}
+      {% else %}
+        {{ 'products.product.inventory_in_stock' | t }}
+      {% endif %}
+    {% else %}
+      {{ 'products.inventory.out_of_stock' | t }}
+    {% endif %}
+  </span>
+</p>

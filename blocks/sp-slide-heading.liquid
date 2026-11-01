@@ -1,0 +1,140 @@
+{%- if block.settings.text != blank -%}
+  <{{ block.settings.heading_tag }}
+    id="SpiderSlideHeading-{{ block.id }}"
+    class="sp-slide-heading{% if block.settings.hide_mobile %} sp-slide-block--hide-mobile{% endif %}"
+    data-sp-slide-anim
+    {{ block.shopify_attributes }}
+    style="--sp-block-size-d: {{ block.settings.desktop_size }}px; --sp-block-size-t: {{ block.settings.tablet_size }}px; --sp-block-size-m: {{ block.settings.mobile_size }}px; --sp-block-weight: {{ block.settings.weight }}; --sp-block-line-height: {{ block.settings.line_height }}; --sp-block-letter-spacing: {{ block.settings.letter_spacing }}px;{% if block.settings.color != blank %} --sp-block-color: {{ block.settings.color }};{% endif %}"
+  >{{ block.settings.text }}</{{ block.settings.heading_tag }}>
+{%- endif -%}
+{% schema %}
+{
+  "name": "Slide Heading",
+  "tag": null,
+  "settings": [
+    {
+      "type": "inline_richtext",
+      "id": "text",
+      "label": "Heading",
+      "default": "Your headline"
+    },
+    {
+      "type": "select",
+      "id": "heading_tag",
+      "label": "Heading level",
+      "default": "h2",
+      "options": [
+        {
+          "value": "h1",
+          "label": "H1"
+        },
+        {
+          "value": "h2",
+          "label": "H2"
+        },
+        {
+          "value": "h3",
+          "label": "H3"
+        },
+        {
+          "value": "h4",
+          "label": "H4"
+        }
+      ]
+    },
+    {
+      "type": "range",
+      "id": "desktop_size",
+      "label": "Desktop size",
+      "min": 18,
+      "max": 120,
+      "step": 2,
+      "unit": "px",
+      "default": 64
+    },
+    {
+      "type": "range",
+      "id": "tablet_size",
+      "label": "Tablet size",
+      "min": 18,
+      "max": 90,
+      "step": 2,
+      "unit": "px",
+      "default": 48
+    },
+    {
+      "type": "range",
+      "id": "mobile_size",
+      "label": "Mobile size",
+      "min": 16,
+      "max": 64,
+      "step": 1,
+      "unit": "px",
+      "default": 36
+    },
+    {
+      "type": "select",
+      "id": "weight",
+      "label": "Weight",
+      "default": "700",
+      "options": [
+        {
+          "value": "400",
+          "label": "Normal"
+        },
+        {
+          "value": "500",
+          "label": "Medium"
+        },
+        {
+          "value": "600",
+          "label": "Semi-bold"
+        },
+        {
+          "value": "700",
+          "label": "Bold"
+        },
+        {
+          "value": "800",
+          "label": "Extra bold"
+        }
+      ]
+    },
+    {
+      "type": "range",
+      "id": "line_height",
+      "label": "Line height",
+      "min": 0.8,
+      "max": 1.8,
+      "step": 0.1,
+      "default": 1.0
+    },
+    {
+      "type": "range",
+      "id": "letter_spacing",
+      "label": "Letter spacing",
+      "min": -3,
+      "max": 10,
+      "step": 0.5,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "color",
+      "id": "color",
+      "label": "Color"
+    },
+    {
+      "type": "checkbox",
+      "id": "hide_mobile",
+      "label": "Hide on mobile",
+      "default": false
+    }
+  ],
+  "presets": [
+    {
+      "name": "Slide Heading"
+    }
+  ]
+}
+{% endschema %}

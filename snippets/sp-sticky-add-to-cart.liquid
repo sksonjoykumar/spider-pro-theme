@@ -1,0 +1,166 @@
+{% comment %}
+  Spider premium sticky purchase bar. Single source of truth: canonical product form.
+  Its Add to Cart click delegates to the EXISTING form/controller/Cart Drawer.
+  Buy It Now uses Shopify Ajax cart add + checkout redirect only, not the drawer.
+{% endcomment %}
+{% liquid
+  assign sticky_variant = current_variant | default: product.selected_or_first_available_variant
+  assign sticky_image = sticky_variant.featured_media.preview_image | default: sticky_variant.featured_image | default: product.featured_image
+  assign sticky_owns_quantity = false
+  if section.settings.sticky_show_quantity and has_quantity_block == false
+    assign sticky_owns_quantity = true
+  endif
+  assign has_sale = false
+  assign discount_percent = 0
+  if sticky_variant.compare_at_price > sticky_variant.price and sticky_variant.compare_at_price > 0
+    assign has_sale = true
+    assign discount_difference = sticky_variant.compare_at_price | minus: sticky_variant.price
+    assign discount_percent = discount_difference | times: 100.0 | divided_by: sticky_variant.compare_at_price | round
+  endif
+%}
+<aside
+  class="sp-sticky-atc{% unless section.settings.sticky_show_animation %} sp-sticky-atc--no-motion{% endunless %}"
+  data-sticky-atc
+  data-section-id="{{ section.id }}"
+  data-product-id="{{ product.id }}"
+  data-mobile-enabled="{{ section.settings.sticky_enable_mobile }}"
+  data-desktop-enabled="{{ section.settings.sticky_enable_desktop }}"
+  data-tablet-enabled="{{ section.settings.sticky_enable_tablet }}"
+  data-mobile-image="{{ section.settings.sticky_mobile_show_image }}"
+  data-mobile-variant="{{ section.settings.sticky_mobile_show_variant }}"
+  data-mobile-stock="{{ section.settings.sticky_mobile_show_stock }}"
+  data-mobile-price="{{ section.settings.sticky_mobile_show_price }}"
+  data-mobile-quantity="{{ section.settings.sticky_mobile_show_quantity }}"
+  data-mobile-buttons="{{ section.settings.sticky_mobile_button_layout }}"
+  data-display-mode="{{ section.settings.sticky_display_mode }}"
+  data-scroll-distance="{{ section.settings.sticky_scroll_distance }}"
+  data-owns-quantity="{{ sticky_owns_quantity }}"
+  data-in-stock-label="{{ section.settings.sticky_in_stock_text | escape }}"
+  data-out-stock-label="{{ section.settings.sticky_out_of_stock_text | escape }}"
+  data-save-prefix="{{ section.settings.sticky_saving_label | escape }}"
+  data-available-label="{{ section.settings.sticky_add_label | escape }}"
+  style="
+    --sticky-max-width: {{ section.settings.sticky_max_width }}px;
+    --sticky-edge: {{ section.settings.sticky_edge }}px;
+    --sticky-bottom: {{ section.settings.sticky_bottom_offset }}px;
+    --sticky-pad-x: {{ section.settings.sticky_padding_x }}px;
+    --sticky-pad-y: {{ section.settings.sticky_padding_y }}px;
+    --sticky-gap: {{ section.settings.sticky_gap }}px;
+    --sticky-radius: {{ section.settings.sticky_radius }}px;
+    --sticky-image-size: {{ section.settings.sticky_image_size }}px;
+    --sticky-image-radius: {{ section.settings.sticky_image_radius }}px;
+    --sticky-button-height: {{ section.settings.sticky_button_height }}px;
+    --sticky-button-radius: {{ section.settings.sticky_button_radius }}px;
+    --sticky-title-size: {{ section.settings.sticky_title_size }}px;
+    --sticky-price-size: {{ section.settings.sticky_price_size }}px;
+    --sticky-mobile-pad: {{ section.settings.sticky_mobile_padding }}px;
+    --sticky-mobile-bottom: {{ section.settings.sticky_mobile_offset }}px;
+    {% if section.settings.sticky_override_background %}--sticky-bg: {{ section.settings.sticky_background }};{% endif %}
+    {% if section.settings.sticky_override_buttons %}--sticky-atc-bg: {{ section.settings.sticky_atc_bg }};--sticky-atc-color: {{ section.settings.sticky_atc_text }};--sticky-buy-bg: {{ section.settings.sticky_buy_bg }};--sticky-buy-color: {{ section.settings.sticky_buy_text }};{% endif %}
+  "
+  aria-hidden="true"
+  inert
+>
+  <div class="sp-sticky-atc__inner">
+    <div class="sp-sticky-atc__product">
+      {% if section.settings.sticky_show_image %}
+        <a class="sp-sticky-atc__media" href="{{ sticky_variant.url | default: product.url }}" data-sticky-product-link aria-label="{{ product.title | escape }}">
+          {% if sticky_image %}
+            <img class="sp-sticky-atc__image"
+              src="{{ sticky_image | image_url: width: 180 }}"
+              width="{{ section.settings.sticky_image_size }}" height="{{ section.settings.sticky_image_size }}"
+              loading="lazy" alt="{{ sticky_image.alt | default: product.title | escape }}" data-sticky-image>
+          {% else %}
+            <span class="sp-sticky-atc__image-placeholder" aria-hidden="true"></span>
+          {% endif %}
+        </a>
+      {% endif %}
+      <div class="sp-sticky-atc__identity">
+        {% if section.settings.sticky_show_title %}
+          <a class="sp-sticky-atc__title" href="{{ sticky_variant.url | default: product.url }}" data-sticky-product-link>{{ product.title | escape }}</a>
+        {% endif %}
+        {% if section.settings.sticky_show_variant_details and product.has_only_default_variant == false %}
+          <div class="sp-sticky-atc__variant-text" data-sticky-variant-text>{{ sticky_variant.title | escape }}</div>
+        {% endif %}
+        {% if section.settings.sticky_show_stock %}
+          <div class="sp-sticky-atc__stock{% unless sticky_variant.available %} is-unavailable{% endunless %}" data-sticky-stock>
+            <span class="sp-sticky-atc__stock-dot" aria-hidden="true"></span>
+            <span data-sticky-stock-text>{% if sticky_variant.available %}{{ section.settings.sticky_in_stock_text | escape }}{% else %}{{ section.settings.sticky_out_of_stock_text | escape }}{% endif %}</span>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+    {% if section.settings.sticky_show_price %}
+      <div class="sp-sticky-atc__pricing" data-sticky-pricing>
+        <span class="sp-sticky-atc__price" data-sticky-price>{{ sticky_variant.price | money }}</span>
+        {% if section.settings.sticky_show_compare_price %}
+          <s class="sp-sticky-atc__compare" data-sticky-compare{% unless has_sale %} hidden{% endunless %}>{{ sticky_variant.compare_at_price | money }}</s>
+        {% endif %}
+        {% if section.settings.sticky_show_savings %}
+          <span class="sp-sticky-atc__saving" data-sticky-saving{% unless has_sale %} hidden{% endunless %}>{{ section.settings.sticky_saving_label | escape }} {{ discount_percent }}%</span>
+        {% endif %}
+      </div>
+    {% endif %}
+
+    <div class="sp-sticky-atc__controls">
+      {% comment %} Variant select doubles as an always-available dataset for JS synchronization. {% endcomment %}
+      {% unless product.has_only_default_variant %}
+        <div class="sp-sticky-atc__variant-wrap"{% unless section.settings.sticky_show_variant_selector %} hidden{% endunless %}>
+          <label class="visually-hidden" for="StickyVariant-{{ section.id }}">{{ 'products.product.product_variants' | t }}</label>
+          <select id="StickyVariant-{{ section.id }}" class="sp-sticky-atc__variant" data-sticky-variant>
+            {% for variant in product.variants %}
+              {% assign variant_image = variant.featured_media.preview_image | default: variant.featured_image | default: product.featured_image %}
+              {% assign is_discounted = false %}
+              {% assign percent_off = 0 %}
+              {% if variant.compare_at_price > variant.price and variant.compare_at_price > 0 %}
+                {% assign is_discounted = true %}
+                {% assign difference = variant.compare_at_price | minus: variant.price %}
+                {% assign percent_off = difference | times: 100.0 | divided_by: variant.compare_at_price | round %}
+              {% endif %}
+              <option value="{{ variant.id }}"
+                data-available="{{ variant.available }}"
+                data-price="{{ variant.price | money | escape }}"
+                data-compare="{% if is_discounted %}{{ variant.compare_at_price | money | escape }}{% endif %}"
+                data-saving="{{ percent_off }}"
+                data-title="{{ variant.title | escape }}"
+                data-url="{{ variant.url | default: product.url | escape }}"
+                data-image-url="{% if variant_image %}{{ variant_image | image_url: width: 180 }}{% endif %}"
+                data-image-alt="{{ variant_image.alt | default: product.title | escape }}"
+                data-quantity-min="{{ variant.quantity_rule.min | default: 1 }}"
+                data-quantity-max="{{ variant.quantity_rule.max }}"
+                data-quantity-step="{{ variant.quantity_rule.increment | default: 1 }}"
+                {% if variant.id == sticky_variant.id %}selected{% endif %}>{{ variant.title | escape }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      {% endunless %}
+      {% if section.settings.sticky_show_quantity %}
+        <div class="sp-sticky-atc__quantity" data-sticky-quantity>
+          <button type="button" class="sp-sticky-atc__quantity-button" data-sticky-quantity-minus aria-label="{{ 'products.product.quantity.decrease' | t }}" disabled>{% render 'icon', name: 'minus' %}</button>
+          <label class="visually-hidden" for="StickyQuantity-{{ section.id }}">{{ 'products.product.quantity.label' | t }}</label>
+          <input id="StickyQuantity-{{ section.id }}" class="sp-sticky-atc__quantity-input"
+            type="number" value="{{ sticky_variant.quantity_rule.min | default: 1 }}"
+            min="{{ sticky_variant.quantity_rule.min | default: 1 }}"
+            step="{{ sticky_variant.quantity_rule.increment | default: 1 }}"
+            {% if sticky_variant.quantity_rule.max != blank %}max="{{ sticky_variant.quantity_rule.max }}"{% endif %}
+            inputmode="numeric" autocomplete="off" data-sticky-quantity-input
+            {% if sticky_owns_quantity %}name="quantity" form="{{ product_form_id }}"{% endif %}>
+          <button type="button" class="sp-sticky-atc__quantity-button" data-sticky-quantity-plus aria-label="{{ 'products.product.quantity.increase' | t }}">{% render 'icon', name: 'plus' %}</button>
+        </div>
+      {% endif %}
+      <button type="button" class="sp-sticky-atc__submit" data-sticky-submit data-can-submit="{{ sticky_variant.available }}" {% unless sticky_variant.available %}disabled{% endunless %}>
+        <span class="sp-sticky-atc__spinner" aria-hidden="true"></span>
+        <span data-sticky-submit-text>{% if sticky_variant.available %}{{ section.settings.sticky_add_label | escape }}{% else %}{{ 'products.product.sold_out' | t }}{% endif %}</span>
+      </button>
+      {% if section.settings.sticky_show_buy_now %}
+        <button type="button" class="sp-sticky-atc__buy" data-sticky-buy-now {% unless sticky_variant.available %}disabled{% endunless %}>
+          {% if section.settings.sticky_buy_now_icon %}<svg class="sp-sticky-atc__bolt" viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="m13.6 2-9 11.2a1 1 0 0 0 .78 1.62h5.15L9.9 22l9.28-11.23A1 1 0 0 0 18.4 9h-5.02L13.6 2Z"/></svg>{% endif %}
+          <span data-sticky-buy-text>{{ section.settings.sticky_buy_now_label | escape }}</span>
+          <span class="sp-sticky-atc__spinner" aria-hidden="true"></span>
+        </button>
+      {% endif %}
+    </div>
+    <p class="sp-sticky-atc__message" role="status" aria-live="polite" data-sticky-message hidden></p>
+  </div>
+</aside>

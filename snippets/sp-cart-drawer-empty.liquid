@@ -1,0 +1,14 @@
+{%- assign empty_alt = section.settings.empty_image.alt | default: section.settings.empty_heading -%}
+<div class="sp-cart-drawer__empty">
+  {%- if section.settings.empty_image != blank -%}
+    {{ section.settings.empty_image | image_url: width: 360 | image_tag: loading: 'lazy', widths: '160,240,360', sizes: '180px', class: 'sp-cart-drawer__empty-image', alt: empty_alt }}
+  {%- else -%}
+    <svg class="sp-cart-drawer__empty-icon" aria-hidden="true" viewBox="0 0 64 64"><path d="M15 20h34l-3 32H18L15 20Zm8 0v-4a9 9 0 0 1 18 0v4"/></svg>
+  {%- endif -%}
+  <h3>{{ section.settings.empty_heading | escape }}</h3>
+  <div class="sp-cart-drawer__empty-text">{{ section.settings.empty_text }}</div>
+  {%- assign continue_url = section.settings.continue_url | default: routes.all_products_collection_url -%}
+  {%- if section.settings.continue_label != blank and continue_url != blank -%}
+    <a class="sp-cart-drawer__button sp-cart-drawer__button--primary" href="{{ continue_url }}">{{ section.settings.continue_label | escape }}</a>
+  {%- endif -%}
+</div>

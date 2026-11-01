@@ -1,0 +1,6 @@
+{%- comment -%}Featured Collection → Spider Global Product Card adapter. Keep this filename for saved section compatibility.{%- endcomment -%}
+{% if block.settings.use_global_product_settings %}
+  {% render 'sp-product-card', product: card_product, context: 'featured-collection', section_id: section_id, instance_id: block.id, sizes: sizes, swatch_color_map: swatch_color_map, product_index: product_index, section_index: section_index, legacy_card_class: 'sp-featured-card-host' %}
+{% else %}
+  {% render 'sp-product-card', product: card_product, context: 'featured-collection', design: block.settings.product_style, card_settings: block.settings, section_id: section_id, instance_id: block.id, sizes: sizes, swatch_color_map: swatch_color_map, product_index: product_index, section_index: section_index, legacy_card_class: 'sp-featured-card-host' %}
+{% endif %}

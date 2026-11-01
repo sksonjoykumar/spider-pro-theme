@@ -1,0 +1,107 @@
+{%- comment -%}
+  Spider Retail Location Card: block, index, is_featured, settings, section_id.
+  All visible data is merchant-managed. Invalid/incomplete stores are filtered by the caller.
+{%- endcomment -%}
+{%- liquid
+  assign sp_store = block.settings
+  assign sp_card_address = ''
+  assign sp_separator = ''
+  if sp_store.address_line_1 != blank
+    assign sp_card_address = sp_store.address_line_1
+    assign sp_separator = ', '
+  endif
+  if sp_store.address_line_2 != blank
+    assign sp_card_address = sp_card_address | append: sp_separator | append: sp_store.address_line_2
+    assign sp_separator = ', '
+  endif
+  if sp_store.city != blank
+    assign sp_card_address = sp_card_address | append: sp_separator | append: sp_store.city
+    assign sp_separator = ', '
+  endif
+  if sp_store.state_region != blank
+    assign sp_card_address = sp_card_address | append: sp_separator | append: sp_store.state_region
+    assign sp_separator = ' '
+  endif
+  if sp_store.postal_code != blank
+    assign sp_card_address = sp_card_address | append: sp_separator | append: sp_store.postal_code
+    assign sp_separator = ', '
+  endif
+  if sp_store.country != blank
+    assign sp_card_address = sp_card_address | append: sp_separator | append: sp_store.country
+  endif
+  assign sp_card_details = sp_store.custom_details_url | default: sp_store.details_page.url
+  assign sp_card_directions = sp_store.directions_url
+  if sp_card_directions == blank and settings.directions_provider != 'merchant_url'
+    assign sp_encoded_location = sp_card_address | url_encode
+    if sp_card_address == blank and sp_store.latitude != blank and sp_store.longitude != blank
+      capture sp_coords
+        echo sp_store.latitude | strip
+        echo ','
+        echo sp_store.longitude | strip
+      endcapture
+      assign sp_encoded_location = sp_coords | strip | url_encode
+    endif
+    if sp_encoded_location != blank
+      case settings.directions_provider
+        when 'apple_maps'
+          assign sp_card_directions = 'https://maps.apple.com/?daddr=' | append: sp_encoded_location
+        when 'address_query'
+          assign sp_card_directions = 'https://www.google.com/search?q=' | append: sp_encoded_location
+        else
+          assign sp_card_directions = 'https://www.google.com/maps/dir/?api=1&destination=' | append: sp_encoded_location
+      endcase
+    endif
+  endif
+  assign sp_store_region = sp_store.region_filter | default: sp_store.state_region | default: sp_store.country | default: 'Other locations'
+  assign sp_search_content = sp_store.location_name | append: ' ' | append: sp_card_address | append: ' ' | append: sp_store.region_filter | append: ' ' | append: sp_store.location_type
+  assign sp_city_search = sp_store.location_name | append: ' ' | append: sp_store.city | append: ' ' | append: sp_store.state_region | append: ' ' | append: sp_store.postal_code
+  assign sp_address_search = sp_store.location_name | append: ' ' | append: sp_card_address
+  assign sp_is_open = false
+  assign sp_is_closed = false
+  if sp_store.open_status_mode == 'manual_open'
+    assign sp_is_open = true
+  elsif sp_store.open_status_mode == 'manual_closed'
+    assign sp_is_closed = true
+  endif
+-%}
+<li class="sp-rl__item{% if is_featured %} sp-rl__item--featured{% endif %}" data-sp-card data-sp-id="{{ block.id }}" data-sp-region="{{ sp_store_region | escape }}" data-sp-type="{{ sp_store.location_type | escape }}" data-sp-search="{{ sp_search_content | strip | escape }}" data-sp-search-city="{{ sp_city_search | strip | escape }}" data-sp-search-address="{{ sp_address_search | strip | escape }}" data-sp-lat="{{ sp_store.latitude | escape }}" data-sp-lng="{{ sp_store.longitude | escape }}" {{ block.shopify_attributes }}>
+  <article class="sp-rl__card{% if is_featured %} sp-rl__card--featured{% endif %}" data-sp-card-surface>
+    {%- if settings.show_location_image and sp_store.location_image != blank -%}
+      <div class="sp-rl__photo">
+        {% render 'responsive-image', image: sp_store.location_image, alt: sp_store.location_image_alt, widths: '320,480,640,800,1000,1200', sizes: '(min-width: 1200px) 420px, (min-width: 750px) 46vw, 100vw', loading: 'lazy', class: 'sp-rl__photo-img' %}
+      </div>
+    {%- endif -%}
+    <div class="sp-rl__card-body">
+      {%- if is_featured -%}<div class="sp-rl__featured-kicker">Flagship location</div>{%- endif -%}
+      <div class="sp-rl__card-heading">
+        <h3 class="sp-rl__store-name">{{ sp_store.location_name | escape }}</h3>
+        {%- if settings.location_card_clickable -%}
+          <button type="button" class="sp-rl__select" data-sp-select aria-label="Select {{ sp_store.location_name | escape }}" aria-pressed="false"><span aria-hidden="true">↗</span></button>
+        {%- endif -%}
+      </div>
+      {% if is_featured and settings.show_featured_description and sp_store.featured_description != blank %}<p class="sp-rl__featured-description">{{ sp_store.featured_description | escape | newline_to_br }}</p>{% endif %}
+      {% if settings.show_address and sp_card_address != blank %}<address class="sp-rl__address">{{ sp_card_address | escape }}</address>{% endif %}
+      {% if settings.show_status and settings.show_open_status %}
+        {% if sp_is_open or sp_is_closed or sp_store.open_status_mode == 'manual_custom' or sp_store.manual_status %}
+          <p class="sp-rl__status{% if sp_is_open %} sp-rl__status--open{% elsif sp_is_closed %} sp-rl__status--closed{% endif %}">
+            {% if settings.status_display_mode == 'text' %}<span class="sp-rl__status-dot" aria-hidden="true"></span>{% endif %}
+            {% if sp_is_open %}Open today{% elsif sp_is_closed %}Closed today{% else %}{{ sp_store.manual_status_text | default: settings.default_status_text | escape }}{% endif %}
+          </p>
+        {% endif %}
+      {% endif %}
+      {% if settings.show_hours and settings.show_business_hours and sp_store.business_hours != blank %}<p class="sp-rl__hours">{{ sp_store.business_hours | escape | newline_to_br }}</p>{% endif %}
+      {% if settings.show_distance %}<p class="sp-rl__distance" data-sp-distance hidden></p>{% endif %}
+      {%- if settings.show_phone and sp_store.phone != blank -%}
+        {% assign sp_phone_link = sp_store.phone | remove: ' ' | remove: '(' | remove: ')' | remove: '-' | remove: '.' %}
+        <p class="sp-rl__contact"><a href="tel:{{ sp_phone_link | escape }}">{{ sp_store.phone | escape }}</a></p>
+      {%- endif -%}
+      {%- if settings.show_email and sp_store.email != blank -%}
+        <p class="sp-rl__contact"><a href="mailto:{{ sp_store.email | url_encode }}">{{ sp_store.email | escape }}</a></p>
+      {%- endif -%}
+      <div class="sp-rl__actions">
+        {% if settings.show_details_button and sp_card_details != blank %}<a class="sp-rl__details" href="{{ sp_card_details | escape }}">{{ settings.details_button_label | escape }}</a>{% endif %}
+        {% if settings.show_directions_button and settings.show_directions_link and sp_card_directions != blank %}<a class="sp-rl__directions" href="{{ sp_card_directions | escape }}"{% if settings.open_directions_new_tab %} target="_blank"{% endif %} rel="noopener noreferrer" aria-label="{{ settings.directions_label | escape }} to {{ sp_store.location_name | escape }} (external site)">{{ settings.directions_label | escape }} <span aria-hidden="true">→</span></a>{% endif %}
+      </div>
+    </div>
+  </article>
+</li>

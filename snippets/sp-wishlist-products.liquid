@@ -1,0 +1,22 @@
+<div class="sp-wishlist-loading" data-sp-wishlist-loading aria-hidden="true">
+  {%- for i in (1..8) -%}
+    <div class="sp-wishlist-skeleton">
+      <span class="sp-wishlist-skeleton__media"></span>
+      <span class="sp-wishlist-skeleton__line sp-wishlist-skeleton__line--title"></span>
+      <span class="sp-wishlist-skeleton__line sp-wishlist-skeleton__line--price"></span>
+    </div>
+  {%- endfor -%}
+</div>
+
+<div class="sp-wishlist-partial" data-sp-wishlist-partial hidden role="status" aria-live="polite">
+  <span data-sp-wishlist-partial-message></span>
+  <button type="button" data-sp-wishlist-retry>Retry failed items</button>
+</div>
+
+<div
+  class="sp-wishlist-grid"
+  data-sp-wishlist-grid
+  aria-live="polite"
+  aria-busy="true"
+  hidden
+></div>

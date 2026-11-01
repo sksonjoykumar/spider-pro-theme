@@ -1,0 +1,1118 @@
+{%- assign sp_fit_axes = 'height,chest,waist,hips,inseam,shoulder' | split: ',' -%}
+{%- comment -%}
+  Spider Size Guide & Fit Finder: no external requests, no measurement storage.
+  All recommendations require a merchant-approved rule configuration.
+{%- endcomment -%}
+{%- liquid
+  assign fit_product = product
+  if fit_product == blank
+    assign fit_product = section.settings.selected_product
+  endif
+  assign sp_fit_preview = request.design_mode
+  assign sp_fit_usable = section.settings.approve_size_rules
+  if request.design_mode and section.settings.editor_preview_demo
+    assign sp_fit_usable = true
+  endif
+-%}
+{% render 'sp-section-color-scheme', section: section %}
+{{ 'sp-size-guide-fit-finder.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'sp-size-guide-fit-finder.js' | asset_url }}" defer="defer"></script>
+<section id="SpSizeFit-{{ section.id }}" class="sp-fit sp-fit--{{ section.settings.layout_style }} sp-fit--chart-{{ section.settings.side_position }} sp-fit--image-{{ section.settings.image_position_desktop }} sp-fit--modal-{{ section.settings.modal_style }}" data-sp-fit-root data-sp-section-id="{{ section.id }}" data-sp-layout="{{ section.settings.layout_style }}" data-sp-accordion-mode="{{ section.settings.accordion_mode }}" data-sp-approved="{{ sp_fit_usable }}" data-sp-unit="{{ section.settings.unit_default }}" data-sp-remember-unit="{{ section.settings.remember_unit_preference }}" data-sp-enabled="{{ section.settings.enable_size_finder }}" style="--sp-fit-width:{{ section.settings.section_max_width }}px;--sp-fit-radius:{{ section.settings.card_border_radius }}px;--sp-fit-pad-d:{{ section.settings.card_padding_desktop }}px;--sp-fit-pad-m:{{ section.settings.card_padding_mobile }}px;--sp-fit-gap:{{ section.settings.content_gap_desktop }}px;--sp-fit-field-gap:{{ section.settings.form_field_gap }}px;--sp-fit-p-top:{{ section.settings.padding_top }}px;--sp-fit-p-bottom:{{ section.settings.padding_bottom }}px;--sp-fit-t-top:{{ section.settings.padding_top_tablet }}px;--sp-fit-t-bottom:{{ section.settings.padding_bottom_tablet }}px;--sp-fit-m-top:{{ section.settings.padding_top_mobile }}px;--sp-fit-m-bottom:{{ section.settings.padding_bottom_mobile }}px;--sp-fit-header-gap:{{ section.settings.header_bottom_spacing }}px;--sp-fit-illustration-width:{{ section.settings.measurement_image_max_width }}px;">
+  <div class="sp-container sp-fit__container">
+    {% if section.settings.show_header %}<div class="sp-fit__header sp-fit__header--{{ section.settings.heading_alignment }}">
+      {% if section.settings.eyebrow != blank %}<p class="sp-eyebrow sp-fit__eyebrow">{{ section.settings.eyebrow | escape }}</p>{% endif %}
+      {% render 'sp-section-heading', section: section, heading: section.settings.heading, subheading: section.settings.description, alignment: section.settings.heading_alignment, bottom_spacing: 0 %}
+    </div>{% endif %}
+    <div class="sp-fit__shell">
+      {% if section.settings.layout_style == 'style_1' %}
+        <div class="sp-fit__topbar">
+          <div class="sp-fit__tabs" role="tablist" aria-label="Sizing tools">
+            <button id="SpFitTabGuide-{{ section.id }}" type="button" role="tab" aria-controls="SpFitGuide-{{ section.id }}" aria-selected="{% if section.settings.default_active_panel == 'size_guide' %}true{% else %}false{% endif %}" tabindex="{% if section.settings.default_active_panel == 'size_guide' %}0{% else %}-1{% endif %}" data-sp-tab="size_guide">{{ section.settings.guide_label | escape }}</button>
+            <button id="SpFitTabFinder-{{ section.id }}" type="button" role="tab" aria-controls="SpFitFinder-{{ section.id }}" aria-selected="{% if section.settings.default_active_panel == 'fit_finder' %}true{% else %}false{% endif %}" tabindex="{% if section.settings.default_active_panel == 'fit_finder' %}0{% else %}-1{% endif %}" data-sp-tab="fit_finder">{{ section.settings.finder_label | escape }}</button>
+          </div>
+          {% render 'sp-fit-unit-toggle', section: section %}
+        </div>
+        <div class="sp-fit__guide-panel" id="SpFitGuide-{{ section.id }}" role="tabpanel" aria-labelledby="SpFitTabGuide-{{ section.id }}" data-sp-panel="size_guide" {% if section.settings.default_active_panel != 'size_guide' %}hidden{% endif %}>
+          {% render 'sp-size-guide-table', section: section %}
+        </div>
+        <div class="sp-fit__finder-panel" id="SpFitFinder-{{ section.id }}" role="tabpanel" aria-labelledby="SpFitTabFinder-{{ section.id }}" data-sp-panel="fit_finder" {% if section.settings.default_active_panel != 'fit_finder' %}hidden{% endif %}>
+          {% render 'sp-fit-illustration', section: section %}
+          {% render 'sp-fit-finder-form', section: section %}
+        </div>
+      {% elsif section.settings.layout_style == 'style_2' %}
+        <div class="sp-fit__topbar sp-fit__topbar--units">{% render 'sp-fit-unit-toggle', section: section %}</div>
+        <div class="sp-fit__side-grid"><div>{% render 'sp-size-guide-table', section: section %}</div><div>{% render 'sp-fit-finder-form', section: section %}</div></div>
+      {% elsif section.settings.layout_style == 'style_3' %}
+        <div class="sp-fit__topbar sp-fit__topbar--units">{% render 'sp-fit-unit-toggle', section: section %}</div>
+        <div class="sp-fit__wizard-shell">{% render 'sp-fit-finder-form', section: section %}<details class="sp-fit__chart-details" data-sp-guide-details><summary>View full size chart</summary>{% render 'sp-size-guide-table', section: section %}</details></div>
+      {% elsif section.settings.layout_style == 'style_4' %}
+        <div class="sp-fit__launchers"><p>Choose your best size with our sizing tools.</p><div><button type="button" class="sp-button sp-button--secondary" data-sp-launch="size_guide">View size guide</button><button type="button" class="sp-button sp-button--primary" data-sp-launch="fit_finder">Find my size</button></div></div>
+        <dialog class="sp-fit__dialog" data-sp-dialog aria-label="Size guide and fit finder"><div class="sp-fit__dialog-header"><strong>Size guide & Fit finder</strong><button type="button" class="sp-fit__close" data-sp-dialog-close aria-label="Close size guide">✕</button></div><div class="sp-fit__topbar sp-fit__topbar--units">{% render 'sp-fit-unit-toggle', section: section %}</div><div class="sp-fit__dialog-view" data-sp-dialog-view="size_guide">{% render 'sp-size-guide-table', section: section %}</div><div class="sp-fit__dialog-view" data-sp-dialog-view="fit_finder">{% render 'sp-fit-finder-form', section: section %}</div></dialog>
+      {% else %}
+        <div class="sp-fit__topbar sp-fit__topbar--units">{% render 'sp-fit-unit-toggle', section: section %}</div>
+        <div class="sp-fit__accordions">
+          <details data-sp-accordion><summary>How to measure</summary><div class="sp-fit__instructions">{% render 'sp-fit-instructions', section: section %}</div></details>
+          <details data-sp-accordion><summary>Size chart</summary>{% render 'sp-size-guide-table', section: section %}</details>
+          <details data-sp-accordion open><summary>Find my size</summary>{% render 'sp-fit-finder-form', section: section %}</details>
+          <details data-sp-accordion><summary>Fit information</summary><p>Use the provided body ranges as a guide. Slim fits closer to the body, while relaxed may select the next configured size.</p></details>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+  <script type="application/json" data-sp-fit-config>{
+    "approved": {{ sp_fit_usable | json }},
+    "basis": {{ section.settings.measurement_basis | json }},
+    "sizeScope": {{ section.settings.size_scope | json }},
+    "scopeProductId": {{ section.settings.selected_product.id | json }},
+    "designMode": {{ request.design_mode | json }},
+    "productId": {{ fit_product.id | json }},
+    "productOptions": {% if fit_product != blank %}{{ fit_product.options | json }}{% else %}[]{% endif %},
+    "selectedVariantId": {{ fit_product.selected_or_first_available_variant.id | json }},
+    "enableVariantMatch": {{ section.settings.enable_variant_matching | json }},
+    "enableVariantSelection": {{ section.settings.enable_variant_selection | json }},
+    "sizeOption": {{ section.settings.size_option_name | json }},
+    "noMatchText": {{ section.settings.no_match_text | json }},
+    "supportLink": {{ section.settings.support_link | json }},
+    "fieldRequired": { {% for axis in sp_fit_axes %}{{ axis | json }}:{% assign required_key = 'required_' | append: axis %}{{ section.settings[required_key] | json }}{% unless forloop.last %},{% endunless %}{% endfor %} },
+    "variants": [{% if fit_product != blank %}{% for variant in fit_product.variants limit: 100 %}{"id":{{ variant.id | json }},"available":{{ variant.available | json }},"options":{{ variant.options | json }}}{% unless forloop.last %},{% endunless %}{% endfor %}{% endif %}],
+    "rules": [{% assign first_rule = true %}{% for block in section.blocks %}{% if block.type == 'size_rule' and block.settings.size_label != blank %}{% unless first_rule %},{% endunless %}{% assign first_rule = false %}{"id":{{ block.id | json }},"label":{{ block.settings.size_label | json }},"aliases":{{ block.settings.size_aliases | json }},"order":{{ block.settings.display_order | json }},"note":{{ block.settings.fit_note | json }},"ranges":{ {% for axis in sp_fit_axes %}{% assign min_key = axis | append: '_min_cm' %}{% assign max_key = axis | append: '_max_cm' %}{{ axis | json }}:[{{ block.settings[min_key] | json }},{{ block.settings[max_key] | json }}]{% unless forloop.last %},{% endunless %}{% endfor %} }}{% endif %}{% endfor %}]
+  }</script>
+</section>
+{% schema %}
+{
+  "name": "Size Guide & Fit Finder",
+  "tag": "section",
+  "class": "sp-size-guide-section",
+    "disabled_on": {
+    "groups": [
+      "header",
+      "footer",
+      "custom.system"
+    ]
+  },
+  "settings": [
+    {
+      "type": "header",
+      "content": "Content"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_header",
+      "label": "Show section header",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Eyebrow",
+      "default": "YOUR PERFECT FIT"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Find the Size That Feels Right"
+    },
+    {
+      "type": "richtext",
+      "id": "description",
+      "label": "Description",
+      "default": "<p>Use our size guide or get a personalized recommendation in seconds.</p>"
+    },
+    {
+      "type": "select",
+      "id": "heading_alignment",
+      "label": "Heading alignment",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "range",
+      "id": "header_bottom_spacing",
+      "label": "Header bottom spacing",
+      "min": 8,
+      "max": 96,
+      "step": 4,
+      "default": 28,
+      "unit": "px"
+    },
+    {
+      "type": "header",
+      "content": "Layout Style"
+    },
+    {
+      "type": "select",
+      "id": "layout_style",
+      "label": "Section layout",
+      "options": [
+        {
+          "value": "style_1",
+          "label": "Tabbed Fit Finder"
+        },
+        {
+          "value": "style_2",
+          "label": "Side-by-side Guide"
+        },
+        {
+          "value": "style_3",
+          "label": "Step-by-step Wizard"
+        },
+        {
+          "value": "style_4",
+          "label": "Compact Modal Launcher"
+        },
+        {
+          "value": "style_5",
+          "label": "Accordion Assistant"
+        }
+      ],
+      "default": "style_1"
+    },
+    {
+      "type": "select",
+      "id": "side_position",
+      "label": "Side-by-side chart position",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ],
+      "default": "left"
+    },
+    {
+      "type": "select",
+      "id": "modal_style",
+      "label": "Modal appearance",
+      "options": [
+        {
+          "value": "modal",
+          "label": "Centered modal"
+        },
+        {
+          "value": "drawer",
+          "label": "Side drawer"
+        }
+      ],
+      "default": "modal"
+    },
+    {
+      "type": "select",
+      "id": "accordion_mode",
+      "label": "Accordion behavior",
+      "options": [
+        {
+          "value": "single",
+          "label": "Single panel"
+        },
+        {
+          "value": "multiple",
+          "label": "Multiple panels"
+        }
+      ],
+      "default": "single"
+    },
+    {
+      "type": "header",
+      "content": "Size Rules and Accuracy"
+    },
+    {
+      "type": "checkbox",
+      "id": "approve_size_rules",
+      "label": "Approve accurate size rules",
+      "default": false,
+      "info": "Leave off until actual product/manufacturer measurements are configured and verified."
+    },
+    {
+      "type": "select",
+      "id": "measurement_basis",
+      "label": "Size range basis",
+      "options": [
+        {
+          "value": "body",
+          "label": "Body measurement ranges"
+        },
+        {
+          "value": "garment",
+          "label": "Garment dimensions (guide only)"
+        }
+      ],
+      "default": "body"
+    },
+    {
+      "type": "select",
+      "id": "size_scope",
+      "label": "Apply size rules to",
+      "options": [
+        {
+          "value": "shared",
+          "label": "Approved shared sizing chart"
+        },
+        {
+          "value": "selected",
+          "label": "Only the selected product"
+        }
+      ],
+      "default": "selected"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_size_finder",
+      "label": "Enable fit finder",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Product Integration"
+    },
+    {
+      "type": "product",
+      "id": "selected_product",
+      "label": "Product outside product pages"
+    },
+    {
+      "type": "text",
+      "id": "size_option_name",
+      "label": "Size option name",
+      "default": "Size"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_variant_matching",
+      "label": "Check matching product variants",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_variant_selection",
+      "label": "Allow safe size-option selection",
+      "default": false,
+      "info": "Requires an exactly matching, available variant; preserves other selected options when supported."
+    },
+    {
+      "type": "header",
+      "content": "Form Content"
+    },
+    {
+      "type": "text",
+      "id": "form_heading",
+      "label": "Form heading",
+      "default": "Tell us about you"
+    },
+    {
+      "type": "richtext",
+      "id": "form_description",
+      "label": "Form description",
+      "default": "<p>We’ll recommend the closest configured size based on your measurements.</p>"
+    },
+    {
+      "type": "text",
+      "id": "button_label",
+      "label": "Find size button",
+      "default": "Find my size"
+    },
+    {
+      "type": "text",
+      "id": "guide_label",
+      "label": "Size guide tab",
+      "default": "Size guide"
+    },
+    {
+      "type": "text",
+      "id": "finder_label",
+      "label": "Fit finder tab",
+      "default": "Fit finder"
+    },
+    {
+      "type": "text",
+      "id": "no_match_text",
+      "label": "No size match message",
+      "default": "We could not find a reliable match. Please check the full size chart or contact support."
+    },
+    {
+      "type": "text",
+      "id": "unapproved_text",
+      "label": "Unapproved rules message",
+      "default": "Fit recommendations will be available when an approved size chart is configured."
+    },
+    {
+      "type": "url",
+      "id": "support_link",
+      "label": "Support URL"
+    },
+    {
+      "type": "header",
+      "content": "Measurement Fields"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_height",
+      "label": "Show Height",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "required_height",
+      "label": "Require Height",
+      "default": false
+    },
+    {
+      "type": "text",
+      "id": "label_height",
+      "label": "Height label",
+      "default": "Height"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_chest",
+      "label": "Show Chest",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "required_chest",
+      "label": "Require Chest",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "label_chest",
+      "label": "Chest label",
+      "default": "Chest"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_waist",
+      "label": "Show Waist",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "required_waist",
+      "label": "Require Waist",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "label_waist",
+      "label": "Waist label",
+      "default": "Waist"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_hips",
+      "label": "Show Hips",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "required_hips",
+      "label": "Require Hips",
+      "default": false
+    },
+    {
+      "type": "text",
+      "id": "label_hips",
+      "label": "Hips label",
+      "default": "Hips"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_inseam",
+      "label": "Show Inseam",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "required_inseam",
+      "label": "Require Inseam",
+      "default": false
+    },
+    {
+      "type": "text",
+      "id": "label_inseam",
+      "label": "Inseam label",
+      "default": "Inseam"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_shoulder",
+      "label": "Show Shoulder",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "required_shoulder",
+      "label": "Require Shoulder",
+      "default": false
+    },
+    {
+      "type": "text",
+      "id": "label_shoulder",
+      "label": "Shoulder label",
+      "default": "Shoulder"
+    },
+    {
+      "type": "paragraph",
+      "content": "Weight is not collected because sizing rules do not use it."
+    },
+    {
+      "type": "header",
+      "content": "Fit Preferences"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_fit_preference",
+      "label": "Show fit preference",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "fit_option_1_label",
+      "label": "Fit label 1",
+      "default": "Slim"
+    },
+    {
+      "type": "text",
+      "id": "fit_option_2_label",
+      "label": "Fit label 2",
+      "default": "Regular"
+    },
+    {
+      "type": "text",
+      "id": "fit_option_3_label",
+      "label": "Fit label 3",
+      "default": "Relaxed"
+    },
+    {
+      "type": "select",
+      "id": "default_fit_preference",
+      "label": "Default fit",
+      "options": [
+        {
+          "value": "slim",
+          "label": "Slim"
+        },
+        {
+          "value": "regular",
+          "label": "Regular"
+        },
+        {
+          "value": "relaxed",
+          "label": "Relaxed"
+        }
+      ],
+      "default": "regular"
+    },
+    {
+      "type": "header",
+      "content": "Size Guide Chart"
+    },
+    {
+      "type": "text",
+      "id": "table_heading",
+      "label": "Chart heading",
+      "default": "Size chart"
+    },
+    {
+      "type": "richtext",
+      "id": "table_description",
+      "label": "Chart description",
+      "default": "<p>Measurements are based on the configured size chart.</p>"
+    },
+    {
+      "type": "checkbox",
+      "id": "chart_chest",
+      "label": "Show Chest in chart",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "chart_waist",
+      "label": "Show Waist in chart",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "chart_hips",
+      "label": "Show Hips in chart",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "chart_height",
+      "label": "Show Height in chart",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "chart_inseam",
+      "label": "Show Inseam in chart",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "chart_shoulder",
+      "label": "Show Shoulder in chart",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "sticky_first_column",
+      "label": "Sticky size label",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "highlight_recommended_row",
+      "label": "Highlight recommended size",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Illustration"
+    },
+    {
+      "type": "image_picker",
+      "id": "measurement_image",
+      "label": "Measurement illustration"
+    },
+    {
+      "type": "image_picker",
+      "id": "measurement_image_mobile",
+      "label": "Mobile illustration"
+    },
+    {
+      "type": "text",
+      "id": "measurement_image_alt",
+      "label": "Illustration alt",
+      "default": "Diagram showing where to measure chest, waist and hips"
+    },
+    {
+      "type": "range",
+      "id": "measurement_image_max_width",
+      "label": "Illustration max width",
+      "min": 180,
+      "max": 700,
+      "step": 20,
+      "default": 460,
+      "unit": "px"
+    },
+    {
+      "type": "select",
+      "id": "image_position_desktop",
+      "label": "Illustration position",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ],
+      "default": "left"
+    },
+    {
+      "type": "header",
+      "content": "Tabs and Units"
+    },
+    {
+      "type": "select",
+      "id": "default_active_panel",
+      "label": "Default tab",
+      "options": [
+        {
+          "value": "fit_finder",
+          "label": "Fit finder"
+        },
+        {
+          "value": "size_guide",
+          "label": "Size guide"
+        }
+      ],
+      "default": "fit_finder"
+    },
+    {
+      "type": "select",
+      "id": "unit_default",
+      "label": "Default measurement unit",
+      "options": [
+        {
+          "value": "cm",
+          "label": "Centimeters"
+        },
+        {
+          "value": "in",
+          "label": "Inches"
+        }
+      ],
+      "default": "cm"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_unit_toggle",
+      "label": "Show CM/IN toggle",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "remember_unit_preference",
+      "label": "Remember only the unit preference",
+      "default": false
+    },
+    {
+      "type": "header",
+      "content": "Card Design"
+    },
+    {
+      "type": "range",
+      "id": "section_max_width",
+      "label": "Content max width",
+      "min": 760,
+      "max": 1600,
+      "step": 20,
+      "default": 1360,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "card_border_radius",
+      "label": "Card border radius",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "default": 20,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "card_padding_desktop",
+      "label": "Desktop card padding",
+      "min": 12,
+      "max": 72,
+      "step": 4,
+      "default": 28,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "card_padding_mobile",
+      "label": "Mobile card padding",
+      "min": 8,
+      "max": 32,
+      "step": 2,
+      "default": 16,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "content_gap_desktop",
+      "label": "Desktop columns gap",
+      "min": 12,
+      "max": 80,
+      "step": 4,
+      "default": 40,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "form_field_gap",
+      "label": "Form fields gap",
+      "min": 8,
+      "max": 32,
+      "step": 2,
+      "default": 16,
+      "unit": "px"
+    },
+    {
+      "type": "header",
+      "content": "Colors"
+    },
+    {
+      "type": "color_scheme",
+      "id": "sp_color_scheme",
+      "label": "Color scheme",
+      "default": "scheme-1"
+    },
+    {
+      "type": "header",
+      "content": "Desktop Spacing"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "Top padding",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "default": 64,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "Bottom padding",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "default": 64,
+      "unit": "px"
+    },
+    {
+      "type": "header",
+      "content": "Tablet Spacing"
+    },
+    {
+      "type": "range",
+      "id": "padding_top_tablet",
+      "label": "Tablet top padding",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "default": 44,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom_tablet",
+      "label": "Tablet bottom padding",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "default": 44,
+      "unit": "px"
+    },
+    {
+      "type": "header",
+      "content": "Mobile Spacing"
+    },
+    {
+      "type": "range",
+      "id": "padding_top_mobile",
+      "label": "Mobile top padding",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "default": 32,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom_mobile",
+      "label": "Mobile bottom padding",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "default": 32,
+      "unit": "px"
+    },
+    {
+      "type": "header",
+      "content": "Advanced"
+    },
+    {
+      "type": "checkbox",
+      "id": "editor_preview_demo",
+      "label": "Show example rules in Theme Editor",
+      "default": true
+    }
+  ],
+  "blocks": [
+    {
+      "type": "size_rule",
+      "name": "Size rule",
+      "limit": 20,
+      "settings": [
+        {
+          "type": "text",
+          "id": "size_label",
+          "label": "Size label"
+        },
+        {
+          "type": "text",
+          "id": "size_aliases",
+          "label": "Aliases (comma-separated)"
+        },
+        {
+          "type": "range",
+          "id": "display_order",
+          "label": "Size order",
+          "min": 1,
+          "max": 30,
+          "step": 1,
+          "default": 1
+        },
+        {
+          "type": "number",
+          "id": "chest_min_cm",
+          "label": "Chest min (cm)"
+        },
+        {
+          "type": "number",
+          "id": "chest_max_cm",
+          "label": "Chest max (cm)"
+        },
+        {
+          "type": "number",
+          "id": "waist_min_cm",
+          "label": "Waist min (cm)"
+        },
+        {
+          "type": "number",
+          "id": "waist_max_cm",
+          "label": "Waist max (cm)"
+        },
+        {
+          "type": "number",
+          "id": "hips_min_cm",
+          "label": "Hips min (cm)"
+        },
+        {
+          "type": "number",
+          "id": "hips_max_cm",
+          "label": "Hips max (cm)"
+        },
+        {
+          "type": "number",
+          "id": "height_min_cm",
+          "label": "Height min (cm)"
+        },
+        {
+          "type": "number",
+          "id": "height_max_cm",
+          "label": "Height max (cm)"
+        },
+        {
+          "type": "number",
+          "id": "inseam_min_cm",
+          "label": "Inseam min (cm)"
+        },
+        {
+          "type": "number",
+          "id": "inseam_max_cm",
+          "label": "Inseam max (cm)"
+        },
+        {
+          "type": "number",
+          "id": "shoulder_min_cm",
+          "label": "Shoulder min (cm)"
+        },
+        {
+          "type": "number",
+          "id": "shoulder_max_cm",
+          "label": "Shoulder max (cm)"
+        },
+        {
+          "type": "number",
+          "id": "garment_chest_cm",
+          "label": "Garment chest (cm)"
+        },
+        {
+          "type": "number",
+          "id": "garment_waist_cm",
+          "label": "Garment waist (cm)"
+        },
+        {
+          "type": "number",
+          "id": "garment_hips_cm",
+          "label": "Garment hips (cm)"
+        },
+        {
+          "type": "textarea",
+          "id": "fit_note",
+          "label": "Fit note"
+        },
+        {
+          "type": "checkbox",
+          "id": "featured_size",
+          "label": "Featured size",
+          "default": false
+        }
+      ]
+    },
+    {
+      "type": "measurement_instruction",
+      "name": "Measuring instruction",
+      "limit": 12,
+      "settings": [
+        {
+          "type": "text",
+          "id": "measurement_name",
+          "label": "Measurement name"
+        },
+        {
+          "type": "textarea",
+          "id": "instruction",
+          "label": "How to measure"
+        },
+        {
+          "type": "select",
+          "id": "icon",
+          "label": "Icon",
+          "options": [
+            {
+              "value": "none",
+              "label": "None"
+            },
+            {
+              "value": "ruler",
+              "label": "Ruler"
+            },
+            {
+              "value": "check",
+              "label": "Check"
+            }
+          ],
+          "default": "ruler"
+        },
+        {
+          "type": "image_picker",
+          "id": "custom_icon",
+          "label": "Custom icon"
+        },
+        {
+          "type": "range",
+          "id": "display_order",
+          "label": "Instruction order",
+          "min": 1,
+          "max": 20,
+          "step": 1,
+          "default": 1
+        }
+      ]
+    }
+  ],
+  "max_blocks": 32,
+  "presets": [
+    {
+      "name": "Size Guide & Fit Finder",
+      "settings": {
+        "layout_style": "style_1"
+      },
+      "category": "02. Products",
+      "blocks": [
+        {
+          "type": "size_rule",
+          "settings": {
+            "size_label": "XS",
+            "size_aliases": "Extra Small",
+            "display_order": 1,
+            "chest_min_cm": 78,
+            "chest_max_cm": 85,
+            "waist_min_cm": 60,
+            "waist_max_cm": 67,
+            "hips_min_cm": 82,
+            "hips_max_cm": 89,
+            "height_min_cm": 150,
+            "height_max_cm": 192
+          }
+        },
+        {
+          "type": "size_rule",
+          "settings": {
+            "size_label": "S",
+            "size_aliases": "Small",
+            "display_order": 2,
+            "chest_min_cm": 86,
+            "chest_max_cm": 93,
+            "waist_min_cm": 68,
+            "waist_max_cm": 75,
+            "hips_min_cm": 90,
+            "hips_max_cm": 97,
+            "height_min_cm": 150,
+            "height_max_cm": 195
+          }
+        },
+        {
+          "type": "size_rule",
+          "settings": {
+            "size_label": "M",
+            "size_aliases": "Medium",
+            "display_order": 3,
+            "chest_min_cm": 94,
+            "chest_max_cm": 101,
+            "waist_min_cm": 76,
+            "waist_max_cm": 85,
+            "hips_min_cm": 98,
+            "hips_max_cm": 105,
+            "height_min_cm": 150,
+            "height_max_cm": 198
+          }
+        },
+        {
+          "type": "size_rule",
+          "settings": {
+            "size_label": "L",
+            "size_aliases": "Large",
+            "display_order": 4,
+            "chest_min_cm": 102,
+            "chest_max_cm": 109,
+            "waist_min_cm": 86,
+            "waist_max_cm": 95,
+            "hips_min_cm": 106,
+            "hips_max_cm": 113,
+            "height_min_cm": 155,
+            "height_max_cm": 201
+          }
+        },
+        {
+          "type": "size_rule",
+          "settings": {
+            "size_label": "XL",
+            "size_aliases": "Extra Large",
+            "display_order": 5,
+            "chest_min_cm": 110,
+            "chest_max_cm": 119,
+            "waist_min_cm": 96,
+            "waist_max_cm": 107,
+            "hips_min_cm": 114,
+            "hips_max_cm": 123,
+            "height_min_cm": 155,
+            "height_max_cm": 205
+          }
+        },
+        {
+          "type": "measurement_instruction",
+          "settings": {
+            "measurement_name": "Chest",
+            "instruction": "Measure around the fullest part of your chest."
+          }
+        },
+        {
+          "type": "measurement_instruction",
+          "settings": {
+            "measurement_name": "Waist",
+            "instruction": "Measure around your natural waistline."
+          }
+        },
+        {
+          "type": "measurement_instruction",
+          "settings": {
+            "measurement_name": "Hips",
+            "instruction": "Measure around the fullest part of your hips."
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

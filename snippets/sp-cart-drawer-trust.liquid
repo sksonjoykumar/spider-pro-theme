@@ -1,0 +1,18 @@
+{%- liquid
+  assign trust_alt = block.settings.image.alt | default: 'Secure checkout'
+  assign trust_sizes = '(max-width: 639px) calc(100vw - 40px), ' | append: block.settings.image_width | append: 'px'
+-%}
+<div class="sp-cart-drawer__summary-block sp-cart-drawer__summary-block--trust sp-cart-drawer__trust" data-sp-summary-type="trust" {{ block.shopify_attributes }}>
+  {%- if block.settings.image != blank -%}
+    <div class="sp-cart-drawer__trust-image" style="--sp-cart-trust-width: {{ block.settings.image_width }}px;">
+      {{ block.settings.image | image_url: width: 900 | image_tag: loading: 'lazy', widths: '200,300,450,600,900', sizes: trust_sizes, alt: trust_alt }}
+    </div>
+  {%- endif -%}
+  {%- if block.settings.show_payment_icons and shop.enabled_payment_types.size > 0 -%}
+    <ul class="sp-cart-drawer__payment-icons" role="list" aria-label="Accepted payment methods" style="--sp-cart-payment-height: {{ block.settings.payment_icon_height }}px;">
+      {%- for type in shop.enabled_payment_types -%}
+        <li>{{ type | payment_type_svg_tag }}</li>
+      {%- endfor -%}
+    </ul>
+  {%- endif -%}
+</div>

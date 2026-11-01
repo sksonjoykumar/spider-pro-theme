@@ -1,0 +1,959 @@
+{% render 'sp-section-color-scheme', section: section %}
+{{ 'sp-wishlist.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'sp-wishlist.js' | asset_url }}" defer></script>
+
+{%- liquid
+  assign sp_layout = section.settings.section_layout | default: 'container'
+  assign sp_outer_class = 'sp-wishlist'
+  assign sp_inner_class = 'sp-wishlist__inner'
+  if sp_layout == 'container'
+    assign sp_outer_class = sp_outer_class | append: ' sp-wishlist--container'
+    assign sp_inner_class = sp_inner_class | append: ' sp-container'
+  elsif sp_layout == 'wrapper_container'
+    assign sp_outer_class = sp_outer_class | append: ' sp-wishlist--wrapper'
+    assign sp_inner_class = sp_inner_class | append: ' sp-container'
+  else
+    assign sp_outer_class = sp_outer_class | append: ' sp-wishlist--full'
+  endif
+
+  assign sp_wishlist_card_design = section.settings.card_design
+  assign sp_wishlist_show_vendor = section.settings.show_vendor
+  assign sp_wishlist_show_rating = section.settings.show_rating
+  assign sp_wishlist_show_second_image = section.settings.show_second_image
+  assign sp_wishlist_show_swatches = section.settings.show_swatches
+  assign sp_wishlist_show_sizes = section.settings.show_size_swatches
+  assign sp_wishlist_color_shape = section.settings.color_swatch_shape
+  assign sp_wishlist_size_shape = section.settings.size_swatch_shape
+  assign sp_wishlist_swatch_size = section.settings.swatch_size
+  assign sp_wishlist_swatch_limit = section.settings.swatch_limit
+  assign sp_wishlist_show_quick_view = section.settings.show_quick_view
+  assign sp_wishlist_show_quick_add = section.settings.show_quick_add
+  assign sp_wishlist_show_compare = section.settings.show_compare
+  assign sp_wishlist_title_size = section.settings.title_size
+  assign sp_wishlist_price_size = section.settings.price_size
+  assign sp_wishlist_image_ratio = section.settings.image_ratio
+  assign sp_wishlist_image_fit = section.settings.image_fit
+  assign sp_wishlist_media_mode = section.settings.media_sizing_mode
+  if section.settings.use_global_product_settings
+    assign sp_wishlist_card_design = settings.card_style | default: '01'
+    case sp_wishlist_card_design
+      when '01', '1'
+        assign sp_wishlist_card_design = '1'
+      when '02', '2'
+        assign sp_wishlist_card_design = '2'
+      when '03', '3'
+        assign sp_wishlist_card_design = '3'
+      when '04', '4'
+        assign sp_wishlist_card_design = '4'
+      when '05', '5'
+        assign sp_wishlist_card_design = '5'
+      when '06', '6'
+        assign sp_wishlist_card_design = '6'
+      when '07', '7'
+        assign sp_wishlist_card_design = '7'
+      when '08', '8'
+        assign sp_wishlist_card_design = '8'
+      else
+        assign sp_wishlist_card_design = '1'
+    endcase
+    assign sp_wishlist_show_vendor = settings.card_show_vendor
+    assign sp_wishlist_show_rating = settings.card_show_rating
+    assign sp_wishlist_show_second_image = settings.card_second_image
+    assign sp_wishlist_show_swatches = settings.card_show_swatches
+    assign sp_wishlist_show_sizes = settings.card_show_size_swatches
+    assign sp_wishlist_color_shape = settings.swatch_shape
+    assign sp_wishlist_size_shape = settings.card_size_swatch_shape | default: 'square'
+    assign sp_wishlist_swatch_size = settings.swatch_size
+    assign sp_wishlist_swatch_limit = settings.card_swatch_limit | default: 5
+    assign sp_wishlist_show_quick_view = settings.card_quick_view
+    assign sp_wishlist_show_quick_add = settings.card_quick_add
+    assign sp_wishlist_show_compare = settings.card_compare
+    assign sp_wishlist_title_size = settings.card_title_size
+    assign sp_wishlist_price_size = settings.card_price_size
+    assign sp_wishlist_image_fit = settings.card_image_fit | default: 'cover'
+    if settings.card_image_ratio == 'adapt'
+      assign sp_wishlist_media_mode = 'adapt'
+    else
+      assign sp_wishlist_media_mode = 'equal_ratio'
+    endif
+    case settings.card_image_ratio
+      when 'square'
+        assign sp_wishlist_image_ratio = '1_1'
+      when 'landscape'
+        assign sp_wishlist_image_ratio = '4_3'
+      else
+        assign sp_wishlist_image_ratio = '4_5'
+    endcase
+  endif
+
+  assign ratio_width = section.settings.custom_ratio_width
+  assign ratio_height = section.settings.custom_ratio_height
+  case sp_wishlist_image_ratio
+    when '1_1'
+      assign ratio_width = 1
+      assign ratio_height = 1
+    when '4_5'
+      assign ratio_width = 4
+      assign ratio_height = 5
+    when '3_4'
+      assign ratio_width = 3
+      assign ratio_height = 4
+    when '2_3'
+      assign ratio_width = 2
+      assign ratio_height = 3
+    when '4_3'
+      assign ratio_width = 4
+      assign ratio_height = 3
+    when '16_9'
+      assign ratio_width = 16
+      assign ratio_height = 9
+  endcase
+
+  assign continue_url = section.settings.continue_url
+  if continue_url == blank
+    assign continue_url = routes.all_products_collection_url
+  endif
+-%}
+
+<sp-wishlist
+  id="SpiderWishlistPage-{{ section.id }}"
+  data-sp-product-section
+  class="{{ sp_outer_class }} sp-wishlist--media-{{ sp_wishlist_media_mode }} sp-wishlist--card-{{ sp_wishlist_card_design }}"
+  data-section-id="{{ section.id }}"
+  data-state="loading"
+  data-core-url="{{ 'sp-wishlist-core.js' | asset_url }}"
+  data-money-format="{{ shop.money_with_currency_format | escape }}"
+  data-currency="{{ cart.currency.iso_code | default: shop.currency | escape }}"
+  data-cart-add-url="{{ routes.cart_add_url }}"
+  data-continue-url="{{ continue_url }}"
+  data-show-vendor="{{ sp_wishlist_show_vendor }}"
+  data-show-rating="{{ sp_wishlist_show_rating }}"
+  data-show-second-image="{{ sp_wishlist_show_second_image }}"
+  data-show-swatches="{{ sp_wishlist_show_swatches }}"
+  data-show-sizes="{{ sp_wishlist_show_sizes }}"
+  data-show-color-label="{{ section.settings.show_color_swatch_label }}"
+  data-show-size-label="{{ section.settings.show_size_swatch_label }}"
+  data-color-label="{{ section.settings.color_label | escape }}"
+  data-size-label="{{ section.settings.size_label | escape }}"
+  data-color-shape="{{ sp_wishlist_color_shape }}"
+  data-size-shape="{{ sp_wishlist_size_shape }}"
+  data-swatch-limit="{{ sp_wishlist_swatch_limit }}"
+  data-show-quick-view="{{ sp_wishlist_show_quick_view }}"
+  data-show-quick-add="{{ sp_wishlist_show_quick_add }}"
+  data-show-compare="{{ sp_wishlist_show_compare }}"
+  data-compare-max="{{ section.settings.compare_max }}"
+  data-buy-now="{{ section.settings.enable_buy_now }}"
+  data-swatch-color-map-json="{{ section.settings.swatch_color_map | default: '' | json | escape }}"
+  style="
+    --sp-wishlist-columns-d: {{ section.settings.columns_desktop }};
+    --sp-wishlist-columns-t: {{ section.settings.columns_tablet }};
+    --sp-wishlist-columns-m: {{ section.settings.columns_mobile }};
+    --sp-wishlist-gap-x: {{ section.settings.column_gap }}px;
+    --sp-wishlist-gap-y: {{ section.settings.row_gap }}px;
+    --sp-wishlist-media-ratio: {{ ratio_width }} / {{ ratio_height }};
+    --sp-wishlist-media-h-d: {{ section.settings.image_height_desktop }}px;
+    --sp-wishlist-media-h-t: {{ section.settings.image_height_tablet }}px;
+    --sp-wishlist-media-h-m: {{ section.settings.image_height_mobile }}px;
+    --sp-wishlist-media-fit: {{ sp_wishlist_image_fit }};
+    --sp-wishlist-media-position: {{ section.settings.image_position }};
+    --sp-wishlist-title-size: {{ sp_wishlist_title_size }}px;
+    --sp-wishlist-price-size: {{ sp_wishlist_price_size }}px;
+    --sp-wishlist-swatch-size: {{ sp_wishlist_swatch_size }}px;
+    --sp-section-text: var(--sp-wishlist-text);
+    --sp-section-heading: var(--sp-wishlist-heading);
+    --sp-section-muted: var(--sp-wishlist-muted);
+    --sp-section-border: var(--sp-wishlist-border);
+    --sp-section-surface: var(--sp-wishlist-surface);
+    --sp-section-card: var(--sp-wishlist-card);
+    --sp-accent: var(--sp-wishlist-accent);
+    --sp-heading-color: var(--sp-wishlist-heading);
+    --sp-sub-color: var(--sp-wishlist-muted);
+    --sp-heading-accent: var(--sp-wishlist-accent);
+    --sp-product-media-ratio: {{ ratio_width }} / {{ ratio_height }};
+    --sp-product-media-fit: {{ sp_wishlist_image_fit }};
+    --sp-product-media-position: {{ section.settings.image_position }};
+    --sp-card-title-size: {{ sp_wishlist_title_size }}px;
+    --sp-card-price-size: {{ sp_wishlist_price_size }}px;
+    --sp-product-swatch-size: {{ sp_wishlist_swatch_size }}px;
+    --sp-wishlist-heading-size-d: {{ section.settings.heading_size_desktop }}px;
+    --sp-wishlist-heading-size-t: {{ section.settings.heading_size_tablet }}px;
+    --sp-wishlist-heading-size-m: {{ section.settings.heading_size_mobile }}px;
+    --sp-wishlist-heading-weight: {{ section.settings.heading_weight }};
+    --sp-wishlist-heading-line: {{ section.settings.heading_line_height | divided_by: 100.0 }};
+    --sp-wishlist-heading-letter: {{ section.settings.heading_letter_spacing }}px;
+    --sp-wishlist-sub-size: {{ section.settings.description_size }}px;
+    --sp-wishlist-heading-gap: {{ section.settings.heading_description_gap }}px;
+    --sp-wishlist-heading-mb: {{ section.settings.heading_bottom_spacing }}px;
+    --sp-wishlist-pt-d: {{ section.settings.padding_top_desktop }}px;
+    --sp-wishlist-pb-d: {{ section.settings.padding_bottom_desktop }}px;
+    --sp-wishlist-pt-m: {{ section.settings.padding_top_mobile }}px;
+    --sp-wishlist-pb-m: {{ section.settings.padding_bottom_mobile }}px;
+  "
+>
+  <div class="{{ sp_inner_class }}">
+    <div class="sp-product-section sp-wishlist__header">
+      {% render 'sp-section-heading', heading_settings: section.settings, heading: section.settings.heading, subheading: section.settings.description, heading_tag: 'h1', alignment: section.settings.heading_alignment, mobile_alignment: section.settings.heading_alignment_mobile %}
+    </div>
+
+    {% render 'sp-wishlist-toolbar', section: section %}
+    {% render 'sp-wishlist-products', section: section %}
+    {% render 'sp-wishlist-empty', section: section, continue_url: continue_url %}
+    {% render 'sp-wishlist-product-card', section: section %}
+
+    <div class="sp-visually-hidden" aria-live="polite" aria-atomic="true" data-sp-wishlist-live></div>
+  </div>
+</sp-wishlist>
+
+{% schema %}
+{
+  "name": "♡ Wishlist",
+  "enabled_on": {
+    "templates": [
+      "page"
+    ]
+  },
+  "tag": "section",
+  "class": "sp-wishlist-section",
+  "limit": 1,
+  "settings": [
+    {
+      "type": "header",
+      "content": "Global design system"
+    },
+    {
+      "type": "color_scheme",
+      "id": "sp_color_scheme",
+      "label": "Color scheme",
+      "default": "scheme-1",
+      "info": "Shared Spider color panel. Edit schemes once in Theme settings → Spider Color Schemes."
+    },
+    {
+      "type": "select",
+      "id": "typography_source",
+      "label": "Heading typography",
+      "default": "global",
+      "options": [
+        {
+          "value": "global",
+          "label": "Use global heading"
+        },
+        {
+          "value": "custom",
+          "label": "Custom heading"
+        }
+      ],
+      "info": "Global uses Theme settings H1–H6. Choose Custom to use the size/weight controls in this heading."
+    },
+    {
+      "type": "checkbox",
+      "id": "use_global_product_settings",
+      "label": "Use global Product Card settings",
+      "default": true,
+      "info": "Uses Theme settings → Product Settings for Wishlist card style, media, typography, swatches and commerce actions. Turn off for Wishlist-specific product controls."
+    },
+    {
+      "type": "header",
+      "content": "General"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "My Wishlist"
+    },
+    {
+      "type": "richtext",
+      "id": "description",
+      "label": "Description",
+      "default": "<p>Your saved favorites, all in one place.</p>"
+    },
+    {
+      "type": "header",
+      "content": "Heading typography"
+    },
+    {
+      "type": "range",
+      "id": "heading_size_desktop",
+      "label": "Desktop heading size",
+      "min": 18,
+      "max": 64,
+      "step": 1,
+      "unit": "px",
+      "default": 32
+    },
+    {
+      "type": "range",
+      "id": "heading_size_tablet",
+      "label": "Tablet heading size",
+      "min": 18,
+      "max": 52,
+      "step": 1,
+      "unit": "px",
+      "default": 28
+    },
+    {
+      "type": "range",
+      "id": "heading_size_mobile",
+      "label": "Mobile heading size",
+      "min": 16,
+      "max": 40,
+      "step": 1,
+      "unit": "px",
+      "default": 24
+    },
+    {
+      "type": "select",
+      "id": "heading_weight",
+      "label": "Heading weight",
+      "default": "600",
+      "options": [
+        {
+          "value": "400",
+          "label": "Regular"
+        },
+        {
+          "value": "500",
+          "label": "Medium"
+        },
+        {
+          "value": "600",
+          "label": "Semibold"
+        },
+        {
+          "value": "700",
+          "label": "Bold"
+        }
+      ]
+    },
+    {
+      "type": "range",
+      "id": "heading_line_height",
+      "label": "Heading line height",
+      "min": 90,
+      "max": 150,
+      "step": 5,
+      "unit": "%",
+      "default": 115
+    },
+    {
+      "type": "range",
+      "id": "heading_letter_spacing",
+      "label": "Heading letter spacing",
+      "min": -2,
+      "max": 6,
+      "step": 0.5,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "description_size",
+      "label": "Description size",
+      "min": 12,
+      "max": 24,
+      "step": 1,
+      "unit": "px",
+      "default": 15
+    },
+    {
+      "type": "range",
+      "id": "heading_description_gap",
+      "label": "Heading / description gap",
+      "min": 0,
+      "max": 32,
+      "step": 1,
+      "unit": "px",
+      "default": 8
+    },
+    {
+      "type": "range",
+      "id": "heading_bottom_spacing",
+      "label": "Heading bottom spacing",
+      "min": 0,
+      "max": 80,
+      "step": 2,
+      "unit": "px",
+      "default": 30
+    },
+    {
+      "type": "select",
+      "id": "heading_alignment",
+      "label": "Heading alignment",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "select",
+      "id": "heading_alignment_mobile",
+      "label": "Mobile heading alignment",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_item_count",
+      "label": "Show item count",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_clear",
+      "label": "Show Clear wishlist",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Grid"
+    },
+    {
+      "type": "select",
+      "id": "card_design",
+      "label": "Product card design",
+      "options": [
+        {
+          "value": "01",
+          "label": "01 — Classic Premium"
+        },
+        {
+          "value": "02",
+          "label": "02 — Modern Badges"
+        },
+        {
+          "value": "03",
+          "label": "03 — Variant Preview"
+        },
+        {
+          "value": "04",
+          "label": "04 — Image Overlay"
+        },
+        {
+          "value": "05",
+          "label": "05 — Apparel Swatches"
+        },
+        {
+          "value": "06",
+          "label": "06 — Stock Status"
+        },
+        {
+          "value": "07",
+          "label": "07 — Minimal Luxury"
+        },
+        {
+          "value": "08",
+          "label": "08 — Lifestyle Wide"
+        }
+      ],
+      "default": "01",
+      "info": "Eight premium Spider Product Card designs. Saved legacy styles 09–16 fall back to Style 01."
+    },
+    {
+      "type": "range",
+      "id": "columns_desktop",
+      "label": "Desktop columns",
+      "min": 2,
+      "max": 6,
+      "step": 1,
+      "default": 4
+    },
+    {
+      "type": "range",
+      "id": "columns_tablet",
+      "label": "Tablet columns",
+      "min": 1,
+      "max": 4,
+      "step": 1,
+      "default": 3
+    },
+    {
+      "type": "range",
+      "id": "columns_mobile",
+      "label": "Mobile columns",
+      "min": 1,
+      "max": 3,
+      "step": 1,
+      "default": 2
+    },
+    {
+      "type": "range",
+      "id": "column_gap",
+      "label": "Column gap",
+      "min": 4,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "default": 20
+    },
+    {
+      "type": "range",
+      "id": "row_gap",
+      "label": "Row gap",
+      "min": 8,
+      "max": 64,
+      "step": 2,
+      "unit": "px",
+      "default": 34
+    },
+    {
+      "type": "header",
+      "content": "Product media"
+    },
+    {
+      "type": "select",
+      "id": "media_sizing_mode",
+      "label": "Product media sizing",
+      "options": [
+        {
+          "value": "adapt",
+          "label": "Adapt to image"
+        },
+        {
+          "value": "equal_ratio",
+          "label": "Equal ratio"
+        },
+        {
+          "value": "fixed_height",
+          "label": "Fixed height"
+        }
+      ],
+      "default": "equal_ratio"
+    },
+    {
+      "type": "select",
+      "id": "image_ratio",
+      "label": "Equal ratio",
+      "options": [
+        {
+          "value": "1_1",
+          "label": "Square 1:1"
+        },
+        {
+          "value": "4_5",
+          "label": "Portrait 4:5"
+        },
+        {
+          "value": "3_4",
+          "label": "Tall 3:4"
+        },
+        {
+          "value": "2_3",
+          "label": "Fashion 2:3"
+        },
+        {
+          "value": "4_3",
+          "label": "Landscape 4:3"
+        },
+        {
+          "value": "16_9",
+          "label": "Wide 16:9"
+        },
+        {
+          "value": "custom",
+          "label": "Custom"
+        }
+      ],
+      "default": "4_5"
+    },
+    {
+      "type": "range",
+      "id": "custom_ratio_width",
+      "label": "Custom ratio width",
+      "min": 1,
+      "max": 20,
+      "step": 1,
+      "default": 4
+    },
+    {
+      "type": "range",
+      "id": "custom_ratio_height",
+      "label": "Custom ratio height",
+      "min": 1,
+      "max": 20,
+      "step": 1,
+      "default": 5
+    },
+    {
+      "type": "range",
+      "id": "image_height_desktop",
+      "label": "Fixed image height — desktop",
+      "min": 200,
+      "max": 900,
+      "step": 10,
+      "unit": "px",
+      "default": 500
+    },
+    {
+      "type": "range",
+      "id": "image_height_tablet",
+      "label": "Fixed image height — tablet",
+      "min": 180,
+      "max": 700,
+      "step": 10,
+      "unit": "px",
+      "default": 420
+    },
+    {
+      "type": "range",
+      "id": "image_height_mobile",
+      "label": "Fixed image height — mobile",
+      "min": 140,
+      "max": 600,
+      "step": 10,
+      "unit": "px",
+      "default": 260
+    },
+    {
+      "type": "select",
+      "id": "image_fit",
+      "label": "Image fit",
+      "options": [
+        {
+          "value": "cover",
+          "label": "Cover"
+        },
+        {
+          "value": "contain",
+          "label": "Contain"
+        }
+      ],
+      "default": "cover"
+    },
+    {
+      "type": "select",
+      "id": "image_position",
+      "label": "Image position",
+      "options": [
+        {
+          "value": "center center",
+          "label": "Center"
+        },
+        {
+          "value": "center top",
+          "label": "Top"
+        },
+        {
+          "value": "center bottom",
+          "label": "Bottom"
+        },
+        {
+          "value": "left center",
+          "label": "Left"
+        },
+        {
+          "value": "right center",
+          "label": "Right"
+        },
+        {
+          "value": "left top",
+          "label": "Top left"
+        },
+        {
+          "value": "right top",
+          "label": "Top right"
+        },
+        {
+          "value": "left bottom",
+          "label": "Bottom left"
+        },
+        {
+          "value": "right bottom",
+          "label": "Bottom right"
+        }
+      ],
+      "default": "center center"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_second_image",
+      "label": "Show second image on hover",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Product content"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_vendor",
+      "label": "Show vendor",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "show_rating",
+      "label": "Show rating",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "show_swatches",
+      "label": "Show color swatches",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_size_swatches",
+      "label": "Show size swatches",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "show_color_swatch_label",
+      "label": "Show selected color text",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_size_swatch_label",
+      "label": "Show selected size text",
+      "default": false
+    },
+    {
+      "type": "text",
+      "id": "color_label",
+      "label": "Color label",
+      "default": "Color"
+    },
+    {
+      "type": "text",
+      "id": "size_label",
+      "label": "Size label",
+      "default": "Size"
+    },
+    {
+      "type": "select",
+      "id": "color_swatch_shape",
+      "label": "Color swatch shape",
+      "options": [
+        {
+          "value": "circle",
+          "label": "Circle"
+        },
+        {
+          "value": "square",
+          "label": "Square"
+        }
+      ],
+      "default": "circle"
+    },
+    {
+      "type": "select",
+      "id": "size_swatch_shape",
+      "label": "Size swatch shape",
+      "options": [
+        {
+          "value": "square",
+          "label": "Square"
+        },
+        {
+          "value": "circle",
+          "label": "Circle"
+        }
+      ],
+      "default": "square"
+    },
+    {
+      "type": "range",
+      "id": "swatch_size",
+      "label": "Swatch size",
+      "min": 18,
+      "max": 40,
+      "step": 1,
+      "unit": "px",
+      "default": 24
+    },
+    {
+      "type": "range",
+      "id": "swatch_limit",
+      "label": "Max swatches shown",
+      "min": 1,
+      "max": 12,
+      "step": 1,
+      "default": 6
+    },
+    {
+      "type": "textarea",
+      "id": "swatch_color_map",
+      "label": "Custom swatch color map",
+      "info": "Optional. Use comma-separated, semicolon-separated, or one color per line. Example: Black: #000000, Pink: #FFC0CB, Periwinkle: #CCCCFF. Only real product Color/Colour values are shown."
+    },
+    {
+      "type": "header",
+      "content": "Actions"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_quick_view",
+      "label": "Show Quick View",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_quick_add",
+      "label": "Show Quick Add",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_compare",
+      "label": "Show Compare",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "compare_max",
+      "label": "Maximum compared products",
+      "min": 2,
+      "max": 4,
+      "step": 1,
+      "default": 4
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_buy_now",
+      "label": "Enable Buy it now in product dialogs",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Typography"
+    },
+    {
+      "type": "range",
+      "id": "title_size",
+      "label": "Product title size",
+      "min": 12,
+      "max": 24,
+      "step": 1,
+      "unit": "px",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "price_size",
+      "label": "Product price size",
+      "min": 12,
+      "max": 24,
+      "step": 1,
+      "unit": "px",
+      "default": 16
+    },
+    {
+      "type": "header",
+      "content": "Empty state"
+    },
+    {
+      "type": "text",
+      "id": "empty_heading",
+      "label": "Empty heading",
+      "default": "Your wishlist is empty"
+    },
+    {
+      "type": "textarea",
+      "id": "empty_description",
+      "label": "Empty description",
+      "default": "Save your favorite products and find them here anytime."
+    },
+    {
+      "type": "text",
+      "id": "continue_label",
+      "label": "Continue shopping label",
+      "default": "Continue shopping"
+    },
+    {
+      "type": "url",
+      "id": "continue_url",
+      "label": "Continue shopping URL"
+    },
+    {
+      "type": "header",
+      "content": "Layout & colors"
+    },
+    {
+      "type": "select",
+      "id": "section_layout",
+      "label": "Section layout",
+      "options": [
+        {
+          "value": "container",
+          "label": "Container"
+        },
+        {
+          "value": "wrapper_container",
+          "label": "Full background / contained content"
+        },
+        {
+          "value": "full_width",
+          "label": "Full width"
+        }
+      ],
+      "default": "container"
+    },
+    {
+      "type": "range",
+      "id": "padding_top_desktop",
+      "label": "Padding top — desktop",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "default": 48
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom_desktop",
+      "label": "Padding bottom — desktop",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "default": 64
+    },
+    {
+      "type": "range",
+      "id": "padding_top_mobile",
+      "label": "Padding top — mobile",
+      "min": 0,
+      "max": 80,
+      "step": 4,
+      "unit": "px",
+      "default": 32
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom_mobile",
+      "label": "Padding bottom — mobile",
+      "min": 0,
+      "max": 80,
+      "step": 4,
+      "unit": "px",
+      "default": 44
+    }
+  ]
+}
+{% endschema %}

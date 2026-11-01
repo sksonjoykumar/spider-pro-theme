@@ -1,0 +1,7 @@
+{% comment %}Lightweight semantic Search result card for Page resources. Required: page.{% endcomment %}
+<article class="sp-search-page-card">
+  <span class="sp-search-resource-type">{{ 'general.search.pages' | t }}</span>
+  <h2 class="sp-search-resource-title sp-heading--h4"><a href="{{ page.url }}">{{ page.title | escape }}</a></h2>
+  {% if show_excerpt and page.content != blank %}<p class="sp-search-resource-excerpt">{{ page.content | strip_html | strip | truncatewords: 34 }}</p>{% endif %}
+  <a class="sp-search-resource-link" href="{{ page.url }}">{{ 'general.buttons.view_more' | t }} <span aria-hidden="true">→</span></a>
+</article>

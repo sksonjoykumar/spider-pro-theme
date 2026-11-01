@@ -1,0 +1,20 @@
+{% comment %}
+  Handles both cart-level discount applications and line-level discount allocations.
+{% endcomment %}
+{% if discounts != blank %}
+  <ul class="sp-discounts" role="list">
+    {% for discount in discounts %}
+      {% if discount.discount_application %}
+        {% assign discount_title = discount.discount_application.title %}
+        {% assign discount_amount = discount.amount %}
+      {% else %}
+        {% assign discount_title = discount.title %}
+        {% assign discount_amount = discount.total_allocated_amount | default: discount.savings %}
+      {% endif %}
+      <li>
+        <span>{{ discount_title | escape }}</span>
+        {% if discount_amount != blank and discount_amount > 0 %}<span>−{{ discount_amount | money }}</span>{% endif %}
+      </li>
+    {% endfor %}
+  </ul>
+{% endif %}

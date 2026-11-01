@@ -1,0 +1,4 @@
+{% comment %}LiquidDoc: Renders an accessible icon-only button. Parameters: label and icon required.{% endcomment %}
+<button type="{{ type | default: 'button' }}" class="sp-icon-button{% if class != blank %} {{ class }}{% endif %}" aria-label="{{ label | escape }}" {{ attributes }}>
+  {% render 'icon', name: icon %}
+</button>
